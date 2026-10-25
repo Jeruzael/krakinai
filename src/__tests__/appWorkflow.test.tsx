@@ -212,7 +212,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
 
     // Navigate to Collections screen and verify collection membership
     await user.click(screen.getByRole('button', { name: /^Collections/i }));
-    expect(await screen.findByText(/Cafe Pitch Pack/i)).toBeInTheDocument();
+    expect(
+      await screen.findByRole('heading', { name: /^Cafe Pitch Pack$/i })
+    ).toBeInTheDocument();
 
     // Navigate to Templates screen and verify 4 starter templates
     await user.click(screen.getByRole('button', { name: /^Templates/i }));

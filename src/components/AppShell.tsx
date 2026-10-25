@@ -272,6 +272,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
                 fontWeight: 700,
                 fontSize: 15,
                 color: 'var(--text-muted)',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
               }}
             >
               KRAKINAI • Personal Visual Prompt Library

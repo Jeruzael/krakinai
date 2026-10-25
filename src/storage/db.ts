@@ -315,6 +315,10 @@ export async function saveMediaAsset(input: {
   return record;
 }
 
+// Missing persisted references do not prove that a blob is unused: another tab's
+// unsaved editor may still need it. Ordinary saves and record deletions retain
+// media until durable ownership tracking can make reclamation safe across tabs.
+
 export async function savePromptAsset(input: {
   id?: string;
   title: string;
@@ -534,62 +538,32 @@ export async function deletePromptAsset(assetId: string): Promise<void> {
     );
   }
 
-  const remainingAssets = snap.assets.filter((a) => a.id !== assetId);
   const updatedCollections = snap.collections.map((c) => ({
     ...c,
     members: c.members.filter((m) => !(m.type === 'asset' && m.id === assetId)),
   }));
 
-  const retainedMediaIds = collectReferencedMediaIds({
-    assets: remainingAssets,
-    variants: snap.variants,
-    drafts: snap.drafts,
-    scenes: snap.scenes,
-    templates: snap.templates,
-    collections: updatedCollections,
-  });
-
   const db = await openDatabase();
-  const tx = db.transaction(['assets', 'collections', 'media'], 'readwrite');
+  const tx = db.transaction(['assets', 'collections'], 'readwrite');
   tx.objectStore('assets').delete(assetId);
   for (const col of updatedCollections) {
     tx.objectStore('collections').put(col);
-  }
-  for (const m of snap.media) {
-    if (!retainedMediaIds.has(m.id)) {
-      tx.objectStore('media').delete(m.id);
-    }
   }
   await txDone(tx);
 }
 
 export async function deleteVariant(variantId: string): Promise<void> {
   const snap = await getAllSnapshot();
-  const remainingVariants = snap.variants.filter((v) => v.id !== variantId);
   const updatedCollections = snap.collections.map((c) => ({
     ...c,
     members: c.members.filter((m) => !(m.type === 'variant' && m.id === variantId)),
   }));
 
-  const retainedMediaIds = collectReferencedMediaIds({
-    assets: snap.assets,
-    variants: remainingVariants,
-    drafts: snap.drafts,
-    scenes: snap.scenes,
-    templates: snap.templates,
-    collections: updatedCollections,
-  });
-
   const db = await openDatabase();
-  const tx = db.transaction(['variants', 'collections', 'media'], 'readwrite');
+  const tx = db.transaction(['variants', 'collections'], 'readwrite');
   tx.objectStore('variants').delete(variantId);
   for (const col of updatedCollections) {
     tx.objectStore('collections').put(col);
-  }
-  for (const m of snap.media) {
-    if (!retainedMediaIds.has(m.id)) {
-      tx.objectStore('media').delete(m.id);
-    }
   }
   await txDone(tx);
 }
@@ -791,30 +765,15 @@ export async function updateSavedSceneReviewAndResults(params: {
 
 export async function deleteSavedScene(sceneId: string): Promise<void> {
   const snap = await getAllSnapshot();
-  const remainingScenes = snap.scenes.filter((s) => s.id !== sceneId);
   const updatedCollections = snap.collections.map((c) => ({
     ...c,
     members: c.members.filter((m) => !(m.type === 'scene' && m.id === sceneId)),
   }));
-  const retainedMediaIds = collectReferencedMediaIds({
-    assets: snap.assets,
-    variants: snap.variants,
-    drafts: snap.drafts,
-    scenes: remainingScenes,
-    templates: snap.templates,
-    collections: updatedCollections,
-  });
-
   const db = await openDatabase();
-  const tx = db.transaction(['scenes', 'collections', 'media'], 'readwrite');
+  const tx = db.transaction(['scenes', 'collections'], 'readwrite');
   tx.objectStore('scenes').delete(sceneId);
   for (const col of updatedCollections) {
     tx.objectStore('collections').put(col);
-  }
-  for (const m of snap.media) {
-    if (!retainedMediaIds.has(m.id)) {
-      tx.objectStore('media').delete(m.id);
-    }
   }
   await txDone(tx);
 }

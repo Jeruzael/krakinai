@@ -625,7 +625,7 @@ export const SettingsBackupModal: React.FC = () => {
               className="btn btn-secondary"
               onClick={() => loadStarterData(true)}
             >
-              <Archive size={16} /> Load / Reset Starter LibraryItems
+              <Archive size={16} /> Load / Reset Starter Library Items
             </button>
           </div>
         </div>
