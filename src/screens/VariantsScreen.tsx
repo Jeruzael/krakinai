@@ -1,11 +1,19 @@
 import React, { useMemo, useState } from 'react';
-import { ArrowLeft, Lock, Plus, PlusCircle } from 'lucide-react';
+import {
+  ArrowLeft,
+  Copy,
+  ExternalLink,
+  Heart,
+  Lock,
+  Plus,
+  PlusCircle,
+} from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
-import { SLOT_LABELS, VARIANT_TYPE_TO_SLOT } from '../domain/validation';
+import { SLOT_LABELS } from '../domain/validation';
 import type { MediaAsset, VariantType } from '../types/domain';
-import { PromptCard } from '../components/PromptCard';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import { toggleVariantFavorite } from '../storage/db';
+import './characterStudio.css';
 
 const VARIANT_TYPES: VariantType[] = [
   'Outfit',
@@ -19,13 +27,8 @@ const VARIANT_TYPES: VariantType[] = [
 export const VariantsScreen: React.FC<{ characterId: string }> = ({
   characterId,
 }) => {
-  const {
-    snapshot,
-    navigate,
-    copyText,
-    applyVariantToScene,
-    refreshSnapshot,
-  } = useLibrary();
+  const { snapshot, navigate, copyText, applyVariantToScene, refreshSnapshot } =
+    useLibrary();
 
   const [typeFilter, setTypeFilter] = useState<'All' | VariantType>('All');
   const [search, setSearch] = useState('');
@@ -84,7 +87,7 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
   const charMedia = charCoverId ? mediaMap.get(charCoverId) : undefined;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="character-studio character-studio-variants">
       {/* Header */}
       <div
         style={{
@@ -95,7 +98,7 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
           gap: 12,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="character-studio-breadcrumb">
           <button
             type="button"
             className="btn btn-secondary btn-sm"
@@ -116,67 +119,57 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
       </div>
 
       {/* Parent Character & Locked Identity Context */}
-      <div className="card">
-        <div
-          style={{
-            display: 'grid',
-            gap: 20,
-            gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-            alignItems: 'center',
-          }}
+      <div className="card character-studio-parent">
+        <button
+          type="button"
+          className="character-studio-parent-preview"
+          aria-label={`Open ${character.title}`}
+          onClick={() => navigate(`/prompts/${character.id}`)}
         >
-          <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+          <MediaThumbnail media={charMedia} altText={character.title} />
+        </button>
+        <div className="character-studio-parent-context">
+          <span className="badge badge-primary">
+            <Lock size={12} /> Locked Base Identity (Rev {character.revision})
+          </span>
+          <h2 className="section-title" style={{ margin: '6px 0 4px' }}>
+            {character.title}
+          </h2>
+          <p className="muted-text" style={{ margin: 0, fontSize: 12 }}>
+            Identity locking protects text reuse inside the app. It does not
+            guarantee an external model’s output.
+          </p>
+          <p className="character-studio-layer-note">
+            Choose a changed layer below. The parent identity stays unchanged.
+          </p>
+          <details className="character-studio-prompt-details">
+            <summary>View full base identity</summary>
             <div
-              style={{
-                width: 96,
-                height: 96,
-                borderRadius: 12,
-                overflow: 'hidden',
-                flexShrink: 0,
-                border: '1px solid var(--border-subtle)',
-              }}
+              className="character-studio-prompt-content"
+              tabIndex={0}
+              role="region"
+              aria-label="Complete base identity"
             >
-              <MediaThumbnail media={charMedia} altText={character.title} />
-            </div>
-            <div>
-              <span className="badge badge-primary">
-                <Lock size={12} /> Locked Base Identity (Rev {character.revision})
-              </span>
-              <h2 className="section-title" style={{ margin: '6px 0 4px' }}>
-                {character.title}
-              </h2>
-              <p className="muted-text" style={{ margin: 0, fontSize: 12 }}>
-                Identity locking protects text reuse inside the app. It does not
-                guarantee an external model’s output.
+              <strong>
+                Base identity prompt · Preserved verbatim in scenes
+              </strong>
+              <p className="character-studio-full-text">
+                {character.promptText}
               </p>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => copyText(character.promptText)}
+              >
+                <Copy size={14} /> Copy Base Identity
+              </button>
             </div>
-          </div>
-
-          <div
-            style={{
-              background: '#F8FAFC',
-              padding: 14,
-              borderRadius: 10,
-              border: '1px solid var(--border-subtle)',
-            }}
-          >
-            <div
-              style={{
-                fontSize: 12,
-                fontWeight: 700,
-                color: 'var(--text-muted)',
-                marginBottom: 4,
-              }}
-            >
-              BASE IDENTITY PROMPT (PRESERVED VERBATIM IN SCENES):
-            </div>
-            <p style={{ margin: 0, fontSize: 14 }}>{character.promptText}</p>
-          </div>
+          </details>
         </div>
       </div>
 
       {/* Type Filters & Search */}
-      <div className="card" style={{ padding: 16 }}>
+      <div className="card character-studio-filters">
         <div
           style={{
             display: 'flex',
@@ -192,6 +185,7 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
               className={`btn btn-sm ${
                 typeFilter === 'All' ? 'btn-primary' : 'btn-secondary'
               }`}
+              aria-pressed={typeFilter === 'All'}
               onClick={() => setTypeFilter('All')}
             >
               All ({allCharVariants.length})
@@ -205,6 +199,7 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
                   className={`btn btn-sm ${
                     typeFilter === vt ? 'btn-primary' : 'btn-secondary'
                   }`}
+                  aria-pressed={typeFilter === vt}
                   onClick={() => setTypeFilter(vt)}
                 >
                   {vt} ({count})
@@ -213,9 +208,10 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
             })}
           </div>
 
-          <div style={{ minWidth: 220 }}>
+          <div className="character-studio-search">
             <input
               className="input"
+              aria-label="Search variants"
               placeholder="Search variants..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -243,32 +239,115 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
           </button>
         </div>
       ) : (
-        <div className="card-grid">
-          {filteredVariants.map((variant) => (
-            <PromptCard
-              key={variant.id}
-              item={variant}
-              kind="variant"
-              mediaMap={mediaMap}
-              onOpen={() => navigate(`/variants/${variant.id}`)}
-              onCopy={() => copyText(variant.promptText)}
-              onToggleFavorite={async () => {
-                await toggleVariantFavorite(variant.id);
-                await refreshSnapshot();
-              }}
-              onAddToScene={() => applyVariantToScene(variant)}
-              extraAction={
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  style={{ width: '100%' }}
-                  onClick={() => applyVariantToScene(variant)}
-                >
-                  <PlusCircle size={14} /> Use in Scene
-                </button>
-              }
-            />
-          ))}
+        <div className="character-studio-variant-grid">
+          {filteredVariants.map((variant) => {
+            const coverId =
+              variant.coverMediaId || variant.mediaLinks[0]?.mediaId;
+            const coverLink = variant.mediaLinks.find(
+              (link) => link.mediaId === coverId
+            );
+            const excerpt =
+              variant.promptText.length > 140
+                ? `${variant.promptText.slice(0, 140)}…`
+                : variant.promptText;
+            return (
+              <article
+                key={variant.id}
+                className="prompt-card character-studio-variant-card"
+                aria-label={variant.title}
+              >
+                <div className="character-studio-variant-media">
+                  <button
+                    type="button"
+                    className="character-studio-variant-preview"
+                    aria-label={`Open ${variant.title}`}
+                    onClick={() => navigate(`/variants/${variant.id}`)}
+                  >
+                    <MediaThumbnail
+                      media={coverId ? mediaMap.get(coverId) : undefined}
+                      altText={coverLink?.altText || variant.title}
+                    />
+                  </button>
+                  <button
+                    type="button"
+                    className="icon-btn character-studio-variant-favorite"
+                    aria-label={
+                      variant.favorite
+                        ? `Remove ${variant.title} from favorites`
+                        : `Add ${variant.title} to favorites`
+                    }
+                    aria-pressed={variant.favorite}
+                    onClick={async () => {
+                      await toggleVariantFavorite(variant.id);
+                      await refreshSnapshot();
+                    }}
+                  >
+                    <Heart
+                      size={18}
+                      fill={variant.favorite ? 'currentColor' : 'none'}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+                <div className="prompt-card-body">
+                  <div className="character-studio-inline-actions">
+                    <span className="badge badge-primary">
+                      {variant.type} Variant
+                    </span>
+                    {variant.reviewStatus === 'user-approved' && (
+                      <span className="badge badge-success">User-approved</span>
+                    )}
+                  </div>
+                  <h3 className="character-studio-variant-title">
+                    {variant.title}
+                  </h3>
+                  <p className="character-studio-slot-label">
+                    {SLOT_LABELS[variant.targetSlot]}
+                  </p>
+                  <p className="prompt-card-excerpt character-studio-excerpt">
+                    {excerpt}
+                  </p>
+                  {variant.tags.length > 0 && (
+                    <div className="tag-list">
+                      {variant.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="badge">
+                          {tag}
+                        </span>
+                      ))}
+                      {variant.tags.length > 3 && (
+                        <span className="badge">
+                          +{variant.tags.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
+                  <div className="prompt-card-actions character-studio-variant-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => navigate(`/variants/${variant.id}`)}
+                    >
+                      <ExternalLink size={14} /> Open
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => copyText(variant.promptText)}
+                    >
+                      <Copy size={14} /> Copy
+                    </button>
+                    <button
+                      type="button"
+                      className="btn btn-primary btn-sm character-studio-use-variant"
+                      onClick={() => applyVariantToScene(variant)}
+                    >
+                      <PlusCircle size={14} /> Use in Scene
+                    </button>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </div>
