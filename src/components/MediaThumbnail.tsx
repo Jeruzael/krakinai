@@ -1,5 +1,5 @@
-import React from 'react';
-import { Film, ImageOff, Play } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ImageOff, Play } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
 import { useMediaObjectUrl } from '../hooks/useObjectUrl';
 
@@ -19,8 +19,13 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   roleBadge,
 }) => {
   const url = useMediaObjectUrl(media);
+  const [decodeError, setDecodeError] = useState(false);
 
-  if (!media || !url) {
+  useEffect(() => {
+    setDecodeError(false);
+  }, [media?.id, url]);
+
+  if (!media || !url || decodeError) {
     return (
       <div
         style={{
@@ -39,7 +44,9 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
         }}
       >
         <ImageOff size={24} aria-hidden="true" />
-        <span style={{ fontSize: 12, fontWeight: 500 }}>{emptyLabel}</span>
+        <span style={{ fontSize: 12, fontWeight: 500 }}>
+          {decodeError ? 'Media file unavailable or corrupted.' : emptyLabel}
+        </span>
       </div>
     );
   }
@@ -65,6 +72,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
             src={url}
             controls
             preload="metadata"
+            onError={() => setDecodeError(true)}
             style={{ width: '100%', height: '100%', maxHeight: 520, objectFit: 'contain' }}
           >
             Your browser does not support playable MP4/WebM video.
@@ -76,6 +84,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
               preload="metadata"
               muted
               playsInline
+              onError={() => setDecodeError(true)}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
             <span
@@ -99,6 +108,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
           src={url}
           alt={altText || media.filename}
           loading="lazy"
+          onError={() => setDecodeError(true)}
           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       )}

@@ -11,6 +11,8 @@ import {
   type Variant,
 } from '../types/domain';
 import {
+  ALLOWED_IMAGE_MIMES,
+  ALLOWED_VIDEO_MIMES,
   CATEGORY_TO_SLOT,
   MAX_BACKUP_ENTRIES,
   MAX_BACKUP_UNCOMPRESSED_BYTES,
@@ -323,9 +325,22 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
   const mediaIds = new Set<string>();
   let totalMediaBytes = 0;
 
+  const allowedBackupMimes = new Set<string>([
+    ...ALLOWED_IMAGE_MIMES,
+    ...ALLOWED_VIDEO_MIMES,
+    'image/svg+xml',
+  ]);
+
   for (const mEntry of manifest.media) {
     const err = checkUniqueId(mEntry.id, 'media');
     if (err) return { valid: false, error: err };
+
+    if (!mEntry.mimeType || !allowedBackupMimes.has(mEntry.mimeType)) {
+      return {
+        valid: false,
+        error: `Unsupported or disallowed media MIME type in backup: ${mEntry.mimeType}`,
+      };
+    }
 
     const rawBytes = entries[mEntry.archivePath];
     if (!rawBytes) {

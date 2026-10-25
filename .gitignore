@@ -1,6 +1,14 @@
+# Dependencies & Build Outputs
 node_modules
 dist
-.DS_Store
-*.local
 *.tsbuildinfo
 
+# Local Environment & Secrets
+.env
+.env.*
+!.env.example
+
+# OS & Editor Artifacts
+.DS_Store
+Thumbs.db
+*.local

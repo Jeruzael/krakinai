@@ -261,10 +261,10 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
                 <button
                   type="button"
                   className="btn btn-primary btn-sm"
+                  style={{ width: '100%' }}
                   onClick={() => applyVariantToScene(variant)}
                 >
-                  <PlusCircle size={14} /> Use in Scene (
-                  {SLOT_LABELS[VARIANT_TYPE_TO_SLOT[variant.type]]})
+                  <PlusCircle size={14} /> Use in Scene
                 </button>
               }
             />

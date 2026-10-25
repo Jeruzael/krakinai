@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { zipSync, strToU8 } from 'fflate';
+import { zipSync, unzipSync, strToU8, strFromU8 } from 'fflate';
 import {
   clearAllStoresForTesting,
   createCollection,
@@ -324,5 +324,67 @@ describe('IndexedDB Repository, Snapshots, Dependencies & Full ZIP Backup/Restor
     expect(restored.scenes).toHaveLength(1);
     expect(restored.scenes[0].title).toBe('Provenance Test Scene');
     expect(restored.media.find((m) => m.id === 'media_asset_env_cafe_day')).toBeDefined();
+  });
+
+  it('retains unattached uploads when saving a prompt because another editor may still need them', async () => {
+    await initializeDatabase();
+
+    // Uploads without persisted references can belong to an unsaved editor.
+    const orphanBlob = new Blob([new Uint8Array([1, 2, 3, 4])], { type: 'image/png' });
+    const orphanMedia = await saveMediaAsset({
+      filename: 'orphan.png',
+      mimeType: 'image/png',
+      blob: orphanBlob,
+    });
+    const keptBlob = new Blob([new Uint8Array([5, 6, 7, 8])], { type: 'image/png' });
+    const keptMedia = await saveMediaAsset({
+      filename: 'kept.png',
+      mimeType: 'image/png',
+      blob: keptBlob,
+    });
+
+    const asset = await savePromptAsset({
+      title: 'Media GC Test Asset',
+      category: 'environments',
+      promptText: 'A room with two uploaded samples initially, but only one kept on save.',
+      tags: [],
+      mediaLinks: [
+        {
+          mediaId: keptMedia.id,
+          role: 'reference',
+          altText: 'kept',
+          order: 0,
+          filename: 'kept.png',
+          mimeType: 'image/png',
+        },
+      ],
+      coverMediaId: keptMedia.id,
+    });
+
+    const snapAfterSave = await getAllSnapshot();
+    expect(snapAfterSave.assets.find((a) => a.id === asset.id)).toBeDefined();
+    expect(snapAfterSave.media.find((m) => m.id === keptMedia.id)).toBeDefined();
+    expect(snapAfterSave.media.find((m) => m.id === orphanMedia.id)).toBeDefined();
+  });
+
+  it('rejects backup archives containing disallowed MIME types', async () => {
+    await initializeDatabase();
+    await saveMediaAsset({
+      filename: 'sample.png',
+      mimeType: 'image/png',
+      blob: new Blob(['sample'], { type: 'image/png' }),
+    });
+
+    // Backup validation rejects disallowed MIME types (e.g., text/html).
+    const zipBytes = await exportFullBackupZip();
+    const entries = unzipSync(zipBytes);
+    const manifest = JSON.parse(strFromU8(entries['manifest.json']));
+    manifest.media[0].mimeType = 'text/html';
+    entries['manifest.json'] = strToU8(JSON.stringify(manifest));
+    const tamperedZip = zipSync(entries);
+
+    const validation = await validateBackupZip(tamperedZip);
+    expect(validation.valid).toBe(false);
+    expect(validation.error).toMatch(/MIME|unsupported/i);
   });
 });
