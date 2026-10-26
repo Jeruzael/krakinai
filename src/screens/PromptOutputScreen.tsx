@@ -45,6 +45,10 @@ import { runScenePreflight } from '../domain/scenePreflight';
 import { ScenePreflightDialog } from '../components/ScenePreflightDialog';
 import { StudioDialog } from '../components/StudioDialog';
 import type { PreflightComponent } from '../domain/scenePreflight';
+import { resolveGenerationIdentity } from '../domain/identityAnchors';
+import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
+import { ReferencePackManager } from '../components/ReferencePackManager';
+import { getGenerationPackReferences } from '../domain/referencePack';
 import './promptOutput.css';
 
 const OUTPUT_TABS = [
@@ -107,6 +111,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   );
   const [workflow, setWorkflow] = useState<Workflow>('canonical');
   const [showPreflight, setShowPreflight] = useState(false);
+  const [showReferencePack, setShowReferencePack] = useState(false);
   const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
   const [preflightSource, setPreflightSource] = useState<PreflightComponent | null>(null);
   const jsonMode = mode === 'json' || mode === 'generation_json';
@@ -188,6 +193,12 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   }
 
   const assembled = draft ? assembleScenePrompt(draft) : null;
+  const source = savedScene ?? draft!;
+  const liveMaster = snapshot.assets.find(asset => asset.id === source.slots.character?.sourceId);
+  const generationOptions = {
+    identity: resolveGenerationIdentity(source, liveMaster, !!savedScene).identity,
+    ...(source.referencePack ? {references:getGenerationPackReferences(source.referencePack)} : {}),
+  };
 
   const title = savedScene ? savedScene.title : draft!.title;
   const settings = savedScene ? savedScene.settings : draft!.settings;
@@ -216,9 +227,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     mode === 'json'
       ? serializeSceneJson(savedScene ?? draft!)
       : mode === 'generation_json'
-        ? serializeGenerationJson(savedScene ?? draft!)
+        ? serializeGenerationJson(source, generationOptions)
         : workflow !== 'canonical'
-          ? formatGenerationText(savedScene ?? draft!, workflow as ExportPresetId)
+          ? formatGenerationText(source, workflow as ExportPresetId, generationOptions)
       : savedScene
         ? savedScene.outputs[canonicalMode]
         : (manualOverride?.text ?? assembled?.outputs[canonicalMode] ?? '');
@@ -461,7 +472,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const reviewNotes = reviewNotesBuffer ?? record.reviewNotes;
   const preflightFindings = runScenePreflight(record, new Set(mediaMap.keys()));
   const providerNotices = !jsonMode && workflow !== 'canonical'
-    ? getProviderNotices(record, workflow as ExportPresetId) : [];
+    ? getProviderNotices(record, workflow as ExportPresetId, generationOptions) : [];
   const editPreflightSource = () => {
     setShowPreflight(false);
     if (draft) navigate(`/builder/${draft.id}`);
@@ -661,6 +672,11 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               )}
             </div>
           </div>
+          <GenerationIdentityControl source={record} liveMaster={liveMaster} saved={!!savedScene} onChange={async generation => {
+            if (!draft) return;
+            try { await saveSceneDraft({...draft,generation,bumpInputRevision:false}); await refreshSnapshot(); }
+            catch(error) { showToast(error instanceof Error ? error.message : 'Could not save identity source.', 'error'); }
+          }} />
           <div
             className="output-view-options"
             role="group"
@@ -798,6 +814,17 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             external AI tool. Download and attach these reference files
             manually:
           </p>
+          <div className="studio-inline" style={{marginBottom:12}}>
+            <button type="button" className="btn btn-secondary" onClick={() => setShowReferencePack(true)}>Manage Reference Pack</button>
+            <span className="muted-text">{record.referencePack ? `${record.referencePack.entries.length} selected associations` : 'All linked references · legacy export behavior'}</span>
+          </div>
+          {record.referencePack && <ReferenceBoard
+            items={[...record.referencePack.entries].sort((a,b) => a.order-b.order).map(entry => ({key:entry.associationId,mediaId:entry.mediaId,label:`${entry.order+1} · ${entry.purpose}`,sourceTitle:entry.sourceTitle,role:entry.role,altText:entry.altText,filename:entry.filename}))}
+            mediaMap={mediaMap}
+            title="Selected Reference Pack"
+            collapseThumbnails
+            downloadable
+          />}
           <ReferenceBoard
             items={studioReferences}
             mediaMap={mediaMap}
@@ -1030,6 +1057,11 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
         </div>
       </footer>
       {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={component => { setShowPreflight(false); setPreflightSource(component); }} onEditComponent={editPreflightSource} readOnly={!!savedScene} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
+      {showReferencePack && <ReferencePackManager source={record} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} readOnly={!!savedScene} onEditCopy={editPreflightSource} onCopyText={async text => { await copyText(text, 'Reference checklist copied.'); }} onApply={async referencePack => {
+        if (!draft) return;
+        await saveSceneDraft({...draft,referencePack,bumpInputRevision:false});
+        await refreshSnapshot(); setShowReferencePack(false);
+      }} />}
       {preflightSource && <StudioDialog title={`Preserved source: ${preflightSource}`} onClose={() => setPreflightSource(null)}>
         <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{
           preflightSource === 'dialogue' ? JSON.stringify(record.dialogue ?? {}, null, 2) :

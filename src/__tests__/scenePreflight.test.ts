@@ -3,6 +3,11 @@ import { runScenePreflight } from '../domain/scenePreflight';
 import type { SceneDocumentSource } from '../domain/sceneDocument';
 import { legacyDraft } from './fixtures/legacyScene';
 const source = () => { const s: typeof legacyDraft & SceneDocumentSource = structuredClone(legacyDraft); for (const snap of Object.values(s.slots)) { snap.promptText = ''; delete snap.overrideText; snap.mediaLinks = []; } s.slots.environment!.promptText='Park'; s.slots.action!.promptText='Standing'; s.dialogue=undefined; s.sceneInstructions=''; return s; };
+it('checks missing explicitly selected pack metadata even when original association is unavailable', () => {
+  const s = source();
+  s.referencePack = {version:1,entries:[{associationId:'orphan',mediaId:'missing',sourceSlot:'character',sourceId:'old',sourceTitle:'Historical',role:'reference',altText:'portrait',purpose:'identity',order:0}]};
+  expect(runScenePreflight(s,new Set()).some(f => f.ruleId === 'P008')).toBe(true);
+});
 describe('scene preflight', () => {
   it.each([
     ['P001','Looks directly into the camera.','Rear view, camera behind the subject.'],

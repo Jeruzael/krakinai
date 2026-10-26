@@ -10,7 +10,7 @@ Persistence code, record types, IndexedDB version/stores, backup code, canonical
 
 - `npm ci`: exit 0; 189 packages installed. Existing `whatwg-encoding` deprecation; install audit reports 6 development advisories (3 moderate, 1 high, 2 critical). No dependency upgrade.
 - Baseline: 71 tests / 13 files, typecheck and build all exit 0.
-- Stage A: 90 tests / 17 files, `npm test` exit 0. React `act(...)` warnings from asynchronous MediaThumbnail effects in output tests remain test-harness warnings, not a claim of warning-free execution.
+- Stage A: 90 tests / 17 files, `npm test` exit 0. Intermediate runs emitted React `act(...)` warnings from asynchronous MediaThumbnail effects; the final recorded Stage A run has no warnings.
 - `npm run typecheck`, `npm run build`, `npm audit --omit=dev`, `git diff --check`: exit 0. Production audit: 0 vulnerabilities. Build: 415.27 kB JS / 118.98 kB gzip.
 - Independent source review identified validation-ID collision and mismatched source display; both corrected and regression coverage added for validation collisions.
 
