@@ -26,10 +26,13 @@ Earlier integration runs were not clean: missing concurrently authored panel imp
 
 External evidence directory: `C:/Users/HomePC/.codex/visualizations/2026/10/26/01a172e9-6e93-73f1-8220-ee98cad74baf/phase5/`.
 
-`stage-c-browser.cjs` final results: **56 checks, zero failures/page errors**, 12 nonempty screenshots. Isolated Chromium with synthetic Late Again three-character/11-shot fixtures tested manual Bible editing, exact script copy/download, wardrobe review, frame upload/select/clear/enlarge, stable transition metadata and detached review, separate-page conflicts/narrow updates, immutable originals, and full backup restore in another context. Script setup uses explicit repository/native fixture operations as recorded in `c-browser-report.md`; this is not a claim that every fixture record was created through UI clicks.
+`stage-c-browser.cjs` final results: **59 checks, zero failures/page errors**, 12 nonempty screenshots. Isolated Chromium with synthetic Late Again three-character/11-shot fixtures tested manual Bible editing, exact script copy/download, wardrobe review, frame upload/select/clear/enlarge, stable transition metadata and detached review, separate-page conflicts/narrow updates, immutable originals, and full backup restore in another context. Script setup uses explicit repository/native fixture operations as recorded in `c-browser-report.md`; this is not a claim that every fixture record was created through UI clicks.
 
 Screenshots: `stage-c-{characters,continuity,bible,transition}-{1440,768,390}.png` at 1440×900, 768×1024, 390×844. File existence/size checked; mobile Characters screenshot visually inspected. Overflow, focus and Escape checks are recorded in `stage-c-browser-results.json`. Windows clipboard reads can convert LF to CRLF; that platform conversion is normalized only in clipboard checks. Downloaded UTF-8 bytes are checked exactly.
 
 ## Assumptions and remaining risks
 
 All browser profiles, ZIPs, screenshots and raw logs are outside Git. The original checkout, user browser profiles and port 5173 data were untouched. No new services/dependencies or storage-limit changes. The tests establish the covered behavior, not a general security certification. Real screen-reader software, every media codec, large-library memory use and multi-gigabyte backups were not tested. Full-entry concurrent edits reject rather than auto-merge; users must reopen the editor after a conflict. The build chunk warning remains visible evidence at this stage.
+
+
+Canonical local totals and source provenance are reconciled in [docs/qa/phase5-summary.md](qa/phase5-summary.md). The retained final Stage C machine result has 59 checks; its earlier 56-check JSON is unavailable, so the exact three additions cannot be reconstructed. These historical runs are not CI browser checks.
