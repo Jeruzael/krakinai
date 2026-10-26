@@ -2,6 +2,9 @@
 node_modules
 dist
 *.tsbuildinfo
+qa-results/
+test-results/
+playwright-report/
 
 # Local Environment & Secrets
 .env
