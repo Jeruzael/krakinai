@@ -37,8 +37,14 @@ import {
   ReferenceBoard,
   type StudioReference,
 } from '../components/ReferenceBoard';
-import { serializeSceneJson } from '../domain/sceneDocument';
+import { buildSceneDocument, serializeSceneJson } from '../domain/sceneDocument';
 import { FormattedPrompt } from '../components/FormattedPrompt';
+import { serializeGenerationJson } from '../domain/generationDocument';
+import { formatGenerationText, getProviderNotices, type ExportPresetId } from '../domain/exportPresets';
+import { runScenePreflight } from '../domain/scenePreflight';
+import { ScenePreflightDialog } from '../components/ScenePreflightDialog';
+import { StudioDialog } from '../components/StudioDialog';
+import type { PreflightComponent } from '../domain/scenePreflight';
 import './promptOutput.css';
 
 const OUTPUT_TABS = [
@@ -46,12 +52,14 @@ const OUTPUT_TABS = [
   { value: 'references', label: 'References' },
   { value: 'review', label: 'Review' },
 ] as const;
-type ViewMode = OutputMode | 'json';
+type ViewMode = OutputMode | 'json' | 'generation_json';
+type Workflow = 'canonical' | ExportPresetId | 'json' | 'generation_json';
 const OUTPUT_MODES: { value: ViewMode; label: string }[] = [
   { value: 'full', label: 'Narrative' },
   { value: 'structured', label: 'Structured' },
   { value: 'compact', label: 'Compact' },
-  { value: 'json', label: 'JSON' },
+  { value: 'json', label: 'Project JSON' },
+  { value: 'generation_json', label: 'Generation JSON' },
 ];
 const COMPONENT_LABELS = {
   character: 'Character',
@@ -97,6 +105,13 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const [mode, setMode] = useState<ViewMode>(
     id.startsWith('scene_') ? 'full' : 'structured'
   );
+  const [workflow, setWorkflow] = useState<Workflow>('canonical');
+  const [showPreflight, setShowPreflight] = useState(false);
+  const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
+  const [preflightSource, setPreflightSource] = useState<PreflightComponent | null>(null);
+  const jsonMode = mode === 'json' || mode === 'generation_json';
+  const canonicalMode: OutputMode = jsonMode ? 'structured' : mode as OutputMode;
+  const derivedView = jsonMode || workflow !== 'canonical';
   const [activeTab, setActiveTab] =
     useState<(typeof OUTPUT_TABS)[number]['value']>('prompt');
   const [reviewNotesBuffer, setReviewNotesBuffer] = useState<string | null>(
@@ -110,15 +125,15 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const [manualBuffers, setManualBuffers] = useState<
     Partial<Record<OutputMode, string>>
   >({});
-  const isEditingManual = mode !== 'json' && !!editingModes[mode];
-  const manualBuf = mode === 'json' ? '' : (manualBuffers[mode] ?? '');
+  const isEditingManual = !derivedView && !!editingModes[canonicalMode];
+  const manualBuf = derivedView ? '' : (manualBuffers[canonicalMode] ?? '');
   const setIsEditingManual = (editing: boolean) => {
-    if (mode !== 'json')
-      setEditingModes((previous) => ({ ...previous, [mode]: editing }));
+    if (!derivedView)
+      setEditingModes((previous) => ({ ...previous, [canonicalMode]: editing }));
   };
   const setManualBuf = (text: string) => {
-    if (mode !== 'json')
-      setManualBuffers((previous) => ({ ...previous, [mode]: text }));
+    if (!derivedView)
+      setManualBuffers((previous) => ({ ...previous, [canonicalMode]: text }));
   };
   const [acknowledgedStaleModes, setAcknowledgedStaleModes] = useState<
     Partial<Record<OutputMode, boolean>>
@@ -126,6 +141,10 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
 
   useEffect(() => {
     setMode(id.startsWith('scene_') ? 'full' : 'structured');
+    setWorkflow('canonical');
+    setIntentionalIds([]);
+    setShowPreflight(false);
+    setPreflightSource(null);
     setEditingModes({});
     setManualBuffers({});
     setAcknowledgedStaleModes({});
@@ -180,25 +199,29 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     : (assembled?.references ?? []);
 
   const manualOverride =
-    mode === 'json'
+    derivedView
       ? undefined
       : savedScene
-        ? savedScene.manualOutputs[mode]
-        : draft!.manualOutputs[mode];
+        ? savedScene.manualOutputs[canonicalMode]
+        : draft!.manualOutputs[canonicalMode];
 
   const isStale =
     !isSavedScene &&
     draft &&
     isManualOutputStale(manualOverride, draft.inputRevision) &&
-    mode !== 'json' &&
-    !acknowledgedStaleModes[mode];
+    !derivedView &&
+    !acknowledgedStaleModes[canonicalMode];
 
   const activeText =
     mode === 'json'
       ? serializeSceneJson(savedScene ?? draft!)
+      : mode === 'generation_json'
+        ? serializeGenerationJson(savedScene ?? draft!)
+        : workflow !== 'canonical'
+          ? formatGenerationText(savedScene ?? draft!, workflow as ExportPresetId)
       : savedScene
-        ? savedScene.outputs[mode]
-        : (manualOverride?.text ?? assembled?.outputs[mode] ?? '');
+        ? savedScene.outputs[canonicalMode]
+        : (manualOverride?.text ?? assembled?.outputs[canonicalMode] ?? '');
 
   const handleCopyActivePrompt = async () => {
     if (isStale) {
@@ -220,7 +243,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   };
 
   const handleSaveManualOverride = async () => {
-    if (!draft || mode === 'json') return;
+    if (!draft || derivedView) return;
     const nextManual = {
       ...draft.manualOutputs,
       [mode]: {
@@ -240,7 +263,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   };
 
   const handleDiscardManualOverride = () => {
-    if (!draft || mode === 'json' || !manualOverride) return;
+    if (!draft || derivedView || !manualOverride) return;
     openConfirmDialog({
       title: 'Discard Manual Output Edits?',
       message: `Discard your manual edits for the ${mode.toUpperCase()} tab and restore the deterministic assembled output?`,
@@ -248,7 +271,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
       danger: true,
       onConfirm: async () => {
         const nextManual = { ...draft.manualOutputs };
-        delete nextManual[mode];
+        delete nextManual[canonicalMode];
         await saveSceneDraft({
           ...draft,
           manualOutputs: nextManual,
@@ -265,9 +288,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const handleDownloadTxt = () => {
     const txt = formatSceneExportTxt({
       title,
-      mode: mode === 'json' ? 'structured' : mode,
+      mode: derivedView ? 'structured' : canonicalMode,
       promptText:
-        mode === 'json'
+        derivedView
           ? (savedScene?.outputs.structured ??
             draft?.manualOutputs.structured?.text ??
             assembled?.outputs.structured ??
@@ -282,13 +305,13 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
       title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'scene_prompt';
     downloadBlobAsFile(
       blob,
-      `${safeName}_${mode === 'json' ? 'structured' : mode}_specification.txt`
+      `${safeName}_${derivedView ? 'structured' : mode}_specification.txt`
     );
     showToast('Downloaded .txt prompt & reference checklist.', 'success');
   };
 
   const handleDownloadSelected = () => {
-    const json = mode === 'json';
+    const json = jsonMode;
     const safeName =
       title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'scene_prompt';
     downloadBlobAsFile(
@@ -430,12 +453,23 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
       });
     }
   });
-  const activeModeLabel = OUTPUT_MODES.find(
+  const activeModeLabel = (workflow === 'gemini_omni_flash' ? 'Gemini Omni Flash · ' : workflow === 'generic_structured' ? 'Generic Structured · ' : workflow === 'custom' ? 'Custom template · ' : '') + OUTPUT_MODES.find(
     (item) => item.value === mode
   )!.label;
   const resultLinks =
     savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? [];
   const reviewNotes = reviewNotesBuffer ?? record.reviewNotes;
+  const preflightFindings = runScenePreflight(record, new Set(mediaMap.keys()));
+  const providerNotices = !jsonMode && workflow !== 'canonical'
+    ? getProviderNotices(record, workflow as ExportPresetId) : [];
+  const editPreflightSource = () => {
+    setShowPreflight(false);
+    if (draft) navigate(`/builder/${draft.id}`);
+    else void createDraftFromSavedScene(savedScene!.id).then(async copy => {
+      await refreshSnapshot();
+      navigate(`/builder/${copy.id}`);
+    });
+  };
 
   const saveReviewNotes = async () => {
     if (reviewNotesBuffer === null || reviewNotes === record.reviewNotes)
@@ -501,6 +535,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           className="output-settings"
           aria-label="Settings (User Instructions)"
         >
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPreflight(true)}>
+            Preflight · {preflightFindings.length} findings
+          </button>
           <span className="badge">
             Aspect Ratio: {settings.aspectRatio || '16:9'}
           </span>
@@ -553,6 +590,21 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           hidden={activeTab !== 'prompt'}
           className="output-tab-panel"
         >
+          <div className="output-workflow-control">
+            <label htmlFor={`${tabId}-workflow`} className="form-label">Target Workflow</label>
+            <select id={`${tabId}-workflow`} className="select" value={workflow} onChange={event => {
+              const next = event.target.value as Workflow;
+              setWorkflow(next);
+              setMode(next === 'json' || next === 'generation_json' ? next : next === 'canonical' ? canonicalMode : 'structured');
+            }}>
+              <option value="canonical">Current format · canonical scene text</option>
+              <option value="generic_structured">Generic Structured</option>
+              <option value="gemini_omni_flash">Gemini Omni Flash</option>
+              <option value="custom">Custom starting template</option>
+              <option value="json">Project JSON</option>
+              <option value="generation_json">Generation JSON</option>
+            </select>
+          </div>
           <div className="output-format-header">
             <div
               className="tabs-bar output-format-tabs"
@@ -572,6 +624,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                   className={`tab-btn ${mode === item.value ? 'active' : ''}`}
                   onClick={() => {
                     setMode(item.value);
+                    setWorkflow(item.value === 'json' || item.value === 'generation_json' ? item.value : 'canonical');
                   }}
                 >
                   {item.label}
@@ -585,7 +638,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               {manualOverride && (
                 <span className="badge badge-warning">Edited output</span>
               )}
-              {!isSavedScene && mode !== 'json' && !isEditingManual && (
+              {!isSavedScene && !derivedView && !isEditingManual && (
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
@@ -630,7 +683,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               Raw
             </button>
           </div>
-          {mode === 'json' && (
+          {jsonMode && (
             <p className="output-json-notice muted-text">
               JSON uses a KRAKINAI-specific schema, not an official provider
               schema. It is derived from preserved scene components and
@@ -638,6 +691,10 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               translated into JSON.
             </p>
           )}
+          {providerNotices.length > 0 && <details className="output-disclosure">
+            <summary>Provider guidance and limits</summary>
+            <div className="output-disclosure-body">{providerNotices.map(notice => <p key={notice} className="muted-text">{notice}</p>)}</div>
+          </details>}
           <p className="muted-text output-order">
             Character → Clothing → Environment → Action → Camera → Lighting →
             Style → Dialogue → Instructions
@@ -686,9 +743,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                     role="region"
                     aria-label="Complete prompt text"
                     tabIndex={0}
-                    className={`output-prompt-viewer ${view === 'raw' || mode === 'json' ? 'output-raw-viewer' : 'output-formatted-viewer'}`}
+                    className={`output-prompt-viewer ${view === 'raw' || jsonMode ? 'output-raw-viewer' : 'output-formatted-viewer'}`}
                   >
-                    {view === 'formatted' && mode !== 'json' ? (
+                    {view === 'formatted' && !jsonMode ? (
                       <FormattedPrompt text={activeText} />
                     ) : (
                       activeText
@@ -909,7 +966,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               onClick={handleDownloadTxt}
             >
               <Download size={16} />{' '}
-              {mode === 'json'
+              {derivedView
                 ? 'Download Structured full specification .txt'
                 : 'Download full specification .txt'}
             </button>
@@ -919,14 +976,14 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               onClick={handleDownloadSelected}
             >
               <Download size={16} />{' '}
-              {mode === 'json' ? 'Download .json' : 'Download selected .txt'}
+              {jsonMode ? 'Download .json' : 'Download selected .txt'}
             </button>
             <button
               type="button"
               className="btn btn-primary"
               onClick={handleCopyActivePrompt}
             >
-              <Copy size={16} /> {mode === 'json' ? 'Copy JSON' : 'Copy Prompt'}
+              <Copy size={16} /> {jsonMode ? 'Copy JSON' : 'Copy Prompt'}
             </button>
             {draft && (
               <button
@@ -972,6 +1029,16 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           </div>
         </div>
       </footer>
+      {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={component => { setShowPreflight(false); setPreflightSource(component); }} onEditComponent={editPreflightSource} readOnly={!!savedScene} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
+      {preflightSource && <StudioDialog title={`Preserved source: ${preflightSource}`} onClose={() => setPreflightSource(null)}>
+        <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{
+          preflightSource === 'dialogue' ? JSON.stringify(record.dialogue ?? {}, null, 2) :
+          preflightSource === 'settings' ? JSON.stringify(record.settings, null, 2) :
+          preflightSource === 'instructions' ? record.sceneInstructions :
+          preflightSource === 'references' ? JSON.stringify(references, null, 2) :
+          buildSceneDocument(record).components[preflightSource]?.prompt ?? '(empty source)'
+        }</pre>
+      </StudioDialog>}
     </div>
   );
 };
