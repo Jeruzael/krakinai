@@ -1,5 +1,7 @@
 # Phase 5 D — productivity and bounded project export verification
 
+Reconciled check identities and screenshot hashes are in [the Phase 5 QA ledger](qa/phase5-summary.md). The 13 granular label assertions underpin one of the 61 counted Stage D checks; they are not added again. These local Chromium results were not independently run by GitHub CI.
+
 Branch `codex/phase5-project-export`, parent Stage C `4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d`. This completes the four-stage stack for review. No PR is merged and master is not pushed. Full commit identities, PR links, complete per-stage file lists, diffs and raw results are in the external delivery index described below.
 
 ## Directly inspected implementation

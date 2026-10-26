@@ -1,5 +1,7 @@
 # Phase 5 C — continuity and script verification
 
+Reconciled check identities and screenshot hashes are in [the Phase 5 QA ledger](qa/phase5-summary.md). The final retained JSON contains 59 checks. An earlier QA brief cited 56, but no intermediate 56-check JSON remains for an exact three-check diff. These local Chromium results were not independently run by GitHub CI.
+
 Branch `codex/phase5-continuity-script`, parent Stage B `d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37`. No merge or master push. Project export and bulk productivity remain separate Stage D work.
 
 ## Directly inspected facts
@@ -28,11 +30,8 @@ External evidence directory: `C:/Users/HomePC/.codex/visualizations/2026/10/26/0
 
 `stage-c-browser.cjs` final results: **59 checks, zero failures/page errors**, 12 nonempty screenshots. Isolated Chromium with synthetic Late Again three-character/11-shot fixtures tested manual Bible editing, exact script copy/download, wardrobe review, frame upload/select/clear/enlarge, stable transition metadata and detached review, separate-page conflicts/narrow updates, immutable originals, and full backup restore in another context. Script setup uses explicit repository/native fixture operations as recorded in `c-browser-report.md`; this is not a claim that every fixture record was created through UI clicks.
 
-Screenshots: `stage-c-{characters,continuity,bible,transition}-{1440,768,390}.png` at 1440×900, 768×1024, 390×844. File existence/size checked; mobile Characters screenshot visually inspected. Overflow, focus and Escape checks are recorded in `stage-c-browser-results.json`. Windows clipboard reads can convert LF to CRLF; that platform conversion is normalized only in clipboard checks. Downloaded UTF-8 bytes are checked exactly. Three additional post-commit checks verified active transition restore and visibly unavailable historical references; direct test-only IDB restore requires an explicit app reload before UI assertions.
+Screenshots: `stage-c-{characters,continuity,bible,transition}-{1440,768,390}.png` at 1440×900, 768×1024, 390×844. File existence/size checked; mobile Characters screenshot visually inspected. Overflow, focus and Escape checks are recorded in `stage-c-browser-results.json`. Windows clipboard reads can convert LF to CRLF; that platform conversion is normalized only in clipboard checks. Downloaded UTF-8 bytes are checked exactly. The retained final checks include active transition restore and visibly unavailable historical references. No 56-check intermediate JSON remains, so those checks cannot be identified as the exact three additions. Direct test-only IDB restore requires an explicit app reload before UI assertions.
 
 ## Assumptions and remaining risks
 
 All browser profiles, ZIPs, screenshots and raw logs are outside Git. The original checkout, user browser profiles and port 5173 data were untouched. No new services/dependencies or storage-limit changes. The tests establish the covered behavior, not a general security certification. Real screen-reader software, every media codec, large-library memory use and multi-gigabyte backups were not tested. Full-entry concurrent edits reject rather than auto-merge; users must reopen the editor after a conflict. The build chunk warning remains visible evidence at this stage.
-
-
-Canonical local totals and source provenance are reconciled in [docs/qa/phase5-summary.md](qa/phase5-summary.md). The retained final Stage C machine result has 59 checks; its earlier 56-check JSON is unavailable, so the exact three additions cannot be reconstructed. These historical runs are not CI browser checks.

@@ -1,5 +1,7 @@
 # Phase 5 A — Workflow reliability verification
 
+Reconciled check identities and screenshot hashes are in [the Phase 5 QA ledger](qa/phase5-summary.md). These local Chromium results were not independently run by GitHub CI.
+
 Base: `50492d719134c49137feb56d36dc5a775ff219c2`, integration PR #6, which combines reviewed Phase 4 with current master. Stage A branch: `codex/phase5-workflow-reliability`. No PR is merged automatically.
 
 ## Implemented behavior and source
