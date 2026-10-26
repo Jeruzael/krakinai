@@ -1,0 +1,1540 @@
+{
+  "schema": "krakinai.phase5-qa-ledger.v1",
+  "provenance": {
+    "scope": "Local isolated Chromium results; not reproduced by GitHub CI",
+    "sourceDirectory": "External private Phase 5 evidence directory; supply with --evidence to regenerate",
+    "baselineSource": "before-results.json",
+    "baselineSourceSha256": "781b00b2aef619ef8694c735fafee06b3ebc6e2559afb0ca328aabdb922c0bc3",
+    "commitBinding": "Stage commits are report claims. The raw JSON and PNG files contain no embedded Git SHA, so cryptographic binding to those commits cannot be established retrospectively.",
+    "stageC56": "Earlier Stage C documentation reports 56. Retained final JSON has 59. No 56-check intermediate machine-readable result is available for a direct three-check diff."
+  },
+  "runs": [
+    {
+      "stage": "A",
+      "run": "main",
+      "source": "stage-a-browser-results.json",
+      "sourceSha256": "e1b9ed8bb62f74da47caf717a7ca3c5be6123a04dfdacbc5e1f226a461a19dcf",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "checks": [
+        {
+          "id": "A/main/001",
+          "name": "Rapid Save clicks create exactly one scene",
+          "passed": true
+        },
+        {
+          "id": "A/main/002",
+          "name": "Unchanged scene warns instead of saving another copy",
+          "passed": true
+        },
+        {
+          "id": "A/main/003",
+          "name": "Cancel preserves unfinished output buffer",
+          "passed": true
+        },
+        {
+          "id": "A/main/004",
+          "name": "Open Existing and return preserves unfinished output buffer",
+          "passed": true
+        },
+        {
+          "id": "A/main/005",
+          "name": "Explicit New Version creates one distinct lineage record",
+          "passed": true
+        },
+        {
+          "id": "A/main/006",
+          "name": "Explicit Separate Take remains possible",
+          "passed": true
+        },
+        {
+          "id": "A/main/007",
+          "name": "Cover picker Escape retains collection edit buffer",
+          "passed": true
+        },
+        {
+          "id": "A/main/008",
+          "name": "Existing cover selection persists without duplicating media",
+          "passed": true
+        },
+        {
+          "id": "A/main/009",
+          "name": "Second collection created independently",
+          "passed": true
+        },
+        {
+          "id": "A/main/010",
+          "name": "Membership creation form is collapsed by default",
+          "passed": true
+        },
+        {
+          "id": "A/main/011",
+          "name": "Membership indicator lists both project origins",
+          "passed": true
+        },
+        {
+          "id": "A/main/012",
+          "name": "Adding a membership never duplicates scene records",
+          "passed": true
+        },
+        {
+          "id": "A/main/013",
+          "name": "Scene route explicitly carries originating collection",
+          "passed": true
+        },
+        {
+          "id": "A/main/014",
+          "name": "Deep-link refresh preserves collection return and tab",
+          "passed": true
+        },
+        {
+          "id": "A/main/015",
+          "name": "Shared scene returns to actual second origin",
+          "passed": true
+        },
+        {
+          "id": "A/main/016",
+          "name": "Invalid origin falls back safely",
+          "passed": true
+        },
+        {
+          "id": "A/main/017",
+          "name": "Original filename is read-only",
+          "passed": true
+        },
+        {
+          "id": "A/main/018",
+          "name": "Media display/export names persist separately from alt/provenance",
+          "passed": true
+        },
+        {
+          "id": "A/main/019",
+          "name": "Live gallery shows current display name",
+          "passed": true
+        },
+        {
+          "id": "A/main/020",
+          "name": "Legacy saved references do not take live renamed metadata",
+          "passed": true
+        },
+        {
+          "id": "A/main/021",
+          "name": "Legacy saved download keeps original filename",
+          "passed": true
+        },
+        {
+          "id": "A/main/022",
+          "name": "Downloaded original bytes retain SHA-256",
+          "passed": true
+        },
+        {
+          "id": "A/main/023",
+          "name": "Renaming presentation metadata cannot bypass duplicate warning",
+          "passed": true
+        },
+        {
+          "id": "A/main/024",
+          "name": "All original immutable scenes remain unchanged",
+          "passed": true
+        },
+        {
+          "id": "A/main/025",
+          "name": "Character identities, original media and alt descriptions preserved",
+          "passed": true
+        },
+        {
+          "id": "A/main/026",
+          "name": "Separate-context full backup restores names, cover and memberships",
+          "passed": true
+        },
+        {
+          "id": "A/main/027",
+          "name": "No horizontal overflow collections 1440",
+          "passed": true
+        },
+        {
+          "id": "A/main/028",
+          "name": "No horizontal overflow collection 1440",
+          "passed": true
+        },
+        {
+          "id": "A/main/029",
+          "name": "No horizontal overflow scenes 1440",
+          "passed": true
+        },
+        {
+          "id": "A/main/030",
+          "name": "No horizontal overflow collections 768",
+          "passed": true
+        },
+        {
+          "id": "A/main/031",
+          "name": "No horizontal overflow collection 768",
+          "passed": true
+        },
+        {
+          "id": "A/main/032",
+          "name": "No horizontal overflow scenes 768",
+          "passed": true
+        },
+        {
+          "id": "A/main/033",
+          "name": "No horizontal overflow collections 390",
+          "passed": true
+        },
+        {
+          "id": "A/main/034",
+          "name": "No horizontal overflow collection 390",
+          "passed": true
+        },
+        {
+          "id": "A/main/035",
+          "name": "No horizontal overflow scenes 390",
+          "passed": true
+        },
+        {
+          "id": "A/main/036",
+          "name": "No uncaught browser errors",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "stage": "A",
+      "run": "two-tab",
+      "source": "stage-a-multitab-results.json",
+      "sourceSha256": "313d213d19e825974d184c177a6f83d57982d60e72749d661316e6fe5bb2d1f9",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "checks": [
+        {
+          "id": "A/two-tab/001",
+          "name": "Two real-tab connections allow one implicit save",
+          "passed": true
+        },
+        {
+          "id": "A/two-tab/002",
+          "name": "Concurrent warning leaves one immutable record",
+          "passed": true
+        },
+        {
+          "id": "A/two-tab/003",
+          "name": "Two real-tab retries of the same bound operation return one ID",
+          "passed": true
+        },
+        {
+          "id": "A/two-tab/004",
+          "name": "Reused token with changed dialogue is rejected",
+          "passed": true
+        },
+        {
+          "id": "A/two-tab/005",
+          "name": "Retries and rejected reuse add no extra scenes",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "stage": "B",
+      "run": "main",
+      "source": "stage-b-browser-results.json",
+      "sourceSha256": "f028c1fe892415f60e251838143e75f1cbcf266525f1d1e7e3d3ff907670eaf7",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "checks": [
+        {
+          "id": "B/main/001",
+          "name": "UI collection and existing cover persisted",
+          "passed": true
+        },
+        {
+          "id": "B/main/002",
+          "name": "UI created planned placeholder",
+          "passed": true
+        },
+        {
+          "id": "B/main/003",
+          "name": "11 shots linked and exact 03A/06A codes",
+          "passed": true
+        },
+        {
+          "id": "B/main/004",
+          "name": "Known runtime 73 seconds and one unknown",
+          "passed": true
+        },
+        {
+          "id": "B/main/005",
+          "name": "Project members match 11 unique take scenes",
+          "passed": true
+        },
+        {
+          "id": "B/main/006",
+          "name": "Move Up changes order while retaining 03A code",
+          "passed": true
+        },
+        {
+          "id": "B/main/007",
+          "name": "UI duration override stored without scene mutation",
+          "passed": true
+        },
+        {
+          "id": "B/main/008",
+          "name": "UI explicit status persisted",
+          "passed": true
+        },
+        {
+          "id": "B/main/009",
+          "name": "Compare exposes exact camera and dialogue",
+          "passed": true
+        },
+        {
+          "id": "B/main/010",
+          "name": "Preferred and notes persisted",
+          "passed": true
+        },
+        {
+          "id": "B/main/011",
+          "name": "Remove association retains source and falls back preferred",
+          "passed": true
+        },
+        {
+          "id": "B/main/012",
+          "name": "Open route carries collection and shot",
+          "passed": true
+        },
+        {
+          "id": "B/main/013",
+          "name": "Back returns storyboard origin",
+          "passed": true
+        },
+        {
+          "id": "B/main/014",
+          "name": "Second project independent with shared immutable scene",
+          "passed": true
+        },
+        {
+          "id": "B/main/015",
+          "name": "Builder carries validated target",
+          "passed": true
+        },
+        {
+          "id": "B/main/016",
+          "name": "Save New Take atomically adds saved scene to target",
+          "passed": true
+        },
+        {
+          "id": "B/main/017",
+          "name": "New take retains original source",
+          "passed": true
+        },
+        {
+          "id": "B/main/018",
+          "name": "Invalid target visible",
+          "passed": true
+        },
+        {
+          "id": "B/main/019",
+          "name": "Invalid target aborts scene insert",
+          "passed": true
+        },
+        {
+          "id": "B/main/020",
+          "name": "Status filter narrows visible shots",
+          "passed": true
+        },
+        {
+          "id": "B/main/021",
+          "name": "Search finds explicit display code",
+          "passed": true
+        },
+        {
+          "id": "B/main/022",
+          "name": "List view toggles presentation",
+          "passed": true
+        },
+        {
+          "id": "B/main/023",
+          "name": "Arrow key moves project tab focus",
+          "passed": true
+        },
+        {
+          "id": "B/main/024",
+          "name": "Insert After persists independent placeholder",
+          "passed": true
+        },
+        {
+          "id": "B/main/025",
+          "name": "Removal requires explicit confirmation",
+          "passed": true
+        },
+        {
+          "id": "B/main/026",
+          "name": "Confirmed remove restores 11 shots without deleting scenes",
+          "passed": true
+        },
+        {
+          "id": "B/main/027",
+          "name": "Independent tabs merge narrow updates",
+          "passed": true
+        },
+        {
+          "id": "B/main/028",
+          "name": "Stale full reorder clearly rejected",
+          "passed": true
+        },
+        {
+          "id": "B/main/029",
+          "name": "All original saved scenes bytewise unchanged",
+          "passed": true
+        },
+        {
+          "id": "B/main/030",
+          "name": "Backup restore preserves two projects, shots, takes, cover",
+          "passed": true
+        },
+        {
+          "id": "B/main/031",
+          "name": "Workspace no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "B/main/032",
+          "name": "Primary action within viewport 1440",
+          "passed": true
+        },
+        {
+          "id": "B/main/033",
+          "name": "Take dialog focus inside 1440",
+          "passed": true
+        },
+        {
+          "id": "B/main/034",
+          "name": "Take dialog no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "B/main/035",
+          "name": "Escape closes take dialog 1440",
+          "passed": true
+        },
+        {
+          "id": "B/main/036",
+          "name": "Workspace no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "B/main/037",
+          "name": "Primary action within viewport 768",
+          "passed": true
+        },
+        {
+          "id": "B/main/038",
+          "name": "Take dialog focus inside 768",
+          "passed": true
+        },
+        {
+          "id": "B/main/039",
+          "name": "Take dialog no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "B/main/040",
+          "name": "Escape closes take dialog 768",
+          "passed": true
+        },
+        {
+          "id": "B/main/041",
+          "name": "Workspace no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "B/main/042",
+          "name": "Primary action within viewport 390",
+          "passed": true
+        },
+        {
+          "id": "B/main/043",
+          "name": "Take dialog focus inside 390",
+          "passed": true
+        },
+        {
+          "id": "B/main/044",
+          "name": "Take dialog no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "B/main/045",
+          "name": "Escape closes take dialog 390",
+          "passed": true
+        },
+        {
+          "id": "B/main/046",
+          "name": "No uncaught browser errors",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "stage": "C",
+      "run": "final",
+      "source": "stage-c-browser-results.json",
+      "sourceSha256": "3cd146265ad01c469ad3b089c64c32937cb2cf74b194d4ce0f676dd80dea5c80",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "checks": [
+        {
+          "id": "C/final/001",
+          "name": "Fixture has 11 shots, three real character IDs and one authored wardrobe variant",
+          "passed": true
+        },
+        {
+          "id": "C/final/002",
+          "name": "Three derived selected-shot cast cards",
+          "passed": true
+        },
+        {
+          "id": "C/final/003",
+          "name": "No inferred story role or personality",
+          "passed": true
+        },
+        {
+          "id": "C/final/004",
+          "name": "Bible dialog focus inside",
+          "passed": true
+        },
+        {
+          "id": "C/final/005",
+          "name": "Manual cast metadata and reference persisted",
+          "passed": true
+        },
+        {
+          "id": "C/final/006",
+          "name": "Read-only original identity still visible",
+          "passed": true
+        },
+        {
+          "id": "C/final/007",
+          "name": "Escape closes Bible dialog",
+          "passed": true
+        },
+        {
+          "id": "C/final/008",
+          "name": "Bible removal has explicit confirmation",
+          "passed": true
+        },
+        {
+          "id": "C/final/009",
+          "name": "Cancelled removal retains Bible",
+          "passed": true
+        },
+        {
+          "id": "C/final/010",
+          "name": "Script document preserves 11 exact multiline Unicode lines and order",
+          "passed": true
+        },
+        {
+          "id": "C/final/011",
+          "name": "Copy line preserves exact text after Windows clipboard newline conversion",
+          "passed": true
+        },
+        {
+          "id": "C/final/012",
+          "name": "Copy Script equals visible document after Windows clipboard newline conversion",
+          "passed": true
+        },
+        {
+          "id": "C/final/013",
+          "name": "Markdown download is exact UTF-8 text",
+          "passed": true
+        },
+        {
+          "id": "C/final/014",
+          "name": "Two pages preserve independent status and note",
+          "passed": true
+        },
+        {
+          "id": "C/final/015",
+          "name": "Stale full reorder reports revision conflict",
+          "passed": true
+        },
+        {
+          "id": "C/final/016",
+          "name": "Changed outfit warning is advisory and source-specific",
+          "passed": true
+        },
+        {
+          "id": "C/final/017",
+          "name": "Wardrobe review focus inside dialog",
+          "passed": true
+        },
+        {
+          "id": "C/final/018",
+          "name": "Intentional reason and exact notes persisted on shot only",
+          "passed": true
+        },
+        {
+          "id": "C/final/019",
+          "name": "Intentional label remains with change warning",
+          "passed": true
+        },
+        {
+          "id": "C/final/020",
+          "name": "Existing frame image ID persisted",
+          "passed": true
+        },
+        {
+          "id": "C/final/021",
+          "name": "Original frame preview uses one accessible dialog",
+          "passed": true
+        },
+        {
+          "id": "C/final/022",
+          "name": "Escape closes frame preview",
+          "passed": true
+        },
+        {
+          "id": "C/final/023",
+          "name": "Uploaded frame links image and preserves exact bytes",
+          "passed": true
+        },
+        {
+          "id": "C/final/024",
+          "name": "Clear removes association while retaining media",
+          "passed": true
+        },
+        {
+          "id": "C/final/025",
+          "name": "Transition stores exact directed pair and manual metadata",
+          "passed": true
+        },
+        {
+          "id": "C/final/026",
+          "name": "Existing transition editor reuses ID and exact text",
+          "passed": true
+        },
+        {
+          "id": "C/final/027",
+          "name": "Reorder retains stable directed transition without retargeting",
+          "passed": true
+        },
+        {
+          "id": "C/final/028",
+          "name": "Detached transition visible for review",
+          "passed": true
+        },
+        {
+          "id": "C/final/029",
+          "name": "Detached removal asks explicit confirmation",
+          "passed": true
+        },
+        {
+          "id": "C/final/030",
+          "name": "Transition removal clears only metadata",
+          "passed": true
+        },
+        {
+          "id": "C/final/031",
+          "name": "New adjacent transition saved independently after removal",
+          "passed": true
+        },
+        {
+          "id": "C/final/032",
+          "name": "Second project has independent shot and cover",
+          "passed": true
+        },
+        {
+          "id": "C/final/033",
+          "name": "Backup restore preserves cast, frames, wardrobe, transition and independent cover",
+          "passed": true
+        },
+        {
+          "id": "C/final/034",
+          "name": "Backup restore preserves uploaded frame bytes",
+          "passed": true
+        },
+        {
+          "id": "C/final/035",
+          "name": "Historical missing cast asset remains visible",
+          "passed": true
+        },
+        {
+          "id": "C/final/036",
+          "name": "Historical missing frame remains visible",
+          "passed": true
+        },
+        {
+          "id": "C/final/037",
+          "name": "Characters no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/038",
+          "name": "Bible dialog focus inside 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/039",
+          "name": "Bible dialog no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/040",
+          "name": "Continuity no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/041",
+          "name": "Transition editor focus inside 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/042",
+          "name": "Transition editor no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/043",
+          "name": "Escape closes transition editor 1440",
+          "passed": true
+        },
+        {
+          "id": "C/final/044",
+          "name": "Characters no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/045",
+          "name": "Bible dialog focus inside 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/046",
+          "name": "Bible dialog no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/047",
+          "name": "Continuity no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/048",
+          "name": "Transition editor focus inside 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/049",
+          "name": "Transition editor no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/050",
+          "name": "Escape closes transition editor 768",
+          "passed": true
+        },
+        {
+          "id": "C/final/051",
+          "name": "Characters no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/052",
+          "name": "Bible dialog focus inside 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/053",
+          "name": "Bible dialog no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/054",
+          "name": "Continuity no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/055",
+          "name": "Transition editor focus inside 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/056",
+          "name": "Transition editor no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/057",
+          "name": "Escape closes transition editor 390",
+          "passed": true
+        },
+        {
+          "id": "C/final/058",
+          "name": "Original saved scenes and character masters remain bytewise unchanged",
+          "passed": true
+        },
+        {
+          "id": "C/final/059",
+          "name": "No uncaught browser errors",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "stage": "D",
+      "run": "main-and-consolidated-followup",
+      "source": "stage-d-browser-results.json",
+      "sourceSha256": "ad7a40438dc80a2807641582976e6bf57d214f59b7282aa85fbec1cd7f22bd75",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "checks": [
+        {
+          "id": "D/main-and-consolidated-followup/001",
+          "name": "11 ordered shots with 03A and 06A",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/002",
+          "name": "Cast, two takes, cover, frames, wardrobe and transition fixture",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/003",
+          "name": "Select visible respects search",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/004",
+          "name": "Bulk status scoped to selected two",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/005",
+          "name": "Stable group move down keeps relative order",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/006",
+          "name": "Project bulk prompt download contains exact full outputs",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/007",
+          "name": "Project bulk copy retains exact full output",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/008",
+          "name": "Preferred scene add targets only second project",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/009",
+          "name": "Library select visible activates filtered group",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/010",
+          "name": "Unlinked library scene status requires add first",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/011",
+          "name": "Library add uses chosen target only",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/012",
+          "name": "Library status scoped to selected target project",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/013",
+          "name": "Library prompt download includes exact selected outputs",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/014",
+          "name": "Library prompt copy preserves exact full text",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/015",
+          "name": "Export bounds shown",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/016",
+          "name": "Actual ZIP and manifest schema",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/017",
+          "name": "Ordered 11 shots with status, runtime, take and source provenance",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/018",
+          "name": "Safe unique relative paths",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/019",
+          "name": "Exact full structured compact outputs and generation files",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/020",
+          "name": "ZIP script retains exact Unicode dialogue",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/021",
+          "name": "Archive media bytes and manifest SHA-256",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/022",
+          "name": "Repeated media roles deduplicated by archive path",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/023",
+          "name": "ZIP media bytes match source Blob SHA-256",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/024",
+          "name": "Generation JSON equals frozen saved identity serialization",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/025",
+          "name": "Manifest MIME and original filenames match source metadata",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/026",
+          "name": "No object URL fields emitted in ZIP metadata",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/027",
+          "name": "ZIP preserves cast, all takes, notes, cover, frames and transition",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/028",
+          "name": "Cover, cast and frame roles retain distinct associations",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/029",
+          "name": "Workspace no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/030",
+          "name": "Bulk no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/031",
+          "name": "Export dialog focused 1440",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/032",
+          "name": "Export dialog no horizontal overflow 1440",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/033",
+          "name": "Escape closes export 1440",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/034",
+          "name": "Workspace no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/035",
+          "name": "Bulk no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/036",
+          "name": "Export dialog focused 768",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/037",
+          "name": "Export dialog no horizontal overflow 768",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/038",
+          "name": "Escape closes export 768",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/039",
+          "name": "Workspace no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/040",
+          "name": "Bulk no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/041",
+          "name": "Export dialog focused 390",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/042",
+          "name": "Export dialog no horizontal overflow 390",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/043",
+          "name": "Escape closes export 390",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/044",
+          "name": "Full backup restore retains two projects and Phase 5 metadata",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/045",
+          "name": "Restored UI reflects project after full reload",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/046",
+          "name": "Bulk remove asks explicit confirmation and explains scope",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/047",
+          "name": "Cancelled bulk remove leaves project unchanged",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/048",
+          "name": "Confirmed remove affects association and incident edge only",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/049",
+          "name": "Planned shot warning visible before ZIP",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/050",
+          "name": "All missing selected associations shown individually",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/051",
+          "name": "Missing selected binary blocks download with actionable error",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/052",
+          "name": "Explicit excluded count surfaced",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/053",
+          "name": "Excluded missing associations retained in manifest with planned warning",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/054",
+          "name": "Large path used actual async ZIP workers",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/055",
+          "name": "UI heartbeat advanced during 48 MiB export",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/056",
+          "name": "48 MiB ZIP downloaded",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/057",
+          "name": "Cancel during compression produces no new download",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/058",
+          "name": "Large export and cancel leave records unchanged",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/059",
+          "name": "Original saved scenes and character masters unchanged",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/060",
+          "name": "No uncaught page errors",
+          "passed": true
+        },
+        {
+          "id": "D/main-and-consolidated-followup/061",
+          "name": "Friendly association labels after UI update",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "stage": "D",
+      "run": "followup-detail",
+      "source": "stage-d-ui-refresh-results.json",
+      "sourceSha256": "7e6b67b81f7bbdf552bcc1398d3d70a08449265bfe82223cb3f9723be6544959",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "checks": [
+        {
+          "id": "D/followup-detail/001",
+          "name": "Friendly association labels 1440",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/002",
+          "name": "Export dialog fits 1440",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/003",
+          "name": "Export dialog focus 1440",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/004",
+          "name": "Export Escape 1440",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/005",
+          "name": "Friendly association labels 768",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/006",
+          "name": "Export dialog fits 768",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/007",
+          "name": "Export dialog focus 768",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/008",
+          "name": "Export Escape 768",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/009",
+          "name": "Friendly association labels 390",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/010",
+          "name": "Export dialog fits 390",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/011",
+          "name": "Export dialog focus 390",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/012",
+          "name": "Export Escape 390",
+          "passed": true
+        },
+        {
+          "id": "D/followup-detail/013",
+          "name": "No uncaught page errors",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "counts": {
+    "stages": {
+      "A": 41,
+      "B": 46,
+      "C": 59,
+      "D": 61
+    },
+    "canonicalChecks": 207,
+    "followupDetailChecksExcluded": 13
+  },
+  "screenshots": [
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collections-1440.png",
+      "bytes": 72541,
+      "sha256": "a704d79fe67e851fef546914fb116035c44732f3a53fb0a2afa9cf1289bbe11c"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collection-1440.png",
+      "bytes": 69066,
+      "sha256": "63003a3f10c92154648bbc68c7aec2d78f6d038215c967ee333f94274e87fb8a"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-scenes-1440.png",
+      "bytes": 120806,
+      "sha256": "620951af8f2889aabf725701683d0d4f13f4f0c5deced6cfd7d021769525bfc2"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collections-768.png",
+      "bytes": 70420,
+      "sha256": "5df55982266b4ee3fa818faa5c7ff4dbcf22d51c82871a0bd5eea7f130df2a54"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collection-768.png",
+      "bytes": 67263,
+      "sha256": "82d8263cd1d2ee934c56eb2ae7dca0641bc6b28b73f494f6d1fbb162238e3fd9"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-scenes-768.png",
+      "bytes": 92689,
+      "sha256": "ab695b7368437062dbea2e554a64a6d282a534c541bbc09ef697efbe9efc4f71"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collections-390.png",
+      "bytes": 29688,
+      "sha256": "a96124f5dc301dce7453b66dd5bbf350461c5450bfd01c42009c04dbd929ed5f"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-collection-390.png",
+      "bytes": 27421,
+      "sha256": "25ce1fadd8a0a471daf1463aecbcd020ffcf5350a2ae9b4a7ee60f848fa68a01"
+    },
+    {
+      "stage": "baseline",
+      "sourceResults": "before-results.json",
+      "claimedStageCommit": "50492d719134c49137feb56d36dc5a775ff219c2",
+      "file": "before-scenes-390.png",
+      "bytes": 40035,
+      "sha256": "a545428af6fe7574fb034ca6a5df757ccb18c5b822f8cd25c16df5b7b6969d8b"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collections-1440.png",
+      "bytes": 81781,
+      "sha256": "519dba7e62de4ad6195d7f85192f4f653fc7f7534aeaa001c893e51c0f402351"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collection-1440.png",
+      "bytes": 120651,
+      "sha256": "cfed8d01adf13dea7b5db31827b4a8a34d774b1b7375f1e0fd9c503438be02fd"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-scenes-1440.png",
+      "bytes": 106252,
+      "sha256": "ee7a780ee657c728232dc4975a693f9b009e26d056c093425695840c283e5e9e"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collections-768.png",
+      "bytes": 78254,
+      "sha256": "828588dc45729d4acbd2110dae3389eee55655ac34561cbd7cfc43d3e62de810"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collection-768.png",
+      "bytes": 96914,
+      "sha256": "cc971d76ae8388ea5e88f84b354bf157f35bca995a22592bd7c279b93362ebff"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-scenes-768.png",
+      "bytes": 87852,
+      "sha256": "5f4f69f5996c3490db92eec872d498b781947ab23eeb710853c1630b1059d141"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collections-390.png",
+      "bytes": 33645,
+      "sha256": "41d0393fccecfe5ae6420c35f58a24ef5b882ecbd90590952eed038221be790b"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-collection-390.png",
+      "bytes": 49616,
+      "sha256": "9efc5a104538edda843b749079f462c7933d89416f1784a72134b3fe128c9a2e"
+    },
+    {
+      "stage": "A",
+      "sourceResults": "stage-a-browser-results.json",
+      "claimedStageCommit": "e072e909717e6ce53efd761afd3d2615b6edbe26",
+      "file": "stage-a-scenes-390.png",
+      "bytes": 38116,
+      "sha256": "07eddc7a5483bfdfa0c1d9a3865f46cf38cecf412276fc7f4f785d25897777e0"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-workspace-1440.png",
+      "bytes": 121670,
+      "sha256": "fc14d41255b07c7182456d75648014dde92dde328592b2f43aba095f1069bd50"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-takes-1440.png",
+      "bytes": 157010,
+      "sha256": "57401a5a8ee887727ba47819b2aa8d5bb837a31a2b87149193f2a08c8a4a2a6f"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-workspace-768.png",
+      "bytes": 97518,
+      "sha256": "a2ab9c217ad56dae626a5e7711b1136935ca381219e4c269794476cd7cf5664f"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-takes-768.png",
+      "bytes": 89733,
+      "sha256": "a0f7c40dcf41a33df14d8ec76609ad4065713dc4eedcd6e5b20cbca0a465f42c"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-workspace-390.png",
+      "bytes": 43186,
+      "sha256": "799701d306492697029adf5e4b65dda594c65aac3d4569cd808f4693e981b3a8"
+    },
+    {
+      "stage": "B",
+      "sourceResults": "stage-b-browser-results.json",
+      "claimedStageCommit": "d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37",
+      "file": "stage-b-takes-390.png",
+      "bytes": 43314,
+      "sha256": "816856091ee9155b10740efeb2d874663f24be94fad225b69aba3a8ad6934c7d"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-characters-1440.png",
+      "bytes": 118726,
+      "sha256": "6bb1e8ac0f6b37307ae48110ea5e583835ded697826fc59935cd6338aa782a9c"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-bible-1440.png",
+      "bytes": 124281,
+      "sha256": "63212e0de605db92078fd963eff9c90f379cdc11545fa09576b7be6148a5e2ac"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-continuity-1440.png",
+      "bytes": 95460,
+      "sha256": "baeb601d2a9cdb667a6399519a6f3f89ec2703f77b7294fc16cee69c8bb465f2"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-transition-1440.png",
+      "bytes": 113770,
+      "sha256": "723e5b66703544659068a19288f3b48782e1883144a286afaa402f784bf3c18a"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-characters-768.png",
+      "bytes": 92590,
+      "sha256": "7a7aa967084941e26c0af5088831cf6c75243c9c5ca3dff8be509b5be9ee9c85"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-bible-768.png",
+      "bytes": 57098,
+      "sha256": "11042d863de350cbfb91469115fab7ae62c90363010e64f913003af9e0a49a1f"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-continuity-768.png",
+      "bytes": 96374,
+      "sha256": "92f016f905b8579fc57652f66167b020859af0bee100c96a53587156133d7ef6"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-transition-768.png",
+      "bytes": 97331,
+      "sha256": "4d24064856c0488e45a4bbe5fea7a62fe8bcbd12e9a779546ce1538c73d8a4fc"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-characters-390.png",
+      "bytes": 41903,
+      "sha256": "36e4a893278aba989ceb6cc91b61bea9a75d3cf37ba4960bf5d2c46a7e66a4ab"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-bible-390.png",
+      "bytes": 35590,
+      "sha256": "d574f76f706f51a3425195e2eb59389bc05606fbb5f732c89887dca695481b7c"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-continuity-390.png",
+      "bytes": 40149,
+      "sha256": "86e3a19e852efb9d523c97add5d3f79a211da0c3af0eedf4daa2b0c80214699d"
+    },
+    {
+      "stage": "C",
+      "sourceResults": "stage-c-browser-results.json",
+      "claimedStageCommit": "4e3ebe85a7adbd1f8599d321dd980ac7cd99a18d",
+      "file": "stage-c-transition-390.png",
+      "bytes": 45375,
+      "sha256": "3aade8fc43325b0c36069f026f0046ea87efabb5040f309cefd76077c7dd8bf8"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-workspace-1440.png",
+      "bytes": 100355,
+      "sha256": "20e727f031f3cf500a4b192a4fed952da90819024a9d9a4c886df41945a4109c"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-bulk-1440.png",
+      "bytes": 108709,
+      "sha256": "fb3616dbec2278caf0f2150a57dfa15af63bb80092d22f9375564b93e94aee2a"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-export-1440.png",
+      "bytes": 128535,
+      "sha256": "a56c270e1b463c09c3564b898d2cfe4fc89acc706826ec304cd3c1c3a8a6e8d6"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-workspace-768.png",
+      "bytes": 84568,
+      "sha256": "c5455663aa7d896f7ffa327cb1027da398249d3dd7ccd06da780fd4db49c66f5"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-bulk-768.png",
+      "bytes": 89689,
+      "sha256": "a61d94d028871db672a397aa665a217aed9047cdc645911beb17d1413fdcd05a"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-export-768.png",
+      "bytes": 85537,
+      "sha256": "f95594ccc47e7974349bef458f2ffc26fb038fa3b4b3a7cd1f92135e5ca2740e"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-workspace-390.png",
+      "bytes": 33254,
+      "sha256": "759c51eaa406bf66864edd89e83fea173aabc58c50eab381da656ac99e13ad0f"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-bulk-390.png",
+      "bytes": 35625,
+      "sha256": "9d9296e30f73eb969402478978b9031695378ab00f757c20bff0dd9dd7428c57"
+    },
+    {
+      "stage": "D",
+      "sourceResults": "stage-d-browser-results.json",
+      "claimedStageCommit": "cb29312554687e48ca4ec880fd505719abbd10a1",
+      "file": "stage-d-export-390.png",
+      "bytes": 47460,
+      "sha256": "ed9b207eb253da677dcba737d262d21ed04e02d05ade5e3f4a821167a7baa981"
+    }
+  ],
+  "screenshotCount": 45
+}

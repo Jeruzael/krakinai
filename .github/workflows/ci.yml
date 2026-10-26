@@ -2,35 +2,85 @@ name: CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [master]
   pull_request:
-    branches:
-      - master
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
-    name: Build, Typecheck & Test
-    runs-on: ubuntu-latest
+    name: Build, typecheck, unit and browser smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js LTS
-        uses: actions/setup-node@v4
+      - name: Checkout exact revision
+        # v6.0.3; Node 24 action runtime requires runner >= 2.327.1.
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0
         with:
-          node-version: 22
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Set up project Node.js
+        # v6.5.0; action runtime is Node 24, project runtime remains Node 22.
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
           cache: npm
+
+      - name: Record tested revision and runtime
+        run: |
+          echo "Tested commit: $(git rev-parse HEAD)"
+          echo "Workflow: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          node --version
+          npm --version
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run automated tests
-        run: npm test
+      - name: Run unit and component tests
+        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=qa-results/vitest.xml
 
       - name: Run TypeScript typecheck
         run: npm run typecheck
 
       - name: Run production build
         run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev
+
+      - name: Check QA ledger when present on this branch
+        run: |
+          if [ -f scripts/qa/reconcile-results.mjs ]; then
+            npm run test:qa
+          else
+            echo "QA ledger is not present on this earlier stack branch."
+          fi
+
+      - name: Install pinned Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run synthetic browser smoke
+        run: npm run test:e2e
+
+      - name: Summarize synthetic test evidence
+        if: always()
+        run: node scripts/qa/ci-summary.mjs
+
+      - name: Upload synthetic test evidence
+        if: always()
+        # v6.0.0 (Node 24). Only machine-readable synthetic reports; no browser profiles or media.
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: synthetic-test-results-${{ github.run_id }}
+          path: qa-results/summary.json
+          if-no-files-found: ignore
+          retention-days: 7
