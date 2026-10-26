@@ -11,7 +11,9 @@ import {
   saveSceneDraft,
   saveSceneFromDraft,
   replaceAllStoresTransactionally,
+  createCollection,
 } from '../storage/db';
+import { addProjectShot } from '../storage/projects';
 import * as objectUrls from '../hooks/useObjectUrl';
 import { assembleScenePrompt } from '../domain/promptAssembler';
 import { serializeSceneJson } from '../domain/sceneDocument';
@@ -108,7 +110,7 @@ async function createFixture(manual = false): Promise<SceneDraft> {
 function OutputHost({ id }: { id: string }) {
   const { hashPath } = useLibrary();
   const routeId = hashPath.startsWith('/output/')
-    ? hashPath.slice('/output/'.length)
+    ? hashPath.slice('/output/'.length).split('?')[0]
     : id;
   return (
     <>
@@ -139,6 +141,34 @@ describe('Prompt Output studio workspace', () => {
     vi.restoreAllMocks();
     window.location.hash = '#/';
     await clearAllStoresForTesting();
+  });
+
+  it('saves a new project take atomically and retains the originating shot return', async () => {
+    const user=userEvent.setup(); const draft=await createFixture();
+    const collection=await createCollection({name:'Film'});
+    const project=await addProjectShot({collectionId:collection.id,title:'Waiting'});
+    const shotId=project.project!.shots[0].id;
+    window.location.hash=`#/output/${draft.id}?collection=${collection.id}&shot=${shotId}&takeTarget=1`;
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button',{name:'Save New Take'}));
+    await screen.findByRole('button',{name:'Back to Collection'});
+    const saved=await getAllSnapshot();
+    expect(saved.scenes).toHaveLength(1);
+    expect(saved.collections[0].project!.shots[0].takeSceneIds).toEqual([saved.scenes[0].id]);
+    expect(saved.scenes[0].saveProjectTarget).toEqual({collectionId:collection.id,shotId});
+    await user.click(screen.getByRole('button',{name:'Back to Collection'}));
+    expect(window.location.hash).toContain(`/collections/${collection.id}?tab=storyboard`);
+  });
+
+  it('does not silently save a detached scene when the requested shot is unavailable', async () => {
+    const user=userEvent.setup(); const draft=await createFixture();
+    window.location.hash=`#/output/${draft.id}?collection=deleted&shot=missing&takeTarget=1`;
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button',{name:'Save Scene'}));
+    expect((await getAllSnapshot()).scenes).toHaveLength(0);
+    expect(screen.getAllByText(/This project shot is unavailable/).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button',{name:'Continue as Standalone Draft'}));
+    expect(window.location.hash).toBe(`#/output/${draft.id}`);
   });
 
   it('starts a new save attempt after returning from a first saved output', async () => {

@@ -9,6 +9,7 @@ import { VariantsScreen } from './screens/VariantsScreen';
 import { SceneBuilderScreen } from './screens/SceneBuilderScreen';
 import { PromptOutputScreen } from './screens/PromptOutputScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
+import { CollectionWorkspace } from './screens/CollectionWorkspace';
 import { TemplatesScreen } from './screens/TemplatesScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
@@ -150,7 +151,9 @@ const RouteDispatcher: React.FC = () => {
   }
   const colDetailMatch = path.match(/^\/collections\/([^/]+)$/);
   if (colDetailMatch) {
-    return <CollectionsScreen collectionId={colDetailMatch[1]} />;
+    let collectionId = colDetailMatch[1];
+    try { collectionId = decodeURIComponent(collectionId); } catch { /* Display missing collection for malformed route. */ }
+    return <CollectionWorkspace collectionId={collectionId} />;
   }
 
   // S09 Templates

@@ -211,6 +211,7 @@ export interface SceneDraft {
 }
 
 export interface SavedScene {
+  saveProjectTarget?: { collectionId: string; shotId: string };
   sourceDraftId?: string;
   sourceDraftInputRevision?: number;
   saveRequestId?: string;
@@ -247,7 +248,26 @@ export interface CollectionMemberRef {
   addedAt: string;
 }
 
+export type ProductionStatus = 'planned' | 'prompt_ready' | 'generated' | 'reviewed' | 'final';
+
+export interface ProjectShot {
+  id: string;
+  order: number;
+  code: string;
+  title: string;
+  takeSceneIds: string[];
+  selectedSceneId?: string;
+  status: ProductionStatus;
+  plannedDurationSeconds?: number;
+  takeNotes?: Record<string, string>;
+  continuityNotes?: string;
+  intentionalWardrobeChange?: string;
+  firstFrameMediaId?: string;
+  lastFrameMediaId?: string;
+}
+
 export interface Collection {
+  project?: { version: 1; revision: number; shots: ProjectShot[]; cast?: unknown[]; transitions?: unknown[] };
   id: string;
   name: string;
   description: string;

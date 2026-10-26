@@ -50,12 +50,14 @@ import { runScenePreflight, type PreflightFinding } from '../domain/scenePreflig
 import { ScenePreflightDialog } from '../components/ScenePreflightDialog';
 import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
 import { ReferencePackManager } from '../components/ReferencePackManager';
+import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
 }) => {
   const {
     snapshot,
+    hashPath,
     navigate,
     refreshSnapshot,
     getOrCreateActiveDraft,
@@ -392,6 +394,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   };
 
   const handleAssemble = async () => {
+    const context = getProjectSaveTarget(hashPath, snapshot.collections);
+    if (context.error) { setAssemblyErrors([context.error]); return; }
     const saved = await persistDraftImmediate(draft, false);
     if (!saved) return;
     const res = assembleScenePrompt(saved);
@@ -400,7 +404,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       return;
     }
     setAssemblyErrors([]);
-    navigate(`/output/${saved.id}`, true);
+    navigate(carryProjectTarget(`/output/${saved.id}`, hashPath), true);
   };
 
   const handleSaveAsTemplate = async (e: React.FormEvent) => {
@@ -468,6 +472,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
 
   return (
     <div className="recipe-workspace">
+      {getProjectSaveTarget(hashPath, snapshot.collections).requested && <div className="card" role="status">{getProjectSaveTarget(hashPath, snapshot.collections).error || 'Creating a new take for this project shot. Existing saved takes remain unchanged.'}{getProjectSaveTarget(hashPath, snapshot.collections).error && <button className="btn btn-secondary" onClick={() => navigate(`/builder/${draft.id}`, true)}>Continue as Standalone Draft</button>}</div>}
       <div className="studio-header">
         <div>
           <span className="studio-eyebrow">YOUR CREATION STUDIO</span>
