@@ -33,3 +33,6 @@ Screenshots: `stage-c-{characters,continuity,bible,transition}-{1440,768,390}.pn
 ## Assumptions and remaining risks
 
 All browser profiles, ZIPs, screenshots and raw logs are outside Git. The original checkout, user browser profiles and port 5173 data were untouched. No new services/dependencies or storage-limit changes. The tests establish the covered behavior, not a general security certification. Real screen-reader software, every media codec, large-library memory use and multi-gigabyte backups were not tested. Full-entry concurrent edits reject rather than auto-merge; users must reopen the editor after a conflict. The build chunk warning remains visible evidence at this stage.
+
+
+Canonical local totals and source provenance are reconciled in [docs/qa/phase5-summary.md](qa/phase5-summary.md). The retained final Stage C machine result has 59 checks; its earlier 56-check JSON is unavailable, so the exact three additions cannot be reconstructed. These historical runs are not CI browser checks.
