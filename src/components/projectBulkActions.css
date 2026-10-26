@@ -1,0 +1,7 @@
+.project-bulk-actions{display:grid;gap:.75rem;padding:1rem;border:1px solid var(--border-color,#ddd);border-radius:12px;background:var(--surface,#fff);margin:1rem 0}
+.project-bulk-heading,.project-bulk-row{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.project-bulk-heading{justify-content:space-between}
+.project-bulk-row label{display:flex;align-items:center;gap:.4rem}
+.project-bulk-row select{max-width:15rem;padding:.4rem}
+.project-bulk-error{color:var(--danger,#b42318);margin:0}
+@media(max-width:600px){.project-bulk-row>*{max-width:100%}.project-bulk-row label{width:100%;justify-content:space-between}}

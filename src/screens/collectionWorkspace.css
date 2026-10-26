@@ -19,6 +19,9 @@
 .cw-shot-grid, .cw-resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr)); gap: 16px; }
 .cw-shot-card { overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 12px; background: #fff; min-width: 0; }
 .cw-shot-card[draggable="true"] { cursor: grab; }
+.cw-shot-selection, .cw-select-visible { display:flex; align-items:center; gap:8px; padding:10px 14px; font-size:.85rem; }
+.cw-list .cw-shot-selection { grid-column:1 / -1; }
+.cw-project-actions { display:flex; justify-content:flex-end; position:sticky; bottom:0; padding:12px; background:var(--surface,#fff); border:1px solid var(--border-subtle); border-radius:10px; }
 .cw-shot-card:focus-within { outline: 2px solid var(--color-primary, #3556a8); outline-offset: 2px; }
 .cw-shot-image { height: 175px; overflow: hidden; background: #edf2f6; }
 .cw-shot-body { display: flex; flex-direction: column; gap: 11px; padding: 15px; }

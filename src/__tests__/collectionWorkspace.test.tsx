@@ -21,6 +21,8 @@ vi.mock('../storage/projects', () => ({
 vi.mock('../storage/db', () => ({ updateCollection: actions.updateCollection, deleteCollection: actions.deleteCollection }));
 vi.mock('../components/ProjectTakeManager', () => ({ ProjectTakeManager: ({ onClose }: { onClose: () => void }) => <div>Take manager<button onClick={onClose}>Close Takes</button></div> }));
 vi.mock('../domain/projectRoutes', () => ({ startProjectShotDraft: vi.fn(async () => '/builder') }));
+vi.mock('../components/ProjectBulkActions', () => ({ ProjectBulkActions: ({ selectedShotIds, onClear }: {selectedShotIds:string[];onClear:()=>void}) => <div aria-label="Selected shot IDs">{selectedShotIds.join(',')}<button onClick={onClear}>Clear shot selection</button></div> }));
+vi.mock('../components/ProjectExportDialog', () => ({ ProjectExportDialog: ({onClose}:{onClose:()=>void}) => <div role="dialog" aria-label="Project export"><button onClick={onClose}>Close export</button></div> }));
 
 import { CollectionWorkspace } from '../screens/CollectionWorkspace';
 
@@ -44,6 +46,27 @@ beforeEach(() => {
 });
 
 describe('CollectionWorkspace storyboard', () => {
+  it('selects only visible shots and can clear a bulk selection without changing snapshots', () => {
+    const before=JSON.stringify(state.snapshot);
+    render(<CollectionWorkspace collectionId="c" />);
+    fireEvent.change(screen.getByPlaceholderText('Code or title'),{target:{value:'Shot b'}});
+    fireEvent.click(screen.getByRole('checkbox',{name:'Select all visible shots'}));
+    expect(screen.getByLabelText('Selected shot IDs')).toHaveTextContent('b');
+    expect(screen.getByRole('checkbox',{name:'Select shot Shot b'})).toBeChecked();
+    fireEvent.click(screen.getByRole('button',{name:'Clear shot selection'}));
+    expect(screen.getByRole('checkbox',{name:'Select shot Shot b'})).not.toBeChecked();
+    expect(JSON.stringify(state.snapshot)).toBe(before);
+  });
+  it('opens project export as its own dialog and clears selection on a different project', () => {
+    state.snapshot.collections.push({...state.snapshot.collections[0],id:'other',name:'Other'});
+    const {rerender}=render(<CollectionWorkspace collectionId="c" />);
+    fireEvent.click(screen.getByRole('checkbox',{name:'Select shot Shot a'}));
+    fireEvent.click(screen.getByRole('button',{name:'Export Project'}));
+    expect(screen.getByRole('dialog',{name:'Project export'})).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button',{name:'Close export'}));
+    rerender(<CollectionWorkspace collectionId="other" />);
+    expect(screen.getByRole('checkbox',{name:'Select shot Shot a'})).not.toBeChecked();
+  });
   it('shows planned and missing shots without exposing full prompt text', () => {
     render(<CollectionWorkspace collectionId="c" />);
     expect(screen.getByRole('heading', { name: 'Late Again' })).toBeInTheDocument();
