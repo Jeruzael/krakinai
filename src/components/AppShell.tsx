@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import '../studio.css';
 import {
   Camera,
   Clapperboard,
@@ -12,6 +13,8 @@ import {
   Library,
   Menu,
   Palette,
+  PanelLeftClose,
+  PanelLeftOpen,
   Plus,
   Settings,
   Shirt,
@@ -77,6 +80,65 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     storageError,
   } = useLibrary();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobile, setMobile] = useState(
+    () => window.matchMedia?.('(max-width: 767px)').matches ?? false
+  );
+  const sidebarRef = useRef<HTMLElement>(null);
+  const menuRef = useRef<HTMLButtonElement>(null);
+  const mainRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const query = window.matchMedia?.('(max-width: 767px)');
+    if (!query) return;
+    const update = () => {
+      setMobile(query.matches);
+      if (!query.matches) setDrawerOpen(false);
+    };
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (sidebarRef.current) sidebarRef.current.inert = mobile && !drawerOpen;
+    if (!mobile || !drawerOpen) return;
+    const main = mainRef.current;
+    const priorInert = main?.inert ?? false;
+    const priorOverflow = document.body.style.overflow;
+    if (main) main.inert = true;
+    document.body.style.overflow = 'hidden';
+    const controls = () => [
+      ...(sidebarRef.current?.querySelectorAll<HTMLElement>(
+        'a[href], button:not(:disabled)'
+      ) ?? []),
+    ];
+    controls()[0]?.focus();
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        setDrawerOpen(false);
+      }
+      if (event.key === 'Tab') {
+        const items = controls();
+        const first = items[0];
+        const last = items[items.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last?.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first?.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('keydown', handleKey);
+      if (main) main.inert = priorInert;
+      document.body.style.overflow = priorOverflow;
+      menuRef.current?.focus();
+    };
+  }, [mobile, drawerOpen]);
 
   const cleanPath = hashPath.split('?')[0];
 
@@ -86,7 +148,9 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return (
-    <div className="app-shell">
+    <div
+      className={`app-shell ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}
+    >
       {drawerOpen && (
         <div
           className="modal-backdrop"
@@ -97,12 +161,28 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
       )}
 
       <aside
+        id="primary-navigation"
+        ref={sidebarRef}
         className={`app-sidebar ${drawerOpen ? 'drawer-open' : ''}`}
         aria-label="Primary Sidebar Navigation"
+        role={mobile && drawerOpen ? 'dialog' : undefined}
+        aria-modal={mobile && drawerOpen ? true : undefined}
+        aria-hidden={mobile && !drawerOpen ? true : undefined}
       >
+        {mobile && drawerOpen && (
+          <button
+            type="button"
+            className="icon-btn mobile-nav-close"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </button>
+        )}
         <a
           href="#/"
           className="app-brand"
+          aria-label="KRAKINAI Home"
           onClick={(e) => {
             e.preventDefault();
             handleNav('/');
@@ -121,6 +201,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
           <button
             type="button"
             className={`nav-link ${cleanPath === '/' ? 'active' : ''}`}
+            aria-label="Home"
+            title="Home"
             onClick={() => handleNav('/')}
           >
             <Home size={18} />
@@ -133,6 +215,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
           <button
             type="button"
             className={`nav-link ${cleanPath === '/library' ? 'active' : ''}`}
+            aria-label="All Prompts"
+            title="All Prompts"
             onClick={() => handleNav('/library')}
           >
             <Library size={18} />
@@ -152,6 +236,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
                 key={item.category}
                 type="button"
                 className={`nav-link ${cleanPath === target ? 'active' : ''}`}
+                aria-label={item.label}
+                title={item.label}
                 onClick={() => handleNav(target)}
               >
                 {item.icon}
@@ -170,6 +256,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
               cleanPath.startsWith('/builder') ? 'active' : ''
             }`}
             onClick={() => handleNav('/builder')}
+            aria-label="Scene Builder"
+            title="Scene Builder"
           >
             <Clapperboard size={18} />
             <span>Scene Builder</span>
@@ -178,6 +266,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
             type="button"
             className={`nav-link ${cleanPath === '/scenes' ? 'active' : ''}`}
             onClick={() => handleNav('/scenes')}
+            aria-label="Saved Scenes"
+            title="Saved Scenes"
           >
             <Film size={18} />
             <span>Saved Scenes</span>
@@ -189,6 +279,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
             type="button"
             className={`nav-link ${cleanPath === '/templates' ? 'active' : ''}`}
             onClick={() => handleNav('/templates')}
+            aria-label="Templates"
+            title="Templates"
           >
             <LayoutTemplate size={18} />
             <span>Templates</span>
@@ -208,6 +300,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
               cleanPath.startsWith('/collections') ? 'active' : ''
             }`}
             onClick={() => handleNav('/collections')}
+            aria-label="Collections"
+            title="Collections"
           >
             <FolderKanban size={18} />
             <span>Collections</span>
@@ -221,6 +315,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
             type="button"
             className={`nav-link ${cleanPath === '/favorites' ? 'active' : ''}`}
             onClick={() => handleNav('/favorites')}
+            aria-label="Favorites"
+            title="Favorites"
           >
             <Heart size={18} />
             <span>Favorites</span>
@@ -256,14 +352,33 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
         </div>
       </aside>
 
-      <div className="app-main-wrapper">
+      <div className="app-main-wrapper" ref={mainRef}>
         <header className="app-topbar">
           <div className="topbar-left">
             <button
               type="button"
+              className="icon-btn desktop-sidebar-toggle"
+              aria-label={
+                sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'
+              }
+              aria-expanded={!sidebarCollapsed}
+              aria-controls="primary-navigation"
+              onClick={() => setSidebarCollapsed((value) => !value)}
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen size={18} />
+              ) : (
+                <PanelLeftClose size={18} />
+              )}
+            </button>
+            <button
+              ref={menuRef}
+              type="button"
               className="icon-btn mobile-menu-btn"
               onClick={() => setDrawerOpen((o) => !o)}
               aria-label="Toggle navigation menu"
+              aria-expanded={drawerOpen}
+              aria-controls="primary-navigation"
             >
               {drawerOpen ? <X size={20} /> : <Menu size={20} />}
             </button>

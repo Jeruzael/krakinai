@@ -29,38 +29,25 @@ import {
   SLOT_LABELS,
   SLOT_TO_CATEGORY,
 } from '../domain/validation';
-import type { BuilderSlot, MediaAsset, PromptAsset, Variant } from '../types/domain';
+import type {
+  BuilderSlot,
+  MediaAsset,
+  PromptAsset,
+  Variant,
+} from '../types/domain';
 import { MediaThumbnail } from './MediaThumbnail';
+import { StudioDialog } from './StudioDialog';
 
 export const ConfirmModal: React.FC = () => {
   const { confirmDialog, closeConfirmDialog } = useLibrary();
   if (!confirmDialog) return null;
 
   return (
-    <div
-      className="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="confirm-modal-title"
-    >
-      <div className="modal-panel" style={{ maxWidth: 480 }}>
-        <div className="modal-header">
-          <h2 id="confirm-modal-title" className="section-title">
-            {confirmDialog.title}
-          </h2>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={closeConfirmDialog}
-            aria-label="Close confirmation dialog"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal-body">
-          <p style={{ margin: 0, fontSize: 15 }}>{confirmDialog.message}</p>
-        </div>
-        <div className="modal-footer">
+    <StudioDialog
+      title={confirmDialog.title}
+      onClose={closeConfirmDialog}
+      footer={
+        <>
           <button
             type="button"
             className="btn btn-secondary"
@@ -77,9 +64,11 @@ export const ConfirmModal: React.FC = () => {
           >
             {confirmDialog.confirmLabel}
           </button>
-        </div>
-      </div>
-    </div>
+        </>
+      }
+    >
+      <p style={{ margin: 0, fontSize: 15 }}>{confirmDialog.message}</p>
+    </StudioDialog>
   );
 };
 
@@ -203,7 +192,10 @@ export const CollectionMembershipModal: React.FC = () => {
       setNewColName('');
       setNewColDesc('');
       await refreshSnapshot();
-      showToast(`Created collection "${created.name}" and added item.`, 'success');
+      showToast(
+        `Created collection "${created.name}" and added item.`,
+        'success'
+      );
     } catch (err) {
       setError(
         err instanceof Error ? err.message : 'Failed to create collection.'
@@ -388,7 +380,9 @@ export const SettingsBackupModal: React.FC = () => {
     setExporting(true);
     try {
       const zipBytes = await exportFullBackupZip();
-      const blob = new Blob([zipBytes as unknown as BlobPart], { type: 'application/zip' });
+      const blob = new Blob([zipBytes as unknown as BlobPart], {
+        type: 'application/zip',
+      });
       const datePart = new Date().toISOString().slice(0, 10);
       downloadBlobAsFile(blob, `krakinai-backup-${datePart}.zip`);
       showToast('Full ZIP backup exported (metadata + media).', 'success');
@@ -501,9 +495,7 @@ export const SettingsBackupModal: React.FC = () => {
               <span className="badge">
                 {snapshot.collections.length} Collections
               </span>
-              <span className="badge">
-                {snapshot.media.length} Media Files
-              </span>
+              <span className="badge">{snapshot.media.length} Media Files</span>
             </div>
           </div>
 
@@ -698,207 +690,182 @@ export const AssetPickerModal: React.FC<AssetPickerModalProps> = ({
   if (!snapshot) return null;
 
   return (
-    <div
-      className="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="picker-modal-title"
+    <StudioDialog
+      title={`Select ${SLOT_LABELS[slot]}`}
+      onClose={onClose}
+      className="asset-picker-dialog"
+      footer={
+        <button type="button" className="btn btn-secondary" onClick={onClose}>
+          Cancel
+        </button>
+      }
     >
-      <div className="modal-panel" style={{ maxWidth: 780 }}>
-        <div className="modal-header">
-          <div>
-            <h2 id="picker-modal-title" className="section-title">
-              Select {SLOT_LABELS[slot]}
-            </h2>
-            <span className="muted-text">
-              Category: {CATEGORY_LABELS[targetCategory]}
-            </span>
-          </div>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={onClose}
-            aria-label="Close picker"
-          >
-            <X size={18} />
-          </button>
+      <p className="muted-text">Category: {CATEGORY_LABELS[targetCategory]}</p>
+
+      <div
+        style={{
+          display: 'flex',
+          gap: 12,
+          alignItems: 'center',
+          marginBottom: 16,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
+          <input
+            className="input"
+            aria-label={`Search ${SLOT_LABELS[slot]}`}
+            placeholder={`Search ${SLOT_LABELS[slot].toLowerCase()}...`}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
         </div>
 
-        <div className="modal-body">
+        {slot !== 'character' && (
+          <div style={{ display: 'flex', gap: 6 }}>
+            <button
+              type="button"
+              className={`btn btn-sm ${
+                tab === 'assets' ? 'btn-primary' : 'btn-secondary'
+              }`}
+              onClick={() => setTab('assets')}
+            >
+              Library Prompts ({matchingAssets.length})
+            </button>
+            <button
+              type="button"
+              className={`btn btn-sm ${
+                tab === 'variants' ? 'btn-primary' : 'btn-secondary'
+              }`}
+              onClick={() => setTab('variants')}
+            >
+              Character Variants ({matchingVariants.length})
+            </button>
+          </div>
+        )}
+      </div>
+
+      {tab === 'assets' ? (
+        matchingAssets.length === 0 ? (
+          <p className="muted-text">
+            No matching prompts in {CATEGORY_LABELS[targetCategory]}.
+          </p>
+        ) : (
           <div
             style={{
-              display: 'flex',
+              display: 'grid',
               gap: 12,
-              alignItems: 'center',
-              marginBottom: 16,
-              flexWrap: 'wrap',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
             }}
           >
-            <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
-              <input
-                className="input"
-                placeholder={`Search ${SLOT_LABELS[slot].toLowerCase()}...`}
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
-            </div>
-
-            {slot !== 'character' && (
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
-                  type="button"
-                  className={`btn btn-sm ${
-                    tab === 'assets' ? 'btn-primary' : 'btn-secondary'
-                  }`}
-                  onClick={() => setTab('assets')}
-                >
-                  Library Prompts ({matchingAssets.length})
-                </button>
-                <button
-                  type="button"
-                  className={`btn btn-sm ${
-                    tab === 'variants' ? 'btn-primary' : 'btn-secondary'
-                  }`}
-                  onClick={() => setTab('variants')}
-                >
-                  Character Variants ({matchingVariants.length})
-                </button>
-              </div>
-            )}
-          </div>
-
-          {tab === 'assets' ? (
-            matchingAssets.length === 0 ? (
-              <p className="muted-text">
-                No matching prompts in {CATEGORY_LABELS[targetCategory]}.
-              </p>
-            ) : (
-              <div
-                style={{
-                  display: 'grid',
-                  gap: 12,
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                }}
-              >
-                {matchingAssets.map((a) => {
-                  const coverId = a.coverMediaId || a.mediaLinks[0]?.mediaId;
-                  const media = coverId ? mediaMap.get(coverId) : undefined;
-                  return (
-                    <div key={a.id} className="card" style={{ padding: 12 }}>
-                      <div
-                        style={{
-                          height: 120,
-                          borderRadius: 10,
-                          overflow: 'hidden',
-                          marginBottom: 8,
-                        }}
-                      >
-                        <MediaThumbnail media={media} altText={a.title} />
-                      </div>
-                      <div style={{ fontWeight: 700, fontSize: 14 }}>
-                        {a.title}
-                      </div>
-                      <p
-                        className="muted-text"
-                        style={{
-                          fontSize: 12,
-                          margin: '6px 0 10px',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 3,
-                          WebkitBoxOrient: 'vertical',
-                          overflow: 'hidden',
-                        }}
-                      >
-                        {a.promptText}
-                      </p>
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                        style={{ width: '100%' }}
-                        onClick={() => onSelectAsset(a)}
-                      >
-                        Select
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            )
-          ) : matchingVariants.length === 0 ? (
-            <p className="muted-text">
-              No character variants mapped to {SLOT_LABELS[slot]}.
-            </p>
-          ) : (
-            <div
-              style={{
-                display: 'grid',
-                gap: 12,
-                gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-              }}
-            >
-              {matchingVariants.map((v) => {
-                const parent = snapshot.assets.find(
-                  (a) => a.id === v.parentCharacterId
-                );
-                const isOtherChar =
-                  activeCharacterId &&
-                  activeCharacterId !== v.parentCharacterId;
-                const coverId = v.coverMediaId || v.mediaLinks[0]?.mediaId;
-                const media = coverId ? mediaMap.get(coverId) : undefined;
-                return (
-                  <div key={v.id} className="card" style={{ padding: 12 }}>
-                    <div
-                      style={{
-                        height: 120,
-                        borderRadius: 10,
-                        overflow: 'hidden',
-                        marginBottom: 8,
-                      }}
-                    >
-                      <MediaThumbnail media={media} altText={v.title} />
-                    </div>
-                    <div style={{ fontWeight: 700, fontSize: 14 }}>{v.title}</div>
-                    <div
-                      className="muted-text"
-                      style={{ fontSize: 11, marginBottom: 4 }}
-                    >
-                      Parent: {parent?.title || v.parentCharacterId}
-                      {isOtherChar && ' (Requires character switch)'}
-                    </div>
-                    <p
-                      className="muted-text"
-                      style={{
-                        fontSize: 12,
-                        margin: '4px 0 10px',
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
-                      {v.promptText}
-                    </p>
-                    <button
-                      type="button"
-                      className="btn btn-primary btn-sm"
-                      style={{ width: '100%' }}
-                      onClick={() => onSelectVariant(v)}
-                    >
-                      Select Variant
-                    </button>
+            {matchingAssets.map((a) => {
+              const coverId = a.coverMediaId || a.mediaLinks[0]?.mediaId;
+              const media = coverId ? mediaMap.get(coverId) : undefined;
+              return (
+                <div key={a.id} className="card" style={{ padding: 12 }}>
+                  <div
+                    style={{
+                      height: 120,
+                      borderRadius: 10,
+                      overflow: 'hidden',
+                      marginBottom: 8,
+                    }}
+                  >
+                    <MediaThumbnail media={media} altText={a.title} />
                   </div>
-                );
-              })}
-            </div>
-          )}
+                  <div style={{ fontWeight: 700, fontSize: 14 }}>{a.title}</div>
+                  <p
+                    className="muted-text"
+                    style={{
+                      fontSize: 12,
+                      margin: '6px 0 10px',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 3,
+                      WebkitBoxOrient: 'vertical',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {a.promptText}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    style={{ width: '100%' }}
+                    onClick={() => onSelectAsset(a)}
+                  >
+                    Select
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        )
+      ) : matchingVariants.length === 0 ? (
+        <p className="muted-text">
+          No character variants mapped to {SLOT_LABELS[slot]}.
+        </p>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gap: 12,
+            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+          }}
+        >
+          {matchingVariants.map((v) => {
+            const parent = snapshot.assets.find(
+              (a) => a.id === v.parentCharacterId
+            );
+            const isOtherChar =
+              activeCharacterId && activeCharacterId !== v.parentCharacterId;
+            const coverId = v.coverMediaId || v.mediaLinks[0]?.mediaId;
+            const media = coverId ? mediaMap.get(coverId) : undefined;
+            return (
+              <div key={v.id} className="card" style={{ padding: 12 }}>
+                <div
+                  style={{
+                    height: 120,
+                    borderRadius: 10,
+                    overflow: 'hidden',
+                    marginBottom: 8,
+                  }}
+                >
+                  <MediaThumbnail media={media} altText={v.title} />
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{v.title}</div>
+                <div
+                  className="muted-text"
+                  style={{ fontSize: 11, marginBottom: 4 }}
+                >
+                  Parent: {parent?.title || v.parentCharacterId}
+                  {isOtherChar && ' (Requires character switch)'}
+                </div>
+                <p
+                  className="muted-text"
+                  style={{
+                    fontSize: 12,
+                    margin: '4px 0 10px',
+                    display: '-webkit-box',
+                    WebkitLineClamp: 2,
+                    WebkitBoxOrient: 'vertical',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {v.promptText}
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-primary btn-sm"
+                  style={{ width: '100%' }}
+                  onClick={() => onSelectVariant(v)}
+                >
+                  Select Variant
+                </button>
+              </div>
+            );
+          })}
         </div>
-
-        <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onClose}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
+      )}
+    </StudioDialog>
   );
 };

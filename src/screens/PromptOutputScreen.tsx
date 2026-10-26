@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -15,10 +15,12 @@ import {
   assembleScenePrompt,
   formatSceneExportTxt,
   isManualOutputStale,
+  ORDERED_BUILDER_SLOTS,
 } from '../domain/promptAssembler';
 import { validateMediaCandidate } from '../domain/validation';
 import type {
   MediaAsset,
+  MediaLink,
   OutputMode,
   ReviewStatus,
 } from '../types/domain';
@@ -31,6 +33,50 @@ import {
 } from '../storage/db';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import { MediaThumbnail } from '../components/MediaThumbnail';
+import {
+  ReferenceBoard,
+  type StudioReference,
+} from '../components/ReferenceBoard';
+import './promptOutput.css';
+
+const OUTPUT_TABS = [
+  { value: 'prompt', label: 'Prompt' },
+  { value: 'references', label: 'References' },
+  { value: 'review', label: 'Review' },
+] as const;
+const OUTPUT_MODES: { value: OutputMode; label: string }[] = [
+  { value: 'full', label: 'Full Prompt' },
+  { value: 'structured', label: 'Structured' },
+  { value: 'compact', label: 'Compact' },
+];
+const COMPONENT_LABELS = {
+  character: 'Character',
+  wardrobe: 'Clothing / Outfit',
+  environment: 'Environment',
+  action: 'Action',
+  camera: 'Camera',
+  lighting: 'Lighting',
+  style: 'Style',
+};
+
+function handleTabKeys(event: React.KeyboardEvent<HTMLDivElement>) {
+  if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+  const tabs = Array.from(
+    event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="tab"]')
+  );
+  const index = tabs.indexOf(event.target as HTMLButtonElement);
+  if (index < 0) return;
+  const next =
+    event.key === 'Home'
+      ? 0
+      : event.key === 'End'
+        ? tabs.length - 1
+        : (index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) %
+          tabs.length;
+  event.preventDefault();
+  tabs[next].focus();
+  tabs[next].click();
+}
 
 export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const {
@@ -45,6 +91,12 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   } = useLibrary();
 
   const [mode, setMode] = useState<OutputMode>('full');
+  const [activeTab, setActiveTab] =
+    useState<(typeof OUTPUT_TABS)[number]['value']>('prompt');
+  const [reviewNotesBuffer, setReviewNotesBuffer] = useState<string | null>(
+    null
+  );
+  const tabId = useId();
   const [isEditingManual, setIsEditingManual] = useState(false);
   const [manualBuf, setManualBuf] = useState('');
   const [acknowledgedStaleModes, setAcknowledgedStaleModes] = useState<
@@ -92,11 +144,11 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const title = savedScene ? savedScene.title : draft!.title;
   const settings = savedScene ? savedScene.settings : draft!.settings;
   const avoidText = savedScene
-    ? savedScene.avoidText ?? ''
-    : assembled?.avoidText ?? '';
+    ? (savedScene.avoidText ?? '')
+    : (assembled?.avoidText ?? '');
   const references = savedScene
     ? savedScene.references
-    : assembled?.references ?? [];
+    : (assembled?.references ?? []);
 
   const manualOverride = savedScene
     ? savedScene.manualOutputs[mode]
@@ -110,7 +162,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
 
   const activeText = savedScene
     ? savedScene.outputs[mode]
-    : manualOverride?.text ?? assembled?.outputs[mode] ?? '';
+    : (manualOverride?.text ?? assembled?.outputs[mode] ?? '');
 
   const handleCopyActivePrompt = async () => {
     if (isStale) {
@@ -268,48 +320,112 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     e.target.value = '';
   };
 
+  const record = savedScene ?? draft!;
+  // The display keeps every slot association, including repeated links to one blob.
+  // Exports continue to use the original assembler/saved-scene reference checklist.
+  const studioReferences: StudioReference[] = ORDERED_BUILDER_SLOTS.flatMap(
+    (slot) => {
+      const component = record.slots[slot];
+      return (component?.mediaLinks ?? []).map((link, index) => ({
+        key: `${slot}_${index}_${link.mediaId}`,
+        mediaId: link.mediaId,
+        label: [COMPONENT_LABELS[slot], link.viewLabel]
+          .filter(Boolean)
+          .join(' · '),
+        sourceTitle: component!.sourceTitle,
+        role: link.role,
+        altText: link.altText,
+        filename: link.filename,
+      }));
+    }
+  );
+  // Match checklist entries to existing slot associations one at a time so an
+  // unavailable file or repeated media ID cannot erase a distinct association.
+  const referenceIdentity = (link: MediaLink) =>
+    JSON.stringify([
+      link.mediaId,
+      link.role,
+      link.altText,
+      link.viewLabel ?? '',
+      link.filename ?? '',
+    ]);
+  const unmatchedSlotReferences = ORDERED_BUILDER_SLOTS.flatMap((slot) =>
+    (record.slots[slot]?.mediaLinks ?? []).map(referenceIdentity)
+  );
+  references.forEach((link, index) => {
+    const matchingSlotIndex = unmatchedSlotReferences.indexOf(
+      referenceIdentity(link)
+    );
+    if (matchingSlotIndex >= 0) {
+      unmatchedSlotReferences.splice(matchingSlotIndex, 1);
+    } else {
+      studioReferences.push({
+        key: `checklist_${index}_${link.mediaId}`,
+        mediaId: link.mediaId,
+        label: 'Scene reference',
+        sourceTitle: title,
+        role: link.role,
+        altText: link.altText,
+        filename: link.filename,
+      });
+    }
+  });
+  const activeModeLabel = OUTPUT_MODES.find(
+    (item) => item.value === mode
+  )!.label;
+  const resultLinks =
+    savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? [];
+  const reviewNotes = reviewNotesBuffer ?? record.reviewNotes;
+
+  const saveReviewNotes = async () => {
+    if (reviewNotesBuffer === null || reviewNotes === record.reviewNotes)
+      return;
+    const submittedNotes = reviewNotes;
+    try {
+      if (savedScene) {
+        await updateSavedSceneReviewAndResults({
+          sceneId: savedScene.id,
+          resultMediaLinks: savedScene.resultMediaLinks,
+          reviewNotes: submittedNotes,
+          reviewStatus: savedScene.reviewStatus,
+        });
+      } else if (draft) {
+        await saveSceneDraft({
+          ...draft,
+          reviewNotes: submittedNotes,
+          bumpInputRevision: false,
+        });
+      }
+      await refreshSnapshot();
+      setReviewNotesBuffer((current) =>
+        current === submittedNotes ? null : current
+      );
+      showToast('Saved scene review notes.', 'success');
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : 'Failed to save review notes.',
+        'error'
+      );
+    }
+  };
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* Header */}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
-        }}
-      >
-        <div>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              marginBottom: 6,
-            }}
-          >
-            {draft ? (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => navigate(`/builder/${draft.id}`)}
-              >
-                <ArrowLeft size={15} /> Back to Builder
-              </button>
-            ) : (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => navigate('/scenes')}
-              >
-                <ArrowLeft size={15} /> Back to Saved Scenes
-              </button>
-            )}
+    <div className="output-workspace">
+      <header className="output-header">
+        <div className="output-heading">
+          <div className="output-record-meta">
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() =>
+                navigate(draft ? `/builder/${draft.id}` : '/scenes')
+              }
+            >
+              <ArrowLeft size={15} />{' '}
+              {draft ? 'Back to Builder' : 'Back to Saved Scenes'}
+            </button>
             <span
-              className={`badge ${
-                savedScene ? 'badge-success' : 'badge-warning'
-              }`}
+              className={`badge ${savedScene ? 'badge-success' : 'badge-warning'}`}
             >
               {savedScene
                 ? 'Saved Scene (Immutable Snapshot)'
@@ -317,103 +433,345 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             </span>
           </div>
           <h1 className="page-title">{title}</h1>
+          <p className="muted-text output-subtitle">
+            Your prompt and reference files, ready for your external generator.
+          </p>
         </div>
+        <div
+          className="output-settings"
+          aria-label="Settings (User Instructions)"
+        >
+          <span className="badge">
+            Aspect Ratio: {settings.aspectRatio || '16:9'}
+          </span>
+          <span className="badge">
+            Intended Duration:{' '}
+            {settings.durationSeconds ? `${settings.durationSeconds}s` : 'N/A'}
+          </span>
+        </div>
+      </header>
 
-        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={handleDownloadTxt}
-          >
-            <Download size={16} /> Download .txt
-          </button>
-
-          {draft && (
+      <div className="card output-main-card">
+        <div
+          className="tabs-bar output-workspace-tabs"
+          role="tablist"
+          aria-label="Output workspace"
+          onKeyDown={handleTabKeys}
+        >
+          {OUTPUT_TABS.map((tab) => (
             <button
+              key={tab.value}
               type="button"
-              className="btn btn-primary"
-              onClick={handleSaveScene}
+              role="tab"
+              id={`${tabId}-tab-${tab.value}`}
+              aria-selected={activeTab === tab.value}
+              aria-controls={`${tabId}-panel-${tab.value}`}
+              tabIndex={activeTab === tab.value ? 0 : -1}
+              className={`tab-btn ${activeTab === tab.value ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.value)}
             >
-              <BookmarkCheck size={16} /> Save Scene
+              {tab.label}
+              {tab.value === 'references' && (
+                <span className="output-tab-count" aria-hidden="true">
+                  {studioReferences.length}
+                </span>
+              )}
+              {tab.value === 'review' && resultLinks.length > 0 && (
+                <span className="output-tab-count" aria-hidden="true">
+                  {resultLinks.length}
+                </span>
+              )}
             </button>
-          )}
-
-          {savedScene && (
-            <>
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={() =>
-                  openCollectionModal({
-                    type: 'scene',
-                    id: savedScene.id,
-                    title: savedScene.title,
-                  })
-                }
-              >
-                <FolderPlus size={16} /> Add to Collection
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={async () => {
-                  const copy = await createDraftFromSavedScene(savedScene.id);
-                  await refreshSnapshot();
-                  showToast('Created editable copy in Scene Builder.', 'success');
-                  navigate(`/builder/${copy.id}`);
-                }}
-              >
-                <Edit3 size={16} /> Edit a Copy
-              </button>
-            </>
-          )}
+          ))}
         </div>
+
+        <section
+          role="tabpanel"
+          id={`${tabId}-panel-prompt`}
+          aria-labelledby={`${tabId}-tab-prompt`}
+          tabIndex={0}
+          hidden={activeTab !== 'prompt'}
+          className="output-tab-panel"
+        >
+          <div className="output-format-header">
+            <div
+              className="tabs-bar output-format-tabs"
+              role="tablist"
+              aria-label="Prompt format"
+              onKeyDown={handleTabKeys}
+            >
+              {OUTPUT_MODES.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  role="tab"
+                  id={`${tabId}-mode-${item.value}`}
+                  aria-selected={mode === item.value}
+                  aria-controls={`${tabId}-mode-panel-${item.value}`}
+                  tabIndex={mode === item.value ? 0 : -1}
+                  className={`tab-btn ${mode === item.value ? 'active' : ''}`}
+                  onClick={() => {
+                    setMode(item.value);
+                    setIsEditingManual(false);
+                  }}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            <div className="output-edit-actions">
+              {manualOverride && (
+                <span className="badge badge-warning">Edited output</span>
+              )}
+              {!isSavedScene && !isEditingManual && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => {
+                    setManualBuf(activeText);
+                    setIsEditingManual(true);
+                  }}
+                >
+                  <Edit3 size={14} /> Edit This Output
+                </button>
+              )}
+              {!isSavedScene && manualOverride && !isEditingManual && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={handleDiscardManualOverride}
+                >
+                  <RotateCcw size={14} /> Reset to Assembled
+                </button>
+              )}
+            </div>
+          </div>
+          <p className="muted-text output-order">
+            Character → Clothing → Environment → Action → Camera → Lighting →
+            Style → Instructions → Dialogue
+          </p>
+          {OUTPUT_MODES.map((item) => (
+            <div
+              key={item.value}
+              role="tabpanel"
+              id={`${tabId}-mode-panel-${item.value}`}
+              aria-labelledby={`${tabId}-mode-${item.value}`}
+              tabIndex={0}
+              hidden={mode !== item.value}
+            >
+              {mode === item.value &&
+                (isEditingManual ? (
+                  <div className="output-manual-editor">
+                    <label htmlFor={`${tabId}-manual`} className="form-label">
+                      Manual prompt output
+                    </label>
+                    <textarea
+                      id={`${tabId}-manual`}
+                      className="textarea output-manual-textarea"
+                      rows={9}
+                      value={manualBuf}
+                      onChange={(e) => setManualBuf(e.target.value)}
+                    />
+                    <div className="output-edit-actions">
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => setIsEditingManual(false)}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={handleSaveManualOverride}
+                      >
+                        Save Manual Output Override
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div
+                    role="region"
+                    aria-label="Complete prompt text"
+                    tabIndex={0}
+                    className="output-prompt-viewer"
+                  >
+                    {activeText}
+                  </div>
+                ))}
+            </div>
+          ))}
+          <details className="output-disclosure">
+            <summary>Avoid / Negative Text (Separate)</summary>
+            <div className="output-disclosure-body">
+              <p className="muted-text output-negative-text">
+                {avoidText ||
+                  'No avoid / negative text specified for this scene.'}
+              </p>
+              {avoidText && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  onClick={() => copyText(avoidText, 'Avoid text copied.')}
+                >
+                  <Copy size={13} /> Copy Avoid Text
+                </button>
+              )}
+            </div>
+          </details>
+          <details className="output-disclosure">
+            <summary>Settings (User Instructions)</summary>
+            <div className="output-disclosure-body">
+              <p className="muted-text">
+                Set these options manually in your external generator.
+              </p>
+              <p className="muted-text output-negative-text">
+                {settings.toolNotes || 'No additional tool / provider notes.'}
+              </p>
+            </div>
+          </details>
+        </section>
+
+        <section
+          role="tabpanel"
+          id={`${tabId}-panel-references`}
+          aria-labelledby={`${tabId}-tab-references`}
+          tabIndex={0}
+          hidden={activeTab !== 'references'}
+          className="output-tab-panel"
+        >
+          <p className="muted-text output-reference-guidance">
+            Copying prompt text does not upload reference images or videos to an
+            external AI tool. Download and attach these reference files
+            manually:
+          </p>
+          <ReferenceBoard
+            items={studioReferences}
+            mediaMap={mediaMap}
+            title="Reference Files Checklist"
+            collapseThumbnails
+            downloadable
+          />
+        </section>
+
+        <section
+          role="tabpanel"
+          id={`${tabId}-panel-review`}
+          aria-labelledby={`${tabId}-tab-review`}
+          tabIndex={0}
+          hidden={activeTab !== 'review'}
+          className="output-tab-panel"
+        >
+          <div className="output-review-header">
+            <div>
+              <h2 className="section-title">
+                Uploaded External Results &amp; Review
+              </h2>
+              <p className="muted-text output-reference-guidance">
+                Upload the actual image or video produced by your external tool
+                to review alongside this preserved prompt specification.
+              </p>
+            </div>
+            <label
+              htmlFor={`${tabId}-result-upload`}
+              className="btn btn-secondary btn-sm output-upload-label"
+            >
+              <Upload size={14} /> Upload Actual Result
+              <input
+                id={`${tabId}-result-upload`}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
+                onChange={handleUploadResultOnSavedScene}
+                className="output-upload-input"
+              />
+            </label>
+          </div>
+          {resultLinks.length > 0 ? (
+            <div className="output-result-grid">
+              {resultLinks.map((rLink, index) => (
+                <div
+                  key={`${rLink.mediaId}_${index}`}
+                  className="output-result-media"
+                >
+                  <MediaThumbnail
+                    media={mediaMap.get(rLink.mediaId)}
+                    altText={rLink.altText}
+                    showVideoControls
+                    roleBadge="Actual Result"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="output-review-empty muted-text">
+              No actual results uploaded yet.
+            </div>
+          )}
+          <div className="output-review-form">
+            <label htmlFor={`${tabId}-review-status`} className="form-label">
+              Review Status:
+            </label>
+            <select
+              id={`${tabId}-review-status`}
+              className="select"
+              value={record.reviewStatus}
+              onChange={async (e) => {
+                if (savedScene) {
+                  await updateSavedSceneReviewAndResults({
+                    sceneId: savedScene.id,
+                    resultMediaLinks: savedScene.resultMediaLinks,
+                    reviewNotes,
+                    reviewStatus: e.target.value as ReviewStatus,
+                  });
+                } else if (draft) {
+                  await saveSceneDraft({
+                    ...draft,
+                    reviewNotes,
+                    reviewStatus: e.target.value as ReviewStatus,
+                    bumpInputRevision: false,
+                  });
+                }
+                await refreshSnapshot();
+                showToast('Updated scene review status.', 'success');
+              }}
+            >
+              <option value="unreviewed">Unreviewed</option>
+              <option value="user-approved">User-approved</option>
+            </select>
+            <label htmlFor={`${tabId}-review-notes`} className="form-label">
+              Review Notes
+            </label>
+            <textarea
+              id={`${tabId}-review-notes`}
+              className="textarea"
+              rows={3}
+              value={reviewNotes}
+              onChange={(e) => setReviewNotesBuffer(e.target.value)}
+              onBlur={(event) => {
+                if (event.relatedTarget?.id !== `${tabId}-save-review-notes`)
+                  void saveReviewNotes();
+              }}
+            />
+            <button
+              id={`${tabId}-save-review-notes`}
+              type="button"
+              className="btn btn-secondary btn-sm output-save-notes"
+              onClick={saveReviewNotes}
+            >
+              Save Review Notes
+            </button>
+          </div>
+        </section>
       </div>
 
-      {/* Output Tabs: Full Prompt, Structured, Compact */}
-      <div className="card">
-        <div className="tabs-bar" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === 'full'}
-            className={`tab-btn ${mode === 'full' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('full');
-              setIsEditingManual(false);
-            }}
-          >
-            Full Prompt
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === 'structured'}
-            className={`tab-btn ${mode === 'structured' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('structured');
-              setIsEditingManual(false);
-            }}
-          >
-            Structured
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={mode === 'compact'}
-            className={`tab-btn ${mode === 'compact' ? 'active' : ''}`}
-            onClick={() => {
-              setMode('compact');
-              setIsEditingManual(false);
-            }}
-          >
-            Compact
-          </button>
-        </div>
-
+      <footer
+        className="card output-action-footer"
+        role="region"
+        aria-label="Prompt actions"
+      >
         {isStale && (
-          <div className="banner banner-warning">
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div className="banner banner-warning output-stale-warning">
+            <div className="output-stale-message">
               <AlertTriangle size={18} />
               <span>
                 <strong>Stale manual edit:</strong> These edits were based on
@@ -421,7 +779,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 reassemble.
               </span>
             </div>
-            <div style={{ display: 'flex', gap: 8 }}>
+            <div className="output-footer-buttons">
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
@@ -436,319 +794,77 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 className="btn btn-danger btn-sm"
                 onClick={handleDiscardManualOverride}
               >
-                <RotateCcw size={13} /> Discard & Reassemble
+                <RotateCcw size={13} /> Discard &amp; Reassemble
               </button>
             </div>
           </div>
         )}
-
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 10,
-            marginBottom: 10,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="muted-text" style={{ fontSize: 13 }}>
-              Order: Character → Clothing → Environment → Action → Camera →
-              Lighting → Style → Instructions → Dialogue
+        <div className="output-footer-row">
+          <div className="output-footer-context">
+            <strong>{activeModeLabel}</strong>
+            <span className="muted-text">
+              {activeText.length.toLocaleString()} characters · complete output
             </span>
-            {manualOverride && (
-              <span className="badge badge-warning">Edited output</span>
-            )}
           </div>
-
-          <div style={{ display: 'flex', gap: 8 }}>
-            {!isSavedScene && !isEditingManual && (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => {
-                  setManualBuf(activeText);
-                  setIsEditingManual(true);
-                }}
-              >
-                <Edit3 size={14} /> Edit This Output
-              </button>
-            )}
-            {!isSavedScene && manualOverride && !isEditingManual && (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={handleDiscardManualOverride}
-              >
-                <RotateCcw size={14} /> Reset to Assembled
-              </button>
-            )}
+          <div className="output-footer-buttons">
             <button
               type="button"
-              className="btn btn-primary btn-sm"
+              className="btn btn-secondary"
+              onClick={handleDownloadTxt}
+            >
+              <Download size={16} /> Download .txt
+            </button>
+            <button
+              type="button"
+              className="btn btn-primary"
               onClick={handleCopyActivePrompt}
             >
-              <Copy size={14} /> Copy Prompt
+              <Copy size={16} /> Copy Prompt
             </button>
-          </div>
-        </div>
-
-        {isEditingManual ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <textarea
-              className="textarea"
-              rows={9}
-              value={manualBuf}
-              onChange={(e) => setManualBuf(e.target.value)}
-            />
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            {draft && (
               <button
                 type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => setIsEditingManual(false)}
+                className="btn btn-primary"
+                onClick={handleSaveScene}
               >
-                Cancel
-              </button>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={handleSaveManualOverride}
-              >
-                Save Manual Output Override
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div
-            style={{
-              background: '#F8FAFC',
-              border: '1px solid var(--border-subtle)',
-              borderRadius: 12,
-              padding: 18,
-              fontSize: 16,
-              lineHeight: 1.6,
-              whiteSpace: 'pre-wrap',
-              userSelect: 'text',
-            }}
-          >
-            {activeText}
-          </div>
-        )}
-      </div>
-
-      {/* Separate Avoid / Negative Text & Settings */}
-      <div className="split-layout detail-split">
-        <div className="card">
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 8,
-            }}
-          >
-            <h2 className="section-title">Avoid / Negative Text (Separate)</h2>
-            {avoidText && (
-              <button
-                type="button"
-                className="btn btn-secondary btn-sm"
-                onClick={() => copyText(avoidText, 'Avoid text copied.')}
-              >
-                <Copy size={13} /> Copy Avoid Text
+                <BookmarkCheck size={16} /> Save Scene
               </button>
             )}
-          </div>
-          <p className="muted-text" style={{ margin: 0 }}>
-            {avoidText || 'No avoid / negative text specified for this scene.'}
-          </p>
-        </div>
-
-        <div className="card">
-          <h2 className="section-title" style={{ marginBottom: 8 }}>
-            Settings (User Instructions)
-          </h2>
-          <p className="muted-text" style={{ margin: '0 0 8px', fontSize: 12 }}>
-            Set these options manually in your external generator.
-          </p>
-          <div className="tag-list">
-            <span className="badge">
-              Aspect Ratio: {settings.aspectRatio || '16:9'}
-            </span>
-            <span className="badge">
-              Intended Duration:{' '}
-              {settings.durationSeconds ? `${settings.durationSeconds}s` : 'N/A'}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Reference Checklist (Must be attached manually in external tool) */}
-      <div className="card">
-        <h2 className="section-title" style={{ marginBottom: 6 }}>
-          Reference Files Checklist (Attach Separately in Your External Tool)
-        </h2>
-        <p className="muted-text" style={{ margin: '0 0 14px', fontSize: 13 }}>
-          Copying prompt text does not upload reference images or videos to an
-          external AI tool. Download and attach these reference files manually:
-        </p>
-
-        {references.length === 0 ? (
-          <p className="muted-text">
-            No reference files attached to the selected components.
-          </p>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gap: 12,
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            }}
-          >
-            {references.map((ref, idx) => {
-              const m = mediaMap.get(ref.mediaId);
-              return (
-                <div
-                  key={`${ref.mediaId}_${idx}`}
-                  style={{
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 12,
-                    padding: 12,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 8,
+            {savedScene && (
+              <>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() =>
+                    openCollectionModal({
+                      type: 'scene',
+                      id: savedScene.id,
+                      title: savedScene.title,
+                    })
+                  }
+                >
+                  <FolderPlus size={16} /> Add to Collection
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={async () => {
+                    const copy = await createDraftFromSavedScene(savedScene.id);
+                    await refreshSnapshot();
+                    showToast(
+                      'Created editable copy in Scene Builder.',
+                      'success'
+                    );
+                    navigate(`/builder/${copy.id}`);
                   }}
                 >
-                  <div style={{ height: 120, borderRadius: 8, overflow: 'hidden' }}>
-                    <MediaThumbnail media={m} altText={ref.altText} />
-                  </div>
-                  <div style={{ fontWeight: 600, fontSize: 13 }}>
-                    {m?.filename || ref.filename || ref.mediaId}
-                  </div>
-                  {m && (
-                    <button
-                      type="button"
-                      className="btn btn-secondary btn-sm"
-                      onClick={() => downloadBlobAsFile(m.blob, m.filename)}
-                    >
-                      <Download size={13} /> Download Reference
-                    </button>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Result Upload & Review on Output Screen */}
-      <div className="card">
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: 10,
-            marginBottom: 12,
-          }}
-        >
-          <div>
-            <h2 className="section-title">Uploaded External Results & Review</h2>
-            <p className="muted-text" style={{ margin: '4px 0 0', fontSize: 13 }}>
-              Upload the actual image or video produced by your external tool to
-              review alongside this preserved prompt specification.
-            </p>
-          </div>
-          <div>
-            <label
-              htmlFor="output-result-upload"
-              className="btn btn-secondary btn-sm"
-              style={{ cursor: 'pointer' }}
-            >
-              <Upload size={14} /> Upload Actual Result
-            </label>
-            <input
-              id="output-result-upload"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
-              onChange={handleUploadResultOnSavedScene}
-              style={{ display: 'none' }}
-            />
-          </div>
-        </div>
-
-        {(savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? [])
-          .length > 0 && (
-          <div
-            style={{
-              display: 'grid',
-              gap: 12,
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              marginBottom: 14,
-            }}
-          >
-            {(savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? []).map(
-              (rLink, idx) => {
-                const media = mediaMap.get(rLink.mediaId);
-                return (
-                  <div
-                    key={`${rLink.mediaId}_${idx}`}
-                    style={{
-                      border: '1px solid var(--border-subtle)',
-                      borderRadius: 10,
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <div style={{ height: 160 }}>
-                      <MediaThumbnail
-                        media={media}
-                        altText={rLink.altText}
-                        showVideoControls={true}
-                        roleBadge="Actual Result"
-                      />
-                    </div>
-                  </div>
-                );
-              }
+                  <Edit3 size={16} /> Edit a Copy
+                </button>
+              </>
             )}
           </div>
-        )}
-
-        {savedScene && (
-          <div
-            style={{
-              display: 'flex',
-              gap: 12,
-              alignItems: 'center',
-              flexWrap: 'wrap',
-            }}
-          >
-            <label htmlFor="saved-scene-review" className="form-label">
-              Review Status:
-            </label>
-            <select
-              id="saved-scene-review"
-              className="select"
-              style={{ width: 200 }}
-              value={savedScene.reviewStatus}
-              onChange={async (e) => {
-                await updateSavedSceneReviewAndResults({
-                  sceneId: savedScene.id,
-                  resultMediaLinks: savedScene.resultMediaLinks,
-                  reviewNotes: savedScene.reviewNotes,
-                  reviewStatus: e.target.value as ReviewStatus,
-                });
-                await refreshSnapshot();
-                showToast('Updated scene review status.', 'success');
-              }}
-            >
-              <option value="unreviewed">Unreviewed</option>
-              <option value="user-approved">User-approved</option>
-            </select>
-          </div>
-        )}
-      </div>
+        </div>
+      </footer>
     </div>
   );
 };

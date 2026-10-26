@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   Copy,
@@ -7,6 +7,7 @@ import {
   FolderPlus,
   Heart,
   Layers,
+  Lock,
   MoreHorizontal,
   PlusCircle,
   Trash2,
@@ -25,6 +26,7 @@ import {
   toggleVariantFavorite,
 } from '../storage/db';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
+import './characterStudio.css';
 
 interface PromptDetailScreenProps {
   id: string;
@@ -53,6 +55,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
   >('prompt');
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const tabsId = useId();
 
   const mediaMap = useMemo(() => {
     const map = new Map<string, MediaAsset>();
@@ -115,6 +118,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
   const activeMedia = activeMediaLink
     ? mediaMap.get(activeMediaLink.mediaId)
     : undefined;
+  const isVisualDetail = kind === 'variant' || asset?.category === 'characters';
 
   const handleDuplicate = async () => {
     setMenuOpen(false);
@@ -227,7 +231,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+    <div className="character-studio character-studio-detail">
       {/* Top Breadcrumb & Actions */}
       <div
         style={{
@@ -238,7 +242,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           gap: 12,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div className="character-studio-breadcrumb">
           <button
             type="button"
             className="btn btn-secondary btn-sm"
@@ -246,8 +250,10 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
               kind === 'asset' && asset
                 ? navigate(`/library/${asset.category}`)
                 : variant
-                ? navigate(`/characters/${variant.parentCharacterId}/variants`)
-                : navigate('/library')
+                  ? navigate(
+                      `/characters/${variant.parentCharacterId}/variants`
+                    )
+                  : navigate('/library')
             }
           >
             <ArrowLeft size={15} /> Back
@@ -259,7 +265,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           </span>
         </div>
 
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', position: 'relative' }}>
+        <div className="character-studio-record-actions">
           <button
             type="button"
             className="btn btn-secondary btn-sm"
@@ -298,6 +304,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
             type="button"
             className="icon-btn"
             aria-label="More actions (Duplicate or Delete)"
+            aria-expanded={menuOpen}
             onClick={() => setMenuOpen((o) => !o)}
           >
             <MoreHorizontal size={18} />
@@ -339,23 +346,17 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
       </div>
 
       {/* Main Two-Column Detail Layout */}
-      <div className="split-layout detail-split">
+      <div className="split-layout detail-split character-studio-layout">
         {/* Left: Media Viewer & Thumbnails */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          <div
-            style={{
-              width: '100%',
-              minHeight: 300,
-              maxHeight: 540,
-              borderRadius: 12,
-              overflow: 'hidden',
-              border: '1px solid var(--border-subtle)',
-              background: '#F8FAFC',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+        <div className="card character-studio-media-panel">
+          <div className="character-studio-preview-heading">
+            <strong>Visual reference</strong>
+            <span className="muted-text">
+              {record.mediaLinks.length}{' '}
+              {record.mediaLinks.length === 1 ? 'file' : 'files'}
+            </span>
+          </div>
+          <div className="character-studio-preview">
             <MediaThumbnail
               media={activeMedia}
               altText={activeMediaLink?.altText || record.title}
@@ -363,6 +364,11 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
               roleBadge={activeMediaLink?.role}
             />
           </div>
+          {activeMedia?.isBundledIllustration && (
+            <span className="muted-text character-studio-demo-label">
+              Demo / Illustrative
+            </span>
+          )}
 
           {record.mediaLinks.length > 1 && (
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto' }}>
@@ -387,6 +393,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                       flexShrink: 0,
                     }}
                     aria-label={`View sample ${idx + 1}`}
+                    aria-pressed={idx === selectedMediaIdx}
                   >
                     <MediaThumbnail media={m} altText={link.altText} />
                   </button>
@@ -405,7 +412,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                 gap: 8,
               }}
             >
-              <span className="muted-text" style={{ fontSize: 12 }}>
+              <span className="muted-text character-studio-filename">
                 File: {activeMedia.filename} (
                 {(activeMedia.byteSize / 1024).toFixed(1)} KiB)
               </span>
@@ -423,8 +430,15 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
         </div>
 
         {/* Right: Metadata, Tabs, Prompt Text, and Primary Actions */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="card character-studio-metadata">
+          <div
+            style={{
+              display: 'flex',
+              gap: 8,
+              flexWrap: 'wrap',
+              alignItems: 'center',
+            }}
+          >
             {kind === 'asset' && asset ? (
               <span className="badge badge-primary">
                 {CATEGORY_LABELS[asset.category]}
@@ -439,7 +453,6 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
-                      style={{ minHeight: 28, padding: '2px 8px', fontSize: 12 }}
                       onClick={() => navigate(`/prompts/${parentCharacter.id}`)}
                     >
                       Parent: {parentCharacter.title}
@@ -462,11 +475,24 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
 
           <h1 className="page-title">{record.title}</h1>
 
-          {record.description && (
-            <p className="muted-text" style={{ margin: 0, fontSize: 15 }}>
-              {record.description}
+          {asset?.category === 'characters' && (
+            <p className="character-studio-identity-note">
+              <Lock size={14} aria-hidden="true" /> Base identity is preserved
+              verbatim in scenes.
             </p>
           )}
+
+          {record.description &&
+            (record.description.length > 240 ? (
+              <details className="character-studio-description">
+                <summary>View description</summary>
+                <p className="muted-text">{record.description}</p>
+              </details>
+            ) : (
+              <p className="muted-text" style={{ margin: 0, fontSize: 15 }}>
+                {record.description}
+              </p>
+            ))}
 
           {record.tags.length > 0 && (
             <div className="tag-list">
@@ -479,7 +505,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           )}
 
           {/* Primary Action Bar */}
-          <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <div className="character-studio-primary-actions">
             <button
               type="button"
               className="btn btn-primary"
@@ -526,11 +552,43 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           </div>
 
           {/* Detail Tabs: Prompt, Variants, Notes, Related */}
-          <div className="tabs-bar" role="tablist">
+          <div
+            className="tabs-bar"
+            role="tablist"
+            aria-label="Record details"
+            onKeyDown={(event) => {
+              const tabs = Array.from(
+                event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                  '[role="tab"]'
+                )
+              );
+              const current = tabs.indexOf(
+                document.activeElement as HTMLButtonElement
+              );
+              if (current < 0) return;
+              const next =
+                event.key === 'ArrowRight'
+                  ? (current + 1) % tabs.length
+                  : event.key === 'ArrowLeft'
+                    ? (current - 1 + tabs.length) % tabs.length
+                    : event.key === 'Home'
+                      ? 0
+                      : event.key === 'End'
+                        ? tabs.length - 1
+                        : -1;
+              if (next < 0) return;
+              event.preventDefault();
+              tabs[next].focus();
+              tabs[next].click();
+            }}
+          >
             <button
               type="button"
               role="tab"
+              id={`${tabsId}-tab-prompt`}
+              aria-controls={`${tabsId}-panel-prompt`}
               aria-selected={activeTab === 'prompt'}
+              tabIndex={activeTab === 'prompt' ? 0 : -1}
               className={`tab-btn ${activeTab === 'prompt' ? 'active' : ''}`}
               onClick={() => setActiveTab('prompt')}
             >
@@ -539,7 +597,10 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
             <button
               type="button"
               role="tab"
+              id={`${tabsId}-tab-variants`}
+              aria-controls={`${tabsId}-panel-variants`}
               aria-selected={activeTab === 'variants'}
+              tabIndex={activeTab === 'variants' ? 0 : -1}
               className={`tab-btn ${activeTab === 'variants' ? 'active' : ''}`}
               onClick={() => setActiveTab('variants')}
             >
@@ -548,7 +609,10 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
             <button
               type="button"
               role="tab"
+              id={`${tabsId}-tab-notes`}
+              aria-controls={`${tabsId}-panel-notes`}
               aria-selected={activeTab === 'notes'}
+              tabIndex={activeTab === 'notes' ? 0 : -1}
               className={`tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
               onClick={() => setActiveTab('notes')}
             >
@@ -557,7 +621,10 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
             <button
               type="button"
               role="tab"
+              id={`${tabsId}-tab-related`}
+              aria-controls={`${tabsId}-panel-related`}
               aria-selected={activeTab === 'related'}
+              tabIndex={activeTab === 'related' ? 0 : -1}
               className={`tab-btn ${activeTab === 'related' ? 'active' : ''}`}
               onClick={() => setActiveTab('related')}
             >
@@ -566,7 +633,12 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           </div>
 
           {activeTab === 'prompt' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div
+              role="tabpanel"
+              id={`${tabsId}-panel-prompt`}
+              aria-labelledby={`${tabsId}-tab-prompt`}
+              style={{ display: 'flex', flexDirection: 'column', gap: 14 }}
+            >
               {kind === 'variant' && (
                 <div className="banner banner-info" style={{ marginBottom: 0 }}>
                   <span style={{ fontSize: 13 }}>
@@ -578,88 +650,71 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                 </div>
               )}
 
-              <div
-                style={{
-                  background: '#F8FAFC',
-                  border: '1px solid var(--border-subtle)',
-                  borderRadius: 12,
-                  padding: 16,
-                }}
+              <details
+                className="character-studio-prompt-details"
+                open={!isVisualDetail}
               >
+                <summary>
+                  {kind === 'variant'
+                    ? 'View full variant prompt'
+                    : asset?.category === 'characters'
+                      ? 'View full identity prompt'
+                      : 'Prompt details'}
+                </summary>
                 <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: 8,
-                  }}
+                  className="character-studio-prompt-content"
+                  tabIndex={0}
+                  role="region"
+                  aria-label="Complete prompt details"
                 >
-                  <strong style={{ fontSize: 13 }}>
-                    {kind === 'variant'
-                      ? 'Changed Layer Prompt Text'
-                      : 'Full Prompt Text'}
-                  </strong>
-                  <button
-                    type="button"
-                    className="btn btn-secondary btn-sm"
-                    onClick={() => copyText(record.promptText)}
-                  >
-                    <Copy size={13} /> Copy
-                  </button>
-                </div>
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: 16,
-                    lineHeight: 1.6,
-                    whiteSpace: 'pre-wrap',
-                    userSelect: 'text',
-                  }}
-                >
-                  {record.promptText}
-                </p>
-              </div>
+                  <div className="character-studio-source-block">
+                    <div className="character-studio-source-heading">
+                      <strong>
+                        {kind === 'variant'
+                          ? 'Changed Layer Prompt Text'
+                          : 'Full Prompt Text'}
+                      </strong>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => copyText(record.promptText)}
+                      >
+                        <Copy size={13} /> Copy
+                      </button>
+                    </div>
+                    <p className="character-studio-full-text">
+                      {record.promptText}
+                    </p>
+                  </div>
 
-              {record.compactText && (
-                <div
-                  style={{
-                    background: '#F8FAFC',
-                    border: '1px solid var(--border-subtle)',
-                    borderRadius: 12,
-                    padding: 14,
-                  }}
-                >
-                  <strong style={{ fontSize: 13 }}>
-                    Optional Compact Text:
-                  </strong>
-                  <p style={{ margin: '6px 0 0', fontSize: 14 }}>
-                    {record.compactText}
-                  </p>
-                </div>
-              )}
+                  {record.compactText && (
+                    <div className="character-studio-source-block">
+                      <strong>Optional Compact Text:</strong>
+                      <p className="character-studio-full-text">
+                        {record.compactText}
+                      </p>
+                    </div>
+                  )}
 
-              {record.avoidText && (
-                <div
-                  style={{
-                    background: '#FEF2F2',
-                    border: '1px solid var(--error-border)',
-                    borderRadius: 12,
-                    padding: 14,
-                  }}
-                >
-                  <strong style={{ fontSize: 13, color: 'var(--error-text)' }}>
-                    Avoid / Negative Text:
-                  </strong>
-                  <p style={{ margin: '6px 0 0', fontSize: 14 }}>
-                    {record.avoidText}
-                  </p>
+                  {record.avoidText && (
+                    <div className="character-studio-source-block character-studio-avoid-text">
+                      <strong>Avoid / Negative Text:</strong>
+                      <p className="character-studio-full-text">
+                        {record.avoidText}
+                      </p>
+                    </div>
+                  )}
                 </div>
-              )}
+              </details>
             </div>
           )}
 
           {activeTab === 'variants' && (
-            <div>
+            <div
+              role="tabpanel"
+              id={`${tabsId}-panel-variants`}
+              aria-labelledby={`${tabsId}-tab-variants`}
+            >
               {kind === 'asset' && asset?.category === 'characters' ? (
                 <>
                   <div
@@ -689,29 +744,37 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                       No variants created for this character yet.
                     </p>
                   ) : (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gap: 10,
-                        gridTemplateColumns:
-                          'repeat(auto-fill, minmax(220px, 1fr))',
-                      }}
-                    >
+                    <div className="character-studio-linked-grid">
                       {linkedVariants.map((v) => (
                         <div
                           key={v.id}
                           className="card"
                           style={{ padding: 12 }}
                         >
+                          <button
+                            type="button"
+                            className="character-studio-linked-preview"
+                            aria-label={`Open ${v.title}`}
+                            onClick={() => navigate(`/variants/${v.id}`)}
+                          >
+                            <MediaThumbnail
+                              media={mediaMap.get(
+                                v.coverMediaId || v.mediaLinks[0]?.mediaId
+                              )}
+                              altText={v.title}
+                            />
+                          </button>
                           <span className="badge badge-primary">{v.type}</span>
                           <h4 style={{ margin: '8px 0 4px' }}>{v.title}</h4>
                           <p
                             className="muted-text"
                             style={{ fontSize: 12, margin: '0 0 10px' }}
                           >
-                            {v.promptText}
+                            {v.promptText.length > 140
+                              ? `${v.promptText.slice(0, 140)}…`
+                              : v.promptText}
                           </p>
-                          <div style={{ display: 'flex', gap: 6 }}>
+                          <div className="character-studio-inline-actions">
                             <button
                               type="button"
                               className="btn btn-secondary btn-sm"
@@ -752,7 +815,12 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           )}
 
           {activeTab === 'notes' && (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div
+              role="tabpanel"
+              id={`${tabsId}-panel-notes`}
+              aria-labelledby={`${tabsId}-tab-notes`}
+              style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+            >
               <p className="muted-text" style={{ margin: 0, fontSize: 12 }}>
                 User-entered tool, model, and seed notes are stored for your
                 personal reference and do not imply verified compatibility.
@@ -792,21 +860,18 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
           )}
 
           {activeTab === 'related' && (
-            <div>
+            <div
+              role="tabpanel"
+              id={`${tabsId}-panel-related`}
+              aria-labelledby={`${tabsId}-tab-related`}
+            >
               <p className="muted-text" style={{ marginTop: 0, fontSize: 12 }}>
                 Matched by shared category or user-entered tags:
               </p>
               {relatedAssets.length === 0 ? (
                 <p className="muted-text">No related prompts found.</p>
               ) : (
-                <div
-                  style={{
-                    display: 'grid',
-                    gap: 10,
-                    gridTemplateColumns:
-                      'repeat(auto-fill, minmax(220px, 1fr))',
-                  }}
-                >
+                <div className="character-studio-linked-grid">
                   {relatedAssets.map((r) => (
                     <div key={r.id} className="card" style={{ padding: 12 }}>
                       <span className="badge">
