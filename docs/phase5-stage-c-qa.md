@@ -1,5 +1,7 @@
 # Phase 5 C — continuity and script verification
 
+Reconciled check identities and screenshot hashes are in [the Phase 5 QA ledger](qa/phase5-summary.md). The final retained JSON contains 59 checks. An earlier QA brief cited 56, but no intermediate 56-check JSON remains for an exact three-check diff. These local Chromium results were not independently run by GitHub CI.
+
 Branch `codex/phase5-continuity-script`, parent Stage B `d1a98e7f990cdbcfb918611f7a7d4f3a1b0fce37`. No merge or master push. Project export and bulk productivity remain separate Stage D work.
 
 ## Directly inspected facts
