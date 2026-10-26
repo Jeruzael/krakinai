@@ -67,7 +67,38 @@ export interface MediaLink {
   mimeType?: string;
 }
 
+export interface IdentityAnchor {
+  text: string;
+  approvedText?: string;
+  approvedMasterIdentityRevision?: number;
+  approvedAt?: string;
+}
+
+export interface SceneGenerationChoice {
+  identitySource: 'master' | 'approved_anchor';
+  anchor?: { text: string; approvedMasterIdentityRevision: number; approvedAt: string };
+  fallbackReason?: string;
+}
+
+export interface ReferencePackEntry {
+  associationId: string;
+  mediaId: string;
+  sourceSlot: BuilderSlot | 'result' | 'legacy';
+  sourceId: string;
+  sourceTitle: string;
+  role: MediaRole;
+  altText: string;
+  filename?: string;
+  mimeType?: string;
+  purpose: 'identity' | 'outfit' | 'environment' | 'motion' | 'general';
+  order: number;
+}
+
+export interface ReferencePack { version: 1; entries: ReferencePackEntry[] }
+
 export interface PromptAsset {
+  identityRevision?: number;
+  identityAnchor?: IdentityAnchor;
   id: string;
   title: string;
   category: PromptCategory;
@@ -113,6 +144,8 @@ export interface Variant {
 export type SnapshotSourceType = 'asset' | 'variant' | 'template';
 
 export interface ComponentSnapshot {
+  identityRevision?: number;
+  identityAnchor?: IdentityAnchor;
   slot: BuilderSlot;
   sourceType: SnapshotSourceType;
   sourceId: string;
@@ -149,6 +182,8 @@ export interface ManualOutputOverride {
 }
 
 export interface SceneDraft {
+  generation?: SceneGenerationChoice;
+  referencePack?: ReferencePack;
   id: string;
   title: string;
   slots: Partial<Record<BuilderSlot, ComponentSnapshot>>;
@@ -168,6 +203,8 @@ export interface SceneDraft {
 }
 
 export interface SavedScene {
+  generation?: SceneGenerationChoice;
+  referencePack?: ReferencePack;
   id: string;
   title: string;
   slots: Partial<Record<BuilderSlot, ComponentSnapshot>>;

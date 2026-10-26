@@ -28,6 +28,7 @@ import {
 } from '../storage/db';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import './characterStudio.css';
+import { IdentityAnchorPanel } from '../components/IdentityAnchorPanel';
 
 interface PromptDetailScreenProps {
   id: string;
@@ -531,6 +532,7 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
             </div>
           )}
 
+          {asset?.category === 'characters' && <IdentityAnchorPanel character={asset} onSaved={refreshSnapshot} onCopy={text => copyText(text, 'Anchor copied.')} />}
           {/* Primary Action Bar */}
           <div className="character-studio-primary-actions">
             <button

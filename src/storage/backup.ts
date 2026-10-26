@@ -20,6 +20,7 @@ import {
   MAX_TOTAL_MEDIA_BYTES,
   VARIANT_TYPE_TO_SLOT,
 } from '../domain/validation';
+import { validatePhase4Record } from '../domain/phase4Validation';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
 import {
   collectReferencedMediaIds,
@@ -242,6 +243,11 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     !Array.isArray(manifest.media)
   ) {
     return { valid: false, error: 'manifest.json is missing required entity arrays.' };
+  }
+
+  for (const record of [...manifest.assets, ...manifest.drafts, ...manifest.scenes, ...manifest.templates]) {
+    const error = validatePhase4Record(record);
+    if (error) return { valid: false, error };
   }
 
   const seenIds = new Set<string>();

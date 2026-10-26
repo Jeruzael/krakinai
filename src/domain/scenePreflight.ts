@@ -41,7 +41,7 @@ function speakerMatchesCharacter(speaker: string, title: string): boolean {
   const identityName = fullTitle.replace(/\s*\/\s*(?:base identity|master identity|character identity)$/u, '').trim();
   return name === fullTitle || (identityName.length > 0 && name === identityName);
 }
-export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]}, availableMediaIds?: ReadonlySet<string>): PreflightFinding[] {
+export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>): PreflightFinding[] {
   const findings: PreflightFinding[]=[];
   const add=(ruleId: PreflightFinding['ruleId'], severity: PreflightFinding['severity'], title: string, evidence: Evidence[], explanation: string, suggestedActions=['Review the source directions and edit if needed.']) => {
     const unique=evidence.filter((e,i,a)=>a.findIndex(x=>x.component===e.component&&x.text===e.text)===i);
@@ -83,6 +83,6 @@ export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSl
     const composition=fields.filter(e=>rearFields.includes(e)||positive(e.text,/\b(?:extreme wide shot|extreme long shot|mouth (?:is )?(?:hidden|obscured)|face (?:is )?not visible)\b/i));
     if(visible.length&&composition.length) add('P007','review','Visible speech may be obscured',[...visible,...composition],'Visible speech or lens interaction may not be visible in this composition.');
   }
-  if(availableMediaIds) {const links=source.references??SCENE_COMPONENT_ORDER.flatMap(s=>source.slots[s]?.mediaLinks??[]);for(const link of links)if(!availableMediaIds.has(link.mediaId))add('P008','review','Selected reference is unavailable',[{component:'references',text:link.mediaId}],'The selected media ID is missing from local storage.',['Restore the media or explicitly change the selection.']);}
+  if(availableMediaIds) {const links=source.referencePack?.entries??source.references??SCENE_COMPONENT_ORDER.flatMap(s=>source.slots[s]?.mediaLinks??[]);for(const link of links)if(!availableMediaIds.has(link.mediaId))add('P008','review','Selected reference is unavailable',[{component:'references',text:link.mediaId}],'The selected media ID is missing from local storage.',['Restore the media or explicitly change the selection.']);}
   return findings;
 }

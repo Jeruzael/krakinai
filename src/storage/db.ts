@@ -1,3 +1,4 @@
+import { getIdentityRevision, resolveGenerationIdentity } from '../domain/identityAnchors';
 import {
   SCHEMA_VERSION,
   type BuilderSlot,
@@ -380,6 +381,10 @@ export async function savePromptAsset(input: {
     provenance: input.provenance ?? existing?.provenance ?? {},
     notes: (input.notes ?? existing?.notes ?? '').trim(),
     isStarter: existing?.isStarter ?? false,
+    ...(input.category === 'characters' ? {
+      identityRevision: existing ? getIdentityRevision(existing) + (existing.promptText !== input.promptText.trim() ? 1 : 0) : 1,
+      identityAnchor: existing?.identityAnchor ? structuredClone(existing.identityAnchor) : undefined,
+    } : {}),
     revision: existing ? existing.revision + 1 : 1,
     createdAt: existing?.createdAt || now,
     updatedAt: now,
@@ -399,6 +404,7 @@ export async function toggleAssetFavorite(id: string): Promise<PromptAsset> {
   const updated: PromptAsset = {
     ...existing,
     favorite: !existing.favorite,
+    ...(existing.category === 'characters' ? { identityRevision: getIdentityRevision(existing) } : {}),
   };
   store.put(updated);
   await txDone(tx);
@@ -666,7 +672,9 @@ export async function saveSceneDraft(
   const record: SceneDraft = {
     id: existing?.id || input.id || generateId('draft'),
     title: input.title,
-    slots: input.slots,
+    slots: structuredClone(input.slots),
+    generation: input.generation ? structuredClone(input.generation) : undefined,
+    referencePack: input.referencePack ? structuredClone(input.referencePack) : undefined,
     extraRequiredSlots: input.extraRequiredSlots ?? [],
     sceneInstructions: input.sceneInstructions ?? '',
     avoidText: input.avoidText,
@@ -697,10 +705,13 @@ export async function saveSceneDraft(
 
 export async function saveSceneFromDraft(draftId: string): Promise<SavedScene> {
   const db = await openDatabase();
-  const tx = db.transaction(['drafts', 'scenes'], 'readwrite');
+  const tx = db.transaction(['drafts', 'scenes', 'assets'], 'readwrite');
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
   if (!draft) throw new Error('Scene draft not found.');
 
+  const character = draft.slots.character;
+  const liveMaster = character ? await getFromStore<PromptAsset>(tx.objectStore('assets'), character.sourceId) : undefined;
+  const resolvedIdentity = resolveGenerationIdentity(draft, liveMaster);
   const assembled = assembleScenePrompt(draft);
   if (!assembled.valid) {
     throw new Error(assembled.errors.join(' '));
@@ -717,6 +728,8 @@ export async function saveSceneFromDraft(draftId: string): Promise<SavedScene> {
     id: generateId('scene'),
     title: draft.title.trim(),
     slots: structuredClone(draft.slots),
+    generation: resolvedIdentity.generation,
+    referencePack: draft.referencePack ? structuredClone(draft.referencePack) : undefined,
     extraRequiredSlots: [...draft.extraRequiredSlots],
     sceneInstructions: draft.sceneInstructions,
     avoidText: assembled.avoidText,
@@ -786,6 +799,8 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
   return saveSceneDraft({
     title: `${scene.title} (Copy)`,
     slots: structuredClone(scene.slots),
+    generation: scene.generation ? structuredClone(scene.generation) : undefined,
+    referencePack: scene.referencePack ? structuredClone(scene.referencePack) : undefined,
     extraRequiredSlots: [...scene.extraRequiredSlots],
     sceneInstructions: scene.sceneInstructions,
     avoidText: scene.avoidText,
@@ -1002,21 +1017,54 @@ export async function replaceAllStoresTransactionally(data: LibrarySnapshot): Pr
   const db = await openDatabase();
   const tx = db.transaction(STORE_NAMES, 'readwrite');
 
-  for (const name of STORE_NAMES) {
-    tx.objectStore(name).clear();
+  const completion = txDone(tx);
+  try {
+    for (const name of STORE_NAMES) {
+      tx.objectStore(name).clear();
+    }
+
+    for (const a of data.assets) tx.objectStore('assets').put(a);
+    for (const v of data.variants) tx.objectStore('variants').put(v);
+    for (const m of data.media) tx.objectStore('media').put(m);
+    for (const d of data.drafts) tx.objectStore('drafts').put(d);
+    for (const s of data.scenes) tx.objectStore('scenes').put(s);
+    for (const c of data.collections) tx.objectStore('collections').put(c);
+    for (const t of data.templates) tx.objectStore('templates').put(t);
+    tx.objectStore('preferences').put({
+      ...data.preferences,
+      id: 'app_preferences',
+    });
+
+    await completion;
+  } catch (error) {
+    try { tx.abort(); } catch { /* It may already have aborted asynchronously. */ }
+    await completion.catch(() => undefined);
+    throw error;
   }
+}
 
-  for (const a of data.assets) tx.objectStore('assets').put(a);
-  for (const v of data.variants) tx.objectStore('variants').put(v);
-  for (const m of data.media) tx.objectStore('media').put(m);
-  for (const d of data.drafts) tx.objectStore('drafts').put(d);
-  for (const s of data.scenes) tx.objectStore('scenes').put(s);
-  for (const c of data.collections) tx.objectStore('collections').put(c);
-  for (const t of data.templates) tx.objectStore('templates').put(t);
-  tx.objectStore('preferences').put({
-    ...data.preferences,
-    id: 'app_preferences',
-  });
-
+async function writeIdentityAnchor(characterId: string, text: string, approve: boolean, expectedIdentityRevision?: number): Promise<PromptAsset> {
+  if (text.length > 12000) throw new Error('Identity anchor must be 12,000 characters or fewer.');
+  if (approve && !text.trim()) throw new Error('Enter an identity anchor before approving it.');
+  const db = await openDatabase();
+  const tx = db.transaction(['assets'], 'readwrite');
+  const store = tx.objectStore('assets');
+  const existing = await getFromStore<PromptAsset>(store, characterId);
+  if (!existing || existing.category !== 'characters') throw new Error('Character not found.');
+  const identityRevision = getIdentityRevision(existing);
+  if (expectedIdentityRevision !== undefined && expectedIdentityRevision !== identityRevision) throw new Error('Character identity changed. Refresh the master before approving or saving the anchor.');
+  const now = new Date().toISOString();
+  const updated: PromptAsset = {
+    ...existing, identityRevision, revision: existing.revision + 1, updatedAt: now,
+    identityAnchor: approve ? { text, approvedText: text, approvedMasterIdentityRevision: identityRevision, approvedAt: now } : { ...existing.identityAnchor, text },
+  };
+  store.put(updated);
   await txDone(tx);
+  return updated;
+}
+export function saveIdentityAnchorDraft(characterId: string, text: string, expectedIdentityRevision?: number): Promise<PromptAsset> {
+  return writeIdentityAnchor(characterId, text, false, expectedIdentityRevision);
+}
+export function approveIdentityAnchor(characterId: string, text: string, expectedIdentityRevision?: number): Promise<PromptAsset> {
+  return writeIdentityAnchor(characterId, text, true, expectedIdentityRevision);
 }
