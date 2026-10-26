@@ -56,8 +56,8 @@ export const SLOT_LABELS: Record<BuilderSlot, string> = {
 export const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MiB
 export const MAX_VIDEO_BYTES = 50 * 1024 * 1024; // 50 MiB
 export const MAX_FILES_PER_RECORD = 6;
-export const MAX_TOTAL_MEDIA_BYTES = 200 * 1024 * 1024; // 200 MiB
-export const MAX_BACKUP_UNCOMPRESSED_BYTES = 250 * 1024 * 1024; // 250 MiB
+export const MAX_TOTAL_MEDIA_BYTES = 5000 * 1024 * 1024; // 5000 MiB
+export const MAX_BACKUP_UNCOMPRESSED_BYTES = 5500 * 1024 * 1024; // 5500 MiB
 export const MAX_BACKUP_ENTRIES = 2000;
 export const MAX_MANIFEST_BYTES = 20 * 1024 * 1024; // 20 MiB
 
@@ -209,7 +209,7 @@ export function validateMediaCandidate(params: {
     if (currentTotalBytes + size > MAX_TOTAL_MEDIA_BYTES) {
       return {
         valid: false,
-        error: `${name}: Upload would exceed the 200 MiB prototype media limit.`,
+        error: `${name}: Upload would exceed the 5000 MiB prototype media limit.`,
       };
     }
     return { valid: true, kind: 'image' };
