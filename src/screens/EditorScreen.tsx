@@ -28,6 +28,7 @@ import {
   savePromptAsset,
   saveVariant,
 } from '../storage/db';
+import { MediaMetadataEditor } from '../components/MediaMetadataEditor';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 
 interface EditorScreenProps {
@@ -475,6 +476,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                     <div style={{ height: 160, borderRadius: 8, overflow: 'hidden' }}>
                       <MediaThumbnail media={m} altText={link.altText} />
                     </div>
+                    {m && <MediaMetadataEditor media={m} onSaved={async () => { await refreshSnapshot(); }} />}
 
                     <div
                       style={{
@@ -487,7 +489,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                       <input
                         className="input"
                         style={{ flex: 1, minHeight: 36, fontSize: 13 }}
-                        placeholder="Accessible alt text / label"
+                        aria-label="Accessibility Description" placeholder="Accessibility Description"
                         value={link.altText}
                         onChange={(e) => {
                           const next = [...mediaLinks];

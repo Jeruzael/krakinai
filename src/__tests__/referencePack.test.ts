@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { unzipSync, strFromU8 } from 'fflate';
 import { collectReferenceCandidates, buildReferencePackZip } from '../domain/referencePack';
+import { validateExportFilename } from '../domain/mediaNaming';
 import { legacyDraft } from './fixtures/legacyScene';
 import type { MediaAsset } from '../types/domain';
 const media = {id:'same',filename:'../../face.png',safeFilename:'face.png',mimeType:'image/png',blob:new Blob(['original']),byteSize:8,createdAt:''} satisfies MediaAsset;
@@ -14,6 +15,16 @@ it('ZIP keeps ordered associations, deduplicates binaries, and preserves bytes s
  const entries=collectReferenceCandidates(s,new Map([['same',media]])); const files=unzipSync(await buildReferencePackZip({version:1,entries},new Map([['same',media]])));
  const manifest=JSON.parse(strFromU8(files['manifest.json'])); expect(manifest.entries).toHaveLength(2); expect(manifest.entries[0].binaryPath).toBe(manifest.entries[1].binaryPath); expect(Object.keys(files)).toHaveLength(2); expect(strFromU8(files[manifest.entries[0].binaryPath])).toBe('original'); expect(Object.keys(files).join('')).not.toContain('..');
  await expect(buildReferencePackZip({version:1,entries},new Map())).rejects.toThrow(/same/);
+});
+it.each([`${'a'.repeat(110)}.png`, '綾の肖像.png'])('ZIP preserves a validated explicit export basename %s',async(name)=>{
+ validateExportFilename(name,media.mimeType);
+ const source=structuredClone(legacyDraft);
+ source.slots={character:{...source.slots.character!,mediaLinks:[{mediaId:'same',role:'reference',altText:'face',order:0}]}};
+ const entries=collectReferenceCandidates(source,new Map([['same',media]])).map(entry=>({...entry,exportFilename:name,namesCaptured:true as const}));
+ const files=unzipSync(await buildReferencePackZip({version:1,entries},new Map([['same',media]])));
+ const manifest=JSON.parse(strFromU8(files['manifest.json']));
+ expect(manifest.entries[0].binaryPath).toBe(`media/001-${name}`);
+ expect(strFromU8(files[manifest.entries[0].binaryPath])).toBe('original');
 });
 it('collects only unmatched legacy checklist occurrences and retains explicit result origins',()=>{
  const draft=structuredClone(legacyDraft);draft.slots={character:{...draft.slots.character!,mediaLinks:[{mediaId:'a',role:'reference',altText:'face',order:0}]}};

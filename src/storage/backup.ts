@@ -1,3 +1,4 @@
+import { validatePhase5Metadata } from '../domain/phase5MetadataValidation';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import {
   SCHEMA_VERSION,
@@ -33,6 +34,8 @@ export interface SerializedMediaManifestEntry {
   id: string;
   filename: string;
   safeFilename: string;
+  displayName?: string;
+  exportFilename?: string;
   mimeType: string;
   byteSize: number;
   archivePath: string;
@@ -134,6 +137,8 @@ export async function exportFullBackupZip(): Promise<Uint8Array> {
       id: m.id,
       filename: m.filename,
       safeFilename: m.safeFilename,
+      displayName: m.displayName,
+      exportFilename: m.exportFilename,
       mimeType: m.mimeType,
       byteSize: bytes.byteLength,
       archivePath,
@@ -248,6 +253,20 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
   for (const record of [...manifest.assets, ...manifest.drafts, ...manifest.scenes, ...manifest.templates]) {
     const error = validatePhase4Record(record);
     if (error) return { valid: false, error };
+  }
+
+  const mediaMimes = new Map(manifest.media.map(media => [media.id, media.mimeType]));
+  for (const record of [...manifest.media, ...manifest.assets, ...manifest.variants, ...manifest.drafts, ...manifest.scenes, ...manifest.templates]) {
+    const error = validatePhase5Metadata(record, mediaMimes);
+    if (error) return { valid: false, error };
+  }
+  for (const scene of manifest.scenes) {
+    for (const field of ['sourceDraftId', 'saveRequestId', 'versionOfSceneId', 'separateTakeOfSceneId'] as const) {
+      const value = scene[field];
+      if (value !== undefined && (typeof value !== 'string' || !value.trim())) return { valid: false, error: `Invalid scene ${field}.` };
+    }
+    if (scene.sourceDraftInputRevision !== undefined && (!Number.isSafeInteger(scene.sourceDraftInputRevision) || scene.sourceDraftInputRevision < 0)) return { valid: false, error: 'Invalid scene sourceDraftInputRevision.' };
+    if (scene.saveDecision !== undefined && scene.saveDecision !== 'version' && scene.saveDecision !== 'take') return { valid: false, error: 'Invalid scene saveDecision.' };
   }
 
   const seenIds = new Set<string>();
@@ -388,6 +407,8 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
       id: mEntry.id,
       filename: mEntry.filename,
       safeFilename: mEntry.safeFilename,
+      displayName: mEntry.displayName,
+      exportFilename: mEntry.exportFilename,
       mimeType: mEntry.mimeType,
       byteSize: rawBytes.byteLength,
       blob: new Blob([rawBytes as unknown as BlobPart], { type: mEntry.mimeType }),
@@ -408,7 +429,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     scenes: manifest.scenes,
     templates: manifest.templates,
     collections: manifest.collections,
-  });
+  }, { includeOptionalMetadata: false });
 
   for (const refMediaId of referencedMedia) {
     if (!mediaIds.has(refMediaId)) {

@@ -1,3 +1,4 @@
+import { getMediaDisplayName, getDownloadFilename } from '../domain/mediaNaming';
 import React, { useState } from 'react';
 import { Download, Grid2X2, Image, Maximize2 } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
@@ -14,6 +15,9 @@ export interface StudioReference {
   role: string;
   altText?: string;
   filename?: string;
+  displayName?: string;
+  exportFilename?: string;
+  namesCaptured?: true;
 }
 
 export const ReferenceBoard: React.FC<{
@@ -22,12 +26,14 @@ export const ReferenceBoard: React.FC<{
   title?: string;
   collapseThumbnails?: boolean;
   downloadable?: boolean;
+  historical?: boolean;
 }> = ({
   items,
   mediaMap,
   title = 'Reference Board',
   collapseThumbnails = false,
   downloadable = false,
+  historical = false,
 }) => {
   const [featuredKey, setFeaturedKey] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -107,7 +113,7 @@ export const ReferenceBoard: React.FC<{
                 <span className="badge badge-warning">Demo illustration</span>
               )}
             </div>
-            <strong>{featured.sourceTitle}</strong>
+            <strong>{featured.sourceTitle}</strong><span className="muted-text">{getMediaDisplayName(media,featured,historical)}</span>
             {!media && (
               <span className="muted-text">
                 File unavailable: {featured.filename || featured.mediaId}
@@ -122,7 +128,7 @@ export const ReferenceBoard: React.FC<{
                   media &&
                   downloadBlobAsFile(
                     media.blob,
-                    media.safeFilename || media.filename
+                    getDownloadFilename(media, featured, historical)
                   )
                 }
               >
@@ -201,7 +207,7 @@ export const ReferenceBoard: React.FC<{
                     </div>
                     <strong>{item.sourceTitle}</strong>
                     <span className="muted-text">
-                      {record?.filename || item.filename || item.mediaId}
+                      {getMediaDisplayName(record, item, historical)}
                     </span>
                     {downloadable && (
                       <button
@@ -212,7 +218,7 @@ export const ReferenceBoard: React.FC<{
                           record &&
                           downloadBlobAsFile(
                             record.blob,
-                            record.safeFilename || record.filename
+                            getDownloadFilename(record, item, historical)
                           )
                         }
                         aria-label={`Download ${item.label}: ${item.sourceTitle}`}

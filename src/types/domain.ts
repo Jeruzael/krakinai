@@ -43,6 +43,8 @@ export interface ProvenanceMetadata {
 }
 
 export interface MediaAsset {
+  displayName?: string;
+  exportFilename?: string;
   id: string;
   filename: string;
   safeFilename: string;
@@ -58,6 +60,9 @@ export interface MediaAsset {
 }
 
 export interface MediaLink {
+  displayName?: string;
+  exportFilename?: string;
+  namesCaptured?: true;
   mediaId: string;
   role: MediaRole;
   altText: string;
@@ -81,6 +86,9 @@ export interface SceneGenerationChoice {
 }
 
 export interface ReferencePackEntry {
+  displayName?: string;
+  exportFilename?: string;
+  namesCaptured?: true;
   associationId: string;
   mediaId: string;
   sourceSlot: BuilderSlot | 'result' | 'legacy';
@@ -203,6 +211,12 @@ export interface SceneDraft {
 }
 
 export interface SavedScene {
+  sourceDraftId?: string;
+  sourceDraftInputRevision?: number;
+  saveRequestId?: string;
+  saveDecision?: 'version' | 'take';
+  versionOfSceneId?: string;
+  separateTakeOfSceneId?: string;
   generation?: SceneGenerationChoice;
   referencePack?: ReferencePack;
   id: string;
