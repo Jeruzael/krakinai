@@ -2,6 +2,8 @@
 
 Verified 2026-10-26 in the managed `phase4-scene-workflows` worktree. Stage A is PR #4 (`910f1a5e645fcf88502d61d1816efdc0109e532d`), stacked on open PR #3. Stage B targets Stage A; neither is merged automatically.
 
+Stage B implementation is [PR #5](https://github.com/Jeruzael/krakinai/pull/5), commit `37b612aa4a56aaf0d0e8274ee1e4f46bfe9c5a6d`. A subsequent documentation-only commit records delivery. Runtime code tested is unchanged by that documentation update.
+
 ## Directly verified facts
 
 - IndexedDB version 1/eight stores and backup schema version 1 are unchanged. Optional identity/generation/reference-pack fields are added without migration or bulk backfill.
