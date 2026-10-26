@@ -2,9 +2,10 @@ import type {Collection,ProjectShot,ProductionStatus,SavedScene} from '../types/
 import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
+import {beginLibraryWrite,libraryCaughtError,libraryTransactionError} from './libraryWrite';
 
 function request<T>(req:IDBRequest<T>):Promise<T>{return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error??new Error('Project transaction aborted.'));tx.onerror=()=>reject(tx.error??new Error('Project transaction failed.'));});}
+function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(libraryTransactionError(tx,'Project transaction aborted.'));tx.onerror=()=>reject(libraryTransactionError(tx,'Project transaction failed.'));});}
 function requireId(id:string,label:string):void{if(typeof id!=='string'||!id.trim())throw new Error(`Invalid ${label}.`);}
 function renumber(shots:ProjectShot[]):ProjectShot[]{return shots.map((shot,order)=>({...shot,order}));}
 function established(collection:Collection,scenes:SavedScene[]):Collection{
@@ -12,7 +13,7 @@ function established(collection:Collection,scenes:SavedScene[]):Collection{
 }
 async function mutate(collectionId:string,change:(collection:Collection,scenes:SavedScene[])=>Collection):Promise<Collection>{
   requireId(collectionId,'collection ID');
-  const db=await openDatabase();const tx=db.transaction(['collections','scenes'],'readwrite');const completion=done(tx);
+  const db=await openDatabase();const tx=beginLibraryWrite(db,['collections','scenes']);const completion=done(tx);
   try{
     const store=tx.objectStore('collections');const collection=await request<Collection|undefined>(store.get(collectionId));
     if(!collection)throw new Error('Collection not found.');
@@ -20,7 +21,7 @@ async function mutate(collectionId:string,change:(collection:Collection,scenes:S
     const result=change(collection,scenes);
     if(result!==collection){const error=validateProject(result,scenes);if(error)throw new Error(error);store.put(result);}
     await completion;return result;
-  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx,error);}
 }
 function changed(collection:Collection,shots:ProjectShot[]):Collection{
   const project=collection.project!;

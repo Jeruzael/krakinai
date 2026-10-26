@@ -1,0 +1,573 @@
+{
+  "schemaVersion": 1,
+  "verdict": "CONDITIONAL PASS",
+  "scope": "Archive layer at 5500MiB physically verified; full-library staged restore enabled only through the smaller measured gate. No claim of 5000MiB-library or 5500MiB restore certification.",
+  "limits": {
+    "compressedZipBytes": 5767168000,
+    "uncompressedBytes": 5767168000,
+    "mediaBytes": 5242880000,
+    "manifestBytes": 20971520,
+    "entries": 2000,
+    "verifiedRestoreExpandedBytes": 1073748246,
+    "bufferedCompatibilityBytes": 67108864,
+    "projectExportBytes": 134217728,
+    "projectExportImplementationChanged": false
+  },
+  "archiveCases": [
+    {
+      "requestedMediaOrLayerMiB": 128,
+      "archiveLayerOnly": false,
+      "compressedBytes": 134219031,
+      "uncompressedBytes": 134218912,
+      "entryCount": 4,
+      "zip64": true,
+      "engineAllMemberHashes": true,
+      "pythonCrcAndSha256": true,
+      "offsetBeyond32Bit": false,
+      "zip64EndMarker": true,
+      "zip64Locator": true,
+      "elapsedMs": 4114,
+      "writeElapsedMs": null,
+      "readElapsedMs": null,
+      "peakObservedNodeRssBytes": 92766208,
+      "writePeakObservedNodeRssBytes": null,
+      "readPeakObservedNodeRssBytes": null,
+      "samplingIntervalMs": 250,
+      "writeMeasurementAvailable": true
+    },
+    {
+      "requestedMediaOrLayerMiB": 512,
+      "archiveLayerOnly": false,
+      "compressedBytes": 536873962,
+      "uncompressedBytes": 536874424,
+      "entryCount": 12,
+      "zip64": true,
+      "engineAllMemberHashes": true,
+      "pythonCrcAndSha256": true,
+      "offsetBeyond32Bit": false,
+      "zip64EndMarker": true,
+      "zip64Locator": true,
+      "elapsedMs": 16228,
+      "writeElapsedMs": null,
+      "readElapsedMs": null,
+      "peakObservedNodeRssBytes": 102674432,
+      "writePeakObservedNodeRssBytes": null,
+      "readPeakObservedNodeRssBytes": null,
+      "samplingIntervalMs": 250,
+      "writeMeasurementAvailable": true
+    },
+    {
+      "requestedMediaOrLayerMiB": 1024,
+      "archiveLayerOnly": false,
+      "compressedBytes": 1073747057,
+      "uncompressedBytes": 1073748246,
+      "entryCount": 22,
+      "zip64": true,
+      "engineAllMemberHashes": true,
+      "pythonCrcAndSha256": true,
+      "offsetBeyond32Bit": false,
+      "zip64EndMarker": true,
+      "zip64Locator": true,
+      "elapsedMs": 55919,
+      "writeElapsedMs": null,
+      "readElapsedMs": null,
+      "peakObservedNodeRssBytes": 104669184,
+      "writePeakObservedNodeRssBytes": null,
+      "readPeakObservedNodeRssBytes": null,
+      "samplingIntervalMs": 250,
+      "writeMeasurementAvailable": true
+    },
+    {
+      "requestedMediaOrLayerMiB": 4300,
+      "archiveLayerOnly": false,
+      "compressedBytes": 4508896177,
+      "uncompressedBytes": 4508902137,
+      "entryCount": 87,
+      "zip64": true,
+      "engineAllMemberHashes": true,
+      "pythonCrcAndSha256": true,
+      "offsetBeyond32Bit": true,
+      "zip64EndMarker": true,
+      "zip64Locator": true,
+      "elapsedMs": null,
+      "writeElapsedMs": null,
+      "readElapsedMs": 66783,
+      "peakObservedNodeRssBytes": 102436864,
+      "writePeakObservedNodeRssBytes": null,
+      "readPeakObservedNodeRssBytes": 102436864,
+      "samplingIntervalMs": 250,
+      "writeMeasurementAvailable": false
+    },
+    {
+      "requestedMediaOrLayerMiB": 5500,
+      "archiveLayerOnly": true,
+      "compressedBytes": 5767168000,
+      "uncompressedBytes": 5767145018,
+      "entryCount": 110,
+      "zip64": true,
+      "engineAllMemberHashes": true,
+      "pythonCrcAndSha256": true,
+      "offsetBeyond32Bit": true,
+      "zip64EndMarker": true,
+      "zip64Locator": true,
+      "elapsedMs": null,
+      "writeElapsedMs": 74576,
+      "readElapsedMs": 73019,
+      "peakObservedNodeRssBytes": 122437632,
+      "writePeakObservedNodeRssBytes": 122437632,
+      "readPeakObservedNodeRssBytes": 121589760,
+      "samplingIntervalMs": 250,
+      "writeMeasurementAvailable": true
+    }
+  ],
+  "libraryBrowserCases": [
+    {
+      "case": "stress-128",
+      "compressedBytes": 134219031,
+      "uncompressedBytes": 134218912,
+      "checks": [
+        {
+          "name": "full file verification preserves live library",
+          "pass": true
+        },
+        {
+          "name": "cancellation during decompression preserves original library",
+          "pass": true
+        },
+        {
+          "name": "physical member corruption rejected without live writes",
+          "pass": true
+        },
+        {
+          "name": "restore staging reaches validated preview",
+          "pass": true
+        },
+        {
+          "name": "persisted stage reopens and rehashes after page restart",
+          "pass": true
+        },
+        {
+          "name": "injected native put quota failure rolls back cleared stores and prior media put",
+          "pass": true
+        },
+        {
+          "name": "cancellation inside live transaction rolls back all stores",
+          "pass": true
+        },
+        {
+          "name": "atomic replacement completes",
+          "pass": true
+        },
+        {
+          "name": "other current-build tab cannot write stale state after restore",
+          "pass": true
+        },
+        {
+          "name": "all restored Blob hashes survive stage deletion and page reload",
+          "pass": true
+        },
+        {
+          "name": "direct OPFS writable export and streaming readback preserve hashes",
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "dataPass": null,
+      "uiPass": null,
+      "pageErrors": [],
+      "elapsedMs": 52340,
+      "peakObservedBrowserWorkingSetBytes": 627482624,
+      "peakObservedJsHeapBytes": 16378528,
+      "samplingIntervalMs": 1000,
+      "productionSnapshot": false,
+      "qaApiSha256": null
+    },
+    {
+      "case": "stress-512",
+      "compressedBytes": 536873962,
+      "uncompressedBytes": 536874424,
+      "checks": [
+        {
+          "name": "full file verification preserves live library",
+          "pass": true
+        },
+        {
+          "name": "restore staging reaches validated preview",
+          "pass": true
+        },
+        {
+          "name": "persisted stage reopens and rehashes after page restart",
+          "pass": true
+        },
+        {
+          "name": "atomic replacement completes",
+          "pass": true
+        },
+        {
+          "name": "other current-build tab cannot write stale state after restore",
+          "pass": true
+        },
+        {
+          "name": "all restored Blob hashes survive stage deletion and page reload",
+          "pass": true
+        },
+        {
+          "name": "direct OPFS writable export and streaming readback preserve hashes",
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "dataPass": null,
+      "uiPass": null,
+      "pageErrors": [],
+      "elapsedMs": 133468,
+      "peakObservedBrowserWorkingSetBytes": 656793600,
+      "peakObservedJsHeapBytes": 14088756,
+      "samplingIntervalMs": 1000,
+      "productionSnapshot": false,
+      "qaApiSha256": null
+    },
+    {
+      "case": "stress-1024",
+      "compressedBytes": 1073747057,
+      "uncompressedBytes": 1073748246,
+      "checks": [
+        {
+          "name": "production UI shell and Settings backup panel load without Vite/HMR",
+          "pass": true
+        },
+        {
+          "name": "reused owned profile contains only expected synthetic records and exact media hashes",
+          "pass": true
+        },
+        {
+          "name": "full file verification preserves live library",
+          "pass": true
+        },
+        {
+          "name": "restore staging reaches validated preview",
+          "pass": true
+        },
+        {
+          "name": "persisted stage reopens and rehashes after page restart",
+          "pass": true
+        },
+        {
+          "name": "whole owned browser killed after first live put: original library/media hashes and ready stage recovered",
+          "pass": true
+        },
+        {
+          "name": "atomic replacement completes",
+          "pass": true
+        },
+        {
+          "name": "other current-build tab cannot write stale state after restore",
+          "pass": true
+        },
+        {
+          "name": "all restored Blob hashes survive stage deletion and page reload",
+          "pass": true
+        },
+        {
+          "name": "direct OPFS writable export and streaming readback preserve hashes",
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "dataPass": true,
+      "uiPass": true,
+      "pageErrors": [],
+      "elapsedMs": 295790,
+      "peakObservedBrowserWorkingSetBytes": 823848960,
+      "peakObservedJsHeapBytes": 5913180,
+      "samplingIntervalMs": 1000,
+      "productionSnapshot": true,
+      "qaApiSha256": "b776613450bd7d08a93b0030a657cb572be24563e7b008f9e52d0d996ffca00e"
+    },
+    {
+      "case": "stress-128-production-fresh",
+      "compressedBytes": 134219030,
+      "uncompressedBytes": 134218912,
+      "checks": [
+        {
+          "name": "production UI shell and Settings backup panel load without Vite/HMR",
+          "pass": true
+        },
+        {
+          "name": "fresh owned profile is empty apart from starter templates",
+          "pass": true
+        },
+        {
+          "name": "full file verification preserves live library",
+          "pass": true
+        },
+        {
+          "name": "restore staging reaches validated preview",
+          "pass": true
+        },
+        {
+          "name": "persisted stage reopens and rehashes after page restart",
+          "pass": true
+        },
+        {
+          "name": "whole owned browser killed after first live put: original library/media hashes and ready stage recovered",
+          "pass": true
+        },
+        {
+          "name": "atomic replacement completes",
+          "pass": true
+        },
+        {
+          "name": "other current-build tab cannot write stale state after restore",
+          "pass": true
+        },
+        {
+          "name": "all restored Blob hashes survive stage deletion and page reload",
+          "pass": true
+        },
+        {
+          "name": "direct OPFS writable export and streaming readback preserve hashes",
+          "pass": true
+        }
+      ],
+      "pass": true,
+      "dataPass": true,
+      "uiPass": true,
+      "pageErrors": [],
+      "elapsedMs": 35918,
+      "peakObservedBrowserWorkingSetBytes": 739545088,
+      "peakObservedJsHeapBytes": 8307232,
+      "samplingIntervalMs": 1000,
+      "productionSnapshot": true,
+      "qaApiSha256": "b776613450bd7d08a93b0030a657cb572be24563e7b008f9e52d0d996ffca00e"
+    }
+  ],
+  "boundaryBrowserCases": [
+    {
+      "mode": "read-input",
+      "pass": true,
+      "elapsedMs": 91421,
+      "peakObservedBrowserWorkingSetBytes": 729239552,
+      "peakObservedJsHeapBytes": 11028760,
+      "browser": {
+        "inputFileSize": 5767168000,
+        "inputEntryCount": 110,
+        "inputReadElapsedMs": 88060,
+        "heartbeatTicks": 148
+      },
+      "diskFreeBeforeBytes": 12730859520,
+      "diskFreeAfterBytes": 12337827840,
+      "samplingIntervalMs": 1000,
+      "pageErrors": []
+    },
+    {
+      "mode": "write-source",
+      "pass": true,
+      "elapsedMs": 220983,
+      "peakObservedBrowserWorkingSetBytes": 539623424,
+      "peakObservedJsHeapBytes": 11894140,
+      "browser": {
+        "inputFileSize": 52428800,
+        "outputFileSize": 5767168000,
+        "outputEntryCount": 110,
+        "outputExpandedBytes": 5767145018,
+        "writeElapsedMs": 130749,
+        "readElapsedMs": 85521,
+        "heartbeatTicks": 6849,
+        "progressEvents": 44222
+      },
+      "diskFreeBeforeBytes": 18760728576,
+      "diskFreeAfterBytes": 18599452672,
+      "samplingIntervalMs": 1000,
+      "pageErrors": []
+    }
+  ],
+  "automated": {
+    "commands": [
+      {
+        "command": "npm ci",
+        "exitCode": 0,
+        "log": "b-final-install.log"
+      },
+      {
+        "command": "npm test",
+        "exitCode": 0,
+        "log": "b-final-tests.log"
+      },
+      {
+        "command": "npm run typecheck",
+        "exitCode": 0,
+        "log": "b-final-typecheck.log"
+      },
+      {
+        "command": "npm run build",
+        "exitCode": 0,
+        "log": "b-final-build.log"
+      },
+      {
+        "command": "npm audit --omit=dev",
+        "exitCode": 0,
+        "log": "b-final-audit.log"
+      },
+      {
+        "command": "npm run test:qa",
+        "exitCode": 0,
+        "log": "b-final-ledger.log"
+      },
+      {
+        "command": "npm run test:e2e",
+        "exitCode": 0,
+        "log": "b-final-browser.log"
+      },
+      {
+        "exitCode": 0,
+        "command": "git status --short"
+      },
+      {
+        "exitCode": 0,
+        "command": "git diff --name-status"
+      },
+      {
+        "exitCode": 0,
+        "command": "git diff --check"
+      }
+    ],
+    "vitest": {
+      "passed": 352,
+      "files": 50,
+      "mediaThumbnailActWarnings": 22
+    },
+    "qaLedgerTests": 3,
+    "chromiumSmokeTests": 7,
+    "productionAuditVulnerabilities": 0,
+    "installDevAdvisories": {
+      "moderate": 3,
+      "high": 1,
+      "critical": 2
+    },
+    "installDeprecation": "whatwg-encoding@3.1.1",
+    "browserEnvironmentWarning": "NO_COLOR ignored because FORCE_COLOR is set",
+    "build": {
+      "initialJsDecimalKb": 472.07,
+      "lazyBackupDecimalKb": 215.9,
+      "chunkSizeWarning": false
+    }
+  },
+  "runtimeEquivalence": {
+    "testedApiSha256": "b776613450bd7d08a93b0030a657cb572be24563e7b008f9e52d0d996ffca00e",
+    "finalApiSha256": "b776613450bd7d08a93b0030a657cb572be24563e7b008f9e52d0d996ffca00e",
+    "byteIdentical": true,
+    "change": "backupLimits comment changed from candidate to verified; runtime constant unchanged"
+  },
+  "protectedSourceSha256": {
+    "src/domain/validation.ts": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+    "src/domain/projectExport.ts": "fe0508ab9cb11e9ba73c31e64e7167a1e8687b3b6008bbaad2aa8a6217c7b63a"
+  },
+  "limitations": [
+    "Near-5000MiB valid-library restore not run; greater-than-verified restore disabled.",
+    "8GiB free-space reserve retained; 5000MiB ZIP + staging + restored copy + reserve needs at least 24318574592 bytes before metadata. Initial free space was 23941218304 bytes.",
+    "OS Save As permission dialog, actual exhausted NTFS/FAT32 and revoked Windows ACL not tested.",
+    "Quota/permission errors in small writable tests are adapter-injected; IndexedDB put quota failure is injected.",
+    "Non-Chromium browsers and 7-Zip not tested; independent Python3.11.9 used.",
+    "Browser working-set sums are sampled at 1s and may double-count shared pages; Node RSS at 250ms is sampled.",
+    "5500MiB generic input lacks a library manifest and exceeds5000MiB media; it is not a valid library backup.",
+    "Dev1GiB run had3 HMRprovider errors; clean production rerun had 0.",
+    "Current-build generation fences do not stop older app builds or arbitrary same-origin database writes.",
+    "Buffered compatibility export hashes before its 64 MiB rejection; it remains bounded but can waste time for a large library.",
+    "Protected validation.ts retains a legacy 200 MiB video-limit error phrase; actual cap and new backup UI use 5000 MiB.",
+    "Generated ZIP files were removed only after independent proof to respect disk budget; result JSON/hashes/source fragments retained.",
+    "Automatic approval review blocked recursive disposable-profile-folder deletion; folders remain outside Git."
+  ],
+  "provenance": [
+    {
+      "path": "stress-128/archive-results.json",
+      "bytes": 2085,
+      "sha256": "54135d114ec598759ed66ca23baf7207b4434904a530f3114cf6f549ce01160c"
+    },
+    {
+      "path": "stress-128/python-results.json",
+      "bytes": 1485,
+      "sha256": "fc596a1425db1a1498b903301f865cc981e6c7f2c9bb0adcb32b985387bac319"
+    },
+    {
+      "path": "stress-512/archive-results.json",
+      "bytes": 5800,
+      "sha256": "eb876f8254b9e02f77d8f52b20492c942a763389d0015b18898907831ba88f96"
+    },
+    {
+      "path": "stress-512/python-results.json",
+      "bytes": 3798,
+      "sha256": "2869c700908dde72a14ee23eb4768627e736fff08280f2058db3a0f70ecb6811"
+    },
+    {
+      "path": "stress-1024/archive-results.json",
+      "bytes": 16375,
+      "sha256": "de22069dbc9a3a94babc39d178a8f3106097d19d82f9076d2b557410b5cfad06"
+    },
+    {
+      "path": "stress-1024/python-results.json",
+      "bytes": 6692,
+      "sha256": "6d9ddabec77d113572b9d166feec7261a01810f32ef7753d2d962b898b1d1602"
+    },
+    {
+      "path": "stress-4300/archive-results.json",
+      "bytes": 32451,
+      "sha256": "98fbba97f35c4ec8b330642a7f9f5f48bf63f1924694c238f88b56bbe083e024"
+    },
+    {
+      "path": "stress-4300/python-results.json",
+      "bytes": 25627,
+      "sha256": "b13f559070601ac6e2716b1001d59a5b3995530fe70ae3d27910425f3a7e6ab3"
+    },
+    {
+      "path": "stress-5500/archive-results.json",
+      "bytes": 56482,
+      "sha256": "35cfa93374ecf1047ba1d01a7f37ea845cf5e22b7f6635f4da2b9f5c90fa35d8"
+    },
+    {
+      "path": "stress-5500/python-results.json",
+      "bytes": 32122,
+      "sha256": "1828114a185eb94c0b9a7541438ea1567405d0dffac7a47467eb3973e01a74b1"
+    },
+    {
+      "path": "stress-128/browser-results.json",
+      "bytes": 7730,
+      "sha256": "854f0278467d37e08592ebb5bc0c3117e084cb5525ffeeb83d7e3764866c0b93"
+    },
+    {
+      "path": "stress-512/browser-results.json",
+      "bytes": 14367,
+      "sha256": "ddf40608d9e04d3bc2e77c63273aa1ab66a1350fbf089ad1c163405cea0b92e0"
+    },
+    {
+      "path": "stress-1024/browser-results.json",
+      "bytes": 34772,
+      "sha256": "2de5feab8a32f1a5e04060becf9ab47583784557d6597960d968b3c145558d76"
+    },
+    {
+      "path": "stress-128-production-fresh/browser-results.json",
+      "bytes": 8212,
+      "sha256": "59412fa11c3e6c50baafec2b848895c145f82d8b42f45f326250928626b184f6"
+    },
+    {
+      "path": "stress-5500/browser-boundary-read-input-results.json",
+      "bytes": 10735,
+      "sha256": "a195d1f7e3c37ebfbe3c0d30b04a5904f62eed21e88e3b0c6ea2ca224abf4f12"
+    },
+    {
+      "path": "stress-5500/browser-boundary-write-source-results.json",
+      "bytes": 25003,
+      "sha256": "c0fee742358f7fa7046cd7a9b019f8041d021e02aef7fd1d78d56260c64eb571"
+    },
+    {
+      "path": "b-final-commands.json",
+      "bytes": 896,
+      "sha256": "0fb4d3ecd1c785ac95ae153f895158ade720eb8fcc07d994eee03afce4c28803"
+    },
+    {
+      "path": "final-runtime-equivalence.json",
+      "bytes": 303,
+      "sha256": "a93b8a41303dcb3c0b3749b4c2777d30600a8b3443d36cdb482d4f8321e6071c"
+    }
+  ]
+}

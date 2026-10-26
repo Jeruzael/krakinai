@@ -1,6 +1,7 @@
 import React from 'react';
 import { LibraryProvider, useLibrary } from './context/LibraryContext';
 import { AppShell } from './components/AppShell';
+import { LibraryReloadNotice } from './components/LibraryReloadNotice';
 import { HomeScreen } from './screens/HomeScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
 import { PromptDetailScreen } from './screens/PromptDetailScreen';
@@ -184,6 +185,7 @@ export const App: React.FC = () => {
   return (
     <LibraryProvider>
       <AppShell>
+        <LibraryReloadNotice />
         <RouteDispatcher />
       </AppShell>
     </LibraryProvider>

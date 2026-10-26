@@ -1,6 +1,6 @@
 import { beforeEach, expect, it } from 'vitest';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
-import { clearAllStoresForTesting, getAllSnapshot, initializeDatabase, saveMediaAsset } from '../storage/db';
+import { clearAllStoresForTesting, getAllSnapshot, initializeDatabase, reopenDatabaseAfterPageReloadForTesting, saveMediaAsset } from '../storage/db';
 import { updateMediaNames } from '../storage/mediaMetadata';
 import { exportFullBackupZip, restoreFullBackupZip, validateBackupZip } from '../storage/backup';
 
@@ -27,6 +27,7 @@ it('persists names through reload and full backup restore without changing sourc
   const restored = (await getAllSnapshot()).media.find(item => item.id === original.id)!;
   expect(restored).toMatchObject({ id: original.id, filename: original.filename, safeFilename: original.safeFilename, mimeType: original.mimeType, displayName: 'Aya portrait', exportFilename: 'aya.png' });
   expect(new Uint8Array(await restored.blob.arrayBuffer())).toEqual(bytes);
+  await reopenDatabaseAfterPageReloadForTesting();
   const cleared = await updateMediaNames({ mediaId: original.id, exportFilename: '' });
   expect(cleared.exportFilename).toBeUndefined();
 });

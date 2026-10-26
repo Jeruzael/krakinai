@@ -1,7 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { getProjectCast, getProjectDialogue, getWardrobeContinuity, formatProjectScript } from '../domain/projectContinuity';
 import { buildSceneDocument } from '../domain/sceneDocument';
-import { clearAllStoresForTesting, createCollection, deletePromptAsset, deleteVariant, getAllSnapshot, saveMediaAsset, savePromptAsset, saveVariant } from '../storage/db';
+import { clearAllStoresForTesting, createCollection, deletePromptAsset, deleteVariant, getAllSnapshot, reopenDatabaseAfterPageReloadForTesting, saveMediaAsset, savePromptAsset, saveVariant } from '../storage/db';
 import { addProjectShot, removeProjectShot, reorderProjectShots, updateProjectShot } from '../storage/projects';
 import { removeProjectCast, removeProjectTransition, updateProjectFrames, updateWardrobeIntent, uploadProjectFrame, upsertProjectCast, upsertProjectTransition } from '../storage/projectContinuity';
 import type { Collection, ProjectShot, SavedScene } from '../types/domain';
@@ -118,6 +118,7 @@ it.each(['character','wardrobe'] as const)('keeps unavailable %s cast metadata r
   expect((await validateBackupZip(bytes)).valid).toBe(true);
   await restoreFullBackupZip(bytes);
   expect((await getAllSnapshot()).collections.find(c=>c.id===collection.id)?.project?.cast?.[0]).toMatchObject({characterId:char.id,approvedWardrobeVariantIds:[outfit.id],notes:'Historical continuity'});
+  await reopenDatabaseAfterPageReloadForTesting();
   await expect(upsertProjectCast({collectionId:collection.id,entry:{characterId:char.id,approvedWardrobeVariantIds:[outfit.id]}})).rejects.toThrow(/unavailable/);
 });
 

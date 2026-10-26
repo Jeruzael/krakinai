@@ -2,15 +2,16 @@ import type { CharacterBibleEntry, Collection, MediaAsset, ProjectShot, ProjectT
 import { getProjectShots } from '../domain/projectStoryboard';
 import { validateProject, type ProjectReferences } from '../domain/phase5ProjectValidation';
 import { generateId, openDatabase } from './db';
+import {beginLibraryWrite,libraryCaughtError,libraryTransactionError} from './libraryWrite';
 import { validateMediaCandidate } from '../domain/validation';
 
 function request<T>(req: IDBRequest<T>): Promise<T> { return new Promise((resolve, reject) => { req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error); }); }
-function done(tx: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { tx.oncomplete=()=>resolve(); tx.onabort=()=>reject(tx.error ?? new Error('Project transaction aborted.')); tx.onerror=()=>reject(tx.error ?? new Error('Project transaction failed.')); }); }
+function done(tx: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { tx.oncomplete=()=>resolve(); tx.onabort=()=>reject(libraryTransactionError(tx,'Project transaction aborted.')); tx.onerror=()=>reject(libraryTransactionError(tx,'Project transaction failed.')); }); }
 function id(value: string, label: string): void { if(typeof value!=='string'||!value.trim()) throw new Error(`Invalid ${label}.`); }
 async function mutate(collectionId: string, edit: (collection: Collection, references: ProjectReferences) => Collection): Promise<Collection> {
   id(collectionId,'collection ID');
   const db=await openDatabase();
-  const tx=db.transaction(['collections','scenes','assets','variants','media'],'readwrite');
+  const tx=beginLibraryWrite(db,['collections','scenes','assets','variants','media']);
   const completion=done(tx);
   try {
     const store=tx.objectStore('collections');
@@ -34,7 +35,7 @@ async function mutate(collectionId: string, edit: (collection: Collection, refer
     }
     if(established!==collection){store.put(established);await completion;return established;}
     await completion;return collection;
-  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx,error);}
 }
 function shot(collection:Collection,shotId:string):ProjectShot { id(shotId,'shot ID');const result=collection.project!.shots.find(s=>s.id===shotId);if(!result)throw new Error('Project shot not found.');return result; }
 function replaceShot(collection:Collection, replacement:ProjectShot):Collection {return {...collection,project:{...collection.project!,shots:collection.project!.shots.map(s=>s.id===replacement.id?replacement:s)}};}
@@ -66,7 +67,7 @@ export async function uploadProjectFrame({collectionId,shotId,side,file}:{collec
   if(side!=='firstFrameMediaId'&&side!=='lastFrameMediaId')throw new Error('Invalid frame side.');
   if(!file||typeof file.name!=='string'||typeof file.type!=='string'||typeof file.size!=='number')throw new Error('Invalid image file.');
   const db=await openDatabase();
-  const tx=db.transaction(['collections','scenes','assets','variants','media'],'readwrite');
+  const tx=beginLibraryWrite(db,['collections','scenes','assets','variants','media']);
   const completion=done(tx);
   try{
     const collectionStore=tx.objectStore('collections');const mediaStore=tx.objectStore('media');
@@ -91,7 +92,7 @@ export async function uploadProjectFrame({collectionId,shotId,side,file}:{collec
     if(error)throw new Error(error);
     mediaStore.put(record);collectionStore.put(updated);
     await completion;return updated;
-  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx,error);}
 }
 export function updateWardrobeIntent({collectionId,shotId,reason,notes}:{collectionId:string;shotId:string;reason?:WardrobeIntentReason|null;notes?:string}):Promise<Collection> {return mutate(collectionId,c=>{
   const old=shot(c,shotId);

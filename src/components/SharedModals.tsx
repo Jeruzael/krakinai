@@ -1,13 +1,8 @@
 import React, { useMemo, useState, useRef } from 'react';
 import {
-  AlertTriangle,
   Archive,
-  CheckCircle2,
-  Download,
   FolderPlus,
-  HardDrive,
   Search,
-  Upload,
   X,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
@@ -16,13 +11,7 @@ import {
   createCollection,
   removeMemberFromCollection,
 } from '../storage/db';
-import {
-  exportFullBackupZip,
-  restoreFullBackupZip,
-  validateBackupZip,
-  type BackupValidationSummary,
-} from '../storage/backup';
-import { downloadBlobAsFile } from '../hooks/useObjectUrl';
+const FullLibraryBackupPanel = React.lazy(() => import('./FullLibraryBackupPanel').then(module => ({ default: module.FullLibraryBackupPanel })));
 import {
   CATEGORY_LABELS,
   MAX_TOTAL_MEDIA_BYTES,
@@ -324,291 +313,34 @@ export const CollectionMembershipModal: React.FC = () => {
 };
 
 export const SettingsBackupModal: React.FC = () => {
-  const {
-    snapshot,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    refreshSnapshot,
-    loadStarterData,
-    showToast,
-  } = useLibrary();
-
-  const [exporting, setExporting] = useState(false);
-  const [restoreSummary, setRestoreSummary] =
-    useState<BackupValidationSummary | null>(null);
-  const [pendingZipBytes, setPendingZipBytes] = useState<Uint8Array | null>(
-    null
-  );
-  const [restoreError, setRestoreError] = useState<string | null>(null);
-  const [restoring, setRestoring] = useState(false);
-
+  const { snapshot, isSettingsOpen, setIsSettingsOpen, loadStarterData } = useLibrary();
+  const [busy, setBusy] = useState(false);
   if (!isSettingsOpen || !snapshot) return null;
-
-  const totalMediaBytes = snapshot.media.reduce(
-    (sum, m) => sum + m.byteSize + (m.posterBlob?.size ?? 0),
-    0
-  );
-  const mediaMiB = (totalMediaBytes / (1024 * 1024)).toFixed(2);
-  const maxMiB = (MAX_TOTAL_MEDIA_BYTES / (1024 * 1024)).toFixed(0);
-
-  const handleExportBackup = async () => {
-    setExporting(true);
-    try {
-      const zipBytes = await exportFullBackupZip();
-      const blob = new Blob([zipBytes as unknown as BlobPart], {
-        type: 'application/zip',
-      });
-      const datePart = new Date().toISOString().slice(0, 10);
-      downloadBlobAsFile(blob, `krakinai-backup-${datePart}.zip`);
-      showToast('Full ZIP backup exported (metadata + media).', 'success');
-    } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : 'Failed to export backup.',
-        'error'
-      );
-    } finally {
-      setExporting(false);
-    }
-  };
-
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setRestoreError(null);
-    setRestoreSummary(null);
-    setPendingZipBytes(null);
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    try {
-      const ab = await file.arrayBuffer();
-      const bytes = new Uint8Array(ab);
-      const res = await validateBackupZip(bytes);
-      if (!res.valid || !res.summary) {
-        setRestoreError(res.error || 'Backup validation failed.');
-        return;
-      }
-      setRestoreSummary(res.summary);
-      setPendingZipBytes(bytes);
-    } catch (err) {
-      setRestoreError(
-        err instanceof Error ? err.message : 'Could not read ZIP file.'
-      );
-    }
-  };
-
-  const handleConfirmRestore = async () => {
-    if (!pendingZipBytes) return;
-    setRestoring(true);
-    setRestoreError(null);
-    try {
-      await restoreFullBackupZip(pendingZipBytes);
-      await refreshSnapshot();
-      setPendingZipBytes(null);
-      setRestoreSummary(null);
-      showToast('Library restored from full ZIP backup.', 'success');
-      setIsSettingsOpen(false);
-    } catch (err) {
-      setRestoreError(
-        err instanceof Error
-          ? err.message
-          : 'Restore failed. Existing library was preserved.'
-      );
-    } finally {
-      setRestoring(false);
-    }
-  };
-
-  return (
-    <div
-      className="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-modal-title"
-    >
-      <div className="modal-panel" style={{ maxWidth: 640 }}>
-        <div className="modal-header">
-          <h2 id="settings-modal-title" className="section-title">
-            Settings & Local Data Backup
-          </h2>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={() => setIsSettingsOpen(false)}
-            aria-label="Close Settings"
-          >
-            <X size={18} />
-          </button>
-        </div>
-
-        <div className="modal-body">
-          <div className="banner banner-info">
-            <div>
-              <strong>Stored on this browser. Not synced.</strong>
-              <p style={{ margin: '4px 0 0', fontSize: 13 }}>
-                Local browser storage (IndexedDB) is not cloud sync or an
-                automatic backup. Another browser, profile, private window, or
-                app URL will have a separate library. Export a full ZIP backup
-                before clearing browser data or moving devices.
-              </p>
-            </div>
-          </div>
-
-          <div className="card" style={{ marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
-              <HardDrive size={16} style={{ verticalAlign: 'middle' }} /> Local
-              Storage Summary
-            </h3>
-            <p className="muted-text" style={{ margin: '0 0 8px' }}>
-              Media usage: <strong>{mediaMiB} MiB</strong> of {maxMiB} MiB
-              prototype limit (250 MiB max uncompressed backup).
-            </p>
-            <div className="tag-list">
-              <span className="badge">{snapshot.assets.length} Prompts</span>
-              <span className="badge">{snapshot.variants.length} Variants</span>
-              <span className="badge">
-                {snapshot.scenes.length} Saved Scenes
-              </span>
-              <span className="badge">
-                {snapshot.collections.length} Collections
-              </span>
-              <span className="badge">{snapshot.media.length} Media Files</span>
-            </div>
-          </div>
-
-          <div className="card" style={{ marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
-              Export Full Backup (ZIP)
-            </h3>
-            <p className="muted-text" style={{ margin: '0 0 12px' }}>
-              This backup includes your versioned JSON manifest and all original
-              stored media files. (Metadata-only JSON is never described as a
-              full backup.)
-            </p>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleExportBackup}
-              disabled={exporting}
-            >
-              <Download size={16} />{' '}
-              {exporting ? 'Exporting ZIP...' : 'Export Full Backup (.zip)'}
-            </button>
-          </div>
-
-          <div className="card" style={{ marginBottom: 20 }}>
-            <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
-              Restore Full Backup (Transactional Replacement)
-            </h3>
-            <p className="muted-text" style={{ margin: '0 0 12px' }}>
-              Restoring validates the archive first, then atomically replaces
-              the current library in this browser. If validation or write fails,
-              your existing data is preserved.
-            </p>
-
-            <label
-              htmlFor="restore-zip-input"
-              className="btn btn-secondary"
-              style={{ cursor: 'pointer' }}
-            >
-              <Upload size={16} /> Select Backup .zip File
-            </label>
-            <input
-              id="restore-zip-input"
-              type="file"
-              accept=".zip,application/zip"
-              onChange={handleFileChange}
-              style={{ display: 'none' }}
-            />
-
-            {restoreError && (
-              <div
-                className="banner banner-error"
-                style={{ marginTop: 12, marginBottom: 0 }}
-              >
-                <AlertTriangle size={18} />
-                <span>{restoreError}</span>
-              </div>
-            )}
-
-            {restoreSummary && (
-              <div
-                className="banner banner-warning"
-                style={{
-                  marginTop: 14,
-                  marginBottom: 0,
-                  flexDirection: 'column',
-                }}
-              >
-                <div>
-                  <strong>
-                    Replace the library stored in this browser with this backup?
-                  </strong>
-                  <p style={{ margin: '6px 0', fontSize: 13 }}>
-                    Validated archive from{' '}
-                    {new Date(restoreSummary.exportedAt).toLocaleString()}:{' '}
-                    {restoreSummary.assetsCount} prompts,{' '}
-                    {restoreSummary.variantsCount} variants,{' '}
-                    {restoreSummary.scenesCount} saved scenes,{' '}
-                    {restoreSummary.collectionsCount} collections, and{' '}
-                    {restoreSummary.mediaCount} media files.
-                  </p>
-                </div>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  <button
-                    type="button"
-                    className="btn btn-danger"
-                    onClick={handleConfirmRestore}
-                    disabled={restoring}
-                  >
-                    <CheckCircle2 size={16} />{' '}
-                    {restoring
-                      ? 'Replacing Library...'
-                      : 'Confirm & Replace Current Library'}
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setRestoreSummary(null);
-                      setPendingZipBytes(null);
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="card">
-            <h3 style={{ margin: '0 0 8px', fontSize: 16 }}>
-              Starter Demo Content
-            </h3>
-            <p className="muted-text" style={{ margin: '0 0 12px' }}>
-              Load or re-seed the 21 illustrative starter prompts, 6 Maya
-              variants, 3 collections, and 4 starter templates.
-            </p>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => loadStarterData(true)}
-            >
-              <Archive size={16} /> Load / Reset Starter Library Items
-            </button>
-          </div>
-        </div>
-
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={() => setIsSettingsOpen(false)}
-          >
-            Close
-          </button>
-        </div>
+  const close = () => { if (!busy) setIsSettingsOpen(false); };
+  const mediaBytes = snapshot.media.reduce((sum, media) => sum + media.blob.size + (media.posterBlob?.size ?? 0), 0);
+  return <StudioDialog title="Settings & Local Data Backup" onClose={close} footer={<button type="button" className="btn btn-primary" disabled={busy} onClick={close}>Close</button>}>
+    <div className="banner banner-info" style={{ display: 'block' }}>
+      <strong>Stored on this browser. Not synced.</strong>
+      <p>Another browser, profile, private window, or app URL has a separate library. Export a full backup before clearing browser data or moving devices.</p>
+    </div>
+    <div className="card" style={{ marginBottom: 20 }}>
+      <h3>Local Storage Summary</h3>
+      <p>Media usage: <strong>{(mediaBytes / 1024 / 1024).toFixed(2)} MiB</strong> of {MAX_TOTAL_MEDIA_BYTES / 1024 / 1024} MiB.</p>
+      <div className="tag-list">
+        <span className="badge">{snapshot.assets.length} Prompts</span>
+        <span className="badge">{snapshot.variants.length} Variants</span>
+        <span className="badge">{snapshot.scenes.length} Saved Scenes</span>
+        <span className="badge">{snapshot.collections.length} Collections</span>
+        <span className="badge">{snapshot.media.length} Media Files</span>
       </div>
     </div>
-  );
+    <React.Suspense fallback={<p role="status">Loading backup controls…</p>}><FullLibraryBackupPanel onBusyChange={setBusy} /></React.Suspense>
+    <div className="card">
+      <h3>Starter Demo Content</h3>
+      <p className="muted-text">Load or re-seed the 21 illustrative starter prompts, 6 Maya variants, 3 collections, and 4 starter templates.</p>
+      <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => loadStarterData(true)}><Archive size={16} /> Load / Reset Starter Library Items</button>
+    </div>
+  </StudioDialog>;
 };
 
 interface AssetPickerModalProps {
