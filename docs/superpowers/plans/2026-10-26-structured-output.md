@@ -60,4 +60,4 @@ Files: components/MediaThumbnail.tsx, MediaPreviewDialog.tsx, PromptCard.tsx, Re
 - [x] Review integrated diff and run complete tests/typecheck/build/audit/diff checks.
 - [x] Run isolated Playwright full workflow, all formats/copied/downloaded bytes, legacy scene, backup roundtrip, playable video, keyboard and three widths; capture after screenshots.
 - [x] Resolve review findings, document schema/workflow/QA with before/after dialogue example, and record warnings/limitations.
-- [ ] Commit only reviewed source/docs/tests, push feature branch, create/attach PR, inspect CI. Do not merge.
+- [x] Commit only reviewed source/docs/tests, push feature branch, create/attach PR, inspect CI. Do not merge.
