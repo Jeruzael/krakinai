@@ -26,7 +26,7 @@ The original evidence strings are displayed without rewriting. Findings remain a
 
 Browser checks exercise Builder and Output, original evidence/severities, same/different speaker, scene-only camera/style corrections and negation, advisory assembly, saved Narrative and Project JSON bytes, keyboard focus/trap/restoration, unchanged library identities/associations/saved scene, original media SHA-256 and validation of the unchanged synthetic backup. The script waits for asynchronous navigation after assembly before checking the destination.
 
-The PR #4 full run emitted eight existing asynchronous MediaThumbnail React `act(...)` warning entries. Typecheck/build/browser runs had no warnings or page errors.
+The PR #4 full run emitted eight existing asynchronous MediaThumbnail React `act(...)` warning entries. Typecheck/build had no warnings; browser runs had no uncaught page errors.
 
 ## PR #5 integration verification
 
@@ -34,7 +34,7 @@ Parent correction commit `15cc0dfaf6d5c9e2955a7479a0cfbb10f02dc17b` was merged l
 
 | Command | Exit | Result |
 | --- | --- | --- |
-| `npm test` (final standalone run) | 0 | 162 tests / 23 files; no warnings |
+| `npm test` (final standalone run) | 0 | 162 tests / 23 files; eight existing MediaThumbnail React `act(...)` warning entries |
 | `npm run typecheck` | 0 | No diagnostics |
 | `npm run build` | 0 | Production bundle 435.74 kB JS / 125.21 kB gzip; no warnings |
 | `git diff --check` / staged check | 0 | No whitespace errors |
