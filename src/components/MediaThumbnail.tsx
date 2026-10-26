@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ImageOff, Play } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
 import { useMediaObjectUrl } from '../hooks/useObjectUrl';
 
 interface MediaThumbnailProps {
   media?: MediaAsset;
+  enableHoverPreview?: boolean;
   altText?: string;
   showVideoControls?: boolean;
   emptyLabel?: string;
@@ -13,12 +14,81 @@ interface MediaThumbnailProps {
 
 export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   media,
+  enableHoverPreview = false,
   altText,
   showVideoControls = false,
   emptyLabel = 'No sample yet. Add an image or video when ready.',
   roleBadge,
 }) => {
   const url = useMediaObjectUrl(media);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const hovering = useRef(false);
+  const eligible = useRef(false);
+  const generation = useRef(0);
+  const stop = (video = videoRef.current) => {
+    generation.current += 1;
+    if (!video) return;
+    video.pause();
+    try {
+      video.currentTime = 0;
+    } catch {
+      // The browser may not have loaded metadata yet.
+    }
+  };
+  useEffect(() => {
+    if (!enableHoverPreview || showVideoControls || !window.matchMedia) return;
+    const pointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => {
+      eligible.current = pointer.matches && !motion.matches;
+      if (!eligible.current) {
+        hovering.current = false;
+        stop();
+      }
+    };
+    update();
+    pointer.addEventListener('change', update);
+    motion.addEventListener('change', update);
+    return () => {
+      eligible.current = false;
+      hovering.current = false;
+      stop();
+      pointer.removeEventListener('change', update);
+      motion.removeEventListener('change', update);
+    };
+  }, [enableHoverPreview, showVideoControls]);
+  useEffect(() => {
+    const video = videoRef.current;
+    return () => {
+      hovering.current = false;
+      stop(video);
+    };
+  }, [media, url, showVideoControls]);
+  const start = () => {
+    const video = videoRef.current;
+    if (!video || !eligible.current || !enableHoverPreview || showVideoControls)
+      return;
+    hovering.current = true;
+    const request = ++generation.current;
+    video.muted = true;
+    try {
+      const playback = video.play();
+      playback
+        ?.then(() => {
+          if (
+            !hovering.current ||
+            !eligible.current ||
+            video !== videoRef.current
+          )
+            stop(video);
+        })
+        .catch(() => {
+          if (request === generation.current) stop(video);
+        });
+    } catch {
+      stop(video);
+    }
+  };
   const [decodeError, setDecodeError] = useState(false);
 
   useEffect(() => {
@@ -56,6 +126,13 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
 
   return (
     <div
+      onPointerEnter={start}
+      onPointerLeave={() => {
+        if (enableHoverPreview && !showVideoControls) {
+          hovering.current = false;
+          stop();
+        }
+      }}
       style={{
         position: 'relative',
         width: '100%',
@@ -69,22 +146,36 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
       {isVideo ? (
         showVideoControls ? (
           <video
+            ref={videoRef}
             src={url}
             controls
             preload="metadata"
-            onError={() => setDecodeError(true)}
-            style={{ width: '100%', height: '100%', maxHeight: 520, objectFit: 'contain' }}
+            onError={() => {
+              stop();
+              setDecodeError(true);
+            }}
+            style={{
+              width: '100%',
+              height: '100%',
+              maxHeight: 520,
+              objectFit: 'contain',
+            }}
           >
             Your browser does not support playable MP4/WebM video.
           </video>
         ) : (
           <>
             <video
+              ref={videoRef}
               src={url}
+              loop
               preload="metadata"
               muted
               playsInline
-              onError={() => setDecodeError(true)}
+              onError={() => {
+                stop();
+                setDecodeError(true);
+              }}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
             <span
@@ -108,7 +199,10 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
           src={url}
           alt={altText || media.filename}
           loading="lazy"
-          onError={() => setDecodeError(true)}
+          onError={() => {
+            stop();
+            setDecodeError(true);
+          }}
           style={{ width: '100%', height: '100%', objectFit: 'contain' }}
         />
       )}

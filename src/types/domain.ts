@@ -130,6 +130,10 @@ export interface ComponentSnapshot {
 export interface DialogueConfig {
   speaker: string;
   line: string;
+  mode?: 'spoken' | 'on_camera' | 'voiceover' | 'off_screen';
+  deliveryNotes?: string;
+  language?: string;
+  captionPreference?: 'unspecified' | 'none' | 'requested';
 }
 
 export interface SceneSettings {

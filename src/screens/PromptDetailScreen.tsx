@@ -15,6 +15,7 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import { CATEGORY_LABELS, SLOT_LABELS } from '../domain/validation';
 import type { MediaAsset } from '../types/domain';
+import { MediaPreviewDialog } from '../components/MediaPreviewDialog';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import {
   deletePromptAsset,
@@ -53,6 +54,11 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
   const [activeTab, setActiveTab] = useState<
     'prompt' | 'variants' | 'notes' | 'related'
   >('prompt');
+  const [preview, setPreview] = useState<{
+    media: MediaAsset;
+    title: string;
+    altText?: string;
+  } | null>(null);
   const [selectedMediaIdx, setSelectedMediaIdx] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const tabsId = useId();
@@ -356,14 +362,35 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
               {record.mediaLinks.length === 1 ? 'file' : 'files'}
             </span>
           </div>
+          {preview && (
+            <MediaPreviewDialog {...preview} onClose={() => setPreview(null)} />
+          )}
           <div className="character-studio-preview">
-            <MediaThumbnail
-              media={activeMedia}
-              altText={activeMediaLink?.altText || record.title}
-              showVideoControls={true}
-              roleBadge={activeMediaLink?.role}
-            />
+            {!preview && (
+              <MediaThumbnail
+                media={activeMedia}
+                altText={activeMediaLink?.altText || record.title}
+                showVideoControls={true}
+                roleBadge={activeMediaLink?.role}
+              />
+            )}
           </div>
+          {activeMedia && (
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              aria-label={`Expand media: ${record.title}`}
+              onClick={() =>
+                setPreview({
+                  media: activeMedia,
+                  title: record.title,
+                  altText: activeMediaLink?.altText,
+                })
+              }
+            >
+              Expand Media
+            </button>
+          )}
           {activeMedia?.isBundledIllustration && (
             <span className="muted-text character-studio-demo-label">
               Demo / Illustrative
@@ -754,14 +781,25 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
                           <button
                             type="button"
                             className="character-studio-linked-preview"
-                            aria-label={`Open ${v.title}`}
-                            onClick={() => navigate(`/variants/${v.id}`)}
+                            aria-label={`Expand media: ${v.title}`}
+                            disabled={
+                              !mediaMap.has(
+                                v.coverMediaId || v.mediaLinks[0]?.mediaId
+                              )
+                            }
+                            onClick={() => {
+                              const media = mediaMap.get(
+                                v.coverMediaId || v.mediaLinks[0]?.mediaId
+                              );
+                              if (media) setPreview({ media, title: v.title });
+                            }}
                           >
                             <MediaThumbnail
                               media={mediaMap.get(
                                 v.coverMediaId || v.mediaLinks[0]?.mediaId
                               )}
                               altText={v.title}
+                              enableHoverPreview={!preview}
                             />
                           </button>
                           <span className="badge badge-primary">{v.type}</span>

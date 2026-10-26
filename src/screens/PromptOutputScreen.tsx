@@ -1,4 +1,4 @@
-import React, { useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -37,6 +37,8 @@ import {
   ReferenceBoard,
   type StudioReference,
 } from '../components/ReferenceBoard';
+import { serializeSceneJson } from '../domain/sceneDocument';
+import { FormattedPrompt } from '../components/FormattedPrompt';
 import './promptOutput.css';
 
 const OUTPUT_TABS = [
@@ -44,10 +46,12 @@ const OUTPUT_TABS = [
   { value: 'references', label: 'References' },
   { value: 'review', label: 'Review' },
 ] as const;
-const OUTPUT_MODES: { value: OutputMode; label: string }[] = [
-  { value: 'full', label: 'Full Prompt' },
+type ViewMode = OutputMode | 'json';
+const OUTPUT_MODES: { value: ViewMode; label: string }[] = [
+  { value: 'full', label: 'Narrative' },
   { value: 'structured', label: 'Structured' },
   { value: 'compact', label: 'Compact' },
+  { value: 'json', label: 'JSON' },
 ];
 const COMPONENT_LABELS = {
   character: 'Character',
@@ -90,18 +94,43 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     showToast,
   } = useLibrary();
 
-  const [mode, setMode] = useState<OutputMode>('full');
+  const [mode, setMode] = useState<ViewMode>(
+    id.startsWith('scene_') ? 'full' : 'structured'
+  );
   const [activeTab, setActiveTab] =
     useState<(typeof OUTPUT_TABS)[number]['value']>('prompt');
   const [reviewNotesBuffer, setReviewNotesBuffer] = useState<string | null>(
     null
   );
   const tabId = useId();
-  const [isEditingManual, setIsEditingManual] = useState(false);
-  const [manualBuf, setManualBuf] = useState('');
+  const [view, setView] = useState<'formatted' | 'raw'>('formatted');
+  const [editingModes, setEditingModes] = useState<
+    Partial<Record<OutputMode, boolean>>
+  >({});
+  const [manualBuffers, setManualBuffers] = useState<
+    Partial<Record<OutputMode, string>>
+  >({});
+  const isEditingManual = mode !== 'json' && !!editingModes[mode];
+  const manualBuf = mode === 'json' ? '' : (manualBuffers[mode] ?? '');
+  const setIsEditingManual = (editing: boolean) => {
+    if (mode !== 'json')
+      setEditingModes((previous) => ({ ...previous, [mode]: editing }));
+  };
+  const setManualBuf = (text: string) => {
+    if (mode !== 'json')
+      setManualBuffers((previous) => ({ ...previous, [mode]: text }));
+  };
   const [acknowledgedStaleModes, setAcknowledgedStaleModes] = useState<
     Partial<Record<OutputMode, boolean>>
   >({});
+
+  useEffect(() => {
+    setMode(id.startsWith('scene_') ? 'full' : 'structured');
+    setEditingModes({});
+    setManualBuffers({});
+    setAcknowledgedStaleModes({});
+    setReviewNotesBuffer(null);
+  }, [id]);
 
   const mediaMap = useMemo(() => {
     const map = new Map<string, MediaAsset>();
@@ -150,19 +179,26 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     ? savedScene.references
     : (assembled?.references ?? []);
 
-  const manualOverride = savedScene
-    ? savedScene.manualOutputs[mode]
-    : draft!.manualOutputs[mode];
+  const manualOverride =
+    mode === 'json'
+      ? undefined
+      : savedScene
+        ? savedScene.manualOutputs[mode]
+        : draft!.manualOutputs[mode];
 
   const isStale =
     !isSavedScene &&
     draft &&
     isManualOutputStale(manualOverride, draft.inputRevision) &&
+    mode !== 'json' &&
     !acknowledgedStaleModes[mode];
 
-  const activeText = savedScene
-    ? savedScene.outputs[mode]
-    : (manualOverride?.text ?? assembled?.outputs[mode] ?? '');
+  const activeText =
+    mode === 'json'
+      ? serializeSceneJson(savedScene ?? draft!)
+      : savedScene
+        ? savedScene.outputs[mode]
+        : (manualOverride?.text ?? assembled?.outputs[mode] ?? '');
 
   const handleCopyActivePrompt = async () => {
     if (isStale) {
@@ -184,7 +220,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   };
 
   const handleSaveManualOverride = async () => {
-    if (!draft) return;
+    if (!draft || mode === 'json') return;
     const nextManual = {
       ...draft.manualOutputs,
       [mode]: {
@@ -204,7 +240,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   };
 
   const handleDiscardManualOverride = () => {
-    if (!draft || !manualOverride) return;
+    if (!draft || mode === 'json' || !manualOverride) return;
     openConfirmDialog({
       title: 'Discard Manual Output Edits?',
       message: `Discard your manual edits for the ${mode.toUpperCase()} tab and restore the deterministic assembled output?`,
@@ -229,8 +265,14 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const handleDownloadTxt = () => {
     const txt = formatSceneExportTxt({
       title,
-      mode,
-      promptText: activeText,
+      mode: mode === 'json' ? 'structured' : mode,
+      promptText:
+        mode === 'json'
+          ? (savedScene?.outputs.structured ??
+            draft?.manualOutputs.structured?.text ??
+            assembled?.outputs.structured ??
+            '')
+          : activeText,
       settings,
       avoidText,
       references,
@@ -238,8 +280,26 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
     const safeName =
       title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'scene_prompt';
-    downloadBlobAsFile(blob, `${safeName}_${mode}.txt`);
+    downloadBlobAsFile(
+      blob,
+      `${safeName}_${mode === 'json' ? 'structured' : mode}_specification.txt`
+    );
     showToast('Downloaded .txt prompt & reference checklist.', 'success');
+  };
+
+  const handleDownloadSelected = () => {
+    const json = mode === 'json';
+    const safeName =
+      title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'scene_prompt';
+    downloadBlobAsFile(
+      new Blob([activeText], {
+        type: json
+          ? 'application/json;charset=utf-8'
+          : 'text/plain;charset=utf-8',
+      }),
+      `${safeName}_${mode}.${json ? 'json' : 'txt'}`
+    );
+    showToast('Downloaded complete selected output.', 'success');
   };
 
   const handleSaveScene = async () => {
@@ -512,10 +572,12 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                   className={`tab-btn ${mode === item.value ? 'active' : ''}`}
                   onClick={() => {
                     setMode(item.value);
-                    setIsEditingManual(false);
                   }}
                 >
                   {item.label}
+                  {item.value === 'structured' && (
+                    <span className="output-recommended">Recommended</span>
+                  )}
                 </button>
               ))}
             </div>
@@ -523,7 +585,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               {manualOverride && (
                 <span className="badge badge-warning">Edited output</span>
               )}
-              {!isSavedScene && !isEditingManual && (
+              {!isSavedScene && mode !== 'json' && !isEditingManual && (
                 <button
                   type="button"
                   className="btn btn-secondary btn-sm"
@@ -546,9 +608,39 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               )}
             </div>
           </div>
+          <div
+            className="output-view-options"
+            role="group"
+            aria-label="Prompt presentation"
+          >
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              aria-pressed={view === 'formatted'}
+              onClick={() => setView('formatted')}
+            >
+              Formatted
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              aria-pressed={view === 'raw'}
+              onClick={() => setView('raw')}
+            >
+              Raw
+            </button>
+          </div>
+          {mode === 'json' && (
+            <p className="output-json-notice muted-text">
+              JSON uses a KRAKINAI-specific schema, not an official provider
+              schema. It is derived from preserved scene components and
+              settings; free-form manual text edits are not interpreted or
+              translated into JSON.
+            </p>
+          )}
           <p className="muted-text output-order">
             Character → Clothing → Environment → Action → Camera → Lighting →
-            Style → Instructions → Dialogue
+            Style → Dialogue → Instructions
           </p>
           {OUTPUT_MODES.map((item) => (
             <div
@@ -594,9 +686,13 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                     role="region"
                     aria-label="Complete prompt text"
                     tabIndex={0}
-                    className="output-prompt-viewer"
+                    className={`output-prompt-viewer ${view === 'raw' || mode === 'json' ? 'output-raw-viewer' : 'output-formatted-viewer'}`}
                   >
-                    {activeText}
+                    {view === 'formatted' && mode !== 'json' ? (
+                      <FormattedPrompt text={activeText} />
+                    ) : (
+                      activeText
+                    )}
                   </div>
                 ))}
             </div>
@@ -812,14 +908,25 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               className="btn btn-secondary"
               onClick={handleDownloadTxt}
             >
-              <Download size={16} /> Download .txt
+              <Download size={16} />{' '}
+              {mode === 'json'
+                ? 'Download Structured full specification .txt'
+                : 'Download full specification .txt'}
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleDownloadSelected}
+            >
+              <Download size={16} />{' '}
+              {mode === 'json' ? 'Download .json' : 'Download selected .txt'}
             </button>
             <button
               type="button"
               className="btn btn-primary"
               onClick={handleCopyActivePrompt}
             >
-              <Copy size={16} /> Copy Prompt
+              <Copy size={16} /> {mode === 'json' ? 'Copy JSON' : 'Copy Prompt'}
             </button>
             {draft && (
               <button

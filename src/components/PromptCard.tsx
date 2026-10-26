@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Copy, ExternalLink, Heart, PlusCircle } from 'lucide-react';
 import type { MediaAsset, PromptAsset, Variant } from '../types/domain';
 import { CATEGORY_LABELS } from '../domain/validation';
+import { MediaPreviewDialog } from './MediaPreviewDialog';
 import { MediaThumbnail } from './MediaThumbnail';
 
 interface PromptCardProps {
@@ -25,6 +26,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
   onAddToScene,
   extraAction,
 }) => {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const coverId = item.coverMediaId || item.mediaLinks[0]?.mediaId;
@@ -39,23 +41,26 @@ export const PromptCard: React.FC<PromptCardProps> = ({
 
   return (
     <article className="prompt-card" aria-label={item.title}>
-      <div
-        className="prompt-card-media"
-        onClick={onOpen}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onOpen();
-          }
-        }}
-        aria-label={`Open ${item.title}`}
-      >
-        <MediaThumbnail
-          media={coverMedia}
-          altText={coverLink?.altText || item.title}
-        />
+      <div className="prompt-card-media">
+        <button
+          type="button"
+          aria-label={`Expand media: ${item.title}`}
+          disabled={!coverMedia}
+          onClick={() => setPreviewOpen(true)}
+          style={{
+            width: '100%',
+            height: '100%',
+            border: 0,
+            padding: 0,
+            cursor: 'zoom-in',
+          }}
+        >
+          <MediaThumbnail
+            media={coverMedia}
+            altText={coverLink?.altText || item.title}
+            enableHoverPreview={!previewOpen}
+          />
+        </button>
         <button
           type="button"
           className="icon-btn prompt-card-fav"
@@ -144,7 +149,7 @@ export const PromptCard: React.FC<PromptCardProps> = ({
             className="btn btn-secondary btn-sm"
             onClick={onOpen}
           >
-            <ExternalLink size={14} /> Open
+            <ExternalLink size={14} /> Open Prompt
           </button>
           <button
             type="button"
@@ -163,6 +168,14 @@ export const PromptCard: React.FC<PromptCardProps> = ({
           {extraAction}
         </div>
       </div>
+      {previewOpen && coverMedia && (
+        <MediaPreviewDialog
+          media={coverMedia}
+          title={item.title}
+          altText={coverLink?.altText}
+          onClose={() => setPreviewOpen(false)}
+        />
+      )}
     </article>
   );
 };

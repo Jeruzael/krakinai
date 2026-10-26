@@ -10,17 +10,15 @@ import type {
   TemplateSlotDefault,
   Variant,
 } from '../types/domain';
+import {
+  buildSceneDocument,
+  formatSceneDocumentText,
+  DIALOGUE_MODE_LABELS,
+  SCENE_COMPONENT_ORDER,
+} from './sceneDocument';
 import { CATEGORY_TO_SLOT, SLOT_LABELS } from './validation';
 
-export const ORDERED_BUILDER_SLOTS: BuilderSlot[] = [
-  'character',
-  'wardrobe',
-  'environment',
-  'action',
-  'camera',
-  'lighting',
-  'style',
-];
+export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
 export function createSnapshotFromAsset(asset: PromptAsset): ComponentSnapshot {
   const slot = CATEGORY_TO_SLOT[asset.category];
@@ -100,13 +98,21 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
         ? snap?.promptText?.trim()
         : (snap?.overrideText ?? snap?.promptText)?.trim();
     if (!snap || !resolved) {
-      errors.push(`${SLOT_LABELS[reqSlot]} (${reqSlot}) is required for assembly.`);
+      errors.push(
+        `${SLOT_LABELS[reqSlot]} (${reqSlot}) is required for assembly.`
+      );
     }
   }
 
   const hasDialogueLine = Boolean(draft.dialogue?.line?.trim());
   const hasDialogueSpeaker = Boolean(draft.dialogue?.speaker?.trim());
-  if (hasDialogueLine || hasDialogueSpeaker) {
+  const hasDialogueOptions = Boolean(
+    draft.dialogue?.mode ||
+      draft.dialogue?.language?.trim() ||
+      draft.dialogue?.deliveryNotes?.trim() ||
+      draft.dialogue?.captionPreference
+  );
+  if (hasDialogueLine || hasDialogueSpeaker || hasDialogueOptions) {
     if (!draft.slots.character || !draft.slots.character.promptText.trim()) {
       errors.push('Dialogue requires a selected Character in the scene.');
     }
@@ -117,6 +123,25 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
       errors.push('Dialogue line cannot be empty when a speaker is entered.');
     }
   }
+
+  if (
+    draft.dialogue?.mode !== undefined &&
+    !Object.hasOwn(DIALOGUE_MODE_LABELS, draft.dialogue.mode)
+  )
+    errors.push('Select a valid dialogue mode.');
+  if (
+    draft.dialogue?.captionPreference !== undefined &&
+    !['unspecified', 'none', 'requested'].includes(
+      draft.dialogue.captionPreference
+    )
+  )
+    errors.push('Select a valid caption preference.');
+  if ((draft.dialogue?.speaker?.length ?? 0) > 100)
+    errors.push('Speaker must be 100 characters or fewer.');
+  if ((draft.dialogue?.language?.length ?? 0) > 100)
+    errors.push('Language must be 100 characters or fewer.');
+  if ((draft.dialogue?.deliveryNotes?.length ?? 0) > 1000)
+    errors.push('Delivery notes must be 1,000 characters or fewer.');
 
   if (draft.sceneInstructions && draft.sceneInstructions.trim().length > 4000) {
     errors.push('Scene instructions must be 4,000 characters or fewer.');
@@ -130,7 +155,9 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
       draft.settings.durationSeconds > 60 ||
       !Number.isInteger(draft.settings.durationSeconds))
   ) {
-    errors.push('Intended duration must be an integer between 1 and 60 seconds.');
+    errors.push(
+      'Intended duration must be an integer between 1 and 60 seconds.'
+    );
   }
 
   // Check variant parent character match
@@ -146,85 +173,26 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
     }
   }
 
-  const fullBlocks: string[] = [];
-  const structuredBlocks: string[] = [];
-  const compactBlocks: string[] = [];
-  const avoidParts: string[] = [];
+  const document = buildSceneDocument(draft);
   const references: MediaLink[] = [];
   const seenMediaIds = new Set<string>();
-
   for (const slot of ORDERED_BUILDER_SLOTS) {
-    const snap = draft.slots[slot];
-    if (!snap) continue;
-
-    if (slot === 'character') {
-      const charText = snap.promptText.trim();
-      if (charText) {
-        fullBlocks.push(charText);
-        structuredBlocks.push(`${SLOT_LABELS.character}:\n${charText}`);
-        // Never truncate or substitute compact text for character identity
-        compactBlocks.push(charText);
-      }
-    } else {
-      const hasOverride = Boolean(snap.overrideText && snap.overrideText.trim());
-      const resolvedFull = (hasOverride ? snap.overrideText! : snap.promptText).trim();
-      if (resolvedFull) {
-        fullBlocks.push(resolvedFull);
-        structuredBlocks.push(`${SLOT_LABELS[slot]}:\n${resolvedFull}`);
-
-        let resolvedCompact = resolvedFull;
-        if (hasOverride) {
-          if (snap.overrideCompactText && snap.overrideCompactText.trim()) {
-            resolvedCompact = snap.overrideCompactText.trim();
-          } else {
-            resolvedCompact = resolvedFull;
-          }
-        } else if (snap.compactText && snap.compactText.trim()) {
-          resolvedCompact = snap.compactText.trim();
-        }
-        compactBlocks.push(resolvedCompact);
-      }
-    }
-
-    if (snap.avoidText && snap.avoidText.trim()) {
-      avoidParts.push(snap.avoidText.trim());
-    }
-
-    for (const link of snap.mediaLinks ?? []) {
+    for (const link of draft.slots[slot]?.mediaLinks ?? []) {
       if (!seenMediaIds.has(link.mediaId)) {
-        seenMediaIds.add(link.mediaId);
         references.push({ ...link });
+        seenMediaIds.add(link.mediaId);
       }
     }
   }
-
-  const instructions = (draft.sceneInstructions ?? '').trim();
-  if (instructions) {
-    fullBlocks.push(instructions);
-    structuredBlocks.push(`Scene Instructions:\n${instructions}`);
-    compactBlocks.push(instructions);
-  }
-
-  if (hasDialogueSpeaker && hasDialogueLine) {
-    const dialogueLine = `Dialogue (${draft.dialogue!.speaker.trim()}): ${draft.dialogue!.line.trim()}`;
-    fullBlocks.push(dialogueLine);
-    structuredBlocks.push(`Dialogue:\n${dialogueLine}`);
-    compactBlocks.push(dialogueLine);
-  }
-
-  if (draft.avoidText && draft.avoidText.trim()) {
-    avoidParts.push(draft.avoidText.trim());
-  }
-
   return {
     valid: errors.length === 0,
     errors,
     outputs: {
-      full: fullBlocks.join('\n\n'),
-      structured: structuredBlocks.join('\n\n'),
-      compact: compactBlocks.join('\n\n'),
+      full: formatSceneDocumentText(document, 'full'),
+      structured: formatSceneDocumentText(document, 'structured'),
+      compact: formatSceneDocumentText(document, 'compact'),
     },
-    avoidText: avoidParts.join(', '),
+    avoidText: document.avoidText,
     references,
   };
 }

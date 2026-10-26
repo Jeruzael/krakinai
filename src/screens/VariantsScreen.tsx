@@ -11,6 +11,7 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import { SLOT_LABELS } from '../domain/validation';
 import type { MediaAsset, VariantType } from '../types/domain';
+import { MediaPreviewDialog } from '../components/MediaPreviewDialog';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import { toggleVariantFavorite } from '../storage/db';
 import './characterStudio.css';
@@ -32,6 +33,11 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
 
   const [typeFilter, setTypeFilter] = useState<'All' | VariantType>('All');
   const [search, setSearch] = useState('');
+  const [preview, setPreview] = useState<{
+    media: MediaAsset;
+    title: string;
+    altText?: string;
+  } | null>(null);
 
   const mediaMap = useMemo(() => {
     const map = new Map<string, MediaAsset>();
@@ -88,6 +94,9 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
 
   return (
     <div className="character-studio character-studio-variants">
+      {preview && (
+        <MediaPreviewDialog {...preview} onClose={() => setPreview(null)} />
+      )}
       {/* Header */}
       <div
         style={{
@@ -123,10 +132,18 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
         <button
           type="button"
           className="character-studio-parent-preview"
-          aria-label={`Open ${character.title}`}
-          onClick={() => navigate(`/prompts/${character.id}`)}
+          aria-label={`Expand media: ${character.title}`}
+          disabled={!charMedia}
+          onClick={() =>
+            charMedia &&
+            setPreview({ media: charMedia, title: character.title })
+          }
         >
-          <MediaThumbnail media={charMedia} altText={character.title} />
+          <MediaThumbnail
+            media={charMedia}
+            altText={character.title}
+            enableHoverPreview={!preview}
+          />
         </button>
         <div className="character-studio-parent-context">
           <span className="badge badge-primary">
@@ -260,12 +277,22 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
                   <button
                     type="button"
                     className="character-studio-variant-preview"
-                    aria-label={`Open ${variant.title}`}
-                    onClick={() => navigate(`/variants/${variant.id}`)}
+                    aria-label={`Expand media: ${variant.title}`}
+                    disabled={!coverId || !mediaMap.has(coverId)}
+                    onClick={() => {
+                      const media = coverId ? mediaMap.get(coverId) : undefined;
+                      if (media)
+                        setPreview({
+                          media,
+                          title: variant.title,
+                          altText: coverLink?.altText,
+                        });
+                    }}
                   >
                     <MediaThumbnail
                       media={coverId ? mediaMap.get(coverId) : undefined}
                       altText={coverLink?.altText || variant.title}
+                      enableHoverPreview={!preview}
                     />
                   </button>
                   <button
@@ -327,7 +354,7 @@ export const VariantsScreen: React.FC<{ characterId: string }> = ({
                       className="btn btn-secondary btn-sm"
                       onClick={() => navigate(`/variants/${variant.id}`)}
                     >
-                      <ExternalLink size={14} /> Open
+                      <ExternalLink size={14} /> Open Prompt
                     </button>
                     <button
                       type="button"

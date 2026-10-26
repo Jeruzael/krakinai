@@ -32,11 +32,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     });
   });
 
-  it(
-    'creates a character, adds an outfit variant, builds & assembles a scene, shows clipboard fallback on denial, and saves scene',
-    async () => {
-      const user = userEvent.setup({ delay: null });
-      render(<App />);
+  it('creates a character, adds an outfit variant, builds & assembles a scene, shows clipboard fallback on denial, and saves scene', async () => {
+    const user = userEvent.setup({ delay: null });
+    render(<App />);
 
     // Wait for home screen
     const createCharBtns = await screen.findAllByRole('button', {
@@ -86,7 +84,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
       varPrompt,
       'Wears a vintage indigo denim jacket over a striped cotton tee.'
     );
-    await user.click(screen.getAllByRole('button', { name: /Save Variant/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /Save Variant/i })[0]
+    );
 
     // Back on S05 Variants screen, click Use in Scene on the variant
     const useVariantBtns = await screen.findAllByRole('button', {
@@ -104,9 +104,7 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     });
 
     // Create Environment prompt and add to scene
-    await user.click(
-      screen.getByRole('button', { name: /New Prompt/i })
-    );
+    await user.click(screen.getByRole('button', { name: /New Prompt/i }));
     const categorySelect = await screen.findByLabelText(/Category \*/i);
     await user.selectOptions(categorySelect, 'environments');
     const envTitle = await screen.findByLabelText(/Title \*/i);
@@ -116,7 +114,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
       envPrompt,
       'Sunlit corner coffee roastery with oak counter.'
     );
-    await user.click(screen.getAllByRole('button', { name: /Save Prompt/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /Save Prompt/i })[0]
+    );
 
     const addEnvToScene = await screen.findByRole('button', {
       name: /Add to Scene/i,
@@ -127,9 +127,7 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     await screen.findByLabelText(/Scene Title \*/i);
 
     // Create Action prompt and add to scene
-    await user.click(
-      screen.getByRole('button', { name: /New Prompt/i })
-    );
+    await user.click(screen.getByRole('button', { name: /New Prompt/i }));
     const actCategorySelect = await screen.findByLabelText(/Category \*/i);
     await user.selectOptions(actCategorySelect, 'actions');
     const actTitle = await screen.findByLabelText(/Title \*/i);
@@ -139,7 +137,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
       actPrompt,
       'Sketches notes on a paper storyboard and smiles.'
     );
-    await user.click(screen.getAllByRole('button', { name: /Save Prompt/i })[0]);
+    await user.click(
+      screen.getAllByRole('button', { name: /Save Prompt/i })[0]
+    );
 
     const addActToScene = await screen.findByRole('button', {
       name: /Add to Scene/i,
@@ -164,14 +164,16 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
 
     // Switch to Structured and Compact tabs
     await user.click(screen.getByRole('tab', { name: /Structured/i }));
-    expect(screen.getByText(/CHARACTER IDENTITY:/i)).toBeInTheDocument();
+    expect(
+      screen.getByRole('heading', { name: 'CHARACTER IDENTITY' })
+    ).toBeInTheDocument();
 
     await user.click(screen.getByRole('tab', { name: /Compact/i }));
     expect(
       screen.getByText(/Sunlit corner coffee roastery with oak counter/i)
     ).toBeInTheDocument();
 
-    await user.click(screen.getByRole('tab', { name: /Full Prompt/i }));
+    await user.click(screen.getByRole('tab', { name: /Narrative/i }));
 
     // Test clipboard denial fallback
     const writeTextSpy = vi
@@ -204,7 +206,9 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     });
 
     // Add Saved Scene to a newly created Collection
-    await user.click(screen.getByRole('button', { name: /Add to Collection/i }));
+    await user.click(
+      screen.getByRole('button', { name: /Add to Collection/i })
+    );
     const colNameInput = await screen.findByLabelText(/Collection Name \*/i);
     await user.type(colNameInput, 'Cafe Pitch Pack');
     await user.click(screen.getByRole('button', { name: /Create & Add/i }));
@@ -222,7 +226,5 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     expect(screen.getByText(/Walking Scene/i)).toBeInTheDocument();
     expect(screen.getByText(/Product Showcase/i)).toBeInTheDocument();
     expect(screen.getByText(/Cinematic B-roll/i)).toBeInTheDocument();
-  },
-  15000
-  );
+  }, 15000);
 });

@@ -9,14 +9,15 @@
 KRAKINAI manages reusable creative instructions, reference files, and sample results. It **does not** call external AI APIs, request API keys, include authentication/cloud sync/payments/analytics, or generate images/videos inside the app.
 
 ### Core Workflow
+
 1. **Save a Character (`Characters`)**: Paste a character identity prompt (describing stable facial, hair, and body traits) and optionally attach up to 6 reference images or playable video samples.
 2. **Add Variants (`Variants`)**: Create reusable look layers linked to a parent character (`Outfit`, `Expression`, `Pose`, `Camera Angle`, `Location`, `Visual Style`). Each variant stores only the changed layer and maps deterministically to its target Scene Builder slot.
 3. **Compose a Shot (`Scene Builder`)**:
    - Select up to one component per ordered slot:
      1. `Character` (optional for scenery/product/B-roll shots; locked identity text in builder)
      2. `Clothing & Accessories`
-     3. `Environment` *(required for assembly)*
-     4. `Action & Emotion` *(required for assembly)*
+     3. `Environment` _(required for assembly)_
+     4. `Action & Emotion` _(required for assembly)_
      5. `Camera & Movement`
      6. `Lighting & Mood`
      7. `Art Style`
@@ -24,9 +25,11 @@ KRAKINAI manages reusable creative instructions, reference files, and sample res
    - Selecting an asset or variant snapshots its revision, text, and reference media IDs so later library edits never silently rewrite saved scenes.
    - The **Reference Board** displays selected input references only (`References only. This app does not render a combined scene.`).
 4. **Inspect & Copy Output (`Prompt Output`)**:
-   - View deterministic assembled output in **Full Prompt**, **Structured**, or **Compact** mode.
-   - Copy the active prompt text (with a selectable-text fallback dialog if clipboard access is blocked) or download a `.txt` specification with separate **Prompt**, **Settings**, **Avoid / Negative Text**, and **Reference Checklist** sections.
+   - View deterministic output in **Narrative**, **Structured** (recommended for new assemblies), **Compact**, or derived **JSON** mode. Use **Formatted** for readable production sections or **Raw** to inspect the exact copied string.
+   - Keep exact spoken dialogue separate from visual direction; optionally select on-camera speech, voiceover, off-screen speech, language, delivery notes and captions. No words or delivery styles are inferred.
+   - Copy the complete active output (with a selectable-text fallback dialog if clipboard access is blocked), download the selected `.txt`/`.json`, or export a separate full `.txt` specification containing **Prompt**, **Settings**, **Avoid / Negative Text**, and **Reference Checklist**.
    - Separately download and attach the listed reference files in your chosen external AI video/image generator.
+   - Existing saved scene output strings remain unchanged. Use **Edit a Copy** to assemble with new formatting. JSON uses KRAKINAI's own [versioned scene document](docs/scene-prompt-schema.md), derived from preserved snapshots; it does not reinterpret manual text edits or claim provider-native support.
 5. **Upload Results & Organize (`Saved Scenes` & `Collections`)**:
    - Upload the actual image or video generated externally into the scene's separate result area, record manual review notes (`Unreviewed` / `User-approved`), and group items into **Collections**.
 
@@ -38,19 +41,20 @@ KRAKINAI manages reusable creative instructions, reference files, and sample res
 
 All 9 primary screen types use client-side hash routing (`/#/...`) so refreshes work on any static host without server rewrites:
 
-| Screen ID | Screen Name | Hash Route(s) |Source File |
-| :--- | :--- | :--- | :--- |
-| **S01** | **Home** | `/#/` | `src/screens/HomeScreen.tsx` |
-| **S02** | **Category / Library** | `/#/library`, `/#/library/:category`, `/#/favorites`, `/#/scenes` | `src/screens/LibraryScreen.tsx` |
-| **S03** | **Prompt / Variant Detail** | `/#/prompts/:id`, `/#/variants/:id` | `src/screens/PromptDetailScreen.tsx` |
-| **S04** | **Create / Edit Prompt & Variant** | `/#/prompts/new`, `/#/prompts/:id/edit`, `/#/characters/:id/variants/new`, `/#/variants/:id/edit` | `src/screens/EditorScreen.tsx` |
-| **S05** | **Character Variants** | `/#/characters/:id/variants` | `src/screens/VariantsScreen.tsx` |
-| **S06** | **Scene Builder** | `/#/builder`, `/#/builder/:draftId` | `src/screens/SceneBuilderScreen.tsx` |
-| **S07** | **Prompt Output** | `/#/output/:sceneOrDraftId` | `src/screens/PromptOutputScreen.tsx` |
-| **S08** | **Collections** | `/#/collections`, `/#/collections/:id` | `src/screens/CollectionsScreen.tsx` |
-| **S09** | **Templates** | `/#/templates` | `src/screens/TemplatesScreen.tsx` |
+| Screen ID | Screen Name                        | Hash Route(s)                                                                                     | Source File                          |
+| :-------- | :--------------------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------- |
+| **S01**   | **Home**                           | `/#/`                                                                                             | `src/screens/HomeScreen.tsx`         |
+| **S02**   | **Category / Library**             | `/#/library`, `/#/library/:category`, `/#/favorites`, `/#/scenes`                                 | `src/screens/LibraryScreen.tsx`      |
+| **S03**   | **Prompt / Variant Detail**        | `/#/prompts/:id`, `/#/variants/:id`                                                               | `src/screens/PromptDetailScreen.tsx` |
+| **S04**   | **Create / Edit Prompt & Variant** | `/#/prompts/new`, `/#/prompts/:id/edit`, `/#/characters/:id/variants/new`, `/#/variants/:id/edit` | `src/screens/EditorScreen.tsx`       |
+| **S05**   | **Character Variants**             | `/#/characters/:id/variants`                                                                      | `src/screens/VariantsScreen.tsx`     |
+| **S06**   | **Scene Builder**                  | `/#/builder`, `/#/builder/:draftId`                                                               | `src/screens/SceneBuilderScreen.tsx` |
+| **S07**   | **Prompt Output**                  | `/#/output/:sceneOrDraftId`                                                                       | `src/screens/PromptOutputScreen.tsx` |
+| **S08**   | **Collections**                    | `/#/collections`, `/#/collections/:id`                                                            | `src/screens/CollectionsScreen.tsx`  |
+| **S09**   | **Templates**                      | `/#/templates`                                                                                    | `src/screens/TemplatesScreen.tsx`    |
 
 Supporting dialogs/drawers (`src/components/SharedModals.tsx` and `src/screens/SceneBuilderScreen.tsx`):
+
 - **Settings & Full ZIP Backup / Restore Dialog**
 - **Scene Builder Asset & Variant Picker Modal**
 - **Collection Membership & Creation Dialog**
@@ -102,17 +106,21 @@ krakinai/
 - **Limitations:** Browser IndexedDB storage is tied to this specific browser profile and origin/URL. It is **not** cloud sync or an automatic backup. Opening the app in another browser, private window, or different URL will display a separate library, and clearing browser site data will remove local records.
 
 ### Prototype Media & Storage Limits
+
 - **Images:** JPEG, PNG, WebP up to **10 MiB** each.
 - **Videos:** Playable MP4, WebM up to **50 MiB** each.
 - **Attachments per record:** Up to **6 files** per prompt/variant and up to **6 result files** per scene.
 - **Total stored media:** **200 MiB** prototype limit.
 - **Uncompressed backup archive:** **250 MiB** prototype limit.
 
+On fine-pointer desktop devices, video card covers support muted hover preview unless reduced motion is enabled. Leaving the preview pauses and resets it. Use **Expand media** for an image lightbox or video with native controls; **Open Prompt** remains a separate navigation action. Touch devices use explicit expansion, without relying on hover.
+
 ---
 
 ## 5. Full ZIP Backup & Transactional Restore
 
 Open **Settings & Backup (.zip)** from the sidebar or top bar at any time:
+
 - **Export Full Backup (`.zip`):** Packages `manifest.json` (versioned schema metadata, assets, variants, drafts, saved scenes, collections, templates, and preferences) together with all original binary files under `media/` (and optional `posters/`). Metadata-only JSON is never described as a full backup.
 - **Restore Full Backup (`.zip`):**
   1. Validates the ZIP archive structure, schema version, entry bounds, byte sizes, variant-parent links, collection references, and media integrity before writing.

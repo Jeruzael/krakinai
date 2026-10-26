@@ -13,6 +13,8 @@ import {
   replaceAllStoresTransactionally,
 } from '../storage/db';
 import * as objectUrls from '../hooks/useObjectUrl';
+import { assembleScenePrompt } from '../domain/promptAssembler';
+import { serializeSceneJson } from '../domain/sceneDocument';
 import type { ComponentSnapshot, SceneDraft } from '../types/domain';
 
 const identity = `Fictional adult character with an unchanged identity. ${'Identity detail. '.repeat(90)}END OF IDENTITY`;
@@ -122,7 +124,7 @@ async function renderOutput(id: string) {
       <OutputHost id={id} />
     </LibraryProvider>
   );
-  await screen.findByRole('heading', { name: 'Quiet Library' });
+  await screen.findByRole('heading', { name: 'Quiet Library', level: 1 });
   await waitFor(() =>
     expect(
       screen
@@ -175,16 +177,17 @@ describe('Prompt Output studio workspace', () => {
       expect(panel).not.toBeNull();
       expect(panel).toHaveAttribute('aria-labelledby', tab.id);
     }
-    await user.click(within(formats).getByRole('tab', { name: 'Full Prompt' }));
-    await user.keyboard('{End}');
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
+    await user.click(within(formats).getByRole('tab', { name: 'Narrative' }));
+    await user.keyboard('{ArrowRight}{ArrowRight}');
     expect(within(formats).getByRole('tab', { name: 'Compact' })).toHaveFocus();
     expect(
       screen.getByRole('region', { name: 'Complete prompt text' }).textContent
-    ).toBe(compactPrompt);
+    ).toBe(assembleScenePrompt(draft).outputs.compact);
     await user.keyboard('{Home}');
     expect(
       screen.getByRole('region', { name: 'Complete prompt text' }).textContent
-    ).toBe(fullPrompt);
+    ).toBe(assembleScenePrompt(draft).outputs.full);
     expect(
       screen.getByRole('region', { name: 'Complete prompt text' })
     ).toHaveAttribute('tabindex', '0');
@@ -208,20 +211,30 @@ describe('Prompt Output studio workspace', () => {
     await user.click(
       within(actions).getByRole('button', { name: 'Copy Prompt' })
     );
-    expect(writeText).toHaveBeenLastCalledWith(compactPrompt);
+    expect(writeText).toHaveBeenLastCalledWith(
+      assembleScenePrompt(draft).outputs.compact
+    );
+    await user.click(
+      within(actions).getByRole('button', { name: 'Download selected .txt' })
+    );
+    expect(await download.mock.calls.at(-1)![0].text()).toBe(
+      assembleScenePrompt(draft).outputs.compact
+    );
     await user.click(screen.getByRole('tab', { name: 'Review' }));
     await user.click(
-      within(actions).getByRole('button', { name: 'Download .txt' })
+      within(actions).getByRole('button', {
+        name: 'Download full specification .txt',
+      })
     );
     const [blob, filename] = download.mock.calls.at(-1)!;
-    expect(filename).toBe('Quiet_Library_compact.txt');
+    expect(filename).toBe('Quiet_Library_compact_specification.txt');
     expect(await blob.text()).toBe(
       [
         'KRAKINAI — AI VIDEO PROMPT LIBRARY EXPORT',
         'Scene: Quiet Library',
         '',
         '=== PROMPT (COMPACT) ===',
-        compactPrompt,
+        assembleScenePrompt(draft).outputs.compact,
         '',
         '=== SETTINGS (USER INSTRUCTIONS) ===',
         'Aspect Ratio: 9:16',
@@ -250,6 +263,7 @@ describe('Prompt Output studio workspace', () => {
       .mockResolvedValue();
     const draft = await createFixture(true);
     await renderOutput(draft.id);
+    await user.click(screen.getByRole('tab', { name: 'Narrative' }));
     await user.click(screen.getByRole('button', { name: 'Edit This Output' }));
     const editor = screen.getByRole('textbox', {
       name: 'Manual prompt output',
@@ -352,19 +366,29 @@ describe('Prompt Output studio workspace', () => {
       screen.getByRole('textbox', { name: 'Review Notes' }),
       'Save this scene with these notes.'
     );
+    const beforeNotesUrl = screen.getAllByAltText('Character view 1')[0].getAttribute('src');
     await user.click(screen.getByRole('tab', { name: 'Prompt' }));
+    await waitFor(() => {
+      // A refreshed media object produces a new URL after the asynchronous
+      // blur save. Wait for its effect before beginning the next interaction.
+      const images = screen.getAllByAltText('Character view 1');
+      expect(images.every(image => image.getAttribute('src') && image.getAttribute('src') !== beforeNotesUrl)).toBe(true);
+    });
     await waitFor(async () =>
-      expect((await getAllSnapshot()).drafts[0].reviewNotes).toBe(
-        'Save this scene with these notes.'
-      )
+      expect((await getAllSnapshot()).drafts[0].reviewNotes).toBe('Save this scene with these notes.')
     );
     await user.click(screen.getByRole('tab', { name: 'Review' }));
+    const beforeSceneUrl = screen.getAllByAltText('Character view 1')[0].getAttribute('src');
     await user.click(screen.getByRole('button', { name: 'Save Scene' }));
+    await waitFor(() => {
+      const images = screen.getAllByAltText('Character view 1');
+      expect(images.every(image => image.getAttribute('src') && image.getAttribute('src') !== beforeSceneUrl)).toBe(true);
+    });
     expect(
       await screen.findByText('Saved Scene (Immutable Snapshot)')
     ).toBeVisible();
     const saved = (await getAllSnapshot()).scenes[0];
-    expect(saved.outputs.full).toBe(fullPrompt);
+    expect(saved.outputs.full).toBe(assembleScenePrompt(draft).outputs.full);
     expect(saved.reviewNotes).toBe('Save this scene with these notes.');
     expect(saved.slots).toEqual(draft.slots);
   });
@@ -438,5 +462,119 @@ describe('Prompt Output studio workspace', () => {
     })) {
       expect(download).toBeDisabled();
     }
+  });
+  it('defaults drafts to Structured and copies/downloads exact derived JSON without saving it', async () => {
+    const user = userEvent.setup();
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    const download = vi
+      .spyOn(objectUrls, 'downloadBlobAsFile')
+      .mockImplementation(() => {});
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    expect(screen.getByRole('tab', { name: /Structured/ })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    expect(screen.getByText(/KRAKINAI-specific schema/)).toBeVisible();
+    expect(
+      screen.queryByRole('button', { name: 'Edit This Output' })
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
+    const raw = screen.getByRole('region', {
+      name: 'Complete prompt text',
+    }).textContent;
+    expect(raw).toBe(serializeSceneJson(draft));
+    await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
+    expect(writeText).toHaveBeenLastCalledWith(raw);
+    await user.click(screen.getByRole('button', { name: 'Download .json' }));
+    const [blob, filename] = download.mock.calls.at(-1)!;
+    expect(filename).toBe('Quiet_Library_json.json');
+    expect(await blob.text()).toBe(raw);
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Download Structured full specification .txt',
+      })
+    );
+    const [specification, specificationName] = download.mock.calls.at(-1)!;
+    expect(specificationName).toBe(
+      'Quiet_Library_structured_specification.txt'
+    );
+    expect(await specification.text()).toContain('=== PROMPT (STRUCTURED) ===');
+    expect(await specification.text()).toContain(
+      assembleScenePrompt(draft).outputs.structured
+    );
+    expect((await getAllSnapshot()).drafts[0]).toEqual(draft);
+  });
+
+  it('retains unfinished per-format edits across modes and renders HTML as literal text', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button', { name: 'Edit This Output' }));
+    const editor = screen.getByRole('textbox', {
+      name: 'Manual prompt output',
+    });
+    await user.clear(editor);
+    await user.type(editor, '<img src=x onerror=alert(1)> **HAIR**');
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
+    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    await user.click(screen.getByRole('tab', { name: /Structured/ }));
+    await user.click(screen.getByRole('button', { name: 'Formatted' }));
+    expect(
+      screen.getByRole('textbox', { name: 'Manual prompt output' })
+    ).toHaveValue('<img src=x onerror=alert(1)> **HAIR**');
+    await user.click(
+      screen.getByRole('button', { name: 'Save Manual Output Override' })
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('textbox', { name: 'Manual prompt output' })
+      ).not.toBeInTheDocument()
+    );
+    expect(
+      screen
+        .getByRole('region', { name: 'Complete prompt text' })
+        .querySelector('img')
+    ).toBeNull();
+    expect(
+      screen.getByText('<img src=x onerror=alert(1)>', { exact: false })
+    ).toBeVisible();
+  });
+
+  it('opens legacy saved scenes in Narrative and preserves all original output bytes', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    const saved = await saveSceneFromDraft(draft.id);
+    const outputs = {
+      full: fullPrompt,
+      structured: '  Legacy structured\nunchanged.  ',
+      compact: compactPrompt,
+    };
+    const snapshot = await getAllSnapshot();
+    await replaceAllStoresTransactionally({
+      ...snapshot,
+      scenes: [{ ...saved, outputs }],
+    });
+    await renderOutput(saved.id);
+    expect(screen.getByRole('tab', { name: 'Narrative' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
+    for (const [label, text] of [
+      ['Narrative', outputs.full],
+      ['Structured', outputs.structured],
+      ['Compact', outputs.compact],
+    ]) {
+      await user.click(screen.getByRole('tab', { name: new RegExp(label) }));
+      expect(
+        screen.getByRole('region', { name: 'Complete prompt text' }).textContent
+      ).toBe(text);
+    }
+    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    expect((await getAllSnapshot()).scenes[0].outputs).toEqual(outputs);
   });
 });
