@@ -141,6 +141,29 @@ describe('Prompt Output studio workspace', () => {
     await clearAllStoresForTesting();
   });
 
+  it('switches export workflows without altering canonical scenes and copies complete generation JSON', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    const before = (await getAllSnapshot()).drafts;
+    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
+    await user.selectOptions(screen.getByLabelText('Target Workflow'), 'generation_json');
+    expect(screen.getByRole('tab', { name: 'Generation JSON' })).toHaveAttribute('aria-selected', 'true');
+    const text = screen.getByRole('region', { name: 'Complete prompt text' }).textContent!;
+    expect(JSON.parse(text).schema).toBe('krakinai.generation-prompt.v1');
+    expect(JSON.parse(text).character.description).toBe(identity);
+    expect(screen.queryByRole('button', { name: 'Edit This Output' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
+    expect(writeText).toHaveBeenCalledWith(text);
+    await user.selectOptions(screen.getByLabelText('Target Workflow'), 'gemini_omni_flash');
+    expect(screen.getByRole('tab', { name: /Structured/ })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('region', { name: 'Complete prompt text' }).textContent).toContain(identity);
+    await user.click(screen.getByRole('tab', { name: 'Narrative' }));
+    expect(screen.getByLabelText('Target Workflow')).toHaveValue('canonical');
+    expect(screen.getByRole('button', { name: 'Edit This Output' })).toBeVisible();
+    expect((await getAllSnapshot()).drafts).toEqual(before);
+  });
+
   it('supports keyboard top tabs and prompt formats without mutating stored inputs', async () => {
     const user = userEvent.setup();
     const draft = await createFixture();
@@ -477,7 +500,7 @@ describe('Prompt Output studio workspace', () => {
       'aria-selected',
       'true'
     );
-    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    await user.click(screen.getByRole('tab', { name: 'Project JSON' }));
     expect(screen.getByText(/KRAKINAI-specific schema/)).toBeVisible();
     expect(
       screen.queryByRole('button', { name: 'Edit This Output' })
@@ -520,7 +543,7 @@ describe('Prompt Output studio workspace', () => {
     await user.clear(editor);
     await user.type(editor, '<img src=x onerror=alert(1)> **HAIR**');
     await user.click(screen.getByRole('button', { name: 'Raw' }));
-    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    await user.click(screen.getByRole('tab', { name: 'Project JSON' }));
     await user.click(screen.getByRole('tab', { name: /Structured/ }));
     await user.click(screen.getByRole('button', { name: 'Formatted' }));
     expect(
@@ -574,7 +597,7 @@ describe('Prompt Output studio workspace', () => {
         screen.getByRole('region', { name: 'Complete prompt text' }).textContent
       ).toBe(text);
     }
-    await user.click(screen.getByRole('tab', { name: 'JSON' }));
+    await user.click(screen.getByRole('tab', { name: 'Project JSON' }));
     expect((await getAllSnapshot()).scenes[0].outputs).toEqual(outputs);
   });
 });
