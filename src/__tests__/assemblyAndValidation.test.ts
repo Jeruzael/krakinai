@@ -132,7 +132,15 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
     compactText: 'SHOULD BE IGNORED FOR CHARACTERS',
     avoidText: 'extra limbs, distorted face',
     tags: ['Adult', 'Realistic'],
-    mediaLinks: [{ mediaId: 'media_maya_front', role: 'reference', altText: 'Maya front portrait', order: 0, filename: 'maya-front.png' }],
+    mediaLinks: [
+      {
+        mediaId: 'media_maya_front',
+        role: 'reference',
+        altText: 'Maya front portrait',
+        order: 0,
+        filename: 'maya-front.png',
+      },
+    ],
     coverMediaId: 'media_maya_front',
     favorite: true,
     reviewStatus: 'user-approved',
@@ -149,11 +157,21 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
     type: 'Outfit',
     targetSlot: 'wardrobe',
     title: 'Office Outfit',
-    promptText: 'She wears a navy blazer over a plain white shirt, charcoal trousers, and small silver stud earrings.',
-    compactText: 'Navy blazer over white shirt, charcoal trousers, silver stud earrings.',
+    promptText:
+      'She wears a navy blazer over a plain white shirt, charcoal trousers, and small silver stud earrings.',
+    compactText:
+      'Navy blazer over white shirt, charcoal trousers, silver stud earrings.',
     avoidText: 'casual hoodie',
     tags: ['Formal'],
-    mediaLinks: [{ mediaId: 'media_office', role: 'reference', altText: 'Office blazer reference', order: 0, filename: 'office-look.png' }],
+    mediaLinks: [
+      {
+        mediaId: 'media_office',
+        role: 'reference',
+        altText: 'Office blazer reference',
+        order: 0,
+        filename: 'office-look.png',
+      },
+    ],
     coverMediaId: 'media_office',
     favorite: false,
     reviewStatus: 'unreviewed',
@@ -167,11 +185,20 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
     title: 'Neighborhood Cafe / Day',
     category: 'environments',
     description: 'Quiet cafe',
-    promptText: 'A quiet neighborhood cafe with pale wooden tables and a window on the left; daytime.',
+    promptText:
+      'A quiet neighborhood cafe with pale wooden tables and a window on the left; daytime.',
     compactText: 'Quiet daytime cafe with wooden tables and left window.',
     avoidText: 'neon lights',
     tags: ['Indoor', 'Day'],
-    mediaLinks: [{ mediaId: 'media_cafe', role: 'reference', altText: 'Cafe table reference', order: 0, filename: 'cafe-reference.png' }],
+    mediaLinks: [
+      {
+        mediaId: 'media_cafe',
+        role: 'reference',
+        altText: 'Cafe table reference',
+        order: 0,
+        filename: 'cafe-reference.png',
+      },
+    ],
     coverMediaId: 'media_cafe',
     favorite: false,
     reviewStatus: 'unreviewed',
@@ -187,8 +214,10 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
     title: 'Sitting and Listening',
     category: 'actions',
     description: 'Seated cafe action',
-    promptText: 'She sits at the table, closes her notebook, and looks toward someone off-camera with a restrained smile.',
-    compactText: 'Sits at table, closes notebook, looks off-camera with restrained smile.',
+    promptText:
+      'She sits at the table, closes her notebook, and looks toward someone off-camera with a restrained smile.',
+    compactText:
+      'Sits at table, closes notebook, looks off-camera with restrained smile.',
     tags: ['Seated'],
     mediaLinks: [],
     favorite: false,
@@ -210,7 +239,8 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
       action: createSnapshotFromAsset(sittingAsset),
     },
     extraRequiredSlots: [],
-    sceneInstructions: 'One continuous shot. Preserve the selected outfit and background arrangement.',
+    sceneInstructions:
+      'One continuous shot. Preserve the selected outfit and background arrangement.',
     dialogue: {
       speaker: 'Maya',
       line: 'Akala ko hindi ka na darating.',
@@ -233,36 +263,53 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
     expect(res.valid).toBe(true);
     expect(res.errors).toEqual([]);
 
+    const overview =
+      '# Cafe opening\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\nTool / Provider Notes: External generator guidance only';
+    const dialogueScript =
+      '=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Maya\nDialogue Mode: Spoken, unspecified position\n\nEXACT SPOKEN LINE:\n"Akala ko hindi ka na darating."\n\nPerformance Instruction:\nSpeak the exact line aloud as dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.';
     expect(res.outputs.full).toBe(
       [
-        mayaAsset.promptText,
-        officeVariant.promptText,
-        cafeAsset.promptText,
-        sittingAsset.promptText,
-        'One continuous shot. Preserve the selected outfit and background arrangement.',
-        'Dialogue (Maya): Akala ko hindi ka na darating.',
+        overview,
+        '## Character Identity\n' + mayaAsset.promptText,
+        '## Wardrobe & Accessories\n' + officeVariant.promptText,
+        '## Environment / Location\n' + cafeAsset.promptText,
+        '## Action & Performance\n' + sittingAsset.promptText,
+        dialogueScript,
+        '## Additional Scene Instructions\nOne continuous shot. Preserve the selected outfit and background arrangement.',
       ].join('\n\n')
     );
 
     // Compact preserves character identity and dialogue verbatim, uses compactText for non-character slots
     expect(res.outputs.compact).toBe(
       [
-        mayaAsset.promptText,
-        officeVariant.compactText!,
-        cafeAsset.compactText!,
-        sittingAsset.compactText!,
-        'One continuous shot. Preserve the selected outfit and background arrangement.',
-        'Dialogue (Maya): Akala ko hindi ka na darating.',
+        overview,
+        '## Character Identity\n' + mayaAsset.promptText,
+        '## Wardrobe & Accessories\n' + officeVariant.compactText!,
+        '## Environment / Location\n' + cafeAsset.compactText!,
+        '## Action & Performance\n' + sittingAsset.compactText!,
+        dialogueScript,
+        '## Additional Scene Instructions\nOne continuous shot. Preserve the selected outfit and background arrangement.',
       ].join('\n\n')
     );
 
     // Structured adds labels to the same blocks
-    expect(res.outputs.structured).toContain('Character Identity:\n' + mayaAsset.promptText);
-    expect(res.outputs.structured).toContain('Clothing & Accessories:\n' + officeVariant.promptText);
-    expect(res.outputs.structured).toContain('Environment:\n' + cafeAsset.promptText);
-    expect(res.outputs.structured).toContain('Action & Emotion:\n' + sittingAsset.promptText);
-    expect(res.outputs.structured).not.toContain('Camera & Movement:');
-    expect(res.outputs.structured).toContain('Dialogue:\nDialogue (Maya): Akala ko hindi ka na darating.');
+    expect(res.outputs.structured).toBe(
+      [
+        overview.replace(
+          '# Cafe opening',
+          '=== SCENE OVERVIEW ===\nScene Title: Cafe opening'
+        ),
+        '=== CHARACTER IDENTITY ===\n' + mayaAsset.promptText,
+        '=== WARDROBE & ACCESSORIES ===\n' + officeVariant.promptText,
+        '=== ENVIRONMENT / LOCATION ===\n' + cafeAsset.promptText,
+        '=== ACTION & PERFORMANCE ===\n' + sittingAsset.promptText,
+        dialogueScript,
+        '=== ADDITIONAL SCENE INSTRUCTIONS ===\nOne continuous shot. Preserve the selected outfit and background arrangement.',
+      ].join('\n\n')
+    );
+    expect(res.outputs.structured).not.toContain(
+      '=== CAMERA & CINEMATOGRAPHY ==='
+    );
 
     // Avoid text is kept separate
     expect(res.avoidText).toContain('extra limbs, distorted face');
@@ -284,13 +331,16 @@ describe('Deterministic Prompt Assembly & Output Modes', () => {
         ...baseDraft.slots,
         environment: {
           ...baseDraft.slots.environment!,
-          overrideText: 'A rainy rooftop terrace under a canvas awning at dusk.',
+          overrideText:
+            'A rainy rooftop terrace under a canvas awning at dusk.',
         },
       },
     };
     const res = assembleScenePrompt(overriddenDraft);
     expect(res.valid).toBe(true);
-    expect(res.outputs.compact).toContain('A rainy rooftop terrace under a canvas awning at dusk.');
+    expect(res.outputs.compact).toContain(
+      'A rainy rooftop terrace under a canvas awning at dusk.'
+    );
     expect(res.outputs.compact).not.toContain(cafeAsset.compactText!);
   });
 

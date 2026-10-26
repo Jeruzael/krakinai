@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Download, Grid2X2, Image, Maximize2 } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
 import { MediaThumbnail } from './MediaThumbnail';
+import { MediaPreviewDialog } from './MediaPreviewDialog';
 import { StudioDialog } from './StudioDialog';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 
@@ -29,6 +30,7 @@ export const ReferenceBoard: React.FC<{
   downloadable = false,
 }) => {
   const [featuredKey, setFeaturedKey] = useState<string | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const featured = items.find((item) => item.key === featuredKey) ?? items[0];
   const media = featured ? mediaMap.get(featured.mediaId) : undefined;
@@ -80,16 +82,19 @@ export const ReferenceBoard: React.FC<{
       {featured ? (
         <>
           <div className="reference-featured">
-            <MediaThumbnail
-              media={media}
-              altText={featured.altText || featured.sourceTitle}
-              showVideoControls={true}
-            />
+            {!previewOpen && !galleryOpen && (
+              <MediaThumbnail
+                media={media}
+                altText={featured.altText || featured.sourceTitle}
+                showVideoControls={true}
+              />
+            )}
             <button
               type="button"
               className="icon-btn reference-expand"
-              onClick={() => setGalleryOpen(true)}
-              aria-label="Open reference gallery"
+              onClick={() => setPreviewOpen(true)}
+              disabled={!media}
+              aria-label="Expand Media"
             >
               <Maximize2 size={17} />
             </button>
@@ -153,6 +158,14 @@ export const ReferenceBoard: React.FC<{
           <p>Select components in the recipe to preview their references.</p>
           <p>References only. This app does not render a combined scene.</p>
         </div>
+      )}
+      {previewOpen && media && featured && (
+        <MediaPreviewDialog
+          media={media}
+          title={featured.sourceTitle}
+          altText={featured.altText}
+          onClose={() => setPreviewOpen(false)}
+        />
       )}
       {galleryOpen && (
         <StudioDialog

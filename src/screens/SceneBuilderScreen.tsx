@@ -724,8 +724,21 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 </summary>
                 <p className="recipe-board-note">
                   Spoken dialogue requires a selected character. Text is
-                  preserved verbatim.
+                  preserved verbatim. Delivery, language, and captions are used
+                  only when you specify them; external tools may handle speech
+                  differently.
                 </p>
+                {draft.dialogue && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() =>
+                      scheduleDraftAutosave({ ...draft, dialogue: undefined })
+                    }
+                  >
+                    Clear Dialogue
+                  </button>
+                )}
                 <div className="form-group">
                   <label htmlFor="dialogue-speaker" className="form-label">
                     Speaker Label
@@ -738,6 +751,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                       scheduleDraftAutosave({
                         ...draft,
                         dialogue: {
+                          ...draft.dialogue,
                           speaker: event.target.value,
                           line: draft.dialogue?.line ?? '',
                         },
@@ -747,22 +761,124 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 </div>
                 <div className="form-group">
                   <label htmlFor="dialogue-line" className="form-label">
-                    Spoken Line (Preserved verbatim)
+                    Exact Spoken Line (Preserved verbatim)
                   </label>
-                  <input
+                  <textarea
                     id="dialogue-line"
-                    className="input"
+                    className="textarea"
+                    rows={3}
                     value={draft.dialogue?.line ?? ''}
                     onChange={(event) =>
                       scheduleDraftAutosave({
                         ...draft,
                         dialogue: {
+                          ...draft.dialogue,
                           speaker: draft.dialogue?.speaker ?? '',
                           line: event.target.value,
                         },
                       })
                     }
                   />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="dialogue-mode" className="form-label">
+                    Dialogue Mode
+                  </label>
+                  <select
+                    id="dialogue-mode"
+                    className="select"
+                    value={draft.dialogue?.mode ?? 'spoken'}
+                    onChange={(event) =>
+                      scheduleDraftAutosave({
+                        ...draft,
+                        dialogue: {
+                          speaker: '',
+                          line: '',
+                          ...draft.dialogue,
+                          mode: event.target.value as NonNullable<
+                            SceneDraft['dialogue']
+                          >['mode'],
+                        },
+                      })
+                    }
+                  >
+                    <option value="spoken">Spoken, unspecified position</option>
+                    <option value="on_camera">On-camera speech</option>
+                    <option value="voiceover">Voiceover</option>
+                    <option value="off_screen">Off-screen speech</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="dialogue-delivery" className="form-label">
+                    Delivery Notes (Optional)
+                  </label>
+                  <textarea
+                    id="dialogue-delivery"
+                    className="textarea"
+                    rows={2}
+                    maxLength={1000}
+                    value={draft.dialogue?.deliveryNotes ?? ''}
+                    onChange={(event) =>
+                      scheduleDraftAutosave({
+                        ...draft,
+                        dialogue: {
+                          speaker: '',
+                          line: '',
+                          ...draft.dialogue,
+                          deliveryNotes: event.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="dialogue-language" className="form-label">
+                    Language (Optional)
+                  </label>
+                  <input
+                    id="dialogue-language"
+                    className="input"
+                    maxLength={100}
+                    value={draft.dialogue?.language ?? ''}
+                    onChange={(event) =>
+                      scheduleDraftAutosave({
+                        ...draft,
+                        dialogue: {
+                          speaker: '',
+                          line: '',
+                          ...draft.dialogue,
+                          language: event.target.value,
+                        },
+                      })
+                    }
+                  />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="dialogue-captions" className="form-label">
+                    Captions
+                  </label>
+                  <select
+                    id="dialogue-captions"
+                    className="select"
+                    value={draft.dialogue?.captionPreference ?? 'unspecified'}
+                    onChange={(event) =>
+                      scheduleDraftAutosave({
+                        ...draft,
+                        dialogue: {
+                          speaker: '',
+                          line: '',
+                          ...draft.dialogue,
+                          captionPreference: event.target.value as NonNullable<
+                            SceneDraft['dialogue']
+                          >['captionPreference'],
+                        },
+                      })
+                    }
+                  >
+                    <option value="unspecified">Not specified</option>
+                    <option value="none">No on-screen captions</option>
+                    <option value="requested">Captions requested</option>
+                  </select>
                 </div>
               </details>
               <details className="studio-disclosure">

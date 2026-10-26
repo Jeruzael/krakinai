@@ -142,7 +142,7 @@ describe('Character studio disclosure and source preservation', () => {
     ).not.toBeInTheDocument();
     await user.click(within(card).getByRole('button', { name: 'Copy' }));
     expect(writeText).toHaveBeenLastCalledWith(LAYER);
-    await user.click(within(card).getByRole('button', { name: 'Open' }));
+    await user.click(within(card).getByRole('button', { name: 'Open Prompt' }));
 
     await screen.findByRole('heading', { name: 'Indigo Jacket' });
     expect(window.location.hash).toBe('#/variants/studio-outfit');
