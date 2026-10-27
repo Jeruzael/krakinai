@@ -29,6 +29,7 @@ import {
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import './characterStudio.css';
 import { IdentityAnchorPanel } from '../components/IdentityAnchorPanel';
+import { getDownloadFilename, getMediaDisplayName } from '../domain/mediaNaming';
 
 interface PromptDetailScreenProps {
   id: string;
@@ -441,14 +442,14 @@ export const PromptDetailScreen: React.FC<PromptDetailScreenProps> = ({
               }}
             >
               <span className="muted-text character-studio-filename">
-                File: {activeMedia.filename} (
+                {getMediaDisplayName(activeMedia)} · Original Filename: {activeMedia.filename} (
                 {(activeMedia.byteSize / 1024).toFixed(1)} KiB)
               </span>
               <button
                 type="button"
                 className="btn btn-secondary btn-sm"
                 onClick={() =>
-                  downloadBlobAsFile(activeMedia.blob, activeMedia.filename)
+                  downloadBlobAsFile(activeMedia.blob, getDownloadFilename(activeMedia))
                 }
               >
                 <Download size={14} /> Download Reference File

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   AlertTriangle,
   Archive,
@@ -140,6 +140,8 @@ export const CollectionMembershipModal: React.FC = () => {
     showToast,
   } = useLibrary();
   const [search, setSearch] = useState('');
+  const lock = useRef(false);
+  const [pending, setPending] = useState(false);
   const [newColName, setNewColName] = useState('');
   const [newColDesc, setNewColDesc] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -151,6 +153,8 @@ export const CollectionMembershipModal: React.FC = () => {
   );
 
   const handleToggleMembership = async (colId: string, isMember: boolean) => {
+    if (lock.current) return;
+    lock.current = true; setPending(true);
     try {
       if (isMember) {
         await removeMemberFromCollection({
@@ -173,11 +177,13 @@ export const CollectionMembershipModal: React.FC = () => {
         err instanceof Error ? err.message : 'Failed to update collection.',
         'error'
       );
-    }
+    } finally { lock.current = false; setPending(false); }
   };
 
   const handleCreateCollection = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (lock.current) return;
+    lock.current = true; setPending(true);
     setError(null);
     try {
       const created = await createCollection({
@@ -200,31 +206,11 @@ export const CollectionMembershipModal: React.FC = () => {
       setError(
         err instanceof Error ? err.message : 'Failed to create collection.'
       );
-    }
+    } finally { lock.current = false; setPending(false); }
   };
 
-  return (
-    <div
-      className="modal-backdrop"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="col-modal-title"
-    >
-      <div className="modal-panel" style={{ maxWidth: 540 }}>
-        <div className="modal-header">
-          <h2 id="col-modal-title" className="section-title">
-            Add “{collectionModalTarget.title}” to Collection
-          </h2>
-          <button
-            type="button"
-            className="icon-btn"
-            onClick={closeCollectionModal}
-            aria-label="Close collection dialog"
-          >
-            <X size={18} />
-          </button>
-        </div>
-        <div className="modal-body">
+  return <StudioDialog title={`Add “${collectionModalTarget.title}” to Collection`} onClose={()=>{if(!pending)closeCollectionModal();}} footer={<button type="button" className="btn btn-primary" disabled={pending} onClick={closeCollectionModal}>Done</button>}>
+
           <p className="muted-text" style={{ marginTop: 0 }}>
             Collections store references, not duplicate copies. Removing an item
             from a collection keeps the underlying record in your library.
@@ -284,6 +270,7 @@ export const CollectionMembershipModal: React.FC = () => {
                     </div>
                     <input
                       type="checkbox"
+                        disabled={pending}
                       checked={isMember}
                       onChange={() => handleToggleMembership(col.id, isMember)}
                       style={{ width: 18, height: 18 }}
@@ -294,7 +281,7 @@ export const CollectionMembershipModal: React.FC = () => {
             )}
           </div>
 
-          <form
+          <details><summary>+ New Collection</summary><form
             onSubmit={handleCreateCollection}
             style={{
               borderTop: '1px solid var(--border-subtle)',
@@ -329,23 +316,11 @@ export const CollectionMembershipModal: React.FC = () => {
                 onChange={(e) => setNewColDesc(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn btn-secondary">
+            <button type="submit" disabled={pending} className="btn btn-secondary">
               <FolderPlus size={16} /> Create & Add Item
             </button>
-          </form>
-        </div>
-        <div className="modal-footer">
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={closeCollectionModal}
-          >
-            Done
-          </button>
-        </div>
-      </div>
-    </div>
-  );
+          </form></details>
+  </StudioDialog>;
 };
 
 export const SettingsBackupModal: React.FC = () => {

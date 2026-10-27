@@ -1,4 +1,7 @@
-import React, { useMemo, useState } from 'react';
+import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
+import { StudioDialog } from '../components/StudioDialog';
+import { collectionSceneRoute, collectionRoute, collectionViewState, rememberCollectionScroll, getCollectionScroll } from '../domain/collectionNavigation';
+import React, { useMemo, useState, useEffect } from 'react';
 import {
   ArrowLeft,
   Edit3,
@@ -25,6 +28,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
 }) => {
   const {
     snapshot,
+    hashPath,
     navigate,
     copyText,
     applyAssetToScene,
@@ -37,12 +41,21 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
 
   const [search, setSearch] = useState('');
   const [detailTab, setDetailTab] = useState<'assets' | 'variants' | 'scenes'>(
-    'assets'
+    collectionViewState(hashPath).tab as 'assets' | 'variants' | 'scenes'
   );
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingColId, setEditingColId] = useState<string | null>(null);
   const [colName, setColName] = useState('');
   const [colDesc, setColDesc] = useState('');
+  const [coverId, setCoverId] = useState<string|null|undefined>();
+  const [coverPicker, setCoverPicker] = useState(false);
+  useEffect(() => {
+    const state=collectionViewState(hashPath);
+    if (['assets','variants','scenes'].includes(state.tab)) setDetailTab(state.tab as 'assets'|'variants'|'scenes');
+    const route=collectionId ? collectionRoute(collectionId,state):'';
+    const frame=requestAnimationFrame(()=>{if(route) window.scrollTo(0,getCollectionScroll(route));});
+    return ()=>cancelAnimationFrame(frame);
+  }, [collectionId,hashPath]);
 
   const mediaMap = useMemo(() => {
     const map = new Map<string, MediaAsset>();
@@ -114,6 +127,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                 setEditingColId(col.id);
                 setColName(col.name);
                 setColDesc(col.description);
+                setCoverId(col.coverMediaId);
                 setShowCreateModal(true);
               }}
             >
@@ -150,7 +164,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             role="tab"
             aria-selected={detailTab === 'assets'}
             className={`tab-btn ${detailTab === 'assets' ? 'active' : ''}`}
-            onClick={() => setDetailTab('assets')}
+            onClick={() => navigate(collectionRoute(col.id,{...collectionViewState(hashPath),tab:'assets'}))}
           >
             Prompts ({assetRefs.length})
           </button>
@@ -159,7 +173,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             role="tab"
             aria-selected={detailTab === 'variants'}
             className={`tab-btn ${detailTab === 'variants' ? 'active' : ''}`}
-            onClick={() => setDetailTab('variants')}
+            onClick={() => navigate(collectionRoute(col.id,{...collectionViewState(hashPath),tab:'variants'}))}
           >
             Variants ({variantRefs.length})
           </button>
@@ -168,7 +182,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             role="tab"
             aria-selected={detailTab === 'scenes'}
             className={`tab-btn ${detailTab === 'scenes' ? 'active' : ''}`}
-            onClick={() => setDetailTab('scenes')}
+            onClick={() => navigate(collectionRoute(col.id,{...collectionViewState(hashPath),tab:'scenes'}))}
           >
             Saved Scenes ({sceneRefs.length})
           </button>
@@ -324,7 +338,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
-                        onClick={() => navigate(`/output/${scene.id}`)}
+                        onClick={() => {const state={...collectionViewState(hashPath),tab:detailTab};rememberCollectionScroll(collectionRoute(col.id,state),window.scrollY);navigate(collectionSceneRoute(scene.id,col.id,state));}}
                       >
                         <ExternalLink size={14} /> Open Scene
                       </button>
@@ -350,8 +364,10 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             </div>
           ))}
 
-        {showCreateModal && (
+        {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} onSelect={setCoverId} onClose={()=>setCoverPicker(false)} onUploaded={refreshSnapshot}/>}
+        {showCreateModal && !coverPicker && (
           <CollectionEditModal
+            coverControl={<><button type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
             isEdit={true}
             name={colName}
             desc={colDesc}
@@ -365,6 +381,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                 id: editingColId,
                 name: colName,
                 description: colDesc,
+                coverMediaId: coverId,
               });
               await refreshSnapshot();
               setShowCreateModal(false);
@@ -407,6 +424,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             setEditingColId(null);
             setColName('');
             setColDesc('');
+            setCoverId(undefined);
             setShowCreateModal(true);
           }}
         >
@@ -439,6 +457,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
               setEditingColId(null);
               setColName('');
               setColDesc('');
+            setCoverId(undefined);
               setShowCreateModal(true);
             }}
           >
@@ -448,18 +467,12 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
       ) : (
         <div className="card-grid">
           {filteredCollections.map((col) => {
-            // Find first member thumbnail
-            let coverMedia: MediaAsset | undefined;
-            for (const m of col.members) {
-              if (m.type === 'asset') {
-                const a = snapshot.assets.find((x) => x.id === m.id);
-                const cid = a?.coverMediaId || a?.mediaLinks[0]?.mediaId;
-                if (cid && mediaMap.has(cid)) {
-                  coverMedia = mediaMap.get(cid);
-                  break;
-                }
-              }
-            }
+            const sceneMembers = col.members.filter(m=>m.type==='scene');
+            const scenes = sceneMembers.map(m=>snapshot.scenes.find(x=>x.id===m.id));
+            const knownSeconds=scenes.reduce((n,scene)=>n+(scene?.settings.durationSeconds ?? 0),0);
+            const unknownCount=scenes.filter(scene=>!scene?.settings.durationSeconds).length;
+            const candidateIds = [...scenes.flatMap(scene=>scene ? [...scene.resultMediaLinks,...scene.references].map(m=>m.mediaId):[]),...col.members.flatMap(m=>m.type==='asset' ? (()=>{const a=snapshot.assets.find(a=>a.id===m.id);return a ? [a.coverMediaId,...a.mediaLinks.map(l=>l.mediaId)]:[];})():[])];
+            const coverMedia = col.coverMediaId ? mediaMap.get(col.coverMediaId) : candidateIds.map(id=>id?mediaMap.get(id):undefined).find(m=>m?.mimeType.startsWith('image/'));
 
             return (
               <article key={col.id} className="prompt-card">
@@ -481,7 +494,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                     >
                       <FolderKanban size={32} />
                       <span style={{ fontSize: 12, fontWeight: 600 }}>
-                        Collection Folder
+                        {col.coverMediaId ? 'Cover image missing' : 'Collection Folder'}
                       </span>
                     </div>
                   )}
@@ -496,7 +509,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                     }}
                   >
                     <span className="badge badge-primary">
-                      {col.members.length} items
+                      {sceneMembers.length} scenes · {knownSeconds}s intended · {unknownCount} unknown
                     </span>
                     <span className="muted-text" style={{ fontSize: 11 }}>
                       Updated {new Date(col.updatedAt).toLocaleDateString()}
@@ -531,6 +544,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                         setEditingColId(col.id);
                         setColName(col.name);
                         setColDesc(col.description);
+                setCoverId(col.coverMediaId);
                         setShowCreateModal(true);
                       }}
                     >
@@ -566,8 +580,10 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
         </div>
       )}
 
-      {showCreateModal && (
+      {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} onSelect={setCoverId} onClose={()=>setCoverPicker(false)} onUploaded={refreshSnapshot}/>}
+      {showCreateModal && !coverPicker && (
         <CollectionEditModal
+          coverControl={<><button type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
           isEdit={Boolean(editingColId)}
           name={colName}
           desc={colDesc}
@@ -582,12 +598,14 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                   id: editingColId,
                   name: colName,
                   description: colDesc,
+                coverMediaId: coverId,
                 });
                 showToast('Collection updated.', 'success');
               } else {
                 await createCollection({
                   name: colName,
                   description: colDesc,
+                coverMediaId: coverId ?? undefined,
                 });
                 showToast('Collection created.', 'success');
               }
@@ -609,6 +627,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
 };
 
 const CollectionEditModal: React.FC<{
+  coverControl: React.ReactNode;
   isEdit: boolean;
   name: string;
   desc: string;
@@ -617,6 +636,7 @@ const CollectionEditModal: React.FC<{
   onClose: () => void;
   onSubmit: (e: React.FormEvent) => void;
 }> = ({
+  coverControl,
   isEdit,
   name,
   desc,
@@ -625,20 +645,10 @@ const CollectionEditModal: React.FC<{
   onClose,
   onSubmit,
 }) => (
-  <div
-    className="modal-backdrop"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="col-edit-title"
-  >
-    <div className="modal-panel" style={{ maxWidth: 460 }}>
-      <div className="modal-header">
-        <h2 id="col-edit-title" className="section-title">
-          {isEdit ? 'Edit Collection' : 'New Collection'}
-        </h2>
-      </div>
+  <StudioDialog title={isEdit ? 'Edit Collection' : 'New Collection'} onClose={onClose}>
       <form onSubmit={onSubmit}>
         <div className="modal-body">
+          {coverControl}
           <div className="form-group">
             <label htmlFor="modal-col-name" className="form-label">
               Collection Name *
@@ -674,6 +684,5 @@ const CollectionEditModal: React.FC<{
           </button>
         </div>
       </form>
-    </div>
-  </div>
+  </StudioDialog>
 );

@@ -1,3 +1,4 @@
+import { CollectionMembershipBadge } from '../components/CollectionMembershipBadge';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Copy,
@@ -315,6 +316,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
                           : 'Unreviewed'}
                       </span>
                     </div>
+                    <CollectionMembershipBadge sceneId={scene.id} />
                     <h3
                       className="prompt-card-title"
                       onClick={() => navigate(`/output/${scene.id}`)}
@@ -359,6 +361,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
                       <button
                         type="button"
                         className="btn btn-secondary btn-sm"
+                        aria-label="Add to Collection"
                         onClick={() =>
                           openCollectionModal({
                             type: 'scene',
