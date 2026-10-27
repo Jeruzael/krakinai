@@ -27,6 +27,10 @@ export function createSnapshotFromAsset(asset: PromptAsset): ComponentSnapshot {
     sourceType: 'asset',
     sourceId: asset.id,
     sourceRevision: asset.revision,
+    ...(asset.category === 'characters' ? {
+      identityRevision: asset.identityRevision ?? asset.revision,
+      identityAnchor: asset.identityAnchor ? structuredClone(asset.identityAnchor) : undefined,
+    } : {}),
     sourceTitle: asset.title,
     promptText: asset.promptText.trim(),
     compactText: asset.compactText?.trim() || undefined,

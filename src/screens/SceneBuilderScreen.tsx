@@ -46,6 +46,10 @@ import { MediaThumbnail } from '../components/MediaThumbnail';
 import { AssetPickerModal } from '../components/SharedModals';
 import { StudioDialog } from '../components/StudioDialog';
 import { ReferenceBoard } from '../components/ReferenceBoard';
+import { runScenePreflight, type PreflightFinding } from '../domain/scenePreflight';
+import { ScenePreflightDialog } from '../components/ScenePreflightDialog';
+import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
+import { ReferencePackManager } from '../components/ReferencePackManager';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
@@ -67,6 +71,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [assemblyErrors, setAssemblyErrors] = useState<string[]>([]);
   const [detailSlot, setDetailSlot] = useState<BuilderSlot | null>(null);
+  const [showPreflight, setShowPreflight] = useState(false);
+  const [showReferencePack, setShowReferencePack] = useState(false);
+  const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
   const [pickerSlot, setPickerSlot] = useState<BuilderSlot | null>(null);
   const [overrideTextBuf, setOverrideTextBuf] = useState('');
   const [overrideCompactBuf, setOverrideCompactBuf] = useState('');
@@ -126,7 +133,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         err instanceof Error ? err.message : 'Failed to save draft locally.';
       setSaveState('error');
       setSaveError(msg);
-      return nextDraft;
+      return undefined;
     }
   };
 
@@ -386,6 +393,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
 
   const handleAssemble = async () => {
     const saved = await persistDraftImmediate(draft, false);
+    if (!saved) return;
     const res = assembleScenePrompt(saved);
     if (!res.valid) {
       setAssemblyErrors(res.errors);
@@ -445,6 +453,17 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     setOverrideTextBuf(selected.overrideText ?? selected.promptText);
     setOverrideCompactBuf(selected.overrideCompactText ?? '');
     setDetailSlot(slot);
+  };
+  const preflightFindings = runScenePreflight(draft, new Set(mediaMap.keys()));
+  const openPreflightComponent = (component: PreflightFinding['components'][number]) => {
+    setShowPreflight(false);
+    if (ORDERED_BUILDER_SLOTS.includes(component as BuilderSlot)) openDetails(component as BuilderSlot);
+    else requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>(`[data-preflight="${component}"]`);
+      const details = target?.closest('details');
+      if (details) details.open = true;
+      target?.focus();
+    });
   };
 
   return (
@@ -514,7 +533,10 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       )}
 
       <div className="recipe-layout">
-        <div className="recipe-board-panel">
+        <div className="recipe-board-panel" tabIndex={-1} data-preflight="references">
+          <button type="button" className="btn btn-secondary btn-sm" style={{marginBottom:8}} onClick={() => setShowReferencePack(true)}>
+            Manage Reference Pack · {draft.referencePack ? `${draft.referencePack.entries.length} selected` : 'all linked (legacy)'}
+          </button>
           <ReferenceBoard
             items={referenceBoardItems.map((item, index) => ({
               key: `${item.slot}-${index}-${item.mediaId}`,
@@ -690,6 +712,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               })}
             </div>
             <div className="recipe-options">
+              <GenerationIdentityControl source={draft} liveMaster={snapshot.assets.find(asset => asset.id === draft.slots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />
               <details className="studio-disclosure">
                 <summary>
                   Scene Instructions{' '}
@@ -703,6 +726,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                   </label>
                   <textarea
                     id="builder-instructions"
+                    data-preflight="instructions"
                     className="textarea"
                     rows={3}
                     value={draft.sceneInstructions}
@@ -745,6 +769,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                   </label>
                   <input
                     id="dialogue-speaker"
+                    data-preflight="dialogue"
                     className="input"
                     value={draft.dialogue?.speaker ?? ''}
                     onChange={(event) =>
@@ -900,6 +925,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     </label>
                     <select
                       id="setting-aspect"
+                      data-preflight="settings"
                       className="select"
                       value={draft.settings.aspectRatio ?? '16:9'}
                       onChange={(event) =>
@@ -984,6 +1010,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                           sceneInstructions: '',
                           dialogue: undefined,
                           manualOutputs: {},
+                          generation: undefined,
+                          referencePack: undefined,
                         });
                         closeConfirmDialog();
                       },
@@ -1004,6 +1032,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               Stored on this browser · Rev {draft.inputRevision}
             </span>
             <div className="recipe-action-buttons">
+              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPreflight(true)}>
+                Preflight · {preflightFindings.length} findings
+              </button>
               <button
                 type="button"
                 className="btn btn-secondary"
@@ -1023,6 +1054,12 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         </section>
       </div>
 
+      {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={openPreflightComponent} onEditComponent={openPreflightComponent} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
+      {showReferencePack && <ReferencePackManager source={draft} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} onApply={async referencePack => {
+        const saved = await persistDraftImmediate({...draft,referencePack}, false);
+        if (!saved) throw new Error('Reference Pack could not be saved. Your selection remains available here.');
+        setShowReferencePack(false);
+      }} />}
       {detailSlot && detailSnapshot && (
         <StudioDialog
           title={`${recipeLabels[detailSlot]} details`}

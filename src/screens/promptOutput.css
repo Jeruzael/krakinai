@@ -84,6 +84,15 @@
   background: var(--bg-canvas);
   border-radius: 10px;
 }
+.output-workflow-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-bottom: 12px;
+}
+.output-workflow-control .form-label { margin: 0; }
+.output-workflow-control .select { width: min(100%, 360px); }
 .output-format-tabs .tab-btn {
   padding: 8px 12px;
   font-size: 13px;
