@@ -1,0 +1,1055 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-27",
+  "verdict": "NEAR_LIMIT_NOT_CERTIFIED_CAPACITY_BLOCKED",
+  "pullRequest": "https://github.com/Jeruzael/krakinai/pull/12",
+  "keepDraftAndUnmerged": true,
+  "limitsUnchanged": {
+    "storedMediaBytes": 5242880000,
+    "expandedBytes": 5767168000,
+    "compressedBytes": 5767168000,
+    "entries": 2000,
+    "projectExportBytes": 134217728,
+    "enforcedRestoreExpandedBytes": 1073748246
+  },
+  "measuredCeilings": {
+    "historicalOpaqueMediaOnlyRestoreExpandedBytes": 1073748246,
+    "newRepresentativeFullGraphExpandedBytes": 2900631,
+    "noGeneralNearLimitCertification": true,
+    "historicalEvidence": "zip64-results.json"
+  },
+  "resourcePreflight": {
+    "fixedVolumes": [
+      {
+        "name": "C:",
+        "filesystem": "NTFS",
+        "capacityBytes": 499041431552
+      }
+    ],
+    "initialFreeBytes": 18087051264,
+    "repeatFreeBytes": 18923229184,
+    "practicalHeadroomFloorBytes": 37580963840,
+    "alternateVolumeAvailable": false,
+    "browserEstimate": {
+      "quota": 10737446617,
+      "usage": 28377,
+      "usageDetails": {
+        "indexedDB": 28377
+      }
+    },
+    "cdpNativePolicyQuota": {
+      "usage": 5788498,
+      "quota": 299424858930,
+      "overrideActive": false,
+      "usageBreakdown": [
+        {
+          "storageType": "file_systems",
+          "usage": 2778314
+        },
+        {
+          "storageType": "indexeddb",
+          "usage": 3010184
+        },
+        {
+          "storageType": "cache_storage",
+          "usage": 0
+        },
+        {
+          "storageType": "service_workers",
+          "usage": 0
+        }
+      ]
+    },
+    "quotaAPIsDoNotMeasureFreeDisk": true,
+    "cases": [
+      {
+        "mediaMiB": 2000,
+        "estimatedExpandedBytes": 2118123520,
+        "estimatedArchiveBytes": 2119172096,
+        "originalFixtureAllowanceBytes": 134217728,
+        "nativeAndMetadataAllowanceBytes": 1073741824,
+        "calculatedMinimumFreeBytes": 16153313280,
+        "practicalMinimumFreeBytes": 37580963840,
+        "estimatedAdditionalBrowserQuotaBytes": 5309988864,
+        "quota": 10737446617,
+        "usage": 28377,
+        "status": "BLOCKED_NOT_RUN_PREFLIGHT",
+        "blockingConstraints": [
+          "requested_practical_disk_headroom"
+        ],
+        "gateBypassed": false,
+        "dataGenerated": false
+      },
+      {
+        "mediaMiB": 4000,
+        "estimatedExpandedBytes": 4215275520,
+        "estimatedArchiveBytes": 4216324096,
+        "originalFixtureAllowanceBytes": 134217728,
+        "nativeAndMetadataAllowanceBytes": 1073741824,
+        "calculatedMinimumFreeBytes": 22444769280,
+        "practicalMinimumFreeBytes": 37580963840,
+        "estimatedAdditionalBrowserQuotaBytes": 9504292864,
+        "quota": 10737446617,
+        "usage": 28377,
+        "status": "BLOCKED_NOT_RUN_PREFLIGHT",
+        "blockingConstraints": [
+          "requested_practical_disk_headroom"
+        ],
+        "gateBypassed": false,
+        "dataGenerated": false
+      },
+      {
+        "mediaMiB": 5000,
+        "estimatedExpandedBytes": 5263851520,
+        "estimatedArchiveBytes": 5264900096,
+        "originalFixtureAllowanceBytes": 134217728,
+        "nativeAndMetadataAllowanceBytes": 1073741824,
+        "calculatedMinimumFreeBytes": 25590497280,
+        "practicalMinimumFreeBytes": 37580963840,
+        "estimatedAdditionalBrowserQuotaBytes": 11601444864,
+        "quota": 10737446617,
+        "usage": 28377,
+        "status": "BLOCKED_NOT_RUN_PREFLIGHT",
+        "blockingConstraints": [
+          "requested_practical_disk_headroom",
+          "conservative_browser_quota_estimate"
+        ],
+        "gateBypassed": false,
+        "dataGenerated": false
+      }
+    ]
+  },
+  "smallProductionStaticRun": {
+    "case": "case-rich-06",
+    "browser": "156.0.8078.4",
+    "channel": "bundled Chromium",
+    "os": "Windows",
+    "freshPersistentProfile": true,
+    "pass": true,
+    "checks": [
+      {
+        "id": "check-1",
+        "name": "metadata-rich synthetic graph and all image/video decoders validated",
+        "pass": true,
+        "elapsedMs": 2611,
+        "sincePreviousCheckMs": 2611,
+        "details": {
+          "counts": {
+            "assets": 21,
+            "variants": 6,
+            "media": 29,
+            "drafts": 3,
+            "scenes": 3,
+            "collections": 4,
+            "templates": 4
+          },
+          "mediaBytes": 2756457
+        }
+      },
+      {
+        "id": "check-2",
+        "name": "successful bounded streaming export to real OPFS writable",
+        "pass": true,
+        "elapsedMs": 14536,
+        "sincePreviousCheckMs": 11925,
+        "details": {}
+      },
+      {
+        "id": "check-3",
+        "name": "independent Python CRC/SHA readback and legacy version1 fixture",
+        "pass": true,
+        "elapsedMs": 14828,
+        "sincePreviousCheckMs": 292,
+        "details": {}
+      },
+      {
+        "id": "check-4",
+        "name": "native origin quota exhaustion rejects staging and preserves previous graph",
+        "pass": true,
+        "elapsedMs": 15295,
+        "sincePreviousCheckMs": 467,
+        "details": {
+          "rejected": true,
+          "name": "QuotaExceededError",
+          "message": "The operation failed because it would cause the application to exceed its storage quota."
+        }
+      },
+      {
+        "id": "check-5",
+        "name": "cancellation during extraction preserves full previous graph",
+        "pass": true,
+        "elapsedMs": 15663,
+        "sincePreviousCheckMs": 369,
+        "details": {}
+      },
+      {
+        "id": "check-6",
+        "name": "corrupted PNG entry rejected without changing previous records/media",
+        "pass": true,
+        "elapsedMs": 16053,
+        "sincePreviousCheckMs": 389,
+        "details": {
+          "rejected": true,
+          "message": "Invalid CRC32"
+        }
+      },
+      {
+        "id": "check-7",
+        "name": "forced browser crash during staging retains previous library and recoverable incomplete stage",
+        "pass": true,
+        "elapsedMs": 16913,
+        "sincePreviousCheckMs": 861,
+        "details": {}
+      },
+      {
+        "id": "check-8",
+        "name": "forced browser crash after first replacement put rolls back all records and hashes",
+        "pass": true,
+        "elapsedMs": 18463,
+        "sincePreviousCheckMs": 1550,
+        "details": {}
+      },
+      {
+        "id": "check-9",
+        "name": "explicit UI confirmation, full replacement, browser restart, exact metadata/scene outputs/counts and all media SHA256",
+        "pass": true,
+        "elapsedMs": 21182,
+        "sincePreviousCheckMs": 2719,
+        "details": {}
+      },
+      {
+        "id": "check-10",
+        "name": "stale tab rejected and restored PNG/SVG/WebM decode/playback passed",
+        "pass": true,
+        "elapsedMs": 21183,
+        "sincePreviousCheckMs": 0,
+        "details": {}
+      },
+      {
+        "id": "check-11",
+        "name": "legacy version1 without optional SHA fields restores rich records exactly after restart",
+        "pass": true,
+        "elapsedMs": 23029,
+        "sincePreviousCheckMs": 1846,
+        "details": {}
+      },
+      {
+        "id": "check-12",
+        "name": "interrupted native OPFS destination write preserves prior destination and live library",
+        "pass": true,
+        "elapsedMs": 23237,
+        "sincePreviousCheckMs": 209,
+        "details": {}
+      }
+    ],
+    "pageErrorCount": 0,
+    "counts": {
+      "assets": 21,
+      "variants": 6,
+      "media": 29,
+      "drafts": 3,
+      "scenes": 3,
+      "collections": 4,
+      "templates": 4
+    },
+    "mediaBytes": 2756457,
+    "compressedBytes": 2778120,
+    "expandedBytes": 2900631,
+    "zipEntries": 30,
+    "zipSha256": "7023542fb64fc4d0a89eadaf1fe1a515261b139c893c7c9f003919605b488220",
+    "metadataSha256": "7eb9a009109fab9df92e50aea8699ace03d306bdc9b949d511cd28c8a8906d19",
+    "sourceMedia": [
+      {
+        "id": "cert_decodable_png",
+        "mimeType": "image/png",
+        "blobType": "image/png",
+        "bytes": 2706731,
+        "sha256": "1d880a1d8ab6d23596388dd32c7c873c468d39bcd0d5b534cf58a0925c4732cf",
+        "posterSha256": null
+      },
+      {
+        "id": "cert_playable_webm",
+        "mimeType": "video/webm",
+        "blobType": "video/webm",
+        "bytes": 5960,
+        "sha256": "63ba7d5b91546389204294d878947573869b99fb53e8315d3582b8431c77396d",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_act_sitting_listening",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1663,
+        "sha256": "eb74570dcdb55829c9cc16f8b28bb0d15a58e8d4b82277f8f908f175002844fa",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_act_speaking_camera",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1651,
+        "sha256": "8c40b6cb7cc4caea55896cc86f70a912c57f3d3289d98a81a48766c681da1a29",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_act_walking_smile",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1651,
+        "sha256": "bdc3f3a76858caa9bb22ecc40212d4e1e174e866e1fad5d1c34a5a928b20027a",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_cam_closeup_push",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1668,
+        "sha256": "3bec0a7805bc54913631db91cf85fd443ad0ba9a107df898e2e5b1ce55009621",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_cam_medium_locked",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1671,
+        "sha256": "b380dc9210e699988418285dd3375797505ccc7a289d38cdf2f67250bf090a31",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_cam_wide_tracking",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1666,
+        "sha256": "bf8d4473fd60892884b6caf60f037e1cb9fa7097da449a4a2704d37d4c9f2211",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_char_lina",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1654,
+        "sha256": "ad8fca07e635067da08bc916d61b1150ea9e67c7d3ad453529510787eabc4b9a",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_char_maya",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1650,
+        "sha256": "610a09b6fb648cb8a67c76062b58f11aa988bc38ff0919c743876ec3255d6029",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_char_nico",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1658,
+        "sha256": "944ebfa159beeb8e029d7232e183746614cf41817c625e4939f3d60991cd131a",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_env_apartment_evening",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1644,
+        "sha256": "9d4e331e55efdc6513ada8b238ab3b2491ecaa24067a0a14eefddf1c11f1c2bf",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_env_cafe_day",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1648,
+        "sha256": "1f283b91182eea7a530431b1736ed64e32d89f10a5d2c7020a79d65b0027b2ee",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_env_city_sidewalk",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1642,
+        "sha256": "a094bf4314cdb2ab7d47439d988110ca619ccbf5ad662b8eb3ac9d4ffcc41ddf",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_light_overcast",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1568,
+        "sha256": "2b0f1fa2ce9aec8a382cf2c11951e4d3f6c4d9048ee276a05266c9c8fc2c06b6",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_light_practical_evening",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1585,
+        "sha256": "632c841f31f170573e9c248aa3a8f118a95a0e024c1684967872599942e2a59a",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_light_window_day",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1581,
+        "sha256": "276be6d2c276716b3b0a317933e26806eb76d4a5eb0383c41b5ee949b840fbed",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_style_minimal_2d",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1585,
+        "sha256": "4e26f3b4974f633a1911969e2b9ac2029c35aeb6e22ae123915c2d705b3ac563",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_style_natural_drama",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1606,
+        "sha256": "6fd54f4383764a2007c4052aa777beb941d0b1cc67d05070a4fae17644c223e7",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_style_stylized_3d",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1580,
+        "sha256": "09cabe21b8c68b6300ff48ee4d64ef7c84ca9b2e184f9b46ad9a7a71de71b6fb",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_ward_casual_white",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1622,
+        "sha256": "69e8ee5f0ff7143237c7b7edf4d0ce884713058421f63740888fd025ffd0e4b6",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_ward_navy_office",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1625,
+        "sha256": "670ea22ec4839e75724807b2bf467f63e3a618b915b74ac5140add7cc94db625",
+        "posterSha256": null
+      },
+      {
+        "id": "media_asset_ward_weekend",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1629,
+        "sha256": "906600f92f640c992a04d68f5d8aa25cf8bb04bae5fcef93a1f1a6134719e47f",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_cafe_location",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1579,
+        "sha256": "2711491d6add4d5adb35f0189982e42da9f4a797614e1d505f393d5990928b9b",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_closeup_angle",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1602,
+        "sha256": "be073863a5c6c526918d8aa2f02e1e26880a6817a0da4bbcbeea0b2f49642f59",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_drama_style",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1598,
+        "sha256": "3913a8918b5ff181edda18248459bf4e395869c9a7f6ddaee4b0330d41dbfe25",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_office_outfit",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1575,
+        "sha256": "e9717a30dde0335efeec08b9cc339db559b3a275e62dd4e718d8fcdec11a148b",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_restrained_smile",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1586,
+        "sha256": "76022bae97734a7d361c83e3386b49e7792ce7c588069d4210d5b0bcc27f9ec1",
+        "posterSha256": null
+      },
+      {
+        "id": "media_variant_maya_seated_pose",
+        "mimeType": "image/svg+xml",
+        "blobType": "image/svg+xml",
+        "bytes": 1579,
+        "sha256": "d098b0c7087a1335e5150001a1de8b83610d05820d8f318b9732920964d99dd3",
+        "posterSha256": null
+      }
+    ],
+    "archiveEntries": [
+      {
+        "path": "media/cert_decodable_png.png",
+        "bytes": 2706731,
+        "sha256": "1d880a1d8ab6d23596388dd32c7c873c468d39bcd0d5b534cf58a0925c4732cf"
+      },
+      {
+        "path": "media/cert_playable_webm.webm",
+        "bytes": 5960,
+        "sha256": "63ba7d5b91546389204294d878947573869b99fb53e8315d3582b8431c77396d"
+      },
+      {
+        "path": "media/media_asset_act_sitting_listening.svg",
+        "bytes": 1663,
+        "sha256": "eb74570dcdb55829c9cc16f8b28bb0d15a58e8d4b82277f8f908f175002844fa"
+      },
+      {
+        "path": "media/media_asset_act_speaking_camera.svg",
+        "bytes": 1651,
+        "sha256": "8c40b6cb7cc4caea55896cc86f70a912c57f3d3289d98a81a48766c681da1a29"
+      },
+      {
+        "path": "media/media_asset_act_walking_smile.svg",
+        "bytes": 1651,
+        "sha256": "bdc3f3a76858caa9bb22ecc40212d4e1e174e866e1fad5d1c34a5a928b20027a"
+      },
+      {
+        "path": "media/media_asset_cam_closeup_push.svg",
+        "bytes": 1668,
+        "sha256": "3bec0a7805bc54913631db91cf85fd443ad0ba9a107df898e2e5b1ce55009621"
+      },
+      {
+        "path": "media/media_asset_cam_medium_locked.svg",
+        "bytes": 1671,
+        "sha256": "b380dc9210e699988418285dd3375797505ccc7a289d38cdf2f67250bf090a31"
+      },
+      {
+        "path": "media/media_asset_cam_wide_tracking.svg",
+        "bytes": 1666,
+        "sha256": "bf8d4473fd60892884b6caf60f037e1cb9fa7097da449a4a2704d37d4c9f2211"
+      },
+      {
+        "path": "media/media_asset_char_lina.svg",
+        "bytes": 1654,
+        "sha256": "ad8fca07e635067da08bc916d61b1150ea9e67c7d3ad453529510787eabc4b9a"
+      },
+      {
+        "path": "media/media_asset_char_maya.svg",
+        "bytes": 1650,
+        "sha256": "610a09b6fb648cb8a67c76062b58f11aa988bc38ff0919c743876ec3255d6029"
+      },
+      {
+        "path": "media/media_asset_char_nico.svg",
+        "bytes": 1658,
+        "sha256": "944ebfa159beeb8e029d7232e183746614cf41817c625e4939f3d60991cd131a"
+      },
+      {
+        "path": "media/media_asset_env_apartment_evening.svg",
+        "bytes": 1644,
+        "sha256": "9d4e331e55efdc6513ada8b238ab3b2491ecaa24067a0a14eefddf1c11f1c2bf"
+      },
+      {
+        "path": "media/media_asset_env_cafe_day.svg",
+        "bytes": 1648,
+        "sha256": "1f283b91182eea7a530431b1736ed64e32d89f10a5d2c7020a79d65b0027b2ee"
+      },
+      {
+        "path": "media/media_asset_env_city_sidewalk.svg",
+        "bytes": 1642,
+        "sha256": "a094bf4314cdb2ab7d47439d988110ca619ccbf5ad662b8eb3ac9d4ffcc41ddf"
+      },
+      {
+        "path": "media/media_asset_light_overcast.svg",
+        "bytes": 1568,
+        "sha256": "2b0f1fa2ce9aec8a382cf2c11951e4d3f6c4d9048ee276a05266c9c8fc2c06b6"
+      },
+      {
+        "path": "media/media_asset_light_practical_evening.svg",
+        "bytes": 1585,
+        "sha256": "632c841f31f170573e9c248aa3a8f118a95a0e024c1684967872599942e2a59a"
+      },
+      {
+        "path": "media/media_asset_light_window_day.svg",
+        "bytes": 1581,
+        "sha256": "276be6d2c276716b3b0a317933e26806eb76d4a5eb0383c41b5ee949b840fbed"
+      },
+      {
+        "path": "media/media_asset_style_minimal_2d.svg",
+        "bytes": 1585,
+        "sha256": "4e26f3b4974f633a1911969e2b9ac2029c35aeb6e22ae123915c2d705b3ac563"
+      },
+      {
+        "path": "media/media_asset_style_natural_drama.svg",
+        "bytes": 1606,
+        "sha256": "6fd54f4383764a2007c4052aa777beb941d0b1cc67d05070a4fae17644c223e7"
+      },
+      {
+        "path": "media/media_asset_style_stylized_3d.svg",
+        "bytes": 1580,
+        "sha256": "09cabe21b8c68b6300ff48ee4d64ef7c84ca9b2e184f9b46ad9a7a71de71b6fb"
+      },
+      {
+        "path": "media/media_asset_ward_casual_white.svg",
+        "bytes": 1622,
+        "sha256": "69e8ee5f0ff7143237c7b7edf4d0ce884713058421f63740888fd025ffd0e4b6"
+      },
+      {
+        "path": "media/media_asset_ward_navy_office.svg",
+        "bytes": 1625,
+        "sha256": "670ea22ec4839e75724807b2bf467f63e3a618b915b74ac5140add7cc94db625"
+      },
+      {
+        "path": "media/media_asset_ward_weekend.svg",
+        "bytes": 1629,
+        "sha256": "906600f92f640c992a04d68f5d8aa25cf8bb04bae5fcef93a1f1a6134719e47f"
+      },
+      {
+        "path": "media/media_variant_maya_cafe_location.svg",
+        "bytes": 1579,
+        "sha256": "2711491d6add4d5adb35f0189982e42da9f4a797614e1d505f393d5990928b9b"
+      },
+      {
+        "path": "media/media_variant_maya_closeup_angle.svg",
+        "bytes": 1602,
+        "sha256": "be073863a5c6c526918d8aa2f02e1e26880a6817a0da4bbcbeea0b2f49642f59"
+      },
+      {
+        "path": "media/media_variant_maya_drama_style.svg",
+        "bytes": 1598,
+        "sha256": "3913a8918b5ff181edda18248459bf4e395869c9a7f6ddaee4b0330d41dbfe25"
+      },
+      {
+        "path": "media/media_variant_maya_office_outfit.svg",
+        "bytes": 1575,
+        "sha256": "e9717a30dde0335efeec08b9cc339db559b3a275e62dd4e718d8fcdec11a148b"
+      },
+      {
+        "path": "media/media_variant_maya_restrained_smile.svg",
+        "bytes": 1586,
+        "sha256": "76022bae97734a7d361c83e3386b49e7792ce7c588069d4210d5b0bcc27f9ec1"
+      },
+      {
+        "path": "media/media_variant_maya_seated_pose.svg",
+        "bytes": 1579,
+        "sha256": "d098b0c7087a1335e5150001a1de8b83610d05820d8f318b9732920964d99dd3"
+      },
+      {
+        "path": "manifest.json",
+        "bytes": 144174,
+        "sha256": "ab967520a1e1bcc5df1b3db42d7b61b727be1d22fde53018ed68227822cae8ae"
+      }
+    ],
+    "exactMetadataOutputsReferencesAndMediaAfterRestart": true,
+    "decodedImages": 28,
+    "playableVideos": 1,
+    "allMediaSynthetic": true,
+    "opaqueByteFixtures": false,
+    "elapsedMs": 23370,
+    "observedWorkingSetSumPeakBytes": 754614272,
+    "memoryMetric": "Owned Chromium processes WorkingSet64 sum sampled about once per second; shared pages can double-count; not an absolute peak or private bytes.",
+    "diskFreeBeforeBytes": 18923229184,
+    "diskFreeAfterBytes": 18897285120,
+    "minimumSampledFreeDiskBytes": 18895532032,
+    "browserEstimateAfter": {
+      "quota": 10751221406,
+      "usage": 13803166,
+      "usageDetails": {
+        "fileSystem": 9351098,
+        "indexedDB": 4452068
+      }
+    },
+    "opfsFileLogicalBytes": 9336336,
+    "opfsFileCount": 64,
+    "nativeQuotaOverride": {
+      "usage": 5788498,
+      "quota": 6312786,
+      "overrideActive": true,
+      "usageBreakdown": [
+        {
+          "storageType": "file_systems",
+          "usage": 2778314
+        },
+        {
+          "storageType": "indexeddb",
+          "usage": 3010184
+        },
+        {
+          "storageType": "cache_storage",
+          "usage": 0
+        },
+        {
+          "storageType": "service_workers",
+          "usage": 0
+        }
+      ]
+    },
+    "quotaFailure": {
+      "rejected": true,
+      "name": "QuotaExceededError",
+      "message": "The operation failed because it would cause the application to exceed its storage quota."
+    },
+    "quotaAfterReset": {
+      "usage": 5791417,
+      "quota": 299424858930,
+      "overrideActive": false,
+      "usageBreakdown": [
+        {
+          "storageType": "file_systems",
+          "usage": 2778488
+        },
+        {
+          "storageType": "indexeddb",
+          "usage": 3012929
+        },
+        {
+          "storageType": "cache_storage",
+          "usage": 0
+        },
+        {
+          "storageType": "service_workers",
+          "usage": 0
+        }
+      ]
+    },
+    "pythonVersion": "3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]",
+    "legacyBytes": 2876239
+  },
+  "nativeWindowsSaveAs": {
+    "assistedByUser": true,
+    "channel": "installed Chrome",
+    "exportBrowserVersion": "155.0.8059.85",
+    "originalNativePicker": true,
+    "opfsHandleSubstituted": false,
+    "fileBasename": "krakinai-backup-2026-10-27.zip",
+    "compressedBytes": 2778074,
+    "zipSha256": "2cc10d125d900a3180ef9bd219123e7a371bad6a476757fb0fc3cc5ba0e59e19",
+    "independentPythonAll29HashesMatch": true,
+    "sceneOutputsAndReferencesExact": true,
+    "fullRestoreAfterConfirmationAndBrowserRestart": true,
+    "restoreBrowserVersion": "156.0.8078.4",
+    "restoreElapsedMs": 3328,
+    "sourceFileUnmodified": true,
+    "largeFileCertified": false,
+    "sevenZipAvailable": false,
+    "edgeNativeSaveAsTested": false,
+    "nativeAutomationUnavailable": "kernel-assets path initialization error",
+    "duplicatePickerProbeCompleted": false
+  },
+  "automatedCommands": [
+    {
+      "exitCode": 0,
+      "log": "final-install.log",
+      "command": "npm ci"
+    },
+    {
+      "exitCode": 1,
+      "log": "final-tests.log",
+      "command": "npm test"
+    },
+    {
+      "exitCode": 0,
+      "log": "final-typecheck.log",
+      "command": "npm run typecheck"
+    },
+    {
+      "exitCode": 0,
+      "log": "final-build.log",
+      "command": "npm run build"
+    },
+    {
+      "exitCode": 0,
+      "log": "final-audit.log",
+      "command": "npm audit --omit=dev"
+    },
+    {
+      "exitCode": 0,
+      "log": "final-ledger.log",
+      "command": "npm run test:qa"
+    },
+    {
+      "exitCode": 0,
+      "log": "final-browser.log",
+      "command": "npm run test:e2e"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test",
+      "log": "final-tests-repeat.log",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --cached --check (first new JSON staging)",
+      "exitCode": 2,
+      "reason": "Generated JSON used CRLF; normalized to LF before commit."
+    },
+    {
+      "command": "git diff --cached --check (after LF normalization)",
+      "exitCode": 0
+    }
+  ],
+  "automatedResults": {
+    "firstUnitRun": {
+      "exitCode": 1,
+      "passed": 352,
+      "failed": 1,
+      "file": "dialogueCompatibility.test.tsx",
+      "reason": "Assemble Prompt findByRole timeout; isolated file then passed 3/3 without source changes."
+    },
+    "fullUnitRepeat": {
+      "exitCode": 0,
+      "tests": 353,
+      "files": 50,
+      "durationSeconds": 30.43,
+      "reactActWarnings": 14
+    },
+    "committedChromium": {
+      "exitCode": 0,
+      "tests": 8,
+      "durationSeconds": 29.0
+    },
+    "qaLedger": {
+      "exitCode": 0,
+      "tests": 3,
+      "historicalCountedChecks": 207,
+      "historicalScreenshotRecords": 45
+    },
+    "productionAudit": {
+      "exitCode": 0,
+      "vulnerabilities": 0
+    },
+    "warnings": [
+      "whatwg-encoding 3.1.1 deprecated",
+      "npm ci: 6 development advisories: 3 moderate, 1 high, 2 critical",
+      "React MediaThumbnail act warnings",
+      "NO_COLOR ignored while FORCE_COLOR is set"
+    ]
+  },
+  "hostedCI": {
+    "historicalHead": "b01dae956cf00f98e5da398916d1f92e5d923bd2",
+    "historicalSuccess": "https://github.com/Jeruzael/krakinai/actions/runs/40371030390",
+    "newHeadAndVerifiedRunRecordedInPullRequestAfterPush": true,
+    "noPredictionOfUnrunCI": true
+  },
+  "sourceSha256AtFinalManualRun": {
+    "src/domain/validation.ts": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+    "src/domain/projectExport.ts": "fe0508ab9cb11e9ba73c31e64e7167a1e8687b3b6008bbaad2aa8a6217c7b63a",
+    "src/storage/backupLimits.ts": "0ff3a3da11b43ee3ae10d0a1079b368613e9e0238c1ae33594548fedae48ec21",
+    "src/storage/backup.ts": "2a5d73cce39dbcde306b31cf4820ae4d3be65b79a0fd4e07d69ace183c22e38b",
+    "src/storage/backupArchive.ts": "2915e5b5c2b650fcbea059a51d7d3ca54ef36e5a73dbb983f81d3b46e156c849",
+    "src/storage/backupZipIndex.ts": "9e9d7c5186c948d7f3b9856a26745c2fa253148cf39af9df20d8ec21621c9846",
+    "src/storage/db.ts": "be8a32eebd26f87cdd866753230d8742164cbdc6b9c2c176f8293bb4a441c550",
+    "src/storage/restoreStaging.ts": "c24c278df0793a109267e22c6e49888a6f4d23887fb3abebac6aba8f4626334a",
+    "src/storage/libraryWrite.ts": "b0713d84863f9facabfd5376efbaf1b30512f908b252d8a762bf6bfb791bd08b",
+    "scripts/qa/recovery-fixture.mjs": "fbcfcc92ef841a4988fd516ca6db2290054790c71ca8dbbcd423fb2d0612215e",
+    "scripts/qa/recovery-certification.mjs": "afd4b4112f28e23377be51c39ad9d9336feafc5a083a173f944961e58fced8db"
+  },
+  "rawProofs": [
+    {
+      "relativePath": "case-rich-06/recovery-results.json",
+      "sha256": "05c3245313505314cdd6728a52ef1cebaed8a1f8bf668972b34cd5be8622ffa2",
+      "bytes": 210059
+    },
+    {
+      "relativePath": "case-rich-06/expected-source.json",
+      "sha256": "a9cbf1402919958af874e006490519e8e3061f4ddac887f40d9874ffd0d721b7",
+      "bytes": 54288
+    },
+    {
+      "relativePath": "case-rich-06/python-inspection.json",
+      "sha256": "78469d107ffba7483b4f2bd2f1195db8b6ade43f1204a003c02ca5474b1c56d3",
+      "bytes": 7519
+    },
+    {
+      "relativePath": "case-rich-06/capacity-preflight.json",
+      "sha256": "f4ede77566b3dd2bd441eabde4112287cce3ab892d1c466ce303e3ab31d8a12a",
+      "bytes": 2068
+    },
+    {
+      "relativePath": "case-rich-04/recovery-results.json",
+      "sha256": "065ca885aaaf97a50d84f39d42abe9711fcc331b0ce90d44c4088d0f8d2c75ff",
+      "bytes": 216924
+    },
+    {
+      "relativePath": "case-rich-04/native-selected-proof.json",
+      "sha256": "6e39ae978b6d5e9422c49bae25ca604540426eafa335e34751d93c3e1d58ac30",
+      "bytes": 561
+    },
+    {
+      "relativePath": "case-rich-04/native-full-restore-proof.json",
+      "sha256": "618c4c7053f30f743fb8a82b8ab3f1d0d18ceef31052f5768eb61df1fe0db918",
+      "bytes": 4075
+    },
+    {
+      "relativePath": "native-full-metadata-proof.json",
+      "sha256": "4323aa7f5029650ac97932a0190ab1f25d80706b98fdb21af6f644c5ff521f8e",
+      "bytes": 420
+    },
+    {
+      "relativePath": "final-commands.json",
+      "sha256": "57de1ed4cd7bc77599849fec7ac645956a93990588b3e239ace2c1d73b4c76f7",
+      "bytes": 742
+    },
+    {
+      "relativePath": "final-tests-repeat.json",
+      "sha256": "ecfa6797a9587841371638bb24eb15940764ad4fe9d7b4453f26838d9e4ed813",
+      "bytes": 85
+    },
+    {
+      "relativePath": "final-tests-repeat.log",
+      "sha256": "06ec2b4790f221ede1dbfb0f25e2467d978d8f82b63dad6b31e2c2a747aee245",
+      "bytes": 27130
+    },
+    {
+      "relativePath": "final-browser.log",
+      "sha256": "74a34d2c7c1fe82be6c7b7525a07955c20ba1ed03c3fbc01a9728134ff48da9c",
+      "bytes": 1573
+    },
+    {
+      "relativePath": "final-install.log",
+      "sha256": "798dd212b26055bf8aacb31099abfe4c871858964aceef561fd5fc269d678d32",
+      "bytes": 418
+    },
+    {
+      "relativePath": "retained-inventory.json",
+      "sha256": "2d125a071a4aa0a7758008e2d2040df0dc1c9dbadb7de1f94fa0a20d0ed3c5a9",
+      "bytes": 602769
+    }
+  ],
+  "retainedInventory": {
+    "groups": [
+      {
+        "root": "current",
+        "directory": "(root files)",
+        "files": 25,
+        "logicalBytes": 136987
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-01",
+        "files": 207,
+        "logicalBytes": 19250642
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-02",
+        "files": 207,
+        "logicalBytes": 19299509
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-03",
+        "files": 335,
+        "logicalBytes": 33068958
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-04",
+        "files": 531,
+        "logicalBytes": 46733935
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-05",
+        "files": 357,
+        "logicalBytes": 32312429
+      },
+      {
+        "root": "current",
+        "directory": "case-rich-06",
+        "files": 195,
+        "logicalBytes": 23628846
+      },
+      {
+        "root": "current",
+        "directory": "native-readback-profile",
+        "files": 68,
+        "logicalBytes": 2473881
+      },
+      {
+        "root": "previous",
+        "directory": "(root files)",
+        "files": 59,
+        "logicalBytes": 1264101
+      },
+      {
+        "root": "previous",
+        "directory": "E",
+        "files": 5,
+        "logicalBytes": 25656
+      },
+      {
+        "root": "previous",
+        "directory": "stress-1024",
+        "files": 637,
+        "logicalBytes": 3312179128
+      },
+      {
+        "root": "previous",
+        "directory": "stress-128",
+        "files": 257,
+        "logicalBytes": 203913520
+      },
+      {
+        "root": "previous",
+        "directory": "stress-128-production-fresh",
+        "files": 107,
+        "logicalBytes": 325279707
+      },
+      {
+        "root": "previous",
+        "directory": "stress-4300",
+        "files": 5,
+        "logicalBytes": 52900194
+      },
+      {
+        "root": "previous",
+        "directory": "stress-512",
+        "files": 265,
+        "logicalBytes": 606599724
+      },
+      {
+        "root": "previous",
+        "directory": "stress-5500",
+        "files": 394,
+        "logicalBytes": 78227492
+      }
+    ],
+    "localDetailedList": "retained-inventory.json",
+    "noPathsDeletedThisTask": true
+  },
+  "harnessDevelopmentFailures": [
+    "case-rich-01 and 02: invalid synthetic take decision prevented fixture setup; corrected fixture, not application.",
+    "case-rich-03: comparison distinguished optional undefined properties from absent JSON keys; JSON metadata hash already matched. Comparison corrected to JSON semantics.",
+    "case-rich-04: native export reported Saved; assumed destination was wrong. User supplied actual path; Python, readonly validation and full restore subsequently passed.",
+    "case-rich-05: 12 passed; flattened Error.name obscured check label. Final case-rich-06 uses stable IDs and nested detail fields.",
+    "Duplicate native picker helper stopped after original saved file was identified; no success claimed for duplicate dialog."
+  ],
+  "notVerified": [
+    "2000/4000/5000 MiB genuine library replacement",
+    "maximum-entry plus near-maximum-media combined library",
+    "physical NTFS exhaustion",
+    "real revoked OS ACL",
+    "forced browser crash during external NTFS destination write",
+    "large actual Windows Save As",
+    "7-Zip",
+    "Edge native picker",
+    "Firefox or Safari",
+    "power loss or machine reboot during replacement",
+    "universal memory ceiling",
+    "smooth interactive responsiveness under load"
+  ],
+  "assumptions": [
+    "Atomic rollback relies on IndexedDB transaction guarantees; observed process-crash tests are finite checkpoints.",
+    "CRC/SHA establish accidental-integrity checks, not authenticity of untrusted archives.",
+    "Other unrelated machine activity can change free disk; sampled changes are not allocated-byte attribution.",
+    "Conservative preflight estimates are planning allowances, not actual large archive measurements."
+  ]
+}

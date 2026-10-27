@@ -26,11 +26,23 @@ export const FullLibraryBackupPanel: React.FC<{ onBusyChange?: (busy: boolean) =
   const [prepared, setPrepared] = useState<PreparedBackupRestore | null>(null);
   const [restored, setRestored] = useState(false);
   const [stages, setStages] = useState<Array<{ id: string; state: string }>>([]);
+  const [quota, setQuota] = useState<{ quota: number; usage: number } | null>(null);
   const hasPicker = typeof (window as SavePickerWindow).showSaveFilePicker === 'function';
   const refreshStages = async () => {
     try { setStages(await listRestoreStages()); } catch { /* OPFS may be unavailable: actions report the applicable fallback/limit. */ }
   };
   useEffect(() => { void refreshStages(); }, []);
+  useEffect(() => {
+    let active = true;
+    if (typeof navigator.storage?.estimate === 'function') {
+      void navigator.storage.estimate().then(estimate => {
+        if (active && typeof estimate.quota === 'number' && Number.isFinite(estimate.quota) && typeof estimate.usage === 'number' && Number.isFinite(estimate.usage)) {
+          setQuota({ quota: estimate.quota, usage: estimate.usage });
+        }
+      }).catch(() => { /* An unavailable estimate is not zero available capacity. */ });
+    }
+    return () => { active = false; };
+  }, []);
   useEffect(() => () => { controller.current?.abort(); }, []);
 
   const run = async (work: (signal: AbortSignal) => Promise<void>) => {
@@ -93,8 +105,15 @@ export const FullLibraryBackupPanel: React.FC<{ onBusyChange?: (busy: boolean) =
         <dt>Stored media ceiling</dt><dd>{mib(MAX_TOTAL_MEDIA_BYTES)} MiB</dd>
         <dt>Uncompressed backup ceiling</dt><dd>{mib(MAX_BACKUP_UNCOMPRESSED_BYTES)} MiB</dd>
         <dt>Compressed ZIP ceiling</dt><dd>{mib(MAX_BACKUP_COMPRESSED_BYTES)} MiB</dd>
-        <dt>Currently verified restore ceiling</dt><dd>{mib(MAX_VERIFIED_RESTORE_BYTES)} MiB uncompressed</dd>
+        <dt>Current enforced restore ceiling</dt><dd>{mib(MAX_VERIFIED_RESTORE_BYTES)} MiB uncompressed</dd>
       </dl>
+      {MAX_VERIFIED_RESTORE_BYTES < MAX_TOTAL_MEDIA_BYTES && <div className="banner banner-warning" role="note" aria-label="Restore certification limit" style={{ display: 'block' }}>
+        <strong>Near-limit full-library restoration is not certified.</strong>
+        <p>Restores above {mib(MAX_VERIFIED_RESTORE_BYTES)} MiB expanded are blocked. Large ZIP64 parsing and export tests do not certify replacement of a 5,000 MiB library. Keep a verified external backup and sufficient space for staging, the restored copy, and the existing library.</p>
+        <p>The prior 1 GiB capacity run used opaque synthetic media. Representative scene, variant, collection, and playable-media recovery has only been checked at a smaller size.</p>
+      </div>}
+      {quota ? <p className="form-help">{mib(Math.max(0, quota.quota - quota.usage))} MiB estimated browser quota remaining ({mib(quota.usage)} MiB used of {mib(quota.quota)} MiB).</p> : <p className="form-help">Browser storage quota estimate unavailable.</p>}
+      <p className="form-help">This is not a measurement of free NTFS space. Browser quota, destination capacity, and temporary restore space are separate constraints; estimates do not guarantee a successful write.</p>
       <button type="button" className="btn btn-primary" disabled={busy || restored || !hasPicker} onClick={exportToDisk}>Export Full Library (ZIP64)</button>
       {!hasPicker && <p className="form-help">Direct file saving requires a supported browser such as Chrome or Edge on HTTPS/localhost. Large export is unavailable here.</p>}
       <p className="form-help">Destination free space cannot be reliably checked by the browser. FAT32 cannot store individual files of 4 GiB or more. Keep enough space for temporary files and your original library.</p>

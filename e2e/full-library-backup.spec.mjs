@@ -33,7 +33,7 @@ test('Settings labels the separate limits and Verify does not write or offer rep
   await expect(dialog).toContainText('5,500 MiB');
   await expect(dialog).toContainText('Compressed ZIP ceiling');
   await expect(dialog).toContainText('Uncompressed backup ceiling');
-  await expect(dialog).toContainText('Currently verified restore ceiling');
+  await expect(dialog).toContainText('Current enforced restore ceiling');
   await expect(dialog).toContainText('Project Export is a separate selection workflow with its existing 128 MiB cap.');
   await dialog.getByLabel('Choose a backup to verify').setInputFiles(zipFile(bytes));
   await expect(dialog.getByText(/Verified: archive structure/)).toBeVisible();

@@ -1,5 +1,7 @@
 # Full-library ZIP64 QA report
 
+**Historical baseline (2026-10-26, commit b01dae9).** The [2026-10-27 recovery certification report](zip64-recovery-certification.md) records the current capacity blocker, representative small-library crash/restore checks and user-assisted small Windows Save As verification. Near-limit full-library recovery remains uncertified; PR #12 stays draft. The measurements and command counts below describe the earlier run.
+
 **Verdict: CONDITIONAL PASS.** Streaming ZIP64 input and direct writable output were physically verified at **5,767,168,000 bytes (5,500 MiB)**. Full-library restore is enabled only through **1,073,748,246 expanded bytes**, the measured 1 GiB media fixture plus its manifest. Restoring a near-5,000 MiB valid library remains uncertified and is disabled above that gate.
 
 The [machine-readable results](zip64-results.json) contain individual run outcomes, exact measurements, command exits and SHA-256 provenance for retained raw result files. The [architecture report](zip64-architecture.md) describes validation, staging, atomic commit and the generation fence. Raw archives, browser profiles and logs were kept outside Git. Synthetic ZIP files were removed after independent proof to respect the disk budget; result JSON, hashes and source fragments remain available locally.

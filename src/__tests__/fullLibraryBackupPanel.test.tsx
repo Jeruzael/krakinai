@@ -25,10 +25,20 @@ it('distinguishes compressed, expanded, media, verified restore and project limi
   expect(screen.getByText('Compressed ZIP ceiling')).toBeVisible();
   expect(screen.getByText('Uncompressed backup ceiling')).toBeVisible();
   expect(screen.getByText('Stored media ceiling')).toBeVisible();
-  expect(screen.getByText('Currently verified restore ceiling')).toBeVisible();
+  expect(screen.getByText('Current enforced restore ceiling')).toBeVisible();
   expect(screen.getByText(/existing 128 MiB cap/)).toBeVisible();
   expect(screen.getByRole('button', { name: 'Export Full Library (ZIP64)' })).toBeDisabled();
   expect(screen.getByText(/Large export is unavailable/)).toBeVisible();
+  expect(screen.getByText(/Near-limit full-library restoration is not certified/)).toBeVisible();
+});
+it('labels browser quota as an estimate distinct from destination disk capacity', async () => {
+  const original = Object.getOwnPropertyDescriptor(navigator, 'storage');
+  Object.defineProperty(navigator, 'storage', { configurable: true, value: { estimate: vi.fn().mockResolvedValue({ quota: 4 * 1024 ** 3, usage: 1024 ** 3 }) } });
+  try {
+    render(<FullLibraryBackupPanel />);
+    expect(await screen.findByText(/3,072 MiB estimated browser quota remaining/)).toBeVisible();
+    expect(screen.getByText(/This is not a measurement of free NTFS space/)).toBeVisible();
+  } finally { if (original) Object.defineProperty(navigator, 'storage', original); else Reflect.deleteProperty(navigator, 'storage'); }
 });
 it('opens the save picker from the click, streams output, and reports Saved separately from Verified', async () => {
   const writable = { abort: vi.fn() };
