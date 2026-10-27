@@ -18,7 +18,9 @@ describe('collection controls',()=>{
  const user=userEvent.setup(), select=vi.fn();
  render(<CollectionCoverPicker media={[{id:'m',filename:'cover.png',mimeType:'image/png',blob:new Blob()} as any]} currentId="missing" onSelect={select} onClose={()=>{}} onUploaded={async()=>{}}/>);
  expect(screen.getByRole('status')).toHaveTextContent('Current cover is missing');
- await user.click(screen.getByRole('button',{name:'Use cover.png as cover'}));expect(select).toHaveBeenCalledWith('m');
+ await user.click(screen.getByRole('tab',{name:/All Images/}));
+ await user.click(screen.getByRole('button',{name:'Use cover.png as cover'}));expect(select).not.toHaveBeenCalled();
+ await user.click(screen.getByRole('button',{name:'Use Cover'}));expect(select).toHaveBeenCalledWith('m');
  await user.click(screen.getByRole('button',{name:'Remove Cover'}));expect(select).toHaveBeenCalledWith(null);
  });
 });

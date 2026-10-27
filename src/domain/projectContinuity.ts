@@ -1,5 +1,6 @@
 import type { CharacterBibleEntry, Collection, PromptAsset, SavedScene, WardrobeIntentReason } from '../types/domain';
 import { getProjectShots, selectedSceneForShot } from './projectStoryboard';
+import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 
 export interface ProjectCastRow extends CharacterBibleEntry { derived: boolean; asset?: PromptAsset }
 export interface WardrobeContinuityRow {
@@ -58,7 +59,7 @@ export function getProjectDialogue(collection: Collection, scenes: SavedScene[])
     if (!scene?.dialogue) continue;
     rows.push({ shotId: shot.id, code: shot.code, title: shot.title, sceneId: scene.id,
       speaker: scene.dialogue.speaker, exactLine: scene.dialogue.line, mode: scene.dialogue.mode,
-      language: scene.dialogue.language, deliveryNotes: scene.dialogue.deliveryNotes,
+      language: scene.dialogue.language, deliveryNotes: getEffectiveDialogueDelivery(scene.dialogue),
       durationSeconds: shot.plannedDurationSeconds ?? scene.settings.durationSeconds });
   }
   return rows;
@@ -71,7 +72,7 @@ export function formatProjectScript(collection: Collection, scenes: SavedScene[]
       `Speaker: ${row.speaker}`,
       `Mode: ${row.mode ?? 'unspecified'}`,
       `Language: ${row.language ?? 'unspecified'}`,
-      `Delivery: ${row.deliveryNotes ?? 'unspecified'}`,
+      ...(row.deliveryNotes ? [`Delivery: ${row.deliveryNotes}`] : []),
       `Intended duration: ${row.durationSeconds === undefined ? 'unknown' : `${row.durationSeconds} seconds`}`,
       '', row.exactLine, '');
   }

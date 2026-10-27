@@ -168,11 +168,22 @@ export interface ComponentSnapshot {
   overrideCompactText?: string;
 }
 
+export type DialogueDeliveryStyle = 'calm' | 'angry' | 'sad' | 'happy' | 'nervous' | 'confident' | 'apologetic' | 'sarcastic' | 'energetic' | 'playful' | 'urgent' | 'lecturing' | 'whispering';
+export type DialogueSpeakingPace = 'slow' | 'natural' | 'fast';
+export type DialogueBodyLanguage = 'subtle' | 'natural' | 'expressive' | 'strong_pointing';
+export interface DialoguePerformanceDirection {
+  version: 1;
+  styles: DialogueDeliveryStyle[];
+  pace?: DialogueSpeakingPace;
+  gestures?: DialogueBodyLanguage;
+}
+
 export interface DialogueConfig {
   speaker: string;
   line: string;
   mode?: 'spoken' | 'on_camera' | 'voiceover' | 'off_screen';
   deliveryNotes?: string;
+  performanceDirection?: DialoguePerformanceDirection;
   language?: string;
   captionPreference?: 'unspecified' | 'none' | 'requested';
 }

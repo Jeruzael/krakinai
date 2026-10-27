@@ -73,7 +73,7 @@ describe('Dialogue and legacy data compatibility', () => {
       'voiceover'
     );
     await user.type(
-      screen.getByLabelText('Delivery Notes (Optional)'),
+      screen.getByLabelText('Custom Notes'),
       'User-entered calm delivery.'
     );
     await user.type(screen.getByLabelText('Language (Optional)'), 'Taglish');

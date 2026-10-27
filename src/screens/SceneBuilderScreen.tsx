@@ -50,6 +50,7 @@ import { runScenePreflight, type PreflightFinding } from '../domain/scenePreflig
 import { ScenePreflightDialog } from '../components/ScenePreflightDialog';
 import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
 import { ReferencePackManager } from '../components/ReferencePackManager';
+import { PerformanceDirection } from '../components/PerformanceDirection';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
@@ -838,29 +839,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     <option value="off_screen">Off-screen speech</option>
                   </select>
                 </div>
-                <div className="form-group">
-                  <label htmlFor="dialogue-delivery" className="form-label">
-                    Delivery Notes (Optional)
-                  </label>
-                  <textarea
-                    id="dialogue-delivery"
-                    className="textarea"
-                    rows={2}
-                    maxLength={1000}
-                    value={draft.dialogue?.deliveryNotes ?? ''}
-                    onChange={(event) =>
-                      scheduleDraftAutosave({
-                        ...draft,
-                        dialogue: {
-                          speaker: '',
-                          line: '',
-                          ...draft.dialogue,
-                          deliveryNotes: event.target.value,
-                        },
-                      })
-                    }
-                  />
-                </div>
+                <PerformanceDirection dialogue={draft.dialogue??{speaker:'',line:''}} onChange={dialogue=>scheduleDraftAutosave({...draft,dialogue})}/>
                 <div className="form-group">
                   <label htmlFor="dialogue-language" className="form-label">
                     Language (Optional)

@@ -1,4 +1,5 @@
 import { ORDERED_BUILDER_SLOTS } from './promptAssembler';
+import { validatePerformanceDirection } from './dialoguePerformance';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -18,6 +19,10 @@ function identityError(value: Record<string, unknown>): string | undefined {
 /** Validate optional Stage B metadata without resolving historical source or media IDs. */
 export function validatePhase4Record(value: unknown): string | undefined {
   if (!record(value)) return 'Invalid record.';
+  if(record(value.dialogue)) {
+    const error=validatePerformanceDirection(value.dialogue.performanceDirection);
+    if(error)return error;
+  }
   const identity = identityError(value);
   if (identity) return identity;
   if (record(value.slots)) for (const snapshot of Object.values(value.slots)) {
