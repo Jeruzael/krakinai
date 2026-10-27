@@ -21,7 +21,7 @@ import {
   updateCollection,
 } from '../storage/db';
 import { PromptCard } from '../components/PromptCard';
-import { MediaThumbnail } from '../components/MediaThumbnail';
+import { CollectionMediaPreview } from '../components/CollectionMediaPreview';
 import { getProjectRuntime } from '../domain/projectStoryboard';
 
 export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
@@ -478,12 +478,9 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
 
             return (
               <article key={col.id} className="prompt-card">
-                <div
-                  className="prompt-card-media"
-                  onClick={() => navigate(`/collections/${col.id}`)}
-                >
+                <div className="prompt-card-media">
                   {coverMedia ? (
-                    <MediaThumbnail media={coverMedia} altText={col.name} />
+                    <CollectionMediaPreview media={coverMedia} title={`${col.name} cover`} />
                   ) : (
                     <div
                       style={{

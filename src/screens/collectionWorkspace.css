@@ -18,16 +18,24 @@
 .cw-toolbar input { min-width: min(270px, 100%); }
 .cw-shot-grid, .cw-resource-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 310px), 1fr)); gap: 16px; }
 .cw-shot-card { overflow: hidden; border: 1px solid var(--border-subtle); border-radius: 12px; background: #fff; min-width: 0; }
-.cw-shot-card[draggable="true"] { cursor: grab; }
+.cw-drag-grip[draggable="true"] { cursor: grab; }
+.cw-shot-topline { display: flex; align-items: center; justify-content: space-between; min-width: 0; padding-right: 8px; }
+.cw-list .cw-shot-topline { grid-column: 1 / -1; }
+.cw-shot-actions { border-top: 1px solid var(--border-subtle); padding-top: 8px; min-width: 0; }
+.cw-shot-actions summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; font-size: .8rem; font-weight: 650; color: var(--text-muted); cursor: pointer; list-style: none; }
+.cw-shot-actions summary::-webkit-details-marker { display: none; }
+.cw-shot-actions summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.cw-secondary-actions { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; padding: 8px 0; }
+.cw-secondary-actions .btn { white-space: normal; text-align: center; }
 .cw-shot-selection, .cw-select-visible { display:flex; align-items:center; gap:8px; padding:10px 14px; font-size:.85rem; }
 .cw-list .cw-shot-selection { grid-column:1 / -1; }
 .cw-project-actions { display:flex; justify-content:flex-end; position:sticky; bottom:0; padding:12px; background:var(--surface,#fff); border:1px solid var(--border-subtle); border-radius:10px; }
 .cw-shot-card:focus-within { outline: 2px solid var(--color-primary, #3556a8); outline-offset: 2px; }
-.cw-shot-image { height: 175px; overflow: hidden; background: #edf2f6; }
+.cw-shot-image { aspect-ratio: 16 / 9; overflow: hidden; background: #edf2f6; }
 .cw-shot-body { display: flex; flex-direction: column; gap: 11px; padding: 15px; }
 .cw-shot-heading { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
 .cw-shot-heading h2 { margin: 0; font-size: 1.05rem; overflow-wrap: anywhere; }
-.cw-code { font-weight: 800; white-space: nowrap; color: var(--color-primary, #3556a8); }
+.cw-code { font-weight: 800; overflow-wrap: anywhere; color: var(--color-primary, #3556a8); max-width: 35%; }
 .cw-shot-meta { margin: 0; font-size: .85rem; color: var(--text-muted); overflow-wrap: anywhere; }
 .cw-badges .badge { font-size: .7rem; text-transform: capitalize; }
 .cw-status-label { display: flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 650; }

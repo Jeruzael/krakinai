@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 
 const state = vi.hoisted(() => ({
   snapshot: null as any,
@@ -37,6 +37,7 @@ const shot = (id: string, order: number, sceneId?: string) => ({
 });
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.spyOn(HTMLMediaElement.prototype,'pause').mockImplementation(()=>{});
   state.hashPath = '/collections/c?tab=storyboard&view=grid&sort=order&filter=';
   state.snapshot = {
     collections: [{ id: 'c', name: 'Late Again', description: 'A small film', members: [],
@@ -46,6 +47,35 @@ beforeEach(() => {
 });
 
 describe('CollectionWorkspace storyboard', () => {
+  it('keeps secondary shot actions collapsed with keyboard access and a separate drag grip', () => {
+    render(<CollectionWorkspace collectionId="c" />);
+    expect(screen.getByRole('button',{name:'Edit Shot a'})).not.toBeVisible();
+    const more=screen.getByLabelText('More actions for Shot a');
+    fireEvent.click(more);
+    expect(screen.getByRole('button',{name:'Edit Shot a'})).toBeVisible();
+    expect(screen.getByRole('button',{name:'Move Shot a down'})).toBeVisible();
+    fireEvent.keyDown(more,{key:'Escape'});
+    expect(screen.getByRole('button',{name:'Edit Shot a'})).not.toBeVisible();
+    const grip=screen.getByRole('button',{name:'Drag Shot a to reorder'});
+    expect(grip).toHaveAttribute('draggable','true');
+    expect(grip.closest('article')).not.toHaveAttribute('draggable','true');
+  });
+
+  it('previews video with native controls without navigating, saving or retaining a duplicate thumbnail player', async () => {
+    const media={id:'movie',filename:'synthetic.webm',mimeType:'video/webm',blob:new Blob(['fixture']),byteSize:7,createdAt:''};
+    state.snapshot.media=[media];
+    state.snapshot.scenes[0].resultMediaLinks=[{mediaId:media.id,role:'result',order:0,altText:'Synthetic video'}];
+    const before=JSON.stringify(state.snapshot);
+    render(<CollectionWorkspace collectionId="c" />);
+    const card=screen.getByRole('heading',{name:'Shot a'}).closest('article')!;
+    fireEvent.click(within(card).getByRole('button',{name:'Preview media: Shot a'}));
+    const dialog=screen.getByRole('dialog',{name:'Media: Shot a'});
+    expect(dialog.querySelector('video')).toHaveAttribute('controls');
+    expect(card.querySelector('video')).toBeNull();
+    expect(state.navigate).not.toHaveBeenCalled();
+    expect(actions.update).not.toHaveBeenCalled();
+    expect(JSON.stringify(state.snapshot)).toBe(before);
+  });
   it('selects only visible shots and can clear a bulk selection without changing snapshots', () => {
     const before=JSON.stringify(state.snapshot);
     render(<CollectionWorkspace collectionId="c" />);

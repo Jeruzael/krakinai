@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
+import React, { useId, useState } from 'react';
 import { StudioDialog } from './StudioDialog';
-import type { PreflightComponent, PreflightFinding } from '../domain/scenePreflight';
+import type {
+  PreflightComponent,
+  PreflightFinding,
+} from '../domain/scenePreflight';
+import './scenePreflight.css';
 export interface ScenePreflightDialogProps {
   findings: PreflightFinding[];
   onClose: () => void;
@@ -10,22 +14,181 @@ export interface ScenePreflightDialogProps {
   intentionalIds?: readonly string[];
   onIntentionalIdsChange?: (ids: string[]) => void;
 }
-export const ScenePreflightDialog: React.FC<ScenePreflightDialogProps> = ({findings,onClose,onViewSource,onEditComponent,readOnly=false,intentionalIds,onIntentionalIdsChange}) => {
-  const [localIds,setLocalIds]=useState<string[]>([...(intentionalIds??[])]);
-  const acknowledged=intentionalIds??localIds;
-  const severityOrder = {blocking:0,review:1,information:2};
-  const orderedFindings=[...findings].sort((a,b)=>severityOrder[a.severity]-severityOrder[b.severity]);
-  return <StudioDialog title="Scene Preflight" onClose={onClose} footer={<button className="btn btn-secondary" onClick={onClose}>Close</button>}>
-    <p>These conservative checks need human review. No common conflicts detected does not guarantee consistency.</p>
-    {findings.length===0&&<p>No common conflicts detected.</p>}
-    {orderedFindings.map((f,index)=><section key={f.id} style={{borderBottom:'1px solid var(--border-color)',padding:'16px 0'}}>
-      {(index===0||orderedFindings[index-1].severity!==f.severity)&&<h2>{f.severity==='blocking'?'Blocking':f.severity==='review'?'Review':'Information'}</h2>}
-      <h3>{f.ruleId} · {f.title}</h3><p>{f.severity === 'information' ? 'Information' : f.severity === 'blocking' ? 'Blocking' : 'Review'}</p>
-      <p>{f.explanation}</p>
-      {f.evidence.map((e,i)=><div key={i}><strong>{e.component}</strong><blockquote style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{e.text || '(empty source)'}</blockquote></div>)}
-      <ul>{f.suggestedActions.map(action=><li key={action}>{action}</li>)}</ul>
-      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>{f.components.map(component=><React.Fragment key={component}><button className="btn btn-secondary" onClick={()=>onViewSource(component)} aria-label={`View source: ${component}`}>View source: {component}</button><button className="btn btn-secondary" onClick={()=>onEditComponent(component)} aria-label={`${readOnly?'Edit a Copy':'Edit component'}: ${component}`}>{readOnly?'Edit a Copy':'Edit component'}: {component}</button></React.Fragment>)}</div>
-      {f.severity!=='blocking'&&<label style={{display:'block',marginTop:12}}><input type="checkbox" checked={acknowledged.includes(f.id)} onChange={event=>{const next=event.target.checked?[...acknowledged,f.id]:acknowledged.filter(id=>id!==f.id);setLocalIds(next);onIntentionalIdsChange?.(next);}}/> Intentional creative choice (local acknowledgement)</label>}
-    </section>)}
-  </StudioDialog>;
+const severities = ['blocking', 'review', 'information'] as const;
+const labels = {
+  blocking: 'Blocking',
+  review: 'Review',
+  information: 'Information',
 };
+
+export const ScenePreflightDialog: React.FC<ScenePreflightDialogProps> = ({
+  findings,
+  onClose,
+  onViewSource,
+  onEditComponent,
+  readOnly = false,
+  intentionalIds,
+  onIntentionalIdsChange,
+}) => {
+  const [localIds, setLocalIds] = useState<string[]>([
+    ...(intentionalIds ?? []),
+  ]);
+  const acknowledged = intentionalIds ?? localIds;
+  const acknowledge = (id: string, checked: boolean) => {
+    const next = checked
+      ? [...acknowledged, id]
+      : acknowledged.filter((value) => value !== id);
+    setLocalIds(next);
+    onIntentionalIdsChange?.(next);
+  };
+  return (
+    <StudioDialog
+      title="Scene Preflight"
+      className="preflight-dialog"
+      onClose={onClose}
+      footer={
+        <button type="button" className="btn btn-secondary" onClick={onClose}>
+          Close
+        </button>
+      }
+    >
+      <p className="preflight-intro">
+        These conservative checks need human review. No common conflicts
+        detected does not guarantee consistency.
+      </p>
+      {findings.length === 0 && <p>No common conflicts detected.</p>}
+      {severities.map((severity) => {
+        const group = findings.filter((f) => f.severity === severity);
+        return (
+          group.length > 0 && (
+            <section
+              key={severity}
+              className="preflight-group"
+              aria-label={`${labels[severity]} findings`}
+            >
+              <h2>
+                {labels[severity]} <span>({group.length})</span>
+              </h2>
+              {group.map((finding) => (
+                <FindingCard
+                  key={finding.id}
+                  finding={finding}
+                  readOnly={readOnly}
+                  checked={acknowledged.includes(finding.id)}
+                  onAcknowledge={(checked) => acknowledge(finding.id, checked)}
+                  onViewSource={onViewSource}
+                  onEditComponent={onEditComponent}
+                />
+              ))}
+            </section>
+          )
+        );
+      })}
+    </StudioDialog>
+  );
+};
+
+function FindingCard({
+  finding: f,
+  readOnly,
+  checked,
+  onAcknowledge,
+  onViewSource,
+  onEditComponent,
+}: {
+  finding: PreflightFinding;
+  readOnly: boolean;
+  checked: boolean;
+  onAcknowledge: (checked: boolean) => void;
+  onViewSource: ScenePreflightDialogProps['onViewSource'];
+  onEditComponent: ScenePreflightDialogProps['onEditComponent'];
+}) {
+  const [selected, setSelected] = useState(f.components[0]);
+  const component = f.components.includes(selected)
+    ? selected
+    : f.components[0];
+  const sourceId = useId();
+  return (
+    <article className={`preflight-finding preflight-${f.severity}`}>
+      <h3>
+        <span
+          className="preflight-severity"
+          role="img"
+          aria-label={labels[f.severity]}
+        />
+        <span className="preflight-rule">{f.ruleId}</span> {f.title}
+      </h3>
+      <p>{f.explanation}</p>
+      <details className="preflight-evidence">
+        <summary>Show Evidence</summary>
+        {f.evidence.map((e, index) => (
+          <div key={index}>
+            <strong>{e.component}</strong>
+            <blockquote>{e.text || '(empty source)'}</blockquote>
+          </div>
+        ))}
+        {f.suggestedActions.length > 0 && (
+          <>
+            <strong>Suggested review</strong>
+            <ul>
+              {f.suggestedActions.map((action) => (
+                <li key={action}>{action}</li>
+              ))}
+            </ul>
+          </>
+        )}
+      </details>
+      {component && (
+        <div className="preflight-actions">
+          {f.components.length > 1 && (
+            <label htmlFor={sourceId}>
+              Source
+              <select
+                id={sourceId}
+                aria-label={`Source for ${f.ruleId}: ${f.title}`}
+                value={component}
+                onChange={(event) =>
+                  setSelected(event.target.value as PreflightComponent)
+                }
+              >
+                {f.components.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => onViewSource(component)}
+            aria-label={`View source: ${component}`}
+          >
+            View Source
+          </button>
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => onEditComponent(component)}
+            aria-label={`${readOnly ? 'Edit a Copy' : 'Edit component'}: ${component}`}
+          >
+            {readOnly ? 'Edit a Copy' : 'Edit Component'}
+          </button>
+        </div>
+      )}
+      {f.severity !== 'blocking' && (
+        <label className="preflight-acknowledge">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={(event) => onAcknowledge(event.target.checked)}
+          />
+          <span>
+            Mark as intentional <small>(local acknowledgement)</small>
+          </span>
+        </label>
+      )}
+    </article>
+  );
+}
