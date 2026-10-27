@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useMemo, useState } from 'react';
+import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
   ArrowLeft,
@@ -29,6 +29,8 @@ import {
   saveMediaAsset,
   saveSceneDraft,
   saveSceneFromDraft,
+  SimilarSceneError,
+  type SaveSceneOptions,
   updateSavedSceneReviewAndResults,
 } from '../storage/db';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
@@ -49,6 +51,9 @@ import { resolveGenerationIdentity } from '../domain/identityAnchors';
 import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { getGenerationPackReferences } from '../domain/referencePack';
+import { CollectionReturnControl } from '../components/CollectionReturnControl';
+import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
+import { collectionSceneRoute } from '../domain/collectionNavigation';
 import './promptOutput.css';
 
 const OUTPUT_TABS = [
@@ -94,9 +99,22 @@ function handleTabKeys(event: React.KeyboardEvent<HTMLDivElement>) {
   tabs[next].click();
 }
 
+type DraftEditorBuffers = {
+  manualBuffers: Partial<Record<OutputMode, string>>;
+  editingModes: Partial<Record<OutputMode, boolean>>;
+};
+// Session-only UI state. Never persist unfinished edits into canonical records.
+const draftEditorCache = new Map<string, DraftEditorBuffers>();
+function rememberDraftEditor(value: DraftEditorBuffers & {id:string}) {
+  if (!value.id.startsWith('scene_')) draftEditorCache.set(value.id, {
+    manualBuffers: {...value.manualBuffers}, editingModes: {...value.editingModes},
+  });
+}
+
 export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const {
     snapshot,
+    hashPath,
     navigate,
     copyText,
     openCollectionModal,
@@ -106,6 +124,12 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     showToast,
   } = useLibrary();
 
+  const saveGuard = useRef(false);
+  const saveToken = useRef<{binding:string;id:string} | null>(null);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [similarScenes, setSimilarScenes] = useState<import('../types/domain').SavedScene[]>([]);
+  const [duplicateTarget, setDuplicateTarget] = useState('');
   const [mode, setMode] = useState<ViewMode>(
     id.startsWith('scene_') ? 'full' : 'structured'
   );
@@ -144,14 +168,24 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     Partial<Record<OutputMode, boolean>>
   >({});
 
+  const latestEditor = useRef({id, manualBuffers, editingModes});
+  // Keep the previous record's latest values until the route effect captures them.
+  if (latestEditor.current.id === id) latestEditor.current = {id, manualBuffers, editingModes};
+  useEffect(() => () => rememberDraftEditor(latestEditor.current), []);
+
   useEffect(() => {
+    // A return visit is a new operation; retries within this visit retain the token.
+    saveToken.current = null;
+    if (latestEditor.current.id !== id) rememberDraftEditor(latestEditor.current);
+    const restored = !id.startsWith('scene_') ? draftEditorCache.get(id) : undefined;
+    latestEditor.current = {id, manualBuffers: restored?.manualBuffers ?? {}, editingModes: restored?.editingModes ?? {}};
     setMode(id.startsWith('scene_') ? 'full' : 'structured');
     setWorkflow('canonical');
     setIntentionalIds([]);
     setShowPreflight(false);
     setPreflightSource(null);
-    setEditingModes({});
-    setManualBuffers({});
+    setEditingModes(restored?.editingModes ?? {});
+    setManualBuffers(restored?.manualBuffers ?? {});
     setAcknowledgedStaleModes({});
     setReviewNotesBuffer(null);
   }, [id]);
@@ -173,6 +207,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const draft = !isSavedScene
     ? snapshot.drafts.find((d) => d.id === id)
     : undefined;
+  const projectContext = getProjectSaveTarget(hashPath, snapshot.collections);
 
   if (!savedScene && !draft) {
     return (
@@ -336,19 +371,31 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     showToast('Downloaded complete selected output.', 'success');
   };
 
-  const handleSaveScene = async () => {
-    if (!draft) return;
+  const handleSaveScene = async (decision?: 'version' | 'take') => {
+    if (!draft || saveGuard.current) return;
+    if (projectContext.error) { setSaveError(projectContext.error); return; }
+    saveGuard.current = true;
+    setSaveBusy(true);
+    setSaveError('');
+    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target]);
+    if (saveToken.current?.binding !== binding) saveToken.current = {binding, id: crypto.randomUUID()};
+    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
     try {
-      const saved = await saveSceneFromDraft(draft.id);
+      const saved = await saveSceneFromDraft(draft.id, options);
       await refreshSnapshot();
+      setSimilarScenes([]);
       showToast(`Saved immutable scene "${saved.title}".`, 'success');
-      navigate(`/output/${saved.id}`, true);
+      navigate(projectContext.target ? collectionSceneRoute(saved.id, projectContext.target.collectionId, {tab:'storyboard',shot:projectContext.target.shotId}) : `/output/${saved.id}`, true);
     } catch (err) {
-      showToast(
-        err instanceof Error ? err.message : 'Failed to save scene.',
-        'error'
-      );
-    }
+      if (err instanceof SimilarSceneError) {
+        setSimilarScenes(err.matches);
+        setDuplicateTarget(err.matches[0]?.id ?? '');
+      } else {
+        const message = err instanceof Error ? err.message : 'Failed to save scene.';
+        setSaveError(message);
+        showToast(message, 'error');
+      }
+    } finally { saveGuard.current = false; setSaveBusy(false); }
   };
 
   const handleUploadResultOnSavedScene = async (
@@ -430,6 +477,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
         role: link.role,
         altText: link.altText,
         filename: link.filename,
+        displayName: link.displayName,
+        exportFilename: link.exportFilename,
+        namesCaptured: link.namesCaptured,
       }));
     }
   );
@@ -461,6 +511,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
         role: link.role,
         altText: link.altText,
         filename: link.filename,
+        displayName: link.displayName,
+        exportFilename: link.exportFilename,
+        namesCaptured: link.namesCaptured,
       });
     }
   });
@@ -516,19 +569,20 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="output-workspace">
+      {draft && projectContext.requested && <div className="card" role="status">{projectContext.error || 'Save this draft as a new take in the originating project shot.'}{projectContext.error && <button className="btn btn-secondary" onClick={() => navigate(`/output/${draft.id}`, true)}>Continue as Standalone Draft</button>}</div>}
       <header className="output-header">
         <div className="output-heading">
           <div className="output-record-meta">
-            <button
+            {savedScene ? <CollectionReturnControl sceneId={savedScene.id} /> : <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={() =>
-                navigate(draft ? `/builder/${draft.id}` : '/scenes')
+                navigate(draft ? carryProjectTarget(`/builder/${draft.id}`, hashPath) : '/scenes')
               }
             >
               <ArrowLeft size={15} />{' '}
               {draft ? 'Back to Builder' : 'Back to Saved Scenes'}
-            </button>
+            </button>}
             <span
               className={`badge ${savedScene ? 'badge-success' : 'badge-warning'}`}
             >
@@ -819,8 +873,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             <span className="muted-text">{record.referencePack ? `${record.referencePack.entries.length} selected associations` : 'All linked references · legacy export behavior'}</span>
           </div>
           {record.referencePack && <ReferenceBoard
-            items={[...record.referencePack.entries].sort((a,b) => a.order-b.order).map(entry => ({key:entry.associationId,mediaId:entry.mediaId,label:`${entry.order+1} · ${entry.purpose}`,sourceTitle:entry.sourceTitle,role:entry.role,altText:entry.altText,filename:entry.filename}))}
+            items={[...record.referencePack.entries].sort((a,b) => a.order-b.order).map(entry => ({key:entry.associationId,mediaId:entry.mediaId,label:`${entry.order+1} · ${entry.purpose}`,sourceTitle:entry.sourceTitle,role:entry.role,altText:entry.altText,filename:entry.filename,displayName:entry.displayName,exportFilename:entry.exportFilename,namesCaptured:entry.namesCaptured}))}
             mediaMap={mediaMap}
+            historical={!!savedScene}
             title="Selected Reference Pack"
             collapseThumbnails
             downloadable
@@ -828,6 +883,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           <ReferenceBoard
             items={studioReferences}
             mediaMap={mediaMap}
+            historical={!!savedScene}
             title="Reference Files Checklist"
             collapseThumbnails
             downloadable
@@ -1016,9 +1072,10 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               <button
                 type="button"
                 className="btn btn-primary"
-                onClick={handleSaveScene}
+                disabled={saveBusy}
+                onClick={() => void handleSaveScene()}
               >
-                <BookmarkCheck size={16} /> Save Scene
+                <BookmarkCheck size={16} /> {projectContext.target ? 'Save New Take' : 'Save Scene'}
               </button>
             )}
             {savedScene && (
@@ -1056,6 +1113,21 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           </div>
         </div>
       </footer>
+      {saveError && <p role="alert">{saveError}</p>}
+      {similarScenes.length > 0 && <StudioDialog title="Similar saved scene" onClose={() => { if (!saveGuard.current) { setSimilarScenes([]); setSaveError(''); } }}>
+        <p>A similar saved scene already exists.</p>
+        <label htmlFor={`${tabId}-duplicate-target`}>Existing scene</label>
+        <select id={`${tabId}-duplicate-target`} value={duplicateTarget} disabled={saveBusy} onChange={event => setDuplicateTarget(event.target.value)}>
+          {similarScenes.map(scene => <option key={scene.id} value={scene.id}>{scene.title} · {scene.id}</option>)}
+        </select>
+        {saveError && <p role="alert">{saveError}</p>}
+        <div className="output-footer-buttons">
+          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => { setSimilarScenes([]); navigate(`/output/${duplicateTarget}`); }}>Open Existing Scene</button>
+          <button className="btn btn-primary" disabled={saveBusy} onClick={() => void handleSaveScene('version')}>Save as New Version</button>
+          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => void handleSaveScene('take')}>Save as Separate Take</button>
+          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => {setSimilarScenes([]);setSaveError('');}}>Cancel</button>
+        </div>
+      </StudioDialog>}
       {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={component => { setShowPreflight(false); setPreflightSource(component); }} onEditComponent={editPreflightSource} readOnly={!!savedScene} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
       {showReferencePack && <ReferencePackManager source={record} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} readOnly={!!savedScene} onEditCopy={editPreflightSource} onCopyText={async text => { await copyText(text, 'Reference checklist copied.'); }} onApply={async referencePack => {
         if (!draft) return;

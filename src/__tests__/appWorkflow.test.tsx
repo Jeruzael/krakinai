@@ -157,7 +157,7 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     await user.click(assembleBtns[0]);
 
     // S07 Prompt Output
-    const copyBtn = await screen.findByRole('button', { name: /Copy Prompt/i });
+    const copyBtn = await screen.findByRole('button', { name: /Copy Prompt/i }, { timeout: 5000 });
     expect(
       screen.getByText(/Sunlit corner coffee roastery with oak counter/i)
     ).toBeInTheDocument();
@@ -209,9 +209,14 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     await user.click(
       screen.getByRole('button', { name: /Add to Collection/i })
     );
+    await user.click(screen.getByText('+ New Collection'));
     const colNameInput = await screen.findByLabelText(/Collection Name \*/i);
     await user.type(colNameInput, 'Cafe Pitch Pack');
     await user.click(screen.getByRole('button', { name: /Create & Add/i }));
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: /Cafe Pitch Pack/i })).toBeChecked();
+      expect(screen.getByRole('button', { name: /^Done$/i })).toBeEnabled();
+    });
     await user.click(screen.getByRole('button', { name: /^Done$/i }));
 
     // Navigate to Collections screen and verify collection membership

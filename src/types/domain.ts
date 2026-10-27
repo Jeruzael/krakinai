@@ -43,6 +43,8 @@ export interface ProvenanceMetadata {
 }
 
 export interface MediaAsset {
+  displayName?: string;
+  exportFilename?: string;
   id: string;
   filename: string;
   safeFilename: string;
@@ -58,6 +60,9 @@ export interface MediaAsset {
 }
 
 export interface MediaLink {
+  displayName?: string;
+  exportFilename?: string;
+  namesCaptured?: true;
   mediaId: string;
   role: MediaRole;
   altText: string;
@@ -81,6 +86,9 @@ export interface SceneGenerationChoice {
 }
 
 export interface ReferencePackEntry {
+  displayName?: string;
+  exportFilename?: string;
+  namesCaptured?: true;
   associationId: string;
   mediaId: string;
   sourceSlot: BuilderSlot | 'result' | 'legacy';
@@ -203,6 +211,13 @@ export interface SceneDraft {
 }
 
 export interface SavedScene {
+  saveProjectTarget?: { collectionId: string; shotId: string };
+  sourceDraftId?: string;
+  sourceDraftInputRevision?: number;
+  saveRequestId?: string;
+  saveDecision?: 'version' | 'take';
+  versionOfSceneId?: string;
+  separateTakeOfSceneId?: string;
   generation?: SceneGenerationChoice;
   referencePack?: ReferencePack;
   id: string;
@@ -233,7 +248,51 @@ export interface CollectionMemberRef {
   addedAt: string;
 }
 
+export type ProductionStatus = 'planned' | 'prompt_ready' | 'generated' | 'reviewed' | 'final';
+export type WardrobeIntentReason = 'new_day' | 'costume_change' | 'flashback' | 'timeline' | 'deliberate' | 'other';
+
+export interface CharacterBibleEntry {
+  characterId: string;
+  name?: string;
+  storyRole?: string;
+  voiceNotes?: string;
+  personality?: string;
+  distinctiveFeatures?: string;
+  accessories?: string;
+  relationships?: string;
+  notes?: string;
+  approvedWardrobeVariantIds?: string[];
+  referenceMediaIds?: string[];
+}
+
+export interface ProjectTransition {
+  id: string;
+  fromShotId: string;
+  toShotId: string;
+  type: 'straight_cut' | 'match_cut' | 'dissolve' | 'j_cut' | 'l_cut' | 'bridge_shot' | 'custom';
+  durationSeconds?: number;
+  description: string;
+  notes: string;
+}
+
+export interface ProjectShot {
+  id: string;
+  order: number;
+  code: string;
+  title: string;
+  takeSceneIds: string[];
+  selectedSceneId?: string;
+  status: ProductionStatus;
+  plannedDurationSeconds?: number;
+  takeNotes?: Record<string, string>;
+  continuityNotes?: string;
+  intentionalWardrobeChange?: WardrobeIntentReason;
+  firstFrameMediaId?: string;
+  lastFrameMediaId?: string;
+}
+
 export interface Collection {
+  project?: { version: 1; revision: number; shots: ProjectShot[]; cast?: CharacterBibleEntry[]; transitions?: ProjectTransition[] };
   id: string;
   name: string;
   description: string;

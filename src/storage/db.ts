@@ -1,9 +1,14 @@
+import { captureMediaNames } from '../domain/mediaNaming';
+import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
+import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
+export { SimilarSceneError } from '../domain/sceneDuplicates';
 import { getIdentityRevision, resolveGenerationIdentity } from '../domain/identityAnchors';
 import {
   SCHEMA_VERSION,
   type BuilderSlot,
   type Collection,
   type CollectionMemberType,
+  type ProjectShot,
   type ComponentSnapshot,
   type MediaAsset,
   type MediaLink,
@@ -238,7 +243,7 @@ export function collectReferencedMediaIds(snap: {
   scenes: SavedScene[];
   templates: Template[];
   collections?: Collection[];
-}): Set<string> {
+}, options: { includeOptionalMetadata?: boolean } = {}): Set<string> {
   const ids = new Set<string>();
   for (const a of snap.assets) {
     if (a.coverMediaId) ids.add(a.coverMediaId);
@@ -254,12 +259,14 @@ export function collectReferencedMediaIds(snap: {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
     for (const l of d.resultMediaLinks ?? []) ids.add(l.mediaId);
+    if (options.includeOptionalMetadata !== false) for (const l of d.referencePack?.entries ?? []) ids.add(l.mediaId);
   }
   for (const sc of snap.scenes) {
     for (const slot of ORDERED_BUILDER_SLOTS) {
       const s = sc.slots[slot];
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
+    if (options.includeOptionalMetadata !== false) for (const l of sc.referencePack?.entries ?? []) ids.add(l.mediaId);
     for (const l of sc.references ?? []) ids.add(l.mediaId);
     for (const l of sc.resultMediaLinks ?? []) ids.add(l.mediaId);
   }
@@ -270,6 +277,11 @@ export function collectReferencedMediaIds(snap: {
   }
   for (const c of snap.collections ?? []) {
     if (c.coverMediaId) ids.add(c.coverMediaId);
+    for(const shot of c.project?.shots ?? []) {
+      if(shot.firstFrameMediaId)ids.add(shot.firstFrameMediaId);
+      if(shot.lastFrameMediaId)ids.add(shot.lastFrameMediaId);
+    }
+    for(const cast of c.project?.cast ?? []) for(const mediaId of cast.referenceMediaIds ?? []) ids.add(mediaId);
   }
   return ids;
 }
@@ -536,42 +548,38 @@ export async function getAssetDeletionDependencies(assetId: string): Promise<Del
 }
 
 export async function deletePromptAsset(assetId: string): Promise<void> {
-  const snap = await getAllSnapshot();
-  const dependentVariants = snap.variants.filter((v) => v.parentCharacterId === assetId);
+  const db = await openDatabase();
+  const tx = db.transaction(['assets', 'variants', 'collections'], 'readwrite');
+  const completion=txDone(tx);
+  try {
+  const dependentVariants = (await getAllFromStore<Variant>(tx.objectStore('variants'))).filter((v) => v.parentCharacterId === assetId);
   if (dependentVariants.length > 0) {
     throw new Error(
       `Cannot delete character while ${dependentVariants.length} dependent variant(s) still reference it. Delete or handle those variants first.`
     );
   }
 
-  const updatedCollections = snap.collections.map((c) => ({
-    ...c,
-    members: c.members.filter((m) => !(m.type === 'asset' && m.id === assetId)),
-  }));
-
-  const db = await openDatabase();
-  const tx = db.transaction(['assets', 'collections'], 'readwrite');
+  const currentCollections=await getAllFromStore<Collection>(tx.objectStore('collections'));
   tx.objectStore('assets').delete(assetId);
-  for (const col of updatedCollections) {
-    tx.objectStore('collections').put(col);
+  for (const col of currentCollections) {
+    if(col.members.some(m=>m.type==='asset'&&m.id===assetId)) tx.objectStore('collections').put({...col,members:col.members.filter(m=>m.type!=='asset'||m.id!==assetId)});
   }
-  await txDone(tx);
+  await completion;
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 
 export async function deleteVariant(variantId: string): Promise<void> {
-  const snap = await getAllSnapshot();
-  const updatedCollections = snap.collections.map((c) => ({
-    ...c,
-    members: c.members.filter((m) => !(m.type === 'variant' && m.id === variantId)),
-  }));
-
   const db = await openDatabase();
   const tx = db.transaction(['variants', 'collections'], 'readwrite');
+  const completion=txDone(tx);
+  try {
+  const currentCollections=await getAllFromStore<Collection>(tx.objectStore('collections'));
   tx.objectStore('variants').delete(variantId);
-  for (const col of updatedCollections) {
-    tx.objectStore('collections').put(col);
+  for (const col of currentCollections) {
+    if(col.members.some(m=>m.type==='variant'&&m.id===variantId)) tx.objectStore('collections').put({...col,members:col.members.filter(m=>m.type!=='variant'||m.id!==variantId)});
   }
-  await txDone(tx);
+  await completion;
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 
 export function checkVariantApplicationToDraft(
@@ -703,9 +711,12 @@ export async function saveSceneDraft(
   return record;
 }
 
-export async function saveSceneFromDraft(draftId: string): Promise<SavedScene> {
+export interface SaveSceneOptions { duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; projectTarget?: {collectionId:string;shotId:string} }
+export async function saveSceneFromDraft(draftId: string, options: SaveSceneOptions = {}): Promise<SavedScene> {
   const db = await openDatabase();
-  const tx = db.transaction(['drafts', 'scenes', 'assets'], 'readwrite');
+  const tx = db.transaction(['drafts', 'scenes', 'assets', 'media', 'collections'], 'readwrite');
+  const completion = txDone(tx);
+  try {
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
   if (!draft) throw new Error('Scene draft not found.');
 
@@ -747,9 +758,50 @@ export async function saveSceneFromDraft(draftId: string): Promise<SavedScene> {
     updatedAt: now,
   };
 
+  const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
+  for (const slot of Object.values(scene.slots)) if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
+  scene.references = captureMediaNames(scene.references, mediaMap);
+  scene.resultMediaLinks = captureMediaNames(scene.resultMediaLinks, mediaMap);
+  if (scene.referencePack) scene.referencePack.entries = captureMediaNames(scene.referencePack.entries, mediaMap);
+  const scenes = await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
+  const retry = options.requestId ? scenes.find(saved => saved.saveRequestId === options.requestId) : undefined;
+  if (retry) {
+    if (retry.sourceDraftId !== draft.id || retry.sourceDraftInputRevision !== draft.inputRevision || retry.saveDecision !== options.duplicateDecision || (retry.versionOfSceneId ?? retry.separateTakeOfSceneId) !== options.duplicateOfSceneId || JSON.stringify(retry.saveProjectTarget) !== JSON.stringify(options.projectTarget) || sceneDuplicateKey(retry) !== sceneDuplicateKey(scene)) throw new Error('Save request ID was already used for a different operation.');
+    await completion;
+    return retry;
+  }
+  const matches = findSimilarScenes(scene, scenes);
+  if (options.duplicateDecision) {
+    if (!matches.some(saved => saved.id === options.duplicateOfSceneId)) throw new Error('Choose a current matching saved scene for this decision.');
+    if (options.duplicateDecision === 'version') scene.versionOfSceneId = options.duplicateOfSceneId;
+    else scene.separateTakeOfSceneId = options.duplicateOfSceneId;
+  } else {
+    if (options.duplicateOfSceneId) throw new Error('Choose a duplicate save decision.');
+    if (matches.length) throw new SimilarSceneError(matches);
+  }
+  scene.sourceDraftId = draft.id;
+  scene.sourceDraftInputRevision = draft.inputRevision;
+  scene.saveRequestId = options.requestId;
+  scene.saveDecision = options.duplicateDecision;
+  if (options.projectTarget) {
+    const target=options.projectTarget;
+    const collectionStore=tx.objectStore('collections');
+    const collection=await getFromStore<Collection>(collectionStore,target.collectionId);
+    if (!collection?.project) throw new Error('Target project not found.');
+    const shot=collection.project.shots.find(s=>s.id===target.shotId);
+    if (!shot) throw new Error('Target project shot not found.');
+    const shots=collection.project.shots.map(s=>s.id===shot.id?{...s,takeSceneIds:[...s.takeSceneIds,scene.id],selectedSceneId:s.selectedSceneId??scene.id}:s);
+    collectionStore.put({...collection,project:{...collection.project,revision:collection.project.revision+1,shots},members:projectMembersFromShots({...collection,updatedAt:now},shots),updatedAt:now});
+    scene.saveProjectTarget={...target};
+  }
   tx.objectStore('scenes').put(scene);
-  await txDone(tx);
+  await completion;
   return scene;
+  } catch (error) {
+    try { tx.abort(); } catch { /* Already completed or aborted. */ }
+    await completion.catch(() => undefined);
+    throw error;
+  }
 }
 
 export async function updateSavedSceneReviewAndResults(params: {
@@ -759,14 +811,18 @@ export async function updateSavedSceneReviewAndResults(params: {
   reviewStatus: ReviewStatus;
 }): Promise<SavedScene> {
   const db = await openDatabase();
-  const tx = db.transaction(['scenes'], 'readwrite');
+  const tx = db.transaction(['scenes', 'media'], 'readwrite');
   const sStore = tx.objectStore('scenes');
   const existing = await getFromStore<SavedScene>(sStore, params.sceneId);
   if (!existing) throw new Error('Saved scene not found.');
 
+  const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
   const updated: SavedScene = {
     ...existing,
-    resultMediaLinks: params.resultMediaLinks.map((r, i) => ({ ...r, order: i })),
+    resultMediaLinks: params.resultMediaLinks.map((r, i) => {
+      const retained = existing.resultMediaLinks.find(link => link.mediaId === r.mediaId && link.role === r.role && link.altText === r.altText && link.viewLabel === r.viewLabel);
+      return { ...(retained ?? captureMediaNames([r], mediaMap)[0]), order: i };
+    }),
     reviewNotes: params.reviewNotes.trim(),
     reviewStatus: params.reviewStatus,
     updatedAt: new Date().toISOString(),
@@ -777,18 +833,21 @@ export async function updateSavedSceneReviewAndResults(params: {
 }
 
 export async function deleteSavedScene(sceneId: string): Promise<void> {
-  const snap = await getAllSnapshot();
-  const updatedCollections = snap.collections.map((c) => ({
-    ...c,
-    members: c.members.filter((m) => !(m.type === 'scene' && m.id === sceneId)),
-  }));
   const db = await openDatabase();
   const tx = db.transaction(['scenes', 'collections'], 'readwrite');
+  const completion=txDone(tx);
+  try {
+  const currentCollections=await getAllFromStore<Collection>(tx.objectStore('collections'));
+  const remainingScenes=(await getAllFromStore<SavedScene>(tx.objectStore('scenes'))).filter(s=>s.id!==sceneId);
   tx.objectStore('scenes').delete(sceneId);
-  for (const col of updatedCollections) {
-    tx.objectStore('collections').put(col);
+  for (const col of currentCollections) {
+    if(col.members.some(m=>m.type==='scene'&&m.id===sceneId)||col.project?.shots.some(s=>s.takeSceneIds.includes(sceneId))) {
+      const updated=removeTakeFromProject(col,sceneId,remainingScenes);
+      tx.objectStore('collections').put({...updated,updatedAt:new Date().toISOString()});
+    }
   }
-  await txDone(tx);
+  await completion;
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 
 export async function createDraftFromSavedScene(sceneId: string): Promise<SceneDraft> {
@@ -904,6 +963,7 @@ export async function saveDraftAsTemplate(params: {
 }
 
 export async function createCollection(input: {
+  coverMediaId?: string;
   name: string;
   description?: string;
 }): Promise<Collection> {
@@ -921,13 +981,21 @@ export async function createCollection(input: {
     updatedAt: now,
   };
   const db = await openDatabase();
-  const tx = db.transaction(['collections'], 'readwrite');
-  tx.objectStore('collections').put(col);
-  await txDone(tx);
+  const tx = db.transaction(['collections', 'media'], 'readwrite');
+  const completion = txDone(tx);
+  try {
+    if (input.coverMediaId) {
+      await validateCollectionCover(tx, input.coverMediaId);
+      col.coverMediaId = input.coverMediaId;
+    }
+    tx.objectStore('collections').put(col);
+    await completion;
+  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw error; }
   return col;
 }
 
 export async function updateCollection(input: {
+  coverMediaId?: string | null;
   id: string;
   name: string;
   description?: string;
@@ -937,19 +1005,24 @@ export async function updateCollection(input: {
     throw new Error(Object.values(val.errors).join(' '));
   }
   const db = await openDatabase();
-  const tx = db.transaction(['collections'], 'readwrite');
+  const tx = db.transaction(['collections', 'media'], 'readwrite');
+  const completion = txDone(tx);
+  try {
+  if (input.coverMediaId) await validateCollectionCover(tx, input.coverMediaId);
   const store = tx.objectStore('collections');
   const existing = await getFromStore<Collection>(store, input.id);
   if (!existing) throw new Error('Collection not found.');
   const updated: Collection = {
     ...existing,
+    coverMediaId: input.coverMediaId === undefined ? existing.coverMediaId : input.coverMediaId ?? undefined,
     name: input.name.trim(),
     description: (input.description ?? '').trim(),
     updatedAt: new Date().toISOString(),
   };
   store.put(updated);
-  await txDone(tx);
+  await completion;
   return updated;
+  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw error; }
 }
 
 export async function deleteCollection(collectionId: string): Promise<void> {
@@ -965,7 +1038,9 @@ export async function addMemberToCollection(params: {
   memberId: string;
 }): Promise<Collection> {
   const db = await openDatabase();
-  const tx = db.transaction(['collections'], 'readwrite');
+  const tx = db.transaction(['collections','scenes'], 'readwrite');
+  const completion=txDone(tx);
+  try {
   const store = tx.objectStore('collections');
   const existing = await getFromStore<Collection>(store, params.collectionId);
   if (!existing) throw new Error('Collection not found.');
@@ -973,9 +1048,17 @@ export async function addMemberToCollection(params: {
   const already = existing.members.some(
     (m) => m.type === params.memberType && m.id === params.memberId
   );
-  if (already) return existing;
+  if (already) {await completion;return existing;}
+  if(params.memberType==='scene' && !(await getFromStore<SavedScene>(tx.objectStore('scenes'),params.memberId))) throw new Error('Saved scene not found.');
 
   const now = new Date().toISOString();
+  if(params.memberType==='scene' && existing.project){
+    const shots=[...existing.project.shots];
+    const shot:ProjectShot={id:generateId('shot'),order:shots.length,code:String(shots.length+1).padStart(2,'0'),title:'',takeSceneIds:[params.memberId],selectedSceneId:params.memberId,status:'prompt_ready'};
+    shots.push(shot);
+    const updated:Collection={...existing,project:{...existing.project,revision:existing.project.revision+1,shots},members:projectMembersFromShots({...existing,updatedAt:now},shots),updatedAt:now};
+    store.put(updated);await completion;return updated;
+  }
   const updated: Collection = {
     ...existing,
     members: [
@@ -985,8 +1068,9 @@ export async function addMemberToCollection(params: {
     updatedAt: now,
   };
   store.put(updated);
-  await txDone(tx);
+  await completion;
   return updated;
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 
 export async function removeMemberFromCollection(params: {
@@ -995,12 +1079,20 @@ export async function removeMemberFromCollection(params: {
   memberId: string;
 }): Promise<Collection> {
   const db = await openDatabase();
-  const tx = db.transaction(['collections'], 'readwrite');
+  const tx = db.transaction(['collections','scenes'], 'readwrite');
+  const completion=txDone(tx);
+  try {
   const store = tx.objectStore('collections');
   const existing = await getFromStore<Collection>(store, params.collectionId);
   if (!existing) throw new Error('Collection not found.');
 
   const now = new Date().toISOString();
+  if(params.memberType==='scene'&&existing.project){
+    const scenes=await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
+    const updated=removeTakeFromProject(existing,params.memberId,scenes);
+    if(JSON.stringify(updated)===JSON.stringify(existing)){await completion;return existing;}
+    const result={...updated,updatedAt:now};store.put(result);await completion;return result;
+  }
   const updated: Collection = {
     ...existing,
     members: existing.members.filter(
@@ -1009,8 +1101,9 @@ export async function removeMemberFromCollection(params: {
     updatedAt: now,
   };
   store.put(updated);
-  await txDone(tx);
+  await completion;
   return updated;
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 
 export async function replaceAllStoresTransactionally(data: LibrarySnapshot): Promise<void> {
@@ -1067,4 +1160,9 @@ export function saveIdentityAnchorDraft(characterId: string, text: string, expec
 }
 export function approveIdentityAnchor(characterId: string, text: string, expectedIdentityRevision?: number): Promise<PromptAsset> {
   return writeIdentityAnchor(characterId, text, true, expectedIdentityRevision);
+}
+
+async function validateCollectionCover(tx: IDBTransaction, id: string): Promise<void> {
+  const media = await getFromStore<MediaAsset>(tx.objectStore('media'), id);
+  if (!media || !media.mimeType.startsWith('image/')) throw new Error('Collection cover must reference an existing image.');
 }

@@ -179,6 +179,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   useEffect(() => {
+    const refresh = () => { if (document.visibilityState !== 'hidden') void refreshSnapshot().catch(() => {}); };
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => { window.removeEventListener('focus', refresh); document.removeEventListener('visibilitychange', refresh); };
+  }, [refreshSnapshot]);
+
+  useEffect(() => {
     let mounted = true;
     (async () => {
       try {

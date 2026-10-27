@@ -47,7 +47,7 @@ describe('Media retention across independent editors', () => {
         reviewStatus: 'unreviewed',
       });
       const protectedScene = await saveSceneFromDraft(draft.id);
-      const otherScene = await saveSceneFromDraft(draft.id);
+      const otherScene = await saveSceneFromDraft(draft.id, {duplicateDecision:'take',duplicateOfSceneId:protectedScene.id});
       const sceneMedia = await saveMediaAsset({
         filename: 'saved-scene-result.png',
         mimeType: 'image/png',

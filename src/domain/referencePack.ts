@@ -1,3 +1,4 @@
+import { getDownloadFilename } from './mediaNaming';
 import { strToU8, zipSync } from 'fflate';
 import type { BuilderSlot, MediaAsset, MediaLink, ReferencePack, ReferencePackEntry, SavedScene, SceneDraft } from '../types/domain';
 import type { GenerationReference } from './generationDocument';
@@ -12,7 +13,7 @@ export function collectReferenceCandidates(source: SceneDraft | SavedScene, medi
   for (const link of [...links].sort((a,b)=>a.order-b.order)) {
    const key=identity(link); const occurrence=occurrences.get(key) ?? 0; occurrences.set(key,occurrence+1);
    const media=mediaMap.get(link.mediaId);
-   entries.push({associationId:JSON.stringify([slot,sourceId,key,occurrence]),mediaId:link.mediaId,sourceSlot:slot,sourceId,sourceTitle,role:link.role,altText:link.altText,filename:link.filename ?? media?.filename,mimeType:link.mimeType ?? media?.mimeType,purpose:purposeFor(slot),order:entries.length});
+   entries.push({associationId:JSON.stringify([slot,sourceId,key,occurrence]),mediaId:link.mediaId,sourceSlot:slot,sourceId,sourceTitle,role:link.role,altText:link.altText,filename:link.filename ?? media?.filename,mimeType:link.mimeType ?? media?.mimeType,displayName:link.displayName,exportFilename:link.exportFilename,namesCaptured:link.namesCaptured,purpose:purposeFor(slot),order:entries.length});
   }
  };
  for (const slot of SCENE_COMPONENT_ORDER) { const snapshot=source.slots[slot as BuilderSlot]; if(snapshot) add(snapshot.mediaLinks,slot,snapshot.sourceId,snapshot.sourceTitle); }
@@ -39,7 +40,7 @@ export async function buildReferencePackZip(pack: ReferencePack, mediaMap: Reado
  const missing=ordered.filter(entry=>!mediaMap.get(entry.mediaId)?.blob);
  if(missing.length) throw new Error(`Cannot export reference pack: missing original files for ${missing.map(entry=>`${entry.filename || entry.mediaId} (${entry.mediaId}, ${entry.sourceSlot}, ${entry.role})`).join('; ')}.`);
  const files: Record<string,Uint8Array>={}; const paths=new Map<string,string>();
- for(const entry of ordered) if(!paths.has(entry.mediaId)) {const media=mediaMap.get(entry.mediaId)!;const path=`media/${String(paths.size+1).padStart(3,'0')}-${basename(media.filename)}`;paths.set(entry.mediaId,path);files[path]=await readBlob(media.blob);}
+ for(const entry of ordered) if(!paths.has(entry.mediaId)) {const media=mediaMap.get(entry.mediaId)!;const requested=getDownloadFilename(media,entry,true);const path=`media/${String(paths.size+1).padStart(3,'0')}-${entry.exportFilename ? requested : basename(requested)}`;paths.set(entry.mediaId,path);files[path]=await readBlob(media.blob);}
  files['manifest.json']=strToU8(JSON.stringify({schema:'krakinai.reference-pack.v1',version:1,entries:ordered.map(entry=>({...entry,binaryPath:paths.get(entry.mediaId)}))},null,2));
  return zipSync(files);
 }

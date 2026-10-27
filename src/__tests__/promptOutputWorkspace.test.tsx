@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LibraryProvider, useLibrary } from '../context/LibraryContext';
 import { ConfirmModal } from '../components/SharedModals';
@@ -11,7 +11,9 @@ import {
   saveSceneDraft,
   saveSceneFromDraft,
   replaceAllStoresTransactionally,
+  createCollection,
 } from '../storage/db';
+import { addProjectShot } from '../storage/projects';
 import * as objectUrls from '../hooks/useObjectUrl';
 import { assembleScenePrompt } from '../domain/promptAssembler';
 import { serializeSceneJson } from '../domain/sceneDocument';
@@ -108,7 +110,7 @@ async function createFixture(manual = false): Promise<SceneDraft> {
 function OutputHost({ id }: { id: string }) {
   const { hashPath } = useLibrary();
   const routeId = hashPath.startsWith('/output/')
-    ? hashPath.slice('/output/'.length)
+    ? hashPath.slice('/output/'.length).split('?')[0]
     : id;
   return (
     <>
@@ -139,6 +141,97 @@ describe('Prompt Output studio workspace', () => {
     vi.restoreAllMocks();
     window.location.hash = '#/';
     await clearAllStoresForTesting();
+  });
+
+  it('saves a new project take atomically and retains the originating shot return', async () => {
+    const user=userEvent.setup(); const draft=await createFixture();
+    const collection=await createCollection({name:'Film'});
+    const project=await addProjectShot({collectionId:collection.id,title:'Waiting'});
+    const shotId=project.project!.shots[0].id;
+    window.location.hash=`#/output/${draft.id}?collection=${collection.id}&shot=${shotId}&takeTarget=1`;
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button',{name:'Save New Take'}));
+    await screen.findByRole('button',{name:'Back to Collection'});
+    const saved=await getAllSnapshot();
+    expect(saved.scenes).toHaveLength(1);
+    expect(saved.collections[0].project!.shots[0].takeSceneIds).toEqual([saved.scenes[0].id]);
+    expect(saved.scenes[0].saveProjectTarget).toEqual({collectionId:collection.id,shotId});
+    await user.click(screen.getByRole('button',{name:'Back to Collection'}));
+    expect(window.location.hash).toContain(`/collections/${collection.id}?tab=storyboard`);
+  });
+
+  it('does not silently save a detached scene when the requested shot is unavailable', async () => {
+    const user=userEvent.setup(); const draft=await createFixture();
+    window.location.hash=`#/output/${draft.id}?collection=deleted&shot=missing&takeTarget=1`;
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button',{name:'Save Scene'}));
+    expect((await getAllSnapshot()).scenes).toHaveLength(0);
+    expect(screen.getAllByText(/This project shot is unavailable/).length).toBeGreaterThan(0);
+    await user.click(screen.getByRole('button',{name:'Continue as Standalone Draft'}));
+    expect(window.location.hash).toBe(`#/output/${draft.id}`);
+  });
+
+  it('starts a new save attempt after returning from a first saved output', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button', {name:'Save Scene'}));
+    await waitFor(() => expect(window.location.hash).toMatch(/output\/scene_/));
+    act(() => { window.location.hash = `#/output/${draft.id}`; window.dispatchEvent(new HashChangeEvent('hashchange')); });
+    await user.click(await screen.findByRole('button', {name:'Save Scene'}));
+    await screen.findByRole('dialog', {name:'Similar saved scene'});
+    expect((await getAllSnapshot()).scenes).toHaveLength(1);
+  });
+
+  it('retains unfinished per-mode buffers after opening a duplicate and returning', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    const existing = await saveSceneFromDraft(draft.id);
+    await renderOutput(draft.id);
+    const before = await getAllSnapshot();
+    await user.click(screen.getByRole('button', {name:'Edit This Output'}));
+    await user.clear(screen.getByLabelText('Manual prompt output'));
+    await user.type(screen.getByLabelText('Manual prompt output'), 'Unfinished structured text');
+    await user.click(screen.getByRole('tab', {name:'Narrative'}));
+    await user.click(screen.getByRole('button', {name:'Edit This Output'}));
+    await user.clear(screen.getByLabelText('Manual prompt output'));
+    await user.type(screen.getByLabelText('Manual prompt output'), 'Unfinished narrative text');
+    await user.click(screen.getByRole('button', {name:'Save Scene'}));
+    await screen.findByRole('dialog', {name:'Similar saved scene'});
+    await user.click(screen.getByRole('button', {name:'Cancel'}));
+    expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished narrative text');
+    await user.click(screen.getByRole('button', {name:'Save Scene'}));
+    await user.click(await screen.findByRole('button', {name:'Open Existing Scene'}));
+    await waitFor(() => expect(window.location.hash).toContain(existing.id));
+    act(() => { window.location.hash = `#/output/${draft.id}`; window.dispatchEvent(new HashChangeEvent('hashchange')); });
+    await waitFor(() => expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished structured text'));
+    await user.click(screen.getByRole('tab', {name:'Narrative'}));
+    expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished narrative text');
+    const after = await getAllSnapshot();
+    expect(after.drafts).toEqual(before.drafts);
+    expect(after.scenes).toEqual(before.scenes);
+  });
+
+  it('guards rapid first save clicks', async () => {
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    const save = screen.getByRole('button', {name:'Save Scene'});
+    act(() => { save.click(); save.click(); });
+    await waitFor(() => expect(screen.queryByRole('button', {name:'Save Scene'})).not.toBeInTheDocument());
+    expect((await getAllSnapshot()).scenes).toHaveLength(1);
+  });
+
+  it('guards rapid save and explicit duplicate decision clicks', async () => {
+    const draft = await createFixture();
+    await saveSceneFromDraft(draft.id);
+    await renderOutput(draft.id);
+    const save = screen.getByRole('button', {name:'Save Scene'});
+    act(() => { save.click(); save.click(); });
+    const dialog = await screen.findByRole('dialog', {name:'Similar saved scene'});
+    expect((await getAllSnapshot()).scenes).toHaveLength(1);
+    const version = within(dialog).getByRole('button', {name:'Save as New Version'});
+    act(() => { version.click(); version.click(); });
+    await waitFor(async () => expect((await getAllSnapshot()).scenes).toHaveLength(2));
   });
 
   it('switches export workflows without altering canonical scenes and copies complete generation JSON', async () => {
@@ -413,7 +506,7 @@ describe('Prompt Output studio workspace', () => {
     const saved = (await getAllSnapshot()).scenes[0];
     expect(saved.outputs.full).toBe(assembleScenePrompt(draft).outputs.full);
     expect(saved.reviewNotes).toBe('Save this scene with these notes.');
-    expect(saved.slots).toEqual(draft.slots);
+    expect(JSON.parse(JSON.stringify(saved.slots), (key, value) => key === 'namesCaptured' ? undefined : value)).toEqual(draft.slots);
   });
 
   it('uploads an external result from Review without changing the prompt or references', async () => {
