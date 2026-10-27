@@ -1,0 +1,61 @@
+.media-metadata-details {
+  min-width: 0;
+  max-width: 100%;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+}
+.media-metadata-details summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.media-metadata-details summary .muted-text {
+  display: block;
+  font-size: 11px;
+  font-weight: 400;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 3px;
+}
+.media-metadata-details fieldset {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px 0 0;
+  margin: 0;
+  border: 0;
+}
+.media-metadata-details legend {
+  padding: 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.media-metadata-details label {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+.media-metadata-details .input {
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 13px;
+}
+.media-metadata-details input[readonly] {
+  color: var(--text-muted);
+  background: var(--bg-canvas);
+}
+.media-metadata-details p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.media-metadata-details .btn {
+  justify-self: start;
+  max-width: 100%;
+  white-space: normal;
+}

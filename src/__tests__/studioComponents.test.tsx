@@ -6,6 +6,20 @@ import { StudioDialog } from '../components/StudioDialog';
 import { ReferenceBoard } from '../components/ReferenceBoard';
 
 describe('Studio visual controls', () => {
+  it('offers an explicit wide size without changing the default dialog', () => {
+    const view = render(
+      <StudioDialog title="Wide references" size="wide" onClose={() => {}}>
+        References
+      </StudioDialog>
+    );
+    expect(screen.getByRole('dialog')).toHaveClass('studio-dialog-wide');
+    view.rerender(
+      <StudioDialog title="Small detail" onClose={() => {}}>
+        Detail
+      </StudioDialog>
+    );
+    expect(screen.getByRole('dialog')).not.toHaveClass('studio-dialog-wide');
+  });
   it('allows native video controls into the dialog keyboard sequence', () => {
     render(
       <StudioDialog title="Video gallery" onClose={() => {}}>

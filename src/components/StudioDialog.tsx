@@ -8,7 +8,15 @@ export const StudioDialog: React.FC<{
   children: React.ReactNode;
   footer?: React.ReactNode;
   className?: string;
-}> = ({ title, onClose, children, footer, className = '' }) => {
+  size?: 'default' | 'wide';
+}> = ({
+  title,
+  onClose,
+  children,
+  footer,
+  className = '',
+  size = 'default',
+}) => {
   const titleId = useId();
   const backdrop = useRef<HTMLDivElement>(null);
   const panel = useRef<HTMLDivElement>(null);
@@ -96,7 +104,7 @@ export const StudioDialog: React.FC<{
     >
       <div
         ref={panel}
-        className={`modal-panel studio-dialog ${className}`}
+        className={`modal-panel studio-dialog ${size === 'wide' ? 'studio-dialog-wide' : ''} ${className}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
