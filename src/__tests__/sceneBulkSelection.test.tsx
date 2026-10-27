@@ -1,0 +1,22 @@
+import React from 'react';
+import {beforeEach,expect,it,vi} from 'vitest';
+import {fireEvent,render,screen} from '@testing-library/react';
+const state=vi.hoisted(()=>({snapshot:null as any,browseState:{query:'',selectedTags:[],reviewFilter:'all',sortBy:'az',visibleCount:24,scrollY:0},navigate:vi.fn(),updateBrowseState:vi.fn()}));
+vi.mock('../context/LibraryContext',()=>({useLibrary:()=>state}));
+vi.mock('../components/CollectionMembershipBadge',()=>({CollectionMembershipBadge:()=>null}));
+vi.mock('../components/SceneBulkActions',()=>({SceneBulkActions:({selectedSceneIds,onClear}:{selectedSceneIds:string[];onClear:()=>void})=><section aria-label="Bulk scene IDs">{selectedSceneIds.join(',')}<button onClick={onClear}>Clear selected scenes</button></section>}));
+import {LibraryScreen} from '../screens/LibraryScreen';
+beforeEach(()=>{state.snapshot={assets:[],variants:[],media:[],collections:[],scenes:['Aya','Marco'].map((name,index)=>({id:`s${index}`,title:name,outputs:{full:`Exact ${name} output`},slots:{},settings:{},references:[],resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed',updatedAt:'2026-10-26'}))};});
+it('selects only the filtered scenes, prunes deleted records and clears on a different library context',()=>{
+ const before=JSON.stringify(state.snapshot);const {rerender}=render(<LibraryScreen mode="scenes"/>);
+ fireEvent.change(screen.getByPlaceholderText('Search saved scenes by title, prompt text, or notes...'),{target:{value:'Marco'}});
+ fireEvent.click(screen.getByRole('checkbox',{name:'Select all visible scenes'}));
+ expect(screen.getByLabelText('Bulk scene IDs')).toHaveTextContent('s1');
+ expect(JSON.stringify(state.snapshot)).toBe(before);
+ state.snapshot={...state.snapshot,scenes:[state.snapshot.scenes[0]]};rerender(<LibraryScreen mode="scenes"/>);
+ expect(screen.getByLabelText('Bulk scene IDs')).not.toHaveTextContent('s1');
+ fireEvent.change(screen.getByPlaceholderText('Search saved scenes by title, prompt text, or notes...'),{target:{value:''}});
+ fireEvent.click(screen.getByRole('checkbox',{name:'Select scene Aya'}));
+ rerender(<LibraryScreen mode="all"/>);rerender(<LibraryScreen mode="scenes"/>);
+ expect(screen.getByRole('checkbox',{name:'Select scene Aya'})).not.toBeChecked();
+});

@@ -337,7 +337,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
         };
       }
     }
-    const projectError=validateProject(c,manifest.scenes);
+    const projectError=validateProject(c,manifest.scenes,true,{assets:manifest.assets,variants:manifest.variants,media:manifest.media,allowMissingCastSources:true});
     if(projectError) return {valid:false,error:`Collection "${c.name}" project: ${projectError}`};
   }
 

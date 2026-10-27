@@ -277,6 +277,11 @@ export function collectReferencedMediaIds(snap: {
   }
   for (const c of snap.collections ?? []) {
     if (c.coverMediaId) ids.add(c.coverMediaId);
+    for(const shot of c.project?.shots ?? []) {
+      if(shot.firstFrameMediaId)ids.add(shot.firstFrameMediaId);
+      if(shot.lastFrameMediaId)ids.add(shot.lastFrameMediaId);
+    }
+    for(const cast of c.project?.cast ?? []) for(const mediaId of cast.referenceMediaIds ?? []) ids.add(mediaId);
   }
   return ids;
 }

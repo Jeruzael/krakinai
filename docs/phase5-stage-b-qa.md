@@ -1,5 +1,7 @@
 # Phase 5 B — storyboard workspace verification
 
+Reconciled check identities and screenshot hashes are in [the Phase 5 QA ledger](qa/phase5-summary.md). These local Chromium results were not independently run by GitHub CI.
+
 Parent: Stage A `e072e909717e6ce53efd761afd3d2615b6edbe26`. Branch: `codex/phase5-storyboard-workspace`. No merge or master push. This report describes the tested Stage B tree; Stage C continuity and Stage D project ZIP are separate follow-ups in the stack.
 
 ## Directly inspected implementation

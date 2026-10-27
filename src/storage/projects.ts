@@ -49,14 +49,14 @@ export function updateProjectShot({collectionId,shotId,patch}:{collectionId:stri
 });}
 export function reorderProjectShots({collectionId,orderedShotIds,expectedRevision}:{collectionId:string;orderedShotIds:string[];expectedRevision?:number}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
   const c=established(raw,scenes);if(expectedRevision!==undefined&&expectedRevision!==c.project!.revision)throw new Error('Project revision conflict: refresh before saving shot order.');
-  const shots=c.project!.shots;if(orderedShotIds.length!==shots.length||new Set(orderedShotIds).size!==shots.length||orderedShotIds.some(id=>!shots.some(s=>s.id===id)))throw new Error('Ordered shot IDs must match current project shots.');
+  const shots=getProjectShots(c,scenes);if(orderedShotIds.length!==shots.length||new Set(orderedShotIds).size!==shots.length||orderedShotIds.some(id=>!shots.some(s=>s.id===id)))throw new Error('Ordered shot IDs must match current project shots.');
   if(orderedShotIds.every((id,i)=>shots[i].id===id))return raw;
   return changed(c,renumber(orderedShotIds.map(id=>shots.find(s=>s.id===id)!)));
 });}
 export function removeProjectShot({collectionId,shotId}:{collectionId:string;shotId:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
-  const c=established(raw,scenes);findShot(c,shotId);const shots=renumber(c.project!.shots.filter(s=>s.id!==shotId));
-  const transitions=(c.project as any).transitions?.filter((t:any)=>t.fromShotId!==shotId&&t.toShotId!==shotId);
-  const result=changed(c,shots);if(transitions)(result.project as any).transitions=transitions;return result;
+  const c=established(raw,scenes);findShot(c,shotId);const shots=renumber(getProjectShots(c,scenes).filter(s=>s.id!==shotId));
+  const transitions=c.project!.transitions?.filter(t=>t.fromShotId!==shotId&&t.toShotId!==shotId);
+  const result=changed(c,shots);if(transitions)result.project!.transitions=transitions;return result;
 });}
 export function addProjectTake({collectionId,shotId,sceneId}:{collectionId:string;shotId:string;sceneId:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
   const c=established(raw,scenes);const shot=findShot(c,shotId);if(!scenes.some(s=>s.id===sceneId))throw new Error('Saved scene not found.');if(shot.takeSceneIds.includes(sceneId))return raw;
