@@ -49,7 +49,8 @@ it('retains explicit selections, exact Taglish/custom text, frozen outputs and l
   );
   const copy = await createDraftFromSavedScene(scene.id);
   expect(copy.dialogue).toEqual(savedDraft.dialogue);
-  copy.dialogue!.performanceDirection!.styles.push('urgent');
+  if (copy.dialogue!.performanceDirection!.version === 1)
+    copy.dialogue!.performanceDirection!.styles.push('urgent');
   expect(scene.dialogue?.performanceDirection).toEqual(performanceDirection);
   const before = await getAllSnapshot();
   const zip = await exportFullBackupZip();

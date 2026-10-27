@@ -98,6 +98,100 @@
   justify-self: start;
   white-space: normal;
 }
+.performance-search {
+  display: grid;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 650;
+  min-width: 0;
+}
+.performance-search input {
+  width: 100%;
+  min-width: 0;
+}
+.performance-groups {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+.performance-group {
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.performance-group h3 {
+  margin: 0;
+  font-size: 0.88rem;
+}
+.performance-group-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 12px;
+  color: inherit;
+  background: var(--surface, #fff);
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+}
+.performance-group-toggle > span:first-child {
+  min-width: 0;
+  flex: 1;
+}
+.performance-group-toggle strong {
+  display: block;
+}
+.performance-group-toggle small {
+  display: block;
+  margin-top: 4px;
+  font-weight: 400;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.performance-group-toggle[aria-expanded='true'] {
+  background: #eff6ff;
+}
+.performance-group-toggle:focus-visible,
+.performance-chip:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -3px;
+}
+.performance-group-body {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border-top: 1px solid var(--border-subtle);
+  min-width: 0;
+}
+.performance-selections {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+.performance-chip {
+  min-height: 36px;
+  max-width: 100%;
+  padding: 7px 10px;
+  border-radius: 16px;
+  border: 1px solid #b7c9ef;
+  background: #eff6ff;
+  color: #233e70;
+  font-size: 0.75rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+.performance-legacy-note {
+  border-left: 3px solid var(--primary);
+  padding-left: 10px;
+}
 @media (max-width: 540px) {
   .performance-direction {
     padding: 12px;
@@ -107,5 +201,11 @@
   }
   .performance-options {
     grid-template-columns: 1fr;
+  }
+  .performance-studio .performance-style-grid {
+    grid-template-columns: 1fr;
+  }
+  .performance-chip {
+    min-height: 44px;
   }
 }
