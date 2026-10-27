@@ -55,8 +55,8 @@ export function reorderProjectShots({collectionId,orderedShotIds,expectedRevisio
 });}
 export function removeProjectShot({collectionId,shotId}:{collectionId:string;shotId:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
   const c=established(raw,scenes);findShot(c,shotId);const shots=renumber(c.project!.shots.filter(s=>s.id!==shotId));
-  const transitions=(c.project as any).transitions?.filter((t:any)=>t.fromShotId!==shotId&&t.toShotId!==shotId);
-  const result=changed(c,shots);if(transitions)(result.project as any).transitions=transitions;return result;
+  const transitions=c.project!.transitions?.filter(t=>t.fromShotId!==shotId&&t.toShotId!==shotId);
+  const result=changed(c,shots);if(transitions)result.project!.transitions=transitions;return result;
 });}
 export function addProjectTake({collectionId,shotId,sceneId}:{collectionId:string;shotId:string;sceneId:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
   const c=established(raw,scenes);const shot=findShot(c,shotId);if(!scenes.some(s=>s.id===sceneId))throw new Error('Saved scene not found.');if(shot.takeSceneIds.includes(sceneId))return raw;

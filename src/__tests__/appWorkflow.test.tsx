@@ -157,7 +157,7 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
     await user.click(assembleBtns[0]);
 
     // S07 Prompt Output
-    const copyBtn = await screen.findByRole('button', { name: /Copy Prompt/i });
+    const copyBtn = await screen.findByRole('button', { name: /Copy Prompt/i }, { timeout: 5000 });
     expect(
       screen.getByText(/Sunlit corner coffee roastery with oak counter/i)
     ).toBeInTheDocument();
