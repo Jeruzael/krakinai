@@ -1,4 +1,5 @@
 import { CollectionMembershipBadge } from '../components/CollectionMembershipBadge';
+import { SceneBulkActions } from '../components/SceneBulkActions';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Copy,
@@ -47,6 +48,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   } = useLibrary();
 
   const [scenesSearch, setScenesSearch] = useState('');
+  const [selectedSceneIds,setSelectedSceneIds] = useState<Set<string>>(new Set());
+  useEffect(() => {setSelectedSceneIds(new Set());},[mode,category]);
+  useEffect(() => {setSelectedSceneIds(previous=>{const ids=new Set(snapshot?.scenes.map(scene=>scene.id)??[]);const next=[...previous].filter(id=>ids.has(id));return next.length===previous.size?previous:new Set(next);});},[snapshot?.scenes]);
 
   useEffect(() => {
     if (browseState.scrollY > 0) {
@@ -245,6 +249,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           </div>
         </div>
 
+        <SceneBulkActions selectedSceneIds={[...selectedSceneIds]} onClear={()=>setSelectedSceneIds(new Set())} onChanged={refreshSnapshot} />
+        <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" aria-label="Select all visible scenes" checked={filteredScenes.length>0 && filteredScenes.every(scene=>selectedSceneIds.has(scene.id))} onChange={event=>setSelectedSceneIds(previous=>{const next=new Set(previous);filteredScenes.forEach(scene=>event.target.checked?next.add(scene.id):next.delete(scene.id));return next;})} /> Select all visible scenes</label>
         {filteredScenes.length === 0 ? (
           <div className="card">
             <h2 className="section-title" style={{ marginBottom: 8 }}>
@@ -280,6 +286,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
 
               return (
                 <article key={scene.id} className="prompt-card">
+                  <label style={{display:'flex',alignItems:'center',gap:8,padding:12}}><input type="checkbox" aria-label={`Select scene ${scene.title}`} checked={selectedSceneIds.has(scene.id)} onChange={event=>setSelectedSceneIds(previous=>{const next=new Set(previous);if(event.target.checked)next.add(scene.id);else next.delete(scene.id);return next;})} /> Select scene</label>
                   <div
                     className="prompt-card-media"
                     onClick={() => navigate(`/output/${scene.id}`)}

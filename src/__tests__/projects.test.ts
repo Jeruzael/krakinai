@@ -1,5 +1,5 @@
 import {beforeEach,expect,it,vi} from 'vitest';
-import {clearAllStoresForTesting,createCollection,getAllSnapshot,saveSceneDraft,saveSceneFromDraft,addMemberToCollection,removeMemberFromCollection,deleteSavedScene,deletePromptAsset} from '../storage/db';
+import {clearAllStoresForTesting,createCollection,getAllSnapshot,openDatabase,saveSceneDraft,saveSceneFromDraft,addMemberToCollection,removeMemberFromCollection,deleteSavedScene,deletePromptAsset} from '../storage/db';
 import {initializeProject,addProjectShot,addProjectTake,removeProjectTake,removeProjectShot,reorderProjectShots,updateProjectShot,selectProjectTake} from '../storage/projects';
 
 beforeEach(clearAllStoresForTesting);
@@ -104,4 +104,28 @@ it('rolls back collection take attachment when scene put fails synchronously',as
   try{await expect(saveSceneFromDraft(draft.id,{projectTarget:{collectionId:c.id,shotId}})).rejects.toThrow(/Storage full/);}finally{spy.mockRestore();}
   expect(collectionQueued).toBe(true);
   const after=await getAllSnapshot();expect(after.scenes).toEqual(before.scenes);expect(after.collections).toEqual(before.collections);
+});
+
+async function persistPhysicalShotOrder(collectionId:string,ids:string[]){
+  const db=await openDatabase();const tx=db.transaction('collections','readwrite');const store=tx.objectStore('collections');
+  const collection=await new Promise<any>((resolve,reject)=>{const r=store.get(collectionId);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+  collection.project.shots=ids.map(id=>collection.project.shots.find((shot:any)=>shot.id===id));store.put(collection);
+  await new Promise<void>((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error);});
+}
+
+it('removes one shot using explicit order when persisted array order is shuffled',async()=>{
+  const c=await createCollection({name:'Film'});const a=await addProjectShot({collectionId:c.id,title:'A'});const b=await addProjectShot({collectionId:c.id,title:'B'});const d=await addProjectShot({collectionId:c.id,title:'C'});
+  const ids=[a.project!.shots[0].id,b.project!.shots[1].id,d.project!.shots[2].id];
+  await persistPhysicalShotOrder(c.id,[ids[1],ids[0],ids[2]]);
+  const result=await removeProjectShot({collectionId:c.id,shotId:ids[2]});
+  expect(result.project?.shots.map(shot=>[shot.title,shot.order])).toEqual([['A',0],['B',1]]);
+});
+
+it('applies a requested reorder even when it matches shuffled physical array order',async()=>{
+  const c=await createCollection({name:'Film'});const a=await addProjectShot({collectionId:c.id,title:'A'});const b=await addProjectShot({collectionId:c.id,title:'B'});const d=await addProjectShot({collectionId:c.id,title:'C'});
+  const ids=[a.project!.shots[0].id,b.project!.shots[1].id,d.project!.shots[2].id];
+  await persistPhysicalShotOrder(c.id,[ids[1],ids[0],ids[2]]);
+  const result=await reorderProjectShots({collectionId:c.id,orderedShotIds:[ids[1],ids[0],ids[2]],expectedRevision:d.project!.revision});
+  expect(result.project?.shots.map(shot=>[shot.title,shot.order])).toEqual([['B',0],['A',1],['C',2]]);
+  expect(result.project?.revision).toBe(d.project!.revision+1);
 });
