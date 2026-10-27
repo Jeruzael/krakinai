@@ -53,10 +53,18 @@
       "passed": 31,
       "skipped": 0,
       "failed": 0,
-      "completedAt": "2026-10-27T21:18:40.624883+08:00",
+      "completedAt": "2026-10-27T21:40:21.530772+08:00",
       "warnings": {
         "NO_COLOR_FORCE_COLOR": 2
       }
+    },
+    {
+      "command": "node scripts/qa/ci-summary.mjs",
+      "exitCode": 0,
+      "retainedBrowserCases": 31,
+      "summaryBytes": 6594,
+      "caseCap": 64,
+      "byteCap": 65536
     }
   ],
   "gitChecks": [
@@ -76,8 +84,8 @@
   "protectedPathsUnchanged": true,
   "validationSha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
   "browserStats": {
-    "startTime": "2026-10-27T13:17:42.935Z",
-    "duration": 57685.337,
+    "startTime": "2026-10-27T13:39:21.895Z",
+    "duration": 59630.933000000005,
     "expected": 31,
     "skipped": 0,
     "unexpected": 0,
@@ -88,85 +96,85 @@
       "file": "scene-workflows.spec.mjs",
       "title": "canonical output copy, save, and small legacy backup roundtrip",
       "status": "expected",
-      "durationMs": 1085
+      "durationMs": 1089
     },
     {
       "file": "scene-workflows.spec.mjs",
       "title": "duplicate save requires an explicit decision",
       "status": "expected",
-      "durationMs": 657
+      "durationMs": 623
     },
     {
       "file": "scene-workflows.spec.mjs",
       "title": "storyboard order and collection return survive navigation",
       "status": "expected",
-      "durationMs": 1031
+      "durationMs": 956
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
       "status": "expected",
-      "durationMs": 3684
+      "durationMs": 3746
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "reduced motion disables hover and explicit Preview stays usable",
       "status": "expected",
-      "durationMs": 1906
+      "durationMs": 1926
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "secondary actions, drag grip and keyboard ordering preserve saved takes",
       "status": "expected",
-      "durationMs": 2566
+      "durationMs": 2545
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "continuity forms stack, footer and focus remain reachable at 1440x900",
       "status": "expected",
-      "durationMs": 2448
+      "durationMs": 2364
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "continuity forms stack, footer and focus remain reachable at 768x1024",
       "status": "expected",
-      "durationMs": 2419
+      "durationMs": 2438
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "continuity forms stack, footer and focus remain reachable at 390x844",
       "status": "expected",
-      "durationMs": 2390
+      "durationMs": 2371
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "continuity forms stack, footer and focus remain reachable at 720x450",
       "status": "expected",
-      "durationMs": 2370
+      "durationMs": 2387
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
       "status": "expected",
-      "durationMs": 2412
+      "durationMs": 2398
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
       "status": "expected",
-      "durationMs": 1974
+      "durationMs": 1971
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
       "status": "expected",
-      "durationMs": 2007
+      "durationMs": 2037
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
       "title": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
       "status": "expected",
-      "durationMs": 2457
+      "durationMs": 2565
     },
     {
       "file": "storyboard-cleanup.spec.mjs",
@@ -178,97 +186,97 @@
       "file": "storyboard-screenshots.spec.mjs",
       "title": "storyboard visual evidence 1440",
       "status": "expected",
-      "durationMs": 2680
+      "durationMs": 2555
     },
     {
       "file": "storyboard-screenshots.spec.mjs",
       "title": "storyboard visual evidence 768",
       "status": "expected",
-      "durationMs": 2551
+      "durationMs": 2565
     },
     {
       "file": "storyboard-screenshots.spec.mjs",
       "title": "storyboard visual evidence 390",
       "status": "expected",
-      "durationMs": 2406
+      "durationMs": 2474
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "long take names and IDs stay inside the dialog at 1440",
       "status": "expected",
-      "durationMs": 765
+      "durationMs": 980
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "long take names and IDs stay inside the dialog at 768",
       "status": "expected",
-      "durationMs": 756
+      "durationMs": 992
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "long take names and IDs stay inside the dialog at 390",
       "status": "expected",
-      "durationMs": 773
+      "durationMs": 779
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
       "status": "expected",
-      "durationMs": 1991
+      "durationMs": 2549
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
       "status": "expected",
-      "durationMs": 883
+      "durationMs": 1470
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "variant file input shares the pipeline, maximum handling and keyboard ordering",
       "status": "expected",
-      "durationMs": 753
+      "durationMs": 1237
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
       "status": "expected",
-      "durationMs": 812
+      "durationMs": 765
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
       "status": "expected",
-      "durationMs": 1004
+      "durationMs": 1188
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "take preference, project note, comparison and removal keep immutable source scenes",
       "status": "expected",
-      "durationMs": 945
+      "durationMs": 996
     },
     {
       "file": "uiux-polish.spec.mjs",
       "title": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
       "status": "expected",
-      "durationMs": 1104
+      "durationMs": 1087
     },
     {
       "file": "uiux-screenshots.spec.mjs",
       "title": "polish visual evidence 1440",
       "status": "expected",
-      "durationMs": 1935
+      "durationMs": 1986
     },
     {
       "file": "uiux-screenshots.spec.mjs",
       "title": "polish visual evidence 768",
       "status": "expected",
-      "durationMs": 1691
+      "durationMs": 1627
     },
     {
       "file": "uiux-screenshots.spec.mjs",
       "title": "polish visual evidence 390",
       "status": "expected",
-      "durationMs": 1476
+      "durationMs": 1571
     }
   ],
   "videoProof": {
@@ -280,13 +288,13 @@
     "shots": 11,
     "media": [
       {
-        "id": "media_f81a331913f0",
+        "id": "media_bd0758035e64",
         "filename": "synthetic-storyboard-motion.webm",
         "safeFilename": "synthetic-storyboard-motion.webm",
         "mimeType": "video/webm",
         "byteSize": 27354,
-        "createdAt": "2026-10-27T13:17:50.355Z",
-        "sha256": "032574a2473dd470180f4854fbab11d6d69b1986b6b2075566997a9e2525be2c"
+        "createdAt": "2026-10-27T13:39:28.855Z",
+        "sha256": "b4efda9ceec62ccdabd2d06900ef7af354f78f5020614d50d0832d4659c72419"
       }
     ],
     "allStoresEqual": true,
@@ -523,7 +531,7 @@
     },
     {
       "path": "e2e/storyboard-cleanup.spec.mjs",
-      "sha256": "fa0b1f62d9c74afc4716822381a87f452c411f517106bd4d0e81ea9b91f656e6"
+      "sha256": "919178f867cbca96a6985d86e87c2618845d056346a6f34763501e4415fe946b"
     },
     {
       "path": "e2e/storyboard-fixture.mjs",
@@ -592,6 +600,10 @@
     {
       "path": "src/screens/collectionWorkspace.css",
       "sha256": "c8ca1c5247e0502d377fa2a345fd12d58594c323f05acbccb1899719521a1274"
+    },
+    {
+      "path": "scripts/qa/ci-summary.mjs",
+      "sha256": "fa25868914a8abb887782def6952495fdf718a0ac65863a8134c8a05d3f4a6d4"
     }
   ],
   "independentReview": {
@@ -606,5 +618,32 @@
     "Current cover write rules still accept images only. Existing video-cover rendering is tested with a synthetic historical fixture.",
     "Native Windows Explorer drag was not manually tested; real browser drag APIs and a dedicated shot grip are tested."
   ],
-  "ci": "See the PR Checks tab for the run at the final head SHA; local evidence is separate from GitHub CI."
+  "ci": "See the PR Checks tab for the run at the final head SHA; local evidence is separate from GitHub CI.",
+  "ciFollowup": {
+    "initialRun": "https://github.com/Jeruzael/krakinai/actions/runs/40512630844",
+    "initialCommit": "d3ceaa4fa74f1c564762735b402da0f60f280ba5",
+    "initialBrowserPassed": 30,
+    "initialBrowserFailed": 1,
+    "initialSummaryError": "20-case cap rejected the expanded 31-case suite",
+    "dragRepeatPassed": 10,
+    "dragRepeatFailed": 0,
+    "summaryBoundsChecks": [
+      {
+        "cases": 31,
+        "exitCode": 0,
+        "expectedSuccess": true
+      },
+      {
+        "cases": 65,
+        "exitCode": 1,
+        "expectedSuccess": false
+      },
+      {
+        "oversizedMetadata": true,
+        "exitCode": 1,
+        "expectedSuccess": false
+      }
+    ],
+    "hostedRerun": "See PR #19 Checks for the final head and run."
+  }
 }

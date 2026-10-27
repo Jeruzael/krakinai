@@ -32,3 +32,4 @@
 - Ruling: retain all QA files/profiles unless explicitly authorized for deletion; historical deletion restrictions take precedence over skill cleanup defaults.
 
 - Tasks 1–5: complete. Baseline 329/329; final unit 337/337; browser 31/31; ledger 3/3; typecheck/build/audit exit 0. Independent source review: no confirmed findings. Final CI/PR verification remains in Task 6.
+- Hosted CI: initial run 40512630844 passed 337 unit tests and 30/31 browsers; drag gesture and legacy 20-case summary bound failed. Test now centers adjacent headers and sends explicit native dragover moves (10/10 Windows repetitions); CI cap 64 retains the separate 64 KiB bound (31 accepted, 65 and oversized metadata rejected). No product/storage changes in this follow-up. PR #19 is open; final hosted rerun remains required.

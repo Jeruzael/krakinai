@@ -38,7 +38,7 @@ Warnings are retained: final unit output has 34 React `act(...)` warnings (33 Me
 
 All cases use isolated Playwright contexts and synthetic IndexedDB on `127.0.0.1:4173` (baseline captures on 4174). The user's localhost:5173 browser/profile was never opened, cleared or modified.
 
-- Eleven video-backed shots reuse one real, decodable synthetic 320×180 WebM, 27,354 bytes in the full local run, SHA-256 `032574a2473dd470180f4854fbab11d6d69b1986b6b2075566997a9e2525be2c`. All eleven start on hover, stay muted/looped/inline, and pause/reset on exit. At most one hover player is active. Workspace/overview covers and result previews use the same path.
+- Eleven video-backed shots reuse one real, decodable synthetic 320×180 WebM, 27,354 bytes in the full local run, SHA-256 `b4efda9ceec62ccdabd2d06900ef7af354f78f5020614d50d0832d4659c72419`. All eleven start on hover, stay muted/looped/inline, and pause/reset on exit. At most one hover player is active. Workspace/overview covers and result previews use the same path.
 - Touch emulation and reduced motion disable hover autoplay and retain a visible Preview with native controls. Playing or previewing never navigates or starts shot dragging. The dedicated grip and keyboard Move Up restore the original canonical order.
 - Preview Escape restores trigger focus. Wardrobe/transition Escape preserves stored data and restores focus. Footers stay reachable at all requested sizes and a 720×450 effective zoom/reflow viewport. Unbroken 100-character shot titles and long evidence wrap without horizontal document/dialog scrolling.
 - P001, informational P004 and genuine P005 Aya/Joy remain present. Every expanded evidence block equals the exact source string. Source selection/View Source works; Edit a Copy creates a new draft with saved scenes untouched. Unit tests preserve blockers and local acknowledgement.
@@ -62,3 +62,9 @@ Only intended UI source, tests, documentation and synthetic screenshots are comm
 - Autoplay remains subject to browser/codec policy; explicit Preview and decode-error feedback remain available.
 
 GitHub CI is separate from these local results. The PR Checks tab and final handoff identify the Actions run and tested head SHA. No merge is performed.
+
+## Hosted CI follow-up
+
+The [first hosted run](https://github.com/Jeruzael/krakinai/actions/runs/40512630844) passed unit/typecheck/build/audit/ledger checks and 30/31 browser tests. Its native drag gesture did not reorder on Linux. Local event diagnostics showed restored menu focus could leave the source grip at the viewport edge (y=22); the test now centers the adjacent headers and sends explicit native mouse moves, including two dragover movements, before releasing. It retains the same canonical-order assertion and does not retry or extend timeouts. Ten consecutive Windows repetitions pass. The hosted rerun remains the Linux verification gate.
+
+The initial CI summary also rejected 31 cases because of its older 20-case cap. The case cap is now 64; the separate 64 KiB artifact bound remains. Direct checks retain all 31 cases (6,594 bytes), reject 65 cases, and reject oversized metadata. No checks or failures are silently filtered. These changes affect the test gesture and CI reporting only; product behavior and protected paths are unchanged. The final run is linked from PR #19's Checks tab.

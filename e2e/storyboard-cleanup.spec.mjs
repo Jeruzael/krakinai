@@ -186,7 +186,7 @@ test.describe('touch collection media', () => {
 
 test('secondary actions, drag grip and keyboard ordering preserve saved takes', async ({
   page,
-}) => {
+}, testInfo) => {
   const ids = await seedStoryboardFixture(page),
     before = await storedProof(page);
   await page.goto(route(ids));
@@ -234,11 +234,56 @@ test('secondary actions, drag grip and keyboard ordering preserve saved takes', 
         .find((c) => c.id === id)
         .project.shots.map((s) => s.id);
     }, ids.collectionId);
+  await page.evaluate(() => {
+    window.qaDragTrace = [];
+    for (const name of ['dragstart', 'dragover', 'drop', 'dragend'])
+      document.addEventListener(name, (event) => {
+        if (window.qaDragTrace.length < 100)
+          window.qaDragTrace.push({
+            name,
+            target: event.target.className,
+            types: [...(event.dataTransfer?.types ?? [])],
+            prevented: event.defaultPrevented,
+            x: event.clientX,
+            y: event.clientY,
+          });
+      });
+  });
+  // Center both adjacent headers before taking coordinates. Restored menu focus
+  // can otherwise leave the source grip at the viewport edge. Two target moves
+  // deliver Chromium's native dragover before release on every supported OS.
   await card
+    .locator('.cw-shot-topline')
+    .evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  const grip = await card
     .getByRole('button', { name: 'Drag Arrival at the station to reorder' })
-    .dragTo(page.locator('.cw-shot-card').nth(1));
+    .boundingBox();
+  const target = await page
+    .locator('.cw-shot-card')
+    .nth(1)
+    .locator('.cw-shot-topline')
+    .boundingBox();
+  expect(grip).not.toBeNull();
+  expect(target).not.toBeNull();
+  const sourceX = grip.x + grip.width / 2,
+    sourceY = grip.y + grip.height / 2;
+  const targetX = target.x + target.width / 2,
+    targetY = target.y + target.height / 2;
+  await page.mouse.move(sourceX, sourceY);
+  await page.mouse.down();
+  await page.mouse.move(sourceX + 10, sourceY + 5, { steps: 3 });
+  await page.mouse.move(targetX, targetY, { steps: 10 });
+  await page.mouse.move(targetX + 2, targetY);
+  await page.mouse.up();
   const moved = [ids.shotIds[1], ids.shotIds[0], ...ids.shotIds.slice(2)];
-  await expect.poll(order).toEqual(moved);
+  try {
+    await expect.poll(order).toEqual(moved);
+  } finally {
+    await testInfo.attach('storyboard-drag-trace', {
+      body: JSON.stringify(await page.evaluate(() => window.qaDragTrace)),
+      contentType: 'application/json',
+    });
+  }
   const movedCard = page.locator('.cw-shot-card').nth(1);
   await movedCard.getByLabel('More actions for Arrival at the station').click();
   const up = movedCard.getByRole('button', {
