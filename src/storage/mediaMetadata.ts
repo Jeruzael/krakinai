@@ -1,11 +1,12 @@
 import type { MediaAsset } from '../types/domain';
 import { validateDisplayName, validateExportFilename } from '../domain/mediaNaming';
 import { openDatabase } from './db';
+import {beginLibraryWrite,libraryCaughtError,libraryTransactionError} from './libraryWrite';
 export async function updateMediaNames(input: {mediaId: string; displayName?: string; exportFilename?: string}): Promise<MediaAsset> {
  const db=await openDatabase();
  return new Promise((resolve,reject)=>{
-  const tx=db.transaction(['media'],'readwrite'); const store=tx.objectStore('media'); let result:MediaAsset; let failure:unknown;
-  tx.oncomplete=()=>resolve(result); tx.onerror=()=>reject(failure ?? tx.error ?? new Error('Media metadata save failed.')); tx.onabort=()=>reject(failure ?? tx.error ?? new Error('Media metadata save aborted.'));
+  const tx=beginLibraryWrite(db,['media']); const store=tx.objectStore('media'); let result:MediaAsset; let failure:unknown;
+  tx.oncomplete=()=>resolve(result); tx.onerror=()=>reject(libraryCaughtError(tx,failure ?? libraryTransactionError(tx,'Media metadata save failed.'))); tx.onabort=()=>reject(libraryCaughtError(tx,failure ?? libraryTransactionError(tx,'Media metadata save aborted.')));
   const req=store.get(input.mediaId);
   req.onsuccess=()=>{try{
    const current=req.result as MediaAsset|undefined;if(!current)throw new Error('Media file no longer exists.');

@@ -2,6 +2,7 @@ import type {Collection,ProductionStatus,ProjectShot,SavedScene} from '../types/
 import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
+import {beginLibraryWrite,libraryCaughtError,libraryTransactionError} from './libraryWrite';
 
 const statuses=new Set<ProductionStatus>(['planned','prompt_ready','generated','reviewed','final']);
 const limit=16*1024*1024;
@@ -10,7 +11,7 @@ function selected(ids:string[],label:string):string[]{
  return [...new Set(ids)];
 }
 function request<T>(req:IDBRequest<T>):Promise<T>{return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
-function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error??new Error('Bulk transaction aborted.'));tx.onerror=()=>reject(tx.error??new Error('Bulk transaction failed.'));});}
+function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(libraryTransactionError(tx,'Bulk transaction aborted.'));tx.onerror=()=>reject(libraryTransactionError(tx,'Bulk transaction failed.'));});}
 function materialize(c:Collection,scenes:SavedScene[]):Collection{return c.project?c:{...c,project:{version:1,revision:0,shots:getProjectShots(c,scenes)}};}
 function changed(c:Collection,shots:ProjectShot[],transitions=c.project!.transitions):Collection{
  const updatedAt=new Date().toISOString();const project={...c.project!,revision:c.project!.revision+1,shots,transitions};
@@ -18,13 +19,13 @@ function changed(c:Collection,shots:ProjectShot[],transitions=c.project!.transit
 }
 async function mutate(collectionId:string,change:(c:Collection,scenes:SavedScene[])=>Collection):Promise<Collection>{
  if(typeof collectionId!=='string'||!collectionId.trim())throw new Error('Invalid collection ID.');
- const db=await openDatabase();const tx=db.transaction(['collections','scenes'],'readwrite');const completion=done(tx);
+ const db=await openDatabase();const tx=beginLibraryWrite(db,['collections','scenes']);const completion=done(tx);
  try{
   const store=tx.objectStore('collections');const raw=await request<Collection|undefined>(store.get(collectionId));if(!raw)throw new Error('Collection not found.');
   const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());const result=change(raw,scenes);
   if(result!==raw){const error=validateProject(result,scenes);if(error)throw new Error(error);store.put(result);}
   await completion;return result;
- }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+ }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx,error);}
 }
 function reordered(shots:ProjectShot[],chosen:Set<string>,direction:'up'|'down'):ProjectShot[]{
  const next=[...shots];

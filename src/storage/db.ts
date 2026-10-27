@@ -1,4 +1,5 @@
 import { captureMediaNames } from '../domain/mediaNaming';
+import { adoptLibraryGenerationAfterTestReset, beginLibraryWrite, libraryTransactionError, libraryCaughtError, LIBRARY_CLOCK_ID, LIBRARY_GENERATION_ID, markLibraryReloadRequired, newLibraryToken, readPrivateToken, registerLibraryConnection, registeredLibraryGeneration } from './libraryWrite';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
 export { SimilarSceneError } from '../domain/sceneDuplicates';
@@ -75,7 +76,13 @@ export function openDatabase(): Promise<IDBDatabase> {
         }
       }
     };
-    req.onsuccess = () => resolve(req.result);
+    req.onsuccess = () => {
+      registerLibraryConnection(req.result).then(() => resolve(req.result), error => {
+        req.result.close();
+        dbPromise = null;
+        reject(error);
+      });
+    };
     req.onerror = () => {
       dbPromise = null;
       reject(req.error || new Error('Failed to open IndexedDB.'));
@@ -84,11 +91,19 @@ export function openDatabase(): Promise<IDBDatabase> {
   return dbPromise;
 }
 
+/** Test-only equivalent of discarding the old page's native connection. */
+export async function reopenDatabaseAfterPageReloadForTesting(): Promise<IDBDatabase> {
+  const db = await openDatabase();
+  db.close();
+  dbPromise = null;
+  return openDatabase();
+}
+
 function getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
   return new Promise((resolve, reject) => {
     const req = store.getAll();
     req.onsuccess = () => resolve((req.result || []) as T[]);
-    req.onerror = () => reject(req.error);
+    req.onerror = () => reject(libraryCaughtError(store.transaction, req.error));
   });
 }
 
@@ -96,15 +111,15 @@ function getFromStore<T>(store: IDBObjectStore, id: string): Promise<T | undefin
   return new Promise((resolve, reject) => {
     const req = store.get(id);
     req.onsuccess = () => resolve(req.result as T | undefined);
-    req.onerror = () => reject(req.error);
+    req.onerror = () => reject(libraryCaughtError(store.transaction, req.error));
   });
 }
 
 function txDone(tx: IDBTransaction): Promise<void> {
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error || new Error('Database transaction failed.'));
-    tx.onabort = () => reject(tx.error || new Error('Database transaction aborted.'));
+    tx.onerror = () => reject(libraryTransactionError(tx));
+    tx.onabort = () => reject(libraryTransactionError(tx, 'Database transaction aborted.'));
   });
 }
 
@@ -127,18 +142,94 @@ export interface LibrarySnapshot {
   preferences: Preferences;
 }
 
+export interface RestoreBaseline {
+  clock: string | null;
+  generation: string | null;
+  fingerprint: string;
+}
+
+function fallbackPreferences(): Preferences {
+  return { id: 'app_preferences', schemaVersion: SCHEMA_VERSION, starterLoaded: false, updatedAt: '' };
+}
+
+function snapshotRequests(tx: IDBTransaction) {
+  return {
+    assets: tx.objectStore('assets').getAll(),
+    variants: tx.objectStore('variants').getAll(),
+    media: tx.objectStore('media').getAll(),
+    drafts: tx.objectStore('drafts').getAll(),
+    scenes: tx.objectStore('scenes').getAll(),
+    collections: tx.objectStore('collections').getAll(),
+    templates: tx.objectStore('templates').getAll(),
+    preferences: tx.objectStore('preferences').get('app_preferences'),
+  };
+}
+
+function snapshotResults(requests: ReturnType<typeof snapshotRequests>): LibrarySnapshot {
+  return {
+    assets: requests.assets.result as PromptAsset[],
+    variants: requests.variants.result as Variant[],
+    media: requests.media.result as MediaAsset[],
+    drafts: requests.drafts.result as SceneDraft[],
+    scenes: requests.scenes.result as SavedScene[],
+    collections: requests.collections.result as Collection[],
+    templates: requests.templates.result as Template[],
+    preferences: (requests.preferences.result as Preferences | undefined) ?? fallbackPreferences(),
+  };
+}
+
+function metadataValue(value: unknown): unknown {
+  if (value instanceof Blob) return { $blob: { size: value.size, type: value.type } };
+  if (Array.isArray(value)) return value.map(metadataValue);
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.keys(value).sort().map(key => [key, metadataValue((value as Record<string, unknown>)[key])]));
+  }
+  return value;
+}
+
+function snapshotFingerprint(snapshot: LibrarySnapshot): string {
+  const source = JSON.stringify(metadataValue(snapshot));
+  let hash = 0xcbf29ce484222325n;
+  for (let i = 0; i < source.length; i++) {
+    hash = BigInt.asUintN(64, (hash ^ BigInt(source.charCodeAt(i))) * 0x100000001b3n);
+  }
+  return `${source.length}:${hash.toString(16)}`;
+}
+
+export async function captureRestoreBaseline(): Promise<RestoreBaseline> {
+  const db = await openDatabase();
+  const tx = db.transaction(STORE_NAMES, 'readonly');
+  const requests = snapshotRequests(tx);
+  const clockReq = tx.objectStore('preferences').get(LIBRARY_CLOCK_ID);
+  const generationReq = tx.objectStore('preferences').get(LIBRARY_GENERATION_ID);
+  await txDone(tx);
+  return {
+    clock: readPrivateToken(clockReq.result, LIBRARY_CLOCK_ID),
+    generation: readPrivateToken(generationReq.result, LIBRARY_GENERATION_ID),
+    fingerprint: snapshotFingerprint(snapshotResults(requests)),
+  };
+}
+
 export async function clearAllStoresForTesting(): Promise<void> {
   const db = await openDatabase();
   const tx = db.transaction(STORE_NAMES, 'readwrite');
   for (const name of STORE_NAMES) {
     tx.objectStore(name).clear();
   }
+  tx.objectStore('preferences').put({ id: LIBRARY_CLOCK_ID, token: newLibraryToken() });
+  tx.objectStore('preferences').put({ id: LIBRARY_GENERATION_ID, token: newLibraryToken() });
   await txDone(tx);
+  await adoptLibraryGenerationAfterTestReset(db);
 }
 
 export async function initializeDatabase(): Promise<LibrarySnapshot> {
   const db = await openDatabase();
-  const tx = db.transaction(STORE_NAMES, 'readwrite');
+  const inspection = db.transaction(['preferences', 'templates'], 'readonly');
+  const existingPrefs = inspection.objectStore('preferences').get('app_preferences');
+  const templateCount = inspection.objectStore('templates').count();
+  await txDone(inspection);
+  if (existingPrefs.result && templateCount.result > 0) return getAllSnapshot();
+  const tx = beginLibraryWrite(db, STORE_NAMES);
   const prefStore = tx.objectStore('preferences');
   const tplStore = tx.objectStore('templates');
 
@@ -168,7 +259,7 @@ export async function initializeDatabase(): Promise<LibrarySnapshot> {
 export async function getAllSnapshot(): Promise<LibrarySnapshot> {
   const db = await openDatabase();
   const tx = db.transaction(STORE_NAMES, 'readonly');
-  const [assets, variants, media, drafts, scenes, collections, templates, prefsList] =
+  const [assets, variants, media, drafts, scenes, collections, templates, storedPrefs] =
     await Promise.all([
       getAllFromStore<PromptAsset>(tx.objectStore('assets')),
       getAllFromStore<Variant>(tx.objectStore('variants')),
@@ -177,15 +268,10 @@ export async function getAllSnapshot(): Promise<LibrarySnapshot> {
       getAllFromStore<SavedScene>(tx.objectStore('scenes')),
       getAllFromStore<Collection>(tx.objectStore('collections')),
       getAllFromStore<Template>(tx.objectStore('templates')),
-      getAllFromStore<Preferences>(tx.objectStore('preferences')),
+      getFromStore<Preferences>(tx.objectStore('preferences'), 'app_preferences'),
     ]);
 
-  const preferences: Preferences = prefsList[0] || {
-    id: 'app_preferences',
-    schemaVersion: SCHEMA_VERSION,
-    starterLoaded: false,
-    updatedAt: new Date().toISOString(),
-  };
+  const preferences: Preferences = storedPrefs || fallbackPreferences();
 
   return {
     assets,
@@ -207,7 +293,7 @@ export async function loadStarterLibrary(forceReset = false): Promise<LibrarySna
   }
 
   const bundle = buildStarterLibraryBundle();
-  const tx = db.transaction(STORE_NAMES, 'readwrite');
+  const tx = beginLibraryWrite(db, STORE_NAMES);
 
   for (const m of bundle.media) {
     tx.objectStore('media').put(m);
@@ -303,7 +389,7 @@ export async function saveMediaAsset(input: {
   );
   const addedBytes = input.blob.size + (input.posterBlob?.size ?? 0);
   if (currentBytes + addedBytes > MAX_TOTAL_MEDIA_BYTES) {
-    throw new Error('Cannot save media: total stored media would exceed the 200 MiB prototype limit.');
+    throw new Error(`Cannot save media: total stored media would exceed the ${(MAX_TOTAL_MEDIA_BYTES / (1024 * 1024)).toLocaleString('en-US')} MiB library limit.`);
   }
 
   const safeFilename = input.filename.replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 80) || 'media_file';
@@ -322,7 +408,7 @@ export async function saveMediaAsset(input: {
   };
 
   const db = await openDatabase();
-  const tx = db.transaction(['media'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['media']);
   tx.objectStore('media').put(record);
   await txDone(tx);
   return record;
@@ -354,7 +440,7 @@ export async function savePromptAsset(input: {
   }
 
   const db = await openDatabase();
-  const tx = db.transaction(['assets', 'media'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['assets', 'media']);
   const store = tx.objectStore('assets');
   const existing = input.id ? await getFromStore<PromptAsset>(store, input.id) : undefined;
 
@@ -409,7 +495,7 @@ export async function savePromptAsset(input: {
 
 export async function toggleAssetFavorite(id: string): Promise<PromptAsset> {
   const db = await openDatabase();
-  const tx = db.transaction(['assets'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['assets']);
   const store = tx.objectStore('assets');
   const existing = await getFromStore<PromptAsset>(store, id);
   if (!existing) throw new Error('Prompt asset not found.');
@@ -445,7 +531,7 @@ export async function saveVariant(input: {
   }
 
   const db = await openDatabase();
-  const tx = db.transaction(['variants', 'assets'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['variants', 'assets']);
   const vStore = tx.objectStore('variants');
   const aStore = tx.objectStore('assets');
 
@@ -503,7 +589,7 @@ export async function saveVariant(input: {
 
 export async function toggleVariantFavorite(id: string): Promise<Variant> {
   const db = await openDatabase();
-  const tx = db.transaction(['variants'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['variants']);
   const store = tx.objectStore('variants');
   const existing = await getFromStore<Variant>(store, id);
   if (!existing) throw new Error('Variant not found.');
@@ -549,7 +635,7 @@ export async function getAssetDeletionDependencies(assetId: string): Promise<Del
 
 export async function deletePromptAsset(assetId: string): Promise<void> {
   const db = await openDatabase();
-  const tx = db.transaction(['assets', 'variants', 'collections'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['assets', 'variants', 'collections']);
   const completion=txDone(tx);
   try {
   const dependentVariants = (await getAllFromStore<Variant>(tx.objectStore('variants'))).filter((v) => v.parentCharacterId === assetId);
@@ -565,12 +651,12 @@ export async function deletePromptAsset(assetId: string): Promise<void> {
     if(col.members.some(m=>m.type==='asset'&&m.id===assetId)) tx.objectStore('collections').put({...col,members:col.members.filter(m=>m.type!=='asset'||m.id!==assetId)});
   }
   await completion;
-  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx, error);}
 }
 
 export async function deleteVariant(variantId: string): Promise<void> {
   const db = await openDatabase();
-  const tx = db.transaction(['variants', 'collections'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['variants', 'collections']);
   const completion=txDone(tx);
   try {
   const currentCollections=await getAllFromStore<Collection>(tx.objectStore('collections'));
@@ -579,7 +665,7 @@ export async function deleteVariant(variantId: string): Promise<void> {
     if(col.members.some(m=>m.type==='variant'&&m.id===variantId)) tx.objectStore('collections').put({...col,members:col.members.filter(m=>m.type!=='variant'||m.id!==variantId)});
   }
   await completion;
-  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx, error);}
 }
 
 export function checkVariantApplicationToDraft(
@@ -662,7 +748,7 @@ export async function saveSceneDraft(
   }
 ): Promise<SceneDraft> {
   const db = await openDatabase();
-  const tx = db.transaction(['drafts', 'preferences'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['drafts', 'preferences']);
   const dStore = tx.objectStore('drafts');
   const pStore = tx.objectStore('preferences');
 
@@ -714,7 +800,7 @@ export async function saveSceneDraft(
 export interface SaveSceneOptions { duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; projectTarget?: {collectionId:string;shotId:string} }
 export async function saveSceneFromDraft(draftId: string, options: SaveSceneOptions = {}): Promise<SavedScene> {
   const db = await openDatabase();
-  const tx = db.transaction(['drafts', 'scenes', 'assets', 'media', 'collections'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['drafts', 'scenes', 'assets', 'media', 'collections']);
   const completion = txDone(tx);
   try {
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
@@ -800,7 +886,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   } catch (error) {
     try { tx.abort(); } catch { /* Already completed or aborted. */ }
     await completion.catch(() => undefined);
-    throw error;
+    throw libraryCaughtError(tx, error);
   }
 }
 
@@ -811,7 +897,7 @@ export async function updateSavedSceneReviewAndResults(params: {
   reviewStatus: ReviewStatus;
 }): Promise<SavedScene> {
   const db = await openDatabase();
-  const tx = db.transaction(['scenes', 'media'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['scenes', 'media']);
   const sStore = tx.objectStore('scenes');
   const existing = await getFromStore<SavedScene>(sStore, params.sceneId);
   if (!existing) throw new Error('Saved scene not found.');
@@ -834,7 +920,7 @@ export async function updateSavedSceneReviewAndResults(params: {
 
 export async function deleteSavedScene(sceneId: string): Promise<void> {
   const db = await openDatabase();
-  const tx = db.transaction(['scenes', 'collections'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['scenes', 'collections']);
   const completion=txDone(tx);
   try {
   const currentCollections=await getAllFromStore<Collection>(tx.objectStore('collections'));
@@ -847,7 +933,7 @@ export async function deleteSavedScene(sceneId: string): Promise<void> {
     }
   }
   await completion;
-  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  } catch(error) {try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx, error);}
 }
 
 export async function createDraftFromSavedScene(sceneId: string): Promise<SceneDraft> {
@@ -956,7 +1042,7 @@ export async function saveDraftAsTemplate(params: {
   };
 
   const db = await openDatabase();
-  const tx = db.transaction(['templates'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['templates']);
   tx.objectStore('templates').put(tpl);
   await txDone(tx);
   return tpl;
@@ -981,7 +1067,7 @@ export async function createCollection(input: {
     updatedAt: now,
   };
   const db = await openDatabase();
-  const tx = db.transaction(['collections', 'media'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['collections', 'media']);
   const completion = txDone(tx);
   try {
     if (input.coverMediaId) {
@@ -990,7 +1076,7 @@ export async function createCollection(input: {
     }
     tx.objectStore('collections').put(col);
     await completion;
-  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw error; }
+  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw libraryCaughtError(tx, error); }
   return col;
 }
 
@@ -1005,7 +1091,7 @@ export async function updateCollection(input: {
     throw new Error(Object.values(val.errors).join(' '));
   }
   const db = await openDatabase();
-  const tx = db.transaction(['collections', 'media'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['collections', 'media']);
   const completion = txDone(tx);
   try {
   if (input.coverMediaId) await validateCollectionCover(tx, input.coverMediaId);
@@ -1022,12 +1108,12 @@ export async function updateCollection(input: {
   store.put(updated);
   await completion;
   return updated;
-  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw error; }
+  } catch (error) { try { tx.abort(); } catch {} await completion.catch(() => undefined); throw libraryCaughtError(tx, error); }
 }
 
 export async function deleteCollection(collectionId: string): Promise<void> {
   const db = await openDatabase();
-  const tx = db.transaction(['collections'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['collections']);
   tx.objectStore('collections').delete(collectionId);
   await txDone(tx);
 }
@@ -1038,7 +1124,7 @@ export async function addMemberToCollection(params: {
   memberId: string;
 }): Promise<Collection> {
   const db = await openDatabase();
-  const tx = db.transaction(['collections','scenes'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['collections','scenes']);
   const completion=txDone(tx);
   try {
   const store = tx.objectStore('collections');
@@ -1070,7 +1156,7 @@ export async function addMemberToCollection(params: {
   store.put(updated);
   await completion;
   return updated;
-  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx, error);}
 }
 
 export async function removeMemberFromCollection(params: {
@@ -1079,7 +1165,7 @@ export async function removeMemberFromCollection(params: {
   memberId: string;
 }): Promise<Collection> {
   const db = await openDatabase();
-  const tx = db.transaction(['collections','scenes'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['collections','scenes']);
   const completion=txDone(tx);
   try {
   const store = tx.objectStore('collections');
@@ -1103,44 +1189,90 @@ export async function removeMemberFromCollection(params: {
   store.put(updated);
   await completion;
   return updated;
-  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw libraryCaughtError(tx, error);}
 }
 
-export async function replaceAllStoresTransactionally(data: LibrarySnapshot): Promise<void> {
-  const db = await openDatabase();
-  const tx = db.transaction(STORE_NAMES, 'readwrite');
-
-  const completion = txDone(tx);
-  try {
-    for (const name of STORE_NAMES) {
-      tx.objectStore(name).clear();
-    }
-
-    for (const a of data.assets) tx.objectStore('assets').put(a);
-    for (const v of data.variants) tx.objectStore('variants').put(v);
-    for (const m of data.media) tx.objectStore('media').put(m);
-    for (const d of data.drafts) tx.objectStore('drafts').put(d);
-    for (const s of data.scenes) tx.objectStore('scenes').put(s);
-    for (const c of data.collections) tx.objectStore('collections').put(c);
-    for (const t of data.templates) tx.objectStore('templates').put(t);
-    tx.objectStore('preferences').put({
-      ...data.preferences,
-      id: 'app_preferences',
-    });
-
-    await completion;
-  } catch (error) {
-    try { tx.abort(); } catch { /* It may already have aborted asynchronously. */ }
-    await completion.catch(() => undefined);
-    throw error;
+export async function replaceAllStoresTransactionally(
+  data: LibrarySnapshot,
+  options: { baseline?: RestoreBaseline; signal?: AbortSignal; onProgress?: (completed: number, total: number) => void } = {},
+): Promise<void> {
+  if (options.signal?.aborted) throw new DOMException('Restore cancelled.', 'AbortError');
+  for (const name of STORE_NAMES) {
+    if (name !== 'preferences' && !Array.isArray(data[name])) throw new Error(`Invalid restore ${name}.`);
   }
+  if (!data.preferences || typeof data.preferences !== 'object') throw new Error('Invalid restore preferences.');
+  const db = await openDatabase();
+  const expectedGeneration = registeredLibraryGeneration(db);
+  const nextGeneration = newLibraryToken();
+  const nextClock = newLibraryToken();
+  const tx = db.transaction(STORE_NAMES, 'readwrite', { durability: 'strict' });
+  const completion = txDone(tx);
+  const abort = () => { try { tx.abort(); } catch { /* settled */ } };
+  options.signal?.addEventListener('abort', abort, { once: true });
+  const requests = snapshotRequests(tx);
+  const clockReq = tx.objectStore('preferences').get(LIBRARY_CLOCK_ID);
+  const generationReq = tx.objectStore('preferences').get(LIBRARY_GENERATION_ID);
+  const puts: Array<[StoreName, unknown]> = [];
+  for (const name of STORE_NAMES) {
+    if (name === 'preferences') puts.push([name, { ...data.preferences, id: 'app_preferences' }]);
+    else for (const item of data[name]) puts.push([name, item]);
+  }
+  let completed = 0;
+  const fail = (error: unknown) => {
+    if (error instanceof Error) restoreFailure = error;
+    else restoreFailure = new Error(String(error));
+    abort();
+  };
+  let restoreFailure: Error | undefined;
+  function queueNext(): void {
+    if (options.signal?.aborted) { abort(); return; }
+    if (completed === puts.length) {
+      tx.objectStore('preferences').put({ id: LIBRARY_CLOCK_ID, token: nextClock });
+      tx.objectStore('preferences').put({ id: LIBRARY_GENERATION_ID, token: nextGeneration });
+      return;
+    }
+    try {
+      const [name, item] = puts[completed];
+      const request = tx.objectStore(name).put(item);
+      request.onsuccess = () => {
+        completed++;
+        try { options.onProgress?.(completed, puts.length); queueNext(); }
+        catch (error) { fail(error); }
+      };
+    } catch (error) { fail(error); }
+  }
+  generationReq.onsuccess = () => {
+    try {
+      const generation = readPrivateToken(generationReq.result, LIBRARY_GENERATION_ID);
+      if (generation !== expectedGeneration) { markLibraryReloadRequired(tx); abort(); return; }
+      if (options.baseline) {
+        const clock = readPrivateToken(clockReq.result, LIBRARY_CLOCK_ID);
+        if (generation !== options.baseline.generation || clock !== options.baseline.clock ||
+            snapshotFingerprint(snapshotResults(requests)) !== options.baseline.fingerprint) {
+          fail(new Error('The library changed since backup preview. Verify the backup again before restoring.'));
+          return;
+        }
+      }
+      let cleared = 0;
+      for (const name of STORE_NAMES) {
+        const request = tx.objectStore(name).clear();
+        request.onsuccess = () => { if (++cleared === STORE_NAMES.length) queueNext(); };
+      }
+    } catch (error) { fail(error); }
+  };
+  try {
+    await completion;
+    if (typeof window !== 'undefined') window.dispatchEvent(new Event('krakinai-library-reload-required'));
+  }
+  catch (error) { throw restoreFailure ?? error; }
+  finally { options.signal?.removeEventListener('abort', abort); }
 }
 
 async function writeIdentityAnchor(characterId: string, text: string, approve: boolean, expectedIdentityRevision?: number): Promise<PromptAsset> {
   if (text.length > 12000) throw new Error('Identity anchor must be 12,000 characters or fewer.');
   if (approve && !text.trim()) throw new Error('Enter an identity anchor before approving it.');
   const db = await openDatabase();
-  const tx = db.transaction(['assets'], 'readwrite');
+  const tx = beginLibraryWrite(db, ['assets']);
   const store = tx.objectStore('assets');
   const existing = await getFromStore<PromptAsset>(store, characterId);
   if (!existing || existing.category !== 'characters') throw new Error('Character not found.');

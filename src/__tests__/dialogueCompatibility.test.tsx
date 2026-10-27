@@ -9,6 +9,7 @@ import {
   getAllSnapshot,
   initializeDatabase,
   loadStarterLibrary,
+  reopenDatabaseAfterPageReloadForTesting,
   replaceAllStoresTransactionally,
   savePromptAsset,
   saveSceneDraft,
@@ -118,6 +119,7 @@ describe('Dialogue and legacy data compatibility', () => {
       ...snap,
       scenes: [structuredClone(legacyScene)],
     });
+    await reopenDatabaseAfterPageReloadForTesting();
     const source = snap.assets.find(
       (a) => a.id === legacyScene.slots.character!.sourceId
     )!;
@@ -154,6 +156,7 @@ describe('Dialogue and legacy data compatibility', () => {
       );
     expect(restored.slots).toEqual(legacyScene.slots);
     expect(restored.references).toEqual(legacyScene.references);
+    await reopenDatabaseAfterPageReloadForTesting();
     const copy = await createDraftFromSavedScene(restored.id);
     const newlySaved = await saveSceneFromDraft(copy.id);
     expect(newlySaved.outputs.structured).toContain('=== SCENE OVERVIEW ===');

@@ -11,6 +11,7 @@ import {
   saveSceneDraft,
   saveSceneFromDraft,
   replaceAllStoresTransactionally,
+  reopenDatabaseAfterPageReloadForTesting,
   createCollection,
 } from '../storage/db';
 import { addProjectShot } from '../storage/projects';
@@ -563,6 +564,7 @@ describe('Prompt Output studio workspace', () => {
         { ...saved, references: [...saved.references, ...missingReferences] },
       ],
     });
+    await reopenDatabaseAfterPageReloadForTesting();
     await renderOutput(saved.id);
     await user.click(screen.getByRole('tab', { name: 'References' }));
     await user.click(screen.getByRole('button', { name: 'View All (10)' }));
@@ -674,6 +676,7 @@ describe('Prompt Output studio workspace', () => {
       ...snapshot,
       scenes: [{ ...saved, outputs }],
     });
+    await reopenDatabaseAfterPageReloadForTesting();
     await renderOutput(saved.id);
     expect(screen.getByRole('tab', { name: 'Narrative' })).toHaveAttribute(
       'aria-selected',
