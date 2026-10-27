@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import {
   AlertTriangle,
   Archive,
@@ -37,6 +37,8 @@ import type {
 } from '../types/domain';
 import { MediaThumbnail } from './MediaThumbnail';
 import { StudioDialog } from './StudioDialog';
+import { MediaPreviewDialog } from './MediaPreviewDialog';
+import './mediaInspection.css';
 
 export const ConfirmModal: React.FC = () => {
   const { confirmDialog, closeConfirmDialog } = useLibrary();
@@ -630,6 +632,21 @@ export const AssetPickerModal: React.FC<AssetPickerModalProps> = ({
 }) => {
   const { snapshot } = useLibrary();
   const [query, setQuery] = useState('');
+  const [preview, setPreview] = useState<{
+    media: MediaAsset;
+    title: string;
+    id: string;
+  } | null>(null);
+  const previewButtons = useRef<Record<string, HTMLButtonElement | null>>({}),
+    restorePreview = useRef<string | null>(null);
+  useEffect(() => {
+    if (preview || !restorePreview.current) return;
+    const frame = requestAnimationFrame(() => {
+      previewButtons.current[restorePreview.current!]?.focus();
+      restorePreview.current = null;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [preview]);
   const [tab, setTab] = useState<'assets' | 'variants'>('assets');
 
   const targetCategory = SLOT_TO_CATEGORY[slot];
@@ -663,6 +680,17 @@ export const AssetPickerModal: React.FC<AssetPickerModalProps> = ({
   }, [snapshot, slot, query]);
 
   if (!snapshot) return null;
+  if (preview)
+    return (
+      <MediaPreviewDialog
+        media={preview.media}
+        title={preview.title}
+        onClose={() => {
+          restorePreview.current = preview.id;
+          setPreview(null);
+        }}
+      />
+    );
 
   return (
     <StudioDialog
@@ -720,125 +748,74 @@ export const AssetPickerModal: React.FC<AssetPickerModalProps> = ({
         )}
       </div>
 
-      {tab === 'assets' ? (
-        matchingAssets.length === 0 ? (
-          <p className="muted-text">
-            No matching prompts in {CATEGORY_LABELS[targetCategory]}.
-          </p>
-        ) : (
-          <div
-            style={{
-              display: 'grid',
-              gap: 12,
-              gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-            }}
-          >
-            {matchingAssets.map((a) => {
-              const coverId = a.coverMediaId || a.mediaLinks[0]?.mediaId;
-              const media = coverId ? mediaMap.get(coverId) : undefined;
+      {(tab === 'assets' ? matchingAssets : matchingVariants).length === 0 ? (
+        <p className="muted-text">
+          {tab === 'assets'
+            ? `No matching prompts in ${CATEGORY_LABELS[targetCategory]}.`
+            : `No character variants mapped to ${SLOT_LABELS[slot]}.`}
+        </p>
+      ) : (
+        <div className="asset-picker-grid">
+          {(tab === 'assets' ? matchingAssets : matchingVariants).map(
+            (item) => {
+              const isVariant = 'parentCharacterId' in item;
+              const coverId = item.coverMediaId || item.mediaLinks[0]?.mediaId,
+                media = coverId ? mediaMap.get(coverId) : undefined;
+              const parent = isVariant
+                ? snapshot.assets.find((a) => a.id === item.parentCharacterId)
+                : undefined;
               return (
-                <div key={a.id} className="card" style={{ padding: 12 }}>
-                  <div
-                    style={{
-                      height: 120,
-                      borderRadius: 10,
-                      overflow: 'hidden',
-                      marginBottom: 8,
-                    }}
-                  >
-                    <MediaThumbnail media={media} altText={a.title} />
+                <article key={item.id} className="card asset-picker-card">
+                  <div className="asset-picker-media">
+                    <MediaThumbnail
+                      media={media}
+                      altText={item.title}
+                      enableHoverPreview
+                    />
                   </div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{a.title}</div>
-                  <p
-                    className="muted-text"
-                    style={{
-                      fontSize: 12,
-                      margin: '6px 0 10px',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 3,
-                      WebkitBoxOrient: 'vertical',
-                      overflow: 'hidden',
+                  <button
+                    ref={(el) => {
+                      previewButtons.current[item.id] = el;
+                    }}
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    disabled={!media}
+                    aria-label={`Preview media: ${item.title}`}
+                    onClick={() => {
+                      if (media)
+                        setPreview({ media, title: item.title, id: item.id });
                     }}
                   >
-                    {a.promptText}
+                    Preview
+                  </button>
+                  <h3 className="asset-picker-title" title={item.title}>
+                    {item.title}
+                  </h3>
+                  {isVariant && (
+                    <p className="muted-text asset-picker-parent">
+                      Parent: {parent?.title || item.parentCharacterId}
+                      {activeCharacterId &&
+                      activeCharacterId !== item.parentCharacterId
+                        ? ' (Requires character switch)'
+                        : ''}
+                    </p>
+                  )}
+                  <p className="muted-text asset-picker-description">
+                    {item.promptText}
                   </p>
                   <button
                     type="button"
-                    className="btn btn-primary btn-sm"
-                    style={{ width: '100%' }}
-                    onClick={() => onSelectAsset(a)}
+                    className="btn btn-primary btn-sm asset-picker-select"
+                    onClick={() =>
+                      isVariant ? onSelectVariant(item) : onSelectAsset(item)
+                    }
                   >
-                    Select
+                    {isVariant ? 'Select Variant' : 'Select'}
                   </button>
-                </div>
+                </article>
               );
-            })}
-          </div>
-        )
-      ) : matchingVariants.length === 0 ? (
-        <p className="muted-text">
-          No character variants mapped to {SLOT_LABELS[slot]}.
-        </p>
-      ) : (
-        <div
-          style={{
-            display: 'grid',
-            gap: 12,
-            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          }}
-        >
-          {matchingVariants.map((v) => {
-            const parent = snapshot.assets.find(
-              (a) => a.id === v.parentCharacterId
-            );
-            const isOtherChar =
-              activeCharacterId && activeCharacterId !== v.parentCharacterId;
-            const coverId = v.coverMediaId || v.mediaLinks[0]?.mediaId;
-            const media = coverId ? mediaMap.get(coverId) : undefined;
-            return (
-              <div key={v.id} className="card" style={{ padding: 12 }}>
-                <div
-                  style={{
-                    height: 120,
-                    borderRadius: 10,
-                    overflow: 'hidden',
-                    marginBottom: 8,
-                  }}
-                >
-                  <MediaThumbnail media={media} altText={v.title} />
-                </div>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{v.title}</div>
-                <div
-                  className="muted-text"
-                  style={{ fontSize: 11, marginBottom: 4 }}
-                >
-                  Parent: {parent?.title || v.parentCharacterId}
-                  {isOtherChar && ' (Requires character switch)'}
-                </div>
-                <p
-                  className="muted-text"
-                  style={{
-                    fontSize: 12,
-                    margin: '4px 0 10px',
-                    display: '-webkit-box',
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden',
-                  }}
-                >
-                  {v.promptText}
-                </p>
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
-                  style={{ width: '100%' }}
-                  onClick={() => onSelectVariant(v)}
-                >
-                  Select Variant
-                </button>
-              </div>
-            );
-          })}
+            }
+          )}
         </div>
       )}
     </StudioDialog>

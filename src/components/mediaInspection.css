@@ -1,0 +1,104 @@
+.media-preview-dialog .section-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.media-inspection-viewport {
+  height: min(58dvh, 650px);
+  min-height: 180px;
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+}
+.media-zoom-controls {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  align-items: center;
+}
+.media-zoom-controls output {
+  font-size: 0.8rem;
+  width: 100%;
+  color: var(--text-muted);
+}
+.media-inspection-filename {
+  overflow-wrap: anywhere;
+  font-size: 0.8rem;
+}
+.asset-picker-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
+}
+.asset-picker-card {
+  padding: 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.asset-picker-card .asset-picker-media {
+  height: 140px;
+  min-width: 0;
+  overflow: hidden;
+  border-radius: 10px;
+}
+.asset-picker-title {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.asset-picker-description {
+  font-size: 0.8rem;
+  margin: 0;
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.asset-picker-card .asset-picker-select {
+  margin-top: auto;
+  width: 100%;
+}
+.asset-picker-parent {
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+.reference-gallery-dialog .reference-caption {
+  min-width: 0;
+}
+.reference-gallery-dialog .reference-caption > strong,
+.reference-gallery-dialog .reference-caption > span {
+  overflow-wrap: anywhere;
+}
+.reference-gallery-dialog .reference-caption > span.muted-text {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.reference-gallery-pagination {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+.reference-gallery-pagination p {
+  margin: 0;
+  font-size: 0.8rem;
+}
+.reference-gallery-pagination > div {
+  display: flex;
+  gap: 8px;
+}
