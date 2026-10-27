@@ -494,11 +494,25 @@ test('take preference, project note, comparison and removal keep immutable sourc
     .click();
   const dialog = page.getByRole('dialog', { name: /Takes for/ });
   await dialog.getByRole('button', { name: /as preferred/ }).click();
-  await expect(dialog.getByText('Preferred take', { exact: true })).toHaveCount(
-    1
-  );
+  await expect
+    .poll(
+      async () =>
+        (await snapshot(page)).collections.find(
+          (c) => c.id === ids.collectionId
+        ).project.shots[0].selectedSceneId
+    )
+    .toBe(ids.otherSceneId);
+  await expect(
+    dialog
+      .locator('.project-take-card')
+      .nth(1)
+      .getByText('Preferred take', { exact: true })
+  ).toBeVisible();
   const note = dialog.getByRole('textbox', { name: /Project note/ }).nth(1);
   await note.fill('Prefer the quieter pause.');
+  await expect(
+    dialog.getByRole('button', { name: 'Save note', exact: true }).nth(1)
+  ).toBeEnabled();
   await dialog
     .getByRole('button', { name: 'Save note', exact: true })
     .nth(1)

@@ -29,8 +29,8 @@
     },
     {
       "command": "npx playwright test",
-      "startedAt": "2026-10-27T16:05:58.9971235+08:00",
-      "completedAt": "2026-10-27T16:06:23.3388666+08:00",
+      "completedAt": "2026-10-27T16:23:51.0399894+08:00",
+      "startedAt": "2026-10-27T16:23:22.0244786+08:00",
       "exitCode": 0
     }
   ],
@@ -46,7 +46,7 @@
     "passed": 16,
     "failed": 0,
     "skipped": 0,
-    "durationMs": 21899.448999999997,
+    "durationMs": 25904.292,
     "cases": [
       {
         "name": "canonical output copy, save, and small legacy backup roundtrip",
@@ -632,5 +632,24 @@
     "Concurrent first full run: one existing dialogueCompatibility test timed out at 5s; isolated rerun passed 329/329 without timeout changes.",
     "First synthetic video encoder emitted zero MP4 bytes and header-only WebM; explicit canvas frames now decode independently before upload.",
     "New long-name geometry test caught note-label overflow at 768 and 390; fixed with wrapping and all three widths passed."
-  ]
+  ],
+  "ciFirstRun": {
+    "url": "https://github.com/Jeruzael/krakinai/actions/runs/40472501398",
+    "head": "d655958627323d5b19f45ed4e563b358c0fb1771",
+    "unitTestsPassed": 329,
+    "typecheck": "success",
+    "build": "success",
+    "audit": "success",
+    "browserPassed": 15,
+    "browserFailed": 1,
+    "failure": "Take management browser test timed out; previous preferred-badge count assertion did not wait for the requested take to be selected."
+  },
+  "browserTakeSynchronization": {
+    "waitsForPersistedTakeId": true,
+    "waitsForSpecificTakeBadge": true,
+    "waitsForEnabledNoteSave": true,
+    "timeoutIncreased": false,
+    "focusedRepeatCasesPassed": 5,
+    "fullBrowserCasesPassed": 16
+  }
 }

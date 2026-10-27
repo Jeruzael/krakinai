@@ -58,4 +58,4 @@
 
 - [x] Run all tests, typecheck, build, production audit, existing and new Playwright checks; retain exact command exit codes and warnings.
 - [x] Compare protected file hashes and full diff; inspect all after screenshots and fix overflow or focus issues found.
-- [ ] Record measured results and limitations, commit only product/test/docs changes, push the feature branch and open/attach a PR targeting master. Delivery is tracked by the pull request and its checks. Delivery is tracked by the pull request and its checks.
+- [x] Record measured results and limitations, commit only product/test/docs changes, push the feature branch and open/attach a PR targeting master. [PR #18](https://github.com/Jeruzael/krakinai/pull/18) is open; delivery verification is tracked by its checks. Do not merge automatically.

@@ -52,6 +52,8 @@ The first static headless-canvas recorder produced zero MP4 bytes and header-onl
 
 Independent review identified an incorrect green “current” badge for saved Master scenes with an unselected stale anchor. A failing regression preceded the status fix; the saved source and resolver remain unchanged. Additional long-name browser tests found a note label widening the modal at 768 and 390; wrapping the label fixed all three stress cases.
 
+The [first GitHub run](https://github.com/Jeruzael/krakinai/actions/runs/40472501398) passed all 329 unit tests, typecheck, build and audit, but its browser take-management case timed out (15/16 browser cases passed). The test's original “one preferred badge” condition was already true before the preference changed, so it did not synchronize that asynchronous operation. It now waits for the requested saved take ID and its visible preferred badge before entering the note, and for Save Note to become enabled. No timeout was increased. The PR's latest checks remain authoritative for the pushed head.
+
 ## Security assumptions and remaining risks
 
 This is a UI and correctness review plus a production dependency audit, not a comprehensive security certification. Media type/content trust remains governed by the existing validator and browser decoder; neither schema nor upload/storage policy was broadened.
