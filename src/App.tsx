@@ -12,6 +12,7 @@ import { CollectionsScreen } from './screens/CollectionsScreen';
 import { TemplatesScreen } from './screens/TemplatesScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
+const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspace').then(module => ({default:module.CollectionWorkspace})));
 
 const RouteDispatcher: React.FC = () => {
   const { hashPath, loading, navigate } = useLibrary();
@@ -150,7 +151,9 @@ const RouteDispatcher: React.FC = () => {
   }
   const colDetailMatch = path.match(/^\/collections\/([^/]+)$/);
   if (colDetailMatch) {
-    return <CollectionsScreen collectionId={colDetailMatch[1]} />;
+    let collectionId = colDetailMatch[1];
+    try { collectionId = decodeURIComponent(collectionId); } catch { /* Display missing collection for malformed route. */ }
+    return <React.Suspense fallback={<div className="card" role="status">Loading project workspace…</div>}><CollectionWorkspace collectionId={collectionId} /></React.Suspense>;
   }
 
   // S09 Templates

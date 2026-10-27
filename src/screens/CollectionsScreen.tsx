@@ -22,6 +22,7 @@ import {
 } from '../storage/db';
 import { PromptCard } from '../components/PromptCard';
 import { MediaThumbnail } from '../components/MediaThumbnail';
+import { getProjectRuntime } from '../domain/projectStoryboard';
 
 export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
   collectionId,
@@ -469,8 +470,9 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
           {filteredCollections.map((col) => {
             const sceneMembers = col.members.filter(m=>m.type==='scene');
             const scenes = sceneMembers.map(m=>snapshot.scenes.find(x=>x.id===m.id));
-            const knownSeconds=scenes.reduce((n,scene)=>n+(scene?.settings.durationSeconds ?? 0),0);
-            const unknownCount=scenes.filter(scene=>!scene?.settings.durationSeconds).length;
+            const runtime=getProjectRuntime(col,snapshot.scenes);
+            const knownSeconds=runtime.plannedSeconds;
+            const unknownCount=runtime.unknownShots;
             const candidateIds = [...scenes.flatMap(scene=>scene ? [...scene.resultMediaLinks,...scene.references].map(m=>m.mediaId):[]),...col.members.flatMap(m=>m.type==='asset' ? (()=>{const a=snapshot.assets.find(a=>a.id===m.id);return a ? [a.coverMediaId,...a.mediaLinks.map(l=>l.mediaId)]:[];})():[])];
             const coverMedia = col.coverMediaId ? mediaMap.get(col.coverMediaId) : candidateIds.map(id=>id?mediaMap.get(id):undefined).find(m=>m?.mimeType.startsWith('image/'));
 
@@ -509,7 +511,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
                     }}
                   >
                     <span className="badge badge-primary">
-                      {sceneMembers.length} scenes · {knownSeconds}s intended · {unknownCount} unknown
+                      {runtime.shotCount} shots · {sceneMembers.length} scenes · {knownSeconds}s intended · {unknownCount} unknown
                     </span>
                     <span className="muted-text" style={{ fontSize: 11 }}>
                       Updated {new Date(col.updatedAt).toLocaleDateString()}

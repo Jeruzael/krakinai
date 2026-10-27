@@ -1,4 +1,5 @@
 import { validatePhase5Metadata } from '../domain/phase5MetadataValidation';
+import { validateProject } from '../domain/phase5ProjectValidation';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import {
   SCHEMA_VERSION,
@@ -261,6 +262,8 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     if (error) return { valid: false, error };
   }
   for (const scene of manifest.scenes) {
+    if (scene.saveProjectTarget !== undefined &&
+      (!scene.saveProjectTarget || typeof scene.saveProjectTarget.collectionId !== 'string' || !scene.saveProjectTarget.collectionId.trim() || typeof scene.saveProjectTarget.shotId !== 'string' || !scene.saveProjectTarget.shotId.trim())) return {valid:false,error:'Invalid scene saveProjectTarget.'};
     for (const field of ['sourceDraftId', 'saveRequestId', 'versionOfSceneId', 'separateTakeOfSceneId'] as const) {
       const value = scene[field];
       if (value !== undefined && (typeof value !== 'string' || !value.trim())) return { valid: false, error: `Invalid scene ${field}.` };
@@ -334,6 +337,8 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
         };
       }
     }
+    const projectError=validateProject(c,manifest.scenes,true,{assets:manifest.assets,variants:manifest.variants,media:manifest.media,allowMissingCastSources:true});
+    if(projectError) return {valid:false,error:`Collection "${c.name}" project: ${projectError}`};
   }
 
   if (

@@ -1,0 +1,22 @@
+.project-takes-dialog { width: min(1000px, 96vw); max-height: 92vh; }
+.project-take-toolbar, .project-take-compare-controls { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.project-take-compare-controls label { display: grid; gap: 4px; flex: 1 1 220px; }
+.project-take-compare-controls select { min-width: 0; width: 100%; }
+.project-take-compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.project-take-pane, .project-take-card, .project-take-add { border: 1px solid var(--border-subtle); border-radius: 10px; padding: 16px; min-width: 0; }
+.project-take-pane dl { display: grid; grid-template-columns: minmax(90px, 1fr) minmax(0, 3fr); gap: 8px; }
+.project-take-pane dt { font-weight: 600; }
+.project-take-pane dd { margin: 0; min-width: 0; }
+.project-take-exact { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; }
+.project-take-pane pre.project-take-exact { font-family: ui-monospace, monospace; }
+.project-take-image { width: 100%; display: grid; gap: 4px; }
+.project-take-visual { height: 180px; overflow: hidden; }
+.project-take-list { display: grid; gap: 12px; margin-bottom: 20px; }
+.project-take-card { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; }
+.project-take-card > div:last-child { display: grid; justify-items: start; gap: 8px; }
+.project-take-note { display: grid; gap: 4px; width: 100%; }
+.project-take-note textarea { min-height: 70px; width: 100%; }
+.project-take-picker { display: grid; gap: 8px; max-height: 240px; overflow-y: auto; margin-top: 12px; }
+.project-take-picker > div { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.project-take-confirm { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 640px) { .project-take-compare, .project-take-card { grid-template-columns: 1fr; } .project-take-visual { height: 150px; } }
