@@ -1,0 +1,649 @@
+{
+  "format": "krakinai-storyboard-cleanup-qa-v1",
+  "sourceBase": "7d91096e2da730a4477359567557d2350217d8da",
+  "featureBranch": "codex/storyboard-cleanup-hover-video",
+  "date": "2026-10-27",
+  "timezone": "Asia/Taipei",
+  "runtime": {
+    "os": "Windows",
+    "node": "v22.23.3",
+    "npm": "10.9.9",
+    "browser": "Playwright Chromium"
+  },
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "passed": 337,
+      "files": 50,
+      "completedAt": "2026-10-27T21:16:19.070444+08:00",
+      "warnings": {
+        "reactActTotal": 34,
+        "MediaThumbnail": 33,
+        "EditorScreen": 1
+      }
+    },
+    {
+      "exitCode": 0,
+      "command": "npm run typecheck",
+      "completedAt": "2026-10-27T21:17:20.723000+08:00",
+      "warnings": 0
+    },
+    {
+      "exitCode": 0,
+      "command": "npm run build",
+      "completedAt": "2026-10-27T21:17:36.976465+08:00",
+      "warnings": 0
+    },
+    {
+      "exitCode": 0,
+      "command": "npm audit --omit=dev",
+      "completedAt": "2026-10-27T21:17:39.376144+08:00",
+      "warnings": 0
+    },
+    {
+      "exitCode": 0,
+      "command": "npm run test:qa",
+      "completedAt": "2026-10-27T21:17:40.296174+08:00",
+      "warnings": 0
+    },
+    {
+      "command": "npm run test:e2e",
+      "exitCode": 0,
+      "passed": 31,
+      "skipped": 0,
+      "failed": 0,
+      "completedAt": "2026-10-27T21:40:21.530772+08:00",
+      "warnings": {
+        "NO_COLOR_FORCE_COLOR": 2
+      }
+    },
+    {
+      "command": "node scripts/qa/ci-summary.mjs",
+      "exitCode": 0,
+      "retainedBrowserCases": 31,
+      "summaryBytes": 6594,
+      "caseCap": 64,
+      "byteCap": 65536
+    }
+  ],
+  "gitChecks": [
+    {
+      "command": "git status --short",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --name-status",
+      "exitCode": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "protectedPathsUnchanged": true,
+  "validationSha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+  "browserStats": {
+    "startTime": "2026-10-27T13:39:21.895Z",
+    "duration": 59630.933000000005,
+    "expected": 31,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "browserCases": [
+    {
+      "file": "scene-workflows.spec.mjs",
+      "title": "canonical output copy, save, and small legacy backup roundtrip",
+      "status": "expected",
+      "durationMs": 1089
+    },
+    {
+      "file": "scene-workflows.spec.mjs",
+      "title": "duplicate save requires an explicit decision",
+      "status": "expected",
+      "durationMs": 623
+    },
+    {
+      "file": "scene-workflows.spec.mjs",
+      "title": "storyboard order and collection return survive navigation",
+      "status": "expected",
+      "durationMs": 956
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+      "status": "expected",
+      "durationMs": 3746
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "reduced motion disables hover and explicit Preview stays usable",
+      "status": "expected",
+      "durationMs": 1926
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+      "status": "expected",
+      "durationMs": 2545
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "continuity forms stack, footer and focus remain reachable at 1440x900",
+      "status": "expected",
+      "durationMs": 2364
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "continuity forms stack, footer and focus remain reachable at 768x1024",
+      "status": "expected",
+      "durationMs": 2438
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "continuity forms stack, footer and focus remain reachable at 390x844",
+      "status": "expected",
+      "durationMs": 2371
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "continuity forms stack, footer and focus remain reachable at 720x450",
+      "status": "expected",
+      "durationMs": 2387
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+      "status": "expected",
+      "durationMs": 2398
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+      "status": "expected",
+      "durationMs": 1971
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+      "status": "expected",
+      "durationMs": 2037
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+      "status": "expected",
+      "durationMs": 2565
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "title": "uses visible Preview rather than hover and never navigates on playback",
+      "status": "expected",
+      "durationMs": 1912
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "title": "storyboard visual evidence 1440",
+      "status": "expected",
+      "durationMs": 2555
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "title": "storyboard visual evidence 768",
+      "status": "expected",
+      "durationMs": 2565
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "title": "storyboard visual evidence 390",
+      "status": "expected",
+      "durationMs": 2474
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "long take names and IDs stay inside the dialog at 1440",
+      "status": "expected",
+      "durationMs": 980
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "long take names and IDs stay inside the dialog at 768",
+      "status": "expected",
+      "durationMs": 992
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "long take names and IDs stay inside the dialog at 390",
+      "status": "expected",
+      "durationMs": 779
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+      "status": "expected",
+      "durationMs": 2549
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+      "status": "expected",
+      "durationMs": 1470
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+      "status": "expected",
+      "durationMs": 1237
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+      "status": "expected",
+      "durationMs": 765
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+      "status": "expected",
+      "durationMs": 1188
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "take preference, project note, comparison and removal keep immutable source scenes",
+      "status": "expected",
+      "durationMs": 996
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "title": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+      "status": "expected",
+      "durationMs": 1087
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "title": "polish visual evidence 1440",
+      "status": "expected",
+      "durationMs": 1986
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "title": "polish visual evidence 768",
+      "status": "expected",
+      "durationMs": 1627
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "title": "polish visual evidence 390",
+      "status": "expected",
+      "durationMs": 1571
+    }
+  ],
+  "videoProof": {
+    "video": {
+      "width": 320,
+      "height": 180
+    },
+    "bytes": 27354,
+    "shots": 11,
+    "media": [
+      {
+        "id": "media_bd0758035e64",
+        "filename": "synthetic-storyboard-motion.webm",
+        "safeFilename": "synthetic-storyboard-motion.webm",
+        "mimeType": "video/webm",
+        "byteSize": 27354,
+        "createdAt": "2026-10-27T13:39:28.855Z",
+        "sha256": "b4efda9ceec62ccdabd2d06900ef7af354f78f5020614d50d0832d4659c72419"
+      }
+    ],
+    "allStoresEqual": true,
+    "errors": []
+  },
+  "beforeScreenshotTests": {
+    "passed": 3,
+    "failed": 0,
+    "base": "7d91096",
+    "method": "git archive baseline; same synthetic fixture; isolated localhost:4174"
+  },
+  "afterScreenshotTests": {
+    "passed": 3,
+    "failed": 0
+  },
+  "screenshots": [
+    {
+      "path": "before/continuity-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 158302,
+      "sha256": "7e51c2c41e5c49cb72d8aa3db2168f5ee5df4bffb06456cc858c7909ccc78231"
+    },
+    {
+      "path": "before/continuity-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 46940,
+      "sha256": "9c3ba73f99fbf1314d27f6411448e135d55106b4cd1f12ec5deca7b89882348b"
+    },
+    {
+      "path": "before/continuity-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 118061,
+      "sha256": "e4984b3432ee9a7e9ee058feab94bc8ca64cd604cc84935fb768fd85e542da7b"
+    },
+    {
+      "path": "before/preflight-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 148664,
+      "sha256": "e3b7325dad8d59ed8b5a4ce6801975e5a66c1e16466a10a48f943368669ab9e4"
+    },
+    {
+      "path": "before/preflight-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 37601,
+      "sha256": "1830ed7a39b972af3c3ddf2262af7124a4f38ecae91b49d35660bee1af2fd140"
+    },
+    {
+      "path": "before/preflight-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 102074,
+      "sha256": "4a673cf9dc09f79a05c2cfc24e00a9545ae3432dfb214543476b01a68855f6be"
+    },
+    {
+      "path": "before/storyboard-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 108362,
+      "sha256": "7bb0553ab11bd52a6b44381f9d04e349790cba44b8793bc62f16b704638f5928"
+    },
+    {
+      "path": "before/storyboard-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 28861,
+      "sha256": "a155c0deab08a93197808395b59d07f3221feb1929e6a6ccf07f78376ee2d0cc"
+    },
+    {
+      "path": "before/storyboard-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 81551,
+      "sha256": "119ca0c39082e583c73a7d16e76701c31160731b85e82f57fda56d39f06b0a5d"
+    },
+    {
+      "path": "before/transition-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 106383,
+      "sha256": "c632bdf8b4031dca9e9d8329ed57fc53bb5eda5a03c00224f6193bd1e31e2ac2"
+    },
+    {
+      "path": "before/transition-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 42554,
+      "sha256": "f6def65d0bc48fe7da3898d79e8dd7e7a028caca861910b6c57d17fb6e4b0462"
+    },
+    {
+      "path": "before/transition-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 88176,
+      "sha256": "9b7ea9427ebd7d09f778ca4100a29cdd0099a6b4fd5911c9140f54b2b2894ba8"
+    },
+    {
+      "path": "before/wardrobe-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 175269,
+      "sha256": "3472e157176bd337cff6e1c18f1e4df9682f16c71407359987ac1870ace1fa5b"
+    },
+    {
+      "path": "before/wardrobe-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 50928,
+      "sha256": "bec69de6bc75b85653ec1afedcc406ade42801624ce65e0f8eae6eca7a35fbc7"
+    },
+    {
+      "path": "before/wardrobe-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 110767,
+      "sha256": "12b70c81dc67180656b0d401204520d55dbf1c6fe497472aed69440f34653e74"
+    },
+    {
+      "path": "after/continuity-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 83141,
+      "sha256": "28c6333b70bbc8b0818c756fa93c07bb61c52120e2882d20af46ff42a3d658d5"
+    },
+    {
+      "path": "after/continuity-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 38637,
+      "sha256": "9a8eb98fb005d286e71691d12d2215dce05a9f692aa33af7e03397604c5588b6"
+    },
+    {
+      "path": "after/continuity-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 87638,
+      "sha256": "25215e7654c2b0d358043ae3e501eae5eedb44e6966fabe650376f4c86f6edbc"
+    },
+    {
+      "path": "after/preflight-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 129223,
+      "sha256": "d7a87b20cb6d073ffde0b441175336775d1ca0a24a1f2bbff0fc5fb30127031c"
+    },
+    {
+      "path": "after/preflight-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 40046,
+      "sha256": "088c741a9ab0a9df8faf779933db7bc440dc321c59721fb9f2cd9ff4047c5460"
+    },
+    {
+      "path": "after/preflight-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 79440,
+      "sha256": "118ca0edd1fda7cae27b627115fa9d3a001ad2150e07033b9634fcb8f48efbfe"
+    },
+    {
+      "path": "after/storyboard-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 112106,
+      "sha256": "5a1c41d87791c70c7aef303fc3bf2d708643031ba0b94ee47149f4e7753bc42a"
+    },
+    {
+      "path": "after/storyboard-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 25589,
+      "sha256": "175956262a350f68a3957057464e63719f79f51d4727f84c86a179385d8df298"
+    },
+    {
+      "path": "after/storyboard-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 76014,
+      "sha256": "edf46303efa3ddee7be5c90319cabd370ec7f1de2c7dc144161dd1089683393d"
+    },
+    {
+      "path": "after/transition-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 101902,
+      "sha256": "bab9b54acc5fd2dc04a383af4531192e7f2032117c3c0d52b98c7e02c5830491"
+    },
+    {
+      "path": "after/transition-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 34165,
+      "sha256": "cee2bd448f3191cda5adaeb63897a0c5a10c4f449c8f9a32ed5457c4ad0dded4"
+    },
+    {
+      "path": "after/transition-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 66353,
+      "sha256": "379385ae39ca4b1cfb3bbe9340b5b75f17bf0392049637f0e53d838f74b6a77e"
+    },
+    {
+      "path": "after/wardrobe-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 97368,
+      "sha256": "8bf7acfb34469fb7614a011d9f8e9520503764167ac35100f43621117b314a52"
+    },
+    {
+      "path": "after/wardrobe-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 39096,
+      "sha256": "c17c8740819217de4152ecdc626979037d63022969c624ed7c378471afff281b"
+    },
+    {
+      "path": "after/wardrobe-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 79921,
+      "sha256": "10ac630e86208737ac83505a691869dc374715d0c67eec656e7c80ab3bfab9cb"
+    }
+  ],
+  "screenshotCount": 30,
+  "screenshotBytes": 2495132,
+  "testedSourceFiles": [
+    {
+      "path": "e2e/scene-workflows.spec.mjs",
+      "sha256": "d2362a352557fb44593a53b3d0cb19e860a0e23c3f31feb6e77b5f024371d8c5"
+    },
+    {
+      "path": "e2e/storyboard-cleanup.spec.mjs",
+      "sha256": "919178f867cbca96a6985d86e87c2618845d056346a6f34763501e4415fe946b"
+    },
+    {
+      "path": "e2e/storyboard-fixture.mjs",
+      "sha256": "009b7583cb69481f13be03283634cc9a1eaa22d0cdd411f6263bc46986dfd257"
+    },
+    {
+      "path": "e2e/storyboard-screenshots.spec.mjs",
+      "sha256": "86d029bbffcf670c7a070d4bc081cdbb5bd74a1abf8c2515d4ac8168abc37f32"
+    },
+    {
+      "path": "src/__tests__/collectionWorkspace.test.tsx",
+      "sha256": "ee9eed429c9012f9b7353ac29a2ea36807ad35aa7124ba08f8494338f64dc7f5"
+    },
+    {
+      "path": "src/__tests__/mediaPreview.test.tsx",
+      "sha256": "0abc6242b24b40c69d1f3b02f6da58257dd71ff98b54a87682eeb5fcfa7e0862"
+    },
+    {
+      "path": "src/__tests__/projectContinuityPanel.test.tsx",
+      "sha256": "a39437b70dc2c3931b7b85705f5753633602d655ba524f7ba9f2226e3fd6b0b2"
+    },
+    {
+      "path": "src/__tests__/scenePreflightDialog.test.tsx",
+      "sha256": "fbd04526edb8c9c45ce606211f1a7b96fdbe9efde8ff0ed1ff6f01f97a58f511"
+    },
+    {
+      "path": "src/components/CollectionMediaPreview.tsx",
+      "sha256": "266f88b6f9bc226319c0f2bfc37530a47018ab7afbb28ae1bb4c65ac8ee5354e"
+    },
+    {
+      "path": "src/components/MediaThumbnail.tsx",
+      "sha256": "45efbe2c628a5d750d299026284ad29a6069b15a7db5487b96ce199e40d8defd"
+    },
+    {
+      "path": "src/components/ProjectContinuityPanel.tsx",
+      "sha256": "797fe3684b18bd1655d6b4577eabf83be4e503c769703e81d58bf6f4e07724bd"
+    },
+    {
+      "path": "src/components/ScenePreflightDialog.tsx",
+      "sha256": "a1713a1039430e06c02f4620eb0128972f2a8b41b87cc00f59237a6e8ec7c1a9"
+    },
+    {
+      "path": "src/components/ShotActions.tsx",
+      "sha256": "fb1386ac40dea4dcab9754f0aefc6788353b7cf7ee67394885dc35444278e4ea"
+    },
+    {
+      "path": "src/components/collectionMediaPreview.css",
+      "sha256": "2b4d38d166b16bceb932f98e1333bb9e416b6b4b753477298d15f5f0f7df41ec"
+    },
+    {
+      "path": "src/components/projectContinuity.css",
+      "sha256": "761d9506515206283322b576d54a9ed5171e407ee27ea392ccdd81a43459b31b"
+    },
+    {
+      "path": "src/components/scenePreflight.css",
+      "sha256": "0e585897161c48a3e611a8086a3c04fb5b169c063a56e238c6afc1422d1ca459"
+    },
+    {
+      "path": "src/screens/CollectionWorkspace.tsx",
+      "sha256": "56fd87b58ac5be2fd0938f6b2d5d9229a65b9d7d77327cc673b0d05533a6ce86"
+    },
+    {
+      "path": "src/screens/CollectionsScreen.tsx",
+      "sha256": "943cd39b58970aae2981260f87af8c98096398c0c0c65043c52baf793d304456"
+    },
+    {
+      "path": "src/screens/collectionWorkspace.css",
+      "sha256": "c8ca1c5247e0502d377fa2a345fd12d58594c323f05acbccb1899719521a1274"
+    },
+    {
+      "path": "scripts/qa/ci-summary.mjs",
+      "sha256": "fa25868914a8abb887782def6952495fdf718a0ac65863a8134c8a05d3f4a6d4"
+    }
+  ],
+  "independentReview": {
+    "method": "read-only source and protected-path review",
+    "confirmedFindings": 0,
+    "testsRerunByReviewer": false
+  },
+  "limitations": [
+    "Chromium automated browser checks; no manual Firefox, Safari, NVDA or JAWS session.",
+    "720x450 is an effective desktop zoom/reflow viewport, not a manually verified browser-toolbar zoom session.",
+    "11 video-backed shots reuse one real decoded synthetic 320x180 WebM; not a high-resolution or large-library memory benchmark.",
+    "Current cover write rules still accept images only. Existing video-cover rendering is tested with a synthetic historical fixture.",
+    "Native Windows Explorer drag was not manually tested; real browser drag APIs and a dedicated shot grip are tested."
+  ],
+  "ci": "See the PR Checks tab for the run at the final head SHA; local evidence is separate from GitHub CI.",
+  "ciFollowup": {
+    "initialRun": "https://github.com/Jeruzael/krakinai/actions/runs/40512630844",
+    "initialCommit": "d3ceaa4fa74f1c564762735b402da0f60f280ba5",
+    "initialBrowserPassed": 30,
+    "initialBrowserFailed": 1,
+    "initialSummaryError": "20-case cap rejected the expanded 31-case suite",
+    "dragRepeatPassed": 10,
+    "dragRepeatFailed": 0,
+    "summaryBoundsChecks": [
+      {
+        "cases": 31,
+        "exitCode": 0,
+        "expectedSuccess": true
+      },
+      {
+        "cases": 65,
+        "exitCode": 1,
+        "expectedSuccess": false
+      },
+      {
+        "oversizedMetadata": true,
+        "exitCode": 1,
+        "expectedSuccess": false
+      }
+    ],
+    "hostedRerun": "See PR #19 Checks for the final head and run."
+  }
+}

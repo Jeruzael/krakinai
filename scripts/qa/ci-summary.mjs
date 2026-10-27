@@ -41,7 +41,9 @@ if (existsSync('qa-results/playwright.json')) {
     for (const nested of suite.suites ?? []) walk(nested);
   };
   for (const suite of result.suites ?? []) walk(suite);
-  if (cases.length > 20) throw new Error('Browser smoke report exceeded its 20-case artifact bound.');
+  // The UI suite now includes 31 cases. Keep a finite case cap as well as the
+  // separate 64 KiB artifact bound below; never silently truncate results.
+  if (cases.length > 64) throw new Error('Browser smoke report exceeded its 64-case artifact bound.');
   summary.browserSmoke = {
     tests: result.stats?.expected + result.stats?.unexpected + result.stats?.flaky + result.stats?.skipped,
     passed: result.stats?.expected,

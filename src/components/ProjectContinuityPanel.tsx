@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import type { Collection, MediaAsset, ProjectShot, ProjectTransition, WardrobeIntentReason } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
-import { getProjectShots } from '../domain/projectStoryboard';
+import { getProjectShots, selectedSceneForShot } from '../domain/projectStoryboard';
 import { getWardrobeContinuity } from '../domain/projectContinuity';
 import { validateMediaCandidate } from '../domain/validation';
 import { getMediaDisplayName } from '../domain/mediaNaming';
@@ -97,10 +97,10 @@ export const ProjectContinuityPanel: React.FC<Props> = ({ collection, onChanged 
       const shot = shotMap.get(row.shotId);
       if (!shot) return null;
       return <article className="pc-row" key={`${row.shotId}-${row.characterId}`}>
-        <div><strong>{title(shot)}</strong> · {row.characterName}</div>
-        <div>{row.wardrobeSourceId ? <>Source: {row.wardrobeSourceId}<p className="pc-prewrap">{row.wardrobeDescription || 'Description unavailable'}</p></> : <span className="pc-missing">Wardrobe unknown</span>}</div>
+        <div className="pc-wardrobe-heading"><strong>{row.characterName}</strong><span>{title(shot)}</span></div>
+        <div className="pc-source">{row.wardrobeSourceId ? <>Wardrobe source: {selectedSceneForShot(shot,scenes)?.slots.wardrobe?.sourceTitle || row.wardrobeSourceId}</> : <span className="pc-missing">Wardrobe unknown</span>}</div>
         <div>{!row.wardrobeSourceId ? 'Change unknown' : row.changed ? <span className="pc-warning">Clothing changed from previous appearance</span> : 'No detected change'}{row.intentionalReason && <> · Intentional: {reasons.find(reason => reason.value === row.intentionalReason)?.label}</>}</div>
-        {shot.continuityNotes && <p className="pc-prewrap">{shot.continuityNotes}</p>}
+        <details className="pc-wardrobe-details"><summary>Details</summary>{row.wardrobeSourceId && <><p className="pc-source">Source ID: {row.wardrobeSourceId}</p><p className="pc-prewrap">{row.wardrobeDescription || 'Description unavailable'}</p></>}{shot.continuityNotes && <p className="pc-prewrap">{shot.continuityNotes}</p>}</details>
         <button type="button" className="btn btn-secondary" onClick={() => { setEditor({ kind: 'wardrobe', shot, reason: shot.intentionalWardrobeChange ?? '', notes: shot.continuityNotes ?? '' }); setError(''); }}>Review wardrobe</button>
       </article>;
     })}</div>}
@@ -115,13 +115,13 @@ export const ProjectContinuityPanel: React.FC<Props> = ({ collection, onChanged 
       const current = transitions.find(item => item.fromShotId === from.id && item.toShotId === to.id);
       return <article className="pc-row" key={`${from.id}-${to.id}`}><div><strong>{title(from)} → {title(to)}</strong></div>
         <div className="pc-frame-pair" aria-label={`Frame comparison ${title(from)} to ${title(to)}`}>{comparisonFrame(from, 'lastFrameMediaId')}{comparisonFrame(to, 'firstFrameMediaId')}</div>
-        {current ? <p>{current.type.replaceAll('_', ' ')}{current.durationSeconds !== undefined ? ` · ${current.durationSeconds} s` : ''}<br />{current.description}<br />{current.notes}</p> : <p>No transition metadata.</p>}
-        <button type="button" className="btn btn-secondary" onClick={() => openTransition(from, to)}>{current ? 'Edit transition' : 'Add transition'}</button>
-        {current && <button type="button" className="btn btn-secondary" onClick={() => { setEditor({ kind: 'remove', transition: current }); setError(''); }}>Remove transition</button>}
+        {current ? <><p className="pc-transition-meta">{current.type.replaceAll('_', ' ')}{current.durationSeconds !== undefined ? ` · ${current.durationSeconds} s` : ''}</p><details className="pc-wardrobe-details"><summary>Transition details</summary><p className="pc-prewrap">{current.description}</p><p className="pc-prewrap">{current.notes}</p></details></> : <p>No transition metadata.</p>}
+        <div className="pc-row-actions"><button type="button" className="btn btn-secondary" onClick={() => openTransition(from, to)}>{current ? 'Edit transition' : 'Add transition'}</button>
+        {current && <button type="button" className="btn btn-secondary" onClick={() => { setEditor({ kind: 'remove', transition: current }); setError(''); }}>Remove transition</button>}</div>
       </article>;
     })}</div>}
     {detached.length > 0 && <section className="pc-detached"><h3>Transitions to review after reorder</h3>{detached.map(item => <article className="pc-row" key={item.id}>
-      <strong>{transitionLabel(item)}</strong><p>{item.type.replaceAll('_', ' ')} · {item.description}<br />{item.notes}</p>
+      <strong>{transitionLabel(item)}</strong><p className="pc-transition-meta">{item.type.replaceAll('_', ' ')}</p><details className="pc-wardrobe-details"><summary>Transition details</summary><p className="pc-prewrap">{item.description}</p><p className="pc-prewrap">{item.notes}</p></details>
       <button type="button" className="btn btn-secondary" onClick={() => { setEditor({ kind: 'remove', transition: item }); setError(''); }}>Remove transition</button>
     </article>)}</section>}
     {!editor && error && <p role="alert">{error}</p>}
@@ -130,12 +130,12 @@ export const ProjectContinuityPanel: React.FC<Props> = ({ collection, onChanged 
       const notes = editor.notes === (editor.shot.continuityNotes ?? '') ? undefined : editor.notes;
       void run(() => updateWardrobeIntent({ collectionId: collection.id, shotId: editor.shot.id, reason, notes }));
     }}>Save review</button></>}>
-      <label className="form-label">Intentional change reason<select value={editor.reason} onChange={event => setEditor({ ...editor, reason: event.target.value as WardrobeIntentReason | '' })}><option value="">No reason set</option>{reasons.map(reason => <option key={reason.value} value={reason.value}>{reason.label}</option>)}</select></label>
-      <label className="form-label">Continuity notes<textarea value={editor.notes} onChange={event => setEditor({ ...editor, notes: event.target.value })} rows={5} /></label>
+      <div className="pc-form"><label className="pc-form-field">Intentional change reason<select disabled={busy} value={editor.reason} onChange={event => setEditor({ ...editor, reason: event.target.value as WardrobeIntentReason | '' })}><option value="">No reason set</option>{reasons.map(reason => <option key={reason.value} value={reason.value}>{reason.label}</option>)}</select></label>
+      <label className="pc-form-field">Continuity notes<textarea disabled={busy} value={editor.notes} onChange={event => setEditor({ ...editor, notes: event.target.value })} rows={5} /></label></div>
       {error && <p role="alert">{error}</p>}
     </StudioDialog>}
     {editor?.kind === 'frame' && !preview && <StudioDialog title={`${editor.side === 'firstFrameMediaId' ? 'First' : 'Last'} frame — ${title(editor.shot)}`} onClose={() => { if (!busy) setEditor(null); }}>
-      <label className="form-label">Upload image<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void uploadFrame(editor.shot, editor.side, file); }} /></label>
+      <div className="pc-form"><label className="pc-form-field">Upload image<input type="file" accept="image/png,image/jpeg,image/webp" disabled={busy} onChange={event => { const file = event.target.files?.[0]; if (file) void uploadFrame(editor.shot, editor.side, file); }} /></label></div>
       {error && <p role="alert">{error}</p>}
       {editor.shot[editor.side] && <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => void saveFrame(editor.shot, editor.side, null)}>Clear association</button>}
       <div className="pc-image-picker">{images.map(item => <button type="button" className="pc-image-choice" key={item.id} aria-label={`Use ${getMediaDisplayName(item)} as ${editor.side === 'firstFrameMediaId' ? 'first' : 'last'} frame`} disabled={busy} onClick={() => void saveFrame(editor.shot, editor.side, item.id)}>
@@ -144,10 +144,10 @@ export const ProjectContinuityPanel: React.FC<Props> = ({ collection, onChanged 
     </StudioDialog>}
     {editor?.kind === 'transition' && !preview && <StudioDialog title={`Transition — ${title(editor.from)} → ${title(editor.to)}`} onClose={() => { if (!busy) setEditor(null); }} footer={<><button type="button" className="btn btn-secondary" disabled={busy} onClick={() => setEditor(null)}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void run(() => upsertProjectTransition({ collectionId: collection.id, expectedRevision: editor.revision, transition: { ...editor.draft, id: editor.draft.id || undefined } }))}>Save transition</button></>}>
       <div className="pc-frame-pair">{comparisonFrame(editor.from, 'lastFrameMediaId')}{comparisonFrame(editor.to, 'firstFrameMediaId')}</div>
-      <label className="form-label">Type<select value={editor.draft.type} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, type: event.target.value as ProjectTransition['type'] } })}>{transitionTypes.map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}</select></label>
-      <label className="form-label">Duration in seconds (optional)<input type="number" min="0" max="86400" step="any" value={editor.draft.durationSeconds ?? ''} onChange={event => { const { durationSeconds: _, ...rest } = editor.draft; setEditor({ ...editor, draft: event.target.value === '' ? rest as ProjectTransition : { ...editor.draft, durationSeconds: Number(event.target.value) } }); }} /></label>
-      <label className="form-label">Description<textarea value={editor.draft.description} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, description: event.target.value } })} rows={3} /></label>
-      <label className="form-label">Notes<textarea value={editor.draft.notes} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, notes: event.target.value } })} rows={3} /></label>
+      <div className="pc-form"><label className="pc-form-field">Type<select disabled={busy} value={editor.draft.type} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, type: event.target.value as ProjectTransition['type'] } })}>{transitionTypes.map(type => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}</select></label>
+      <label className="pc-form-field">Duration in seconds (optional)<input disabled={busy} type="number" min="0" max="86400" step="any" value={editor.draft.durationSeconds ?? ''} onChange={event => { const { durationSeconds: _, ...rest } = editor.draft; setEditor({ ...editor, draft: event.target.value === '' ? rest as ProjectTransition : { ...editor.draft, durationSeconds: Number(event.target.value) } }); }} /></label>
+      <label className="pc-form-field">Description<textarea disabled={busy} value={editor.draft.description} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, description: event.target.value } })} rows={3} /></label>
+      <label className="pc-form-field">Notes<textarea disabled={busy} value={editor.draft.notes} onChange={event => setEditor({ ...editor, draft: { ...editor.draft, notes: event.target.value } })} rows={3} /></label></div>
       {error && <p role="alert">{error}</p>}
     </StudioDialog>}
     {editor?.kind === 'remove' && !preview && <StudioDialog title="Remove transition?" onClose={() => { if (!busy) setEditor(null); }} footer={<><button type="button" className="btn btn-secondary" disabled={busy} onClick={() => setEditor(null)}>Cancel</button><button type="button" className="btn btn-primary" disabled={busy} onClick={() => void run(() => removeProjectTransition({ collectionId: collection.id, transitionId: editor.transition.id }))}>Remove transition</button></>}>

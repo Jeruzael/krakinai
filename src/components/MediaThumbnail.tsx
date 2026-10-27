@@ -1,7 +1,10 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { ImageOff, Play } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
 import { useMediaObjectUrl } from '../hooks/useObjectUrl';
+
+// All thumbnail instances share one hover player; expanded playback is explicit.
+let activeHover: { video: HTMLVideoElement; stop: () => void } | undefined;
 
 interface MediaThumbnailProps {
   media?: MediaAsset;
@@ -22,19 +25,21 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
 }) => {
   const url = useMediaObjectUrl(media);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const surfaceRef = useRef<HTMLDivElement>(null);
   const hovering = useRef(false);
   const eligible = useRef(false);
   const generation = useRef(0);
-  const stop = (video = videoRef.current) => {
+  const stop = useCallback((video = videoRef.current) => {
     generation.current += 1;
     if (!video) return;
+    if (activeHover?.video === video) activeHover = undefined;
     video.pause();
     try {
       video.currentTime = 0;
     } catch {
       // The browser may not have loaded metadata yet.
     }
-  };
+  }, []);
   useEffect(() => {
     if (!enableHoverPreview || showVideoControls || !window.matchMedia) return;
     const pointer = window.matchMedia('(hover: hover) and (pointer: fine)');
@@ -56,19 +61,57 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
       pointer.removeEventListener('change', update);
       motion.removeEventListener('change', update);
     };
-  }, [enableHoverPreview, showVideoControls]);
+  }, [enableHoverPreview, showVideoControls, stop]);
   useEffect(() => {
     const video = videoRef.current;
     return () => {
       hovering.current = false;
       stop(video);
     };
-  }, [media, url, showVideoControls]);
+  }, [media, url, showVideoControls, stop]);
+  useEffect(() => {
+    if (!enableHoverPreview || showVideoControls) return;
+    const pause = () => {
+      hovering.current = false;
+      stop();
+    };
+    const visibility = () => {
+      if (document.visibilityState === 'hidden') pause();
+    };
+    document.addEventListener('visibilitychange', visibility);
+    const observer =
+      typeof IntersectionObserver === 'undefined'
+        ? undefined
+        : new IntersectionObserver((entries) => {
+            if (!entries.some((entry) => entry.isIntersecting)) pause();
+          });
+    if (surfaceRef.current) observer?.observe(surfaceRef.current);
+    return () => {
+      observer?.disconnect();
+      document.removeEventListener('visibilitychange', visibility);
+    };
+  }, [enableHoverPreview, showVideoControls, url, stop]);
   const start = () => {
     const video = videoRef.current;
-    if (!video || !eligible.current || !enableHoverPreview || showVideoControls)
+    // Pointer entry itself proves visibility; IntersectionObserver can still
+    // contain the previous offscreen position immediately after scrolling.
+    if (
+      !video ||
+      !eligible.current ||
+      document.visibilityState === 'hidden' ||
+      !enableHoverPreview ||
+      showVideoControls
+    )
       return;
+    if (activeHover?.video !== video) activeHover?.stop();
     hovering.current = true;
+    activeHover = {
+      video,
+      stop: () => {
+        hovering.current = false;
+        stop(video);
+      },
+    };
     const request = ++generation.current;
     video.muted = true;
     try {
@@ -127,6 +170,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   return (
     <div
       onPointerEnter={start}
+      ref={surfaceRef}
       onPointerLeave={() => {
         if (enableHoverPreview && !showVideoControls) {
           hovering.current = false;
@@ -149,6 +193,8 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
             ref={videoRef}
             src={url}
             controls
+            muted
+            playsInline
             preload="metadata"
             onError={() => {
               stop();

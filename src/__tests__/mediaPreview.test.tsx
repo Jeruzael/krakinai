@@ -39,6 +39,37 @@ afterEach(() => {
 });
 
 describe('media previews', () => {
+  it('starts on a real pointer entry even before a stale offscreen observation catches up with scrolling', () => {
+    let observe!: (entries:{isIntersecting:boolean}[])=>void;
+    vi.stubGlobal('IntersectionObserver',class { constructor(callback:typeof observe){observe=callback;} observe(){} disconnect(){} });
+    const {container}=render(<MediaThumbnail media={media} enableHoverPreview />);
+    const video=container.querySelector('video')!;
+    observe([{isIntersecting:false}]);
+    fireEvent.pointerEnter(video.parentElement!);
+    expect(video.play).toHaveBeenCalledOnce();
+    observe([{isIntersecting:true}]);
+  });
+  it('allows only one active hover preview across multiple thumbnails', () => {
+    const {container}=render(<><MediaThumbnail media={media} enableHoverPreview /><MediaThumbnail media={{...media,id:'second-video'}} enableHoverPreview /></>);
+    const [first,second]=[...container.querySelectorAll('video')];
+    fireEvent.pointerEnter(first.parentElement!);
+    first.currentTime=3;
+    vi.mocked(first.pause).mockClear();
+    fireEvent.pointerEnter(second.parentElement!);
+    expect(first.pause).toHaveBeenCalled();
+    expect(first.currentTime).toBe(0);
+  });
+
+  it('stops a hover preview when the page becomes hidden', () => {
+    const {container}=render(<MediaThumbnail media={media} enableHoverPreview />);
+    const video=container.querySelector('video')!;
+    fireEvent.pointerEnter(video.parentElement!);
+    video.currentTime=3;
+    const visible=vi.spyOn(document,'visibilityState','get').mockReturnValue('hidden');
+    fireEvent(document,new Event('visibilitychange'));
+    expect(video.currentTime).toBe(0);
+    visible.mockRestore();
+  });
   it('opts in to muted inline looping playback and resets on exit and unmount', () => {
     const revoke = vi.spyOn(URL, 'revokeObjectURL');
     const { container, unmount } = render(

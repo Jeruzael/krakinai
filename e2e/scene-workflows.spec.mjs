@@ -115,6 +115,7 @@ test('storyboard order and collection return survive navigation', async ({ page 
   const storyboard = page.getByRole('tabpanel', { name: 'Storyboard' });
   await expect(storyboard.getByRole('heading', { name: 'Opening' })).toBeVisible();
   await expect(storyboard.getByRole('heading', { name: 'Closing' })).toBeVisible();
+  await storyboard.getByLabel('More actions for Closing').click();
   await storyboard.getByRole('button', { name: 'Move Closing up' }).click();
   await expect.poll(async () => {
     const data = await snapshot(page);

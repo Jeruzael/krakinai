@@ -6,7 +6,7 @@
 .pc-frame-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; }
 .pc-frame { display: flex; flex-wrap: wrap; align-items: center; gap: .45rem; min-width: 0; }
 .pc-frame > strong { flex-basis: 100%; }
-.pc-comparison-frame { display: grid; gap: .35rem; align-content: start; min-width: 0; }
+.pc-comparison-frame { display: grid; gap: .35rem; align-content: start; min-width: 0; overflow-wrap: anywhere; }
 .pc-frame-preview { display: block; width: min(100%, 220px); height: 110px; padding: 0; overflow: hidden; cursor: zoom-in; }
 .pc-warning { color: var(--warning-text); font-weight: 600; }
 .pc-missing { color: var(--text-muted); font-style: italic; overflow-wrap: anywhere; }
@@ -16,4 +16,15 @@
 .pc-image-picker { display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr)); gap: .55rem; margin-top: .75rem; }
 .pc-image-choice { display: grid; gap: .35rem; min-width: 0; padding: .45rem; overflow-wrap: anywhere; text-align: left; cursor: pointer; }
 .pc-image-choice-thumb { display: block; height: 85px; overflow: hidden; }
+.pc-wardrobe-heading { display: flex; flex-wrap: wrap; gap: 5px 12px; align-items: baseline; }
+.pc-wardrobe-heading span, .pc-source { color: var(--text-muted); font-size: .82rem; }
+.pc-wardrobe-details { font-size: .85rem; min-width: 0; }
+.pc-wardrobe-details summary { cursor: pointer; color: var(--primary); padding: 4px 0; }
+.pc-wardrobe-details[open] { display: grid; gap: 8px; }
+.pc-row-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.pc-transition-meta { font-size: .85rem; font-weight: 650; text-transform: capitalize; }
+.pc-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; margin-top: 16px; min-width: 0; }
+.pc-form-field { display: flex; flex-direction: column; gap: 7px; min-width: 0; font-size: .85rem; font-weight: 650; overflow-wrap: anywhere; }
+.pc-form-field select, .pc-form-field textarea, .pc-form-field input { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px 12px; min-height: 42px; border: 1px solid var(--border-subtle); border-radius: 8px; background: white; color: var(--text-primary); font: inherit; font-weight: 400; }
+.pc-form-field textarea { resize: vertical; line-height: 1.55; }
 @media (max-width: 600px) { .pc-frame-pair { grid-template-columns: 1fr; } }

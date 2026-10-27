@@ -22,6 +22,22 @@ function setup(collection = base(), media: MediaAsset[] = []) {
 }
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 
+it('keeps full wardrobe text collapsed and uses dedicated stacked form fields without changing records', () => {
+  const collection = base();
+  const original = structuredClone(collection);
+  setup(collection);
+  const description = screen.getByText('Clothes coat');
+  expect(description).not.toBeVisible();
+  fireEvent.click(description.closest('details')!.querySelector('summary')!);
+  expect(description).toBeVisible();
+  fireEvent.click(screen.getAllByRole('button', { name: 'Review wardrobe' })[0]);
+  const dialog = screen.getByRole('dialog');
+  expect(screen.getByRole('combobox', { name: 'Intentional change reason' }).closest('.pc-form-field')).toBeTruthy();
+  expect(screen.getByRole('textbox', { name: 'Continuity notes' }).closest('.pc-form-field')).toBeTruthy();
+  expect(dialog.querySelector('.pc-form')).toBeTruthy();
+  expect(collection).toEqual(original);
+});
+
 it('shows advisory clothing changes and unknown wardrobe, and saves intentional reason with only changed notes', async () => {
   vi.mocked(continuity.updateWardrobeIntent).mockResolvedValue(base());
   const collection = base([shot('a', 0), shot('b', 1, { continuityNotes: 'Keep scarf' }), shot('c', 2)]);
@@ -58,6 +74,9 @@ it('reuses exact-pair transition ID and revision, then confirms removal', async 
   const transition = { id: 'edge-1', fromShotId: 'a', toShotId: 'b', type: 'match_cut' as const, description: 'Match shape', notes: 'Keep timing' };
   const collection = base(); collection.project!.transitions = [transition];
   setup(collection);
+  expect(screen.getByText(/Match shape/)).not.toBeVisible();
+  fireEvent.click(screen.getByText(/Match shape/).closest('details')!.querySelector('summary')!);
+  expect(screen.getByText(/Match shape/)).toBeVisible();
   vi.mocked(continuity.upsertProjectTransition).mockResolvedValue(collection);
   vi.mocked(continuity.removeProjectTransition).mockResolvedValue(collection);
   fireEvent.click(screen.getByRole('button', { name: 'Edit transition' }));
