@@ -52,6 +52,8 @@ import { GenerationIdentityControl } from '../components/GenerationIdentityContr
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { getGenerationPackReferences } from '../domain/referencePack';
 import { CollectionReturnControl } from '../components/CollectionReturnControl';
+import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
+import { collectionSceneRoute } from '../domain/collectionNavigation';
 import './promptOutput.css';
 
 const OUTPUT_TABS = [
@@ -112,6 +114,7 @@ function rememberDraftEditor(value: DraftEditorBuffers & {id:string}) {
 export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const {
     snapshot,
+    hashPath,
     navigate,
     copyText,
     openCollectionModal,
@@ -204,6 +207,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const draft = !isSavedScene
     ? snapshot.drafts.find((d) => d.id === id)
     : undefined;
+  const projectContext = getProjectSaveTarget(hashPath, snapshot.collections);
 
   if (!savedScene && !draft) {
     return (
@@ -369,18 +373,19 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
 
   const handleSaveScene = async (decision?: 'version' | 'take') => {
     if (!draft || saveGuard.current) return;
+    if (projectContext.error) { setSaveError(projectContext.error); return; }
     saveGuard.current = true;
     setSaveBusy(true);
     setSaveError('');
-    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined]);
+    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target]);
     if (saveToken.current?.binding !== binding) saveToken.current = {binding, id: crypto.randomUUID()};
-    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
+    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
     try {
       const saved = await saveSceneFromDraft(draft.id, options);
       await refreshSnapshot();
       setSimilarScenes([]);
       showToast(`Saved immutable scene "${saved.title}".`, 'success');
-      navigate(`/output/${saved.id}`, true);
+      navigate(projectContext.target ? collectionSceneRoute(saved.id, projectContext.target.collectionId, {tab:'storyboard',shot:projectContext.target.shotId}) : `/output/${saved.id}`, true);
     } catch (err) {
       if (err instanceof SimilarSceneError) {
         setSimilarScenes(err.matches);
@@ -564,6 +569,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
 
   return (
     <div className="output-workspace">
+      {draft && projectContext.requested && <div className="card" role="status">{projectContext.error || 'Save this draft as a new take in the originating project shot.'}{projectContext.error && <button className="btn btn-secondary" onClick={() => navigate(`/output/${draft.id}`, true)}>Continue as Standalone Draft</button>}</div>}
       <header className="output-header">
         <div className="output-heading">
           <div className="output-record-meta">
@@ -571,7 +577,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={() =>
-                navigate(draft ? `/builder/${draft.id}` : '/scenes')
+                navigate(draft ? carryProjectTarget(`/builder/${draft.id}`, hashPath) : '/scenes')
               }
             >
               <ArrowLeft size={15} />{' '}
@@ -1069,7 +1075,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 disabled={saveBusy}
                 onClick={() => void handleSaveScene()}
               >
-                <BookmarkCheck size={16} /> Save Scene
+                <BookmarkCheck size={16} /> {projectContext.target ? 'Save New Take' : 'Save Scene'}
               </button>
             )}
             {savedScene && (

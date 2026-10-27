@@ -8,7 +8,7 @@ export function collectionViewState(path: string): CollectionViewState {
 }
 export function collectionRoute(id: string, state: Partial<CollectionViewState> = {}): string {
  const s = collectionViewState('?' + new URLSearchParams(state as Record<string,string>).toString());
- return `/collections/${encodeURIComponent(id)}?${new URLSearchParams({tab:s.tab,view:s.view,sort:s.sort,filter:s.filter}).toString()}`;
+ return `/collections/${encodeURIComponent(id)}?${new URLSearchParams({tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{})}).toString()}`;
 }
 export function collectionSceneRoute(sceneId: string, collectionId: string, state: Partial<CollectionViewState> = {}): string {
  const s = collectionViewState('?' + new URLSearchParams(state as Record<string,string>).toString());
@@ -20,8 +20,10 @@ export function resolveCollectionContext(path: string, sceneId: string, collecti
  if (!collection || !collection.members.some(m=>m.type === 'scene' && m.id === sceneId)) return null;
  const state = collectionViewState(path);
  if (state.shot) {
-  const project = (collection as Collection & {project?:{shots?:{id:string;takeSceneIds:string[]}[]}}).project;
-  if (!project?.shots?.some(s=>s.id === state.shot && s.takeSceneIds.includes(sceneId))) return null;
+  const validShot = collection.project
+   ? collection.project.shots.some(s=>s.id === state.shot && s.takeSceneIds.includes(sceneId))
+   : state.shot === `${collection.id}:legacy:${sceneId}`;
+  if (!validShot) return null;
  }
  return {collection,state,route:collectionRoute(collection.id,state)};
 }
