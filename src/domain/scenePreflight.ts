@@ -1,4 +1,5 @@
 import type { BuilderSlot, SceneDraft } from '../types/domain';
+import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 import { buildSceneDocument, SCENE_COMPONENT_ORDER, type SceneDocumentSource } from './sceneDocument';
 import { assembleScenePrompt } from './promptAssembler';
 export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references';
@@ -58,7 +59,7 @@ export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSl
   for(const error of validation.errors.filter(e=>!e.includes('parent character mismatch'))) {
     const component: PreflightComponent=error.includes('ialogue')||error.includes('Speaker')||error.includes('Delivery')||error.includes('caption')||error.includes('Language')?'dialogue':error.includes('instructions')?'instructions':'settings';
     const slot=SCENE_COMPONENT_ORDER.find(s=>error.includes(`(${s})`));
-    const text=slot?(source.slots[slot]?.overrideText??source.slots[slot]?.promptText??''):component==='dialogue'?(error.includes('Speaker')||error.includes('speaker')?source.dialogue?.speaker??'':error.includes('Language')?source.dialogue?.language??'':error.includes('Delivery')?source.dialogue?.deliveryNotes??'':error.includes('mode')?source.dialogue?.mode??'':error.includes('caption')?source.dialogue?.captionPreference??'':source.dialogue?.line??''):component==='instructions'?source.sceneInstructions:error.includes('title')?source.title:String(source.settings.durationSeconds??'');
+    const text=slot?(source.slots[slot]?.overrideText??source.slots[slot]?.promptText??''):component==='dialogue'?(error.startsWith('Dialogue performance')?JSON.stringify(source.dialogue?.performanceDirection??null,null,2):error.includes('Speaker')||error.includes('speaker')?source.dialogue?.speaker??'':error.includes('Language')?source.dialogue?.language??'':error.includes('Delivery')?source.dialogue?.deliveryNotes??'':error.includes('mode')?source.dialogue?.mode??'':error.includes('caption')?source.dialogue?.captionPreference??'':source.dialogue?.line??''):component==='instructions'?source.sceneInstructions:error.includes('title')?source.title:String(source.settings.durationSeconds??'');
     add('P000','blocking',error,[{component:slot??component,text}],error,['Complete the required scene information.']);
   }
   const rear=/\b(?:rear(?:[- ]facing| view| shot)|back view|camera (?:is )?behind (?:the )?(?:subject|character)|from behind|camera\s+\d+°?\s+behind)\b/i;
@@ -78,7 +79,8 @@ export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSl
   for(const slot of SCENE_COMPONENT_ORDER) {const snap=source.slots[slot];if(snap?.sourceType==='variant'&&snap.parentCharacterId&&snap.parentCharacterId!==source.slots.character?.sourceId) add('P006','blocking','Variant parent character mismatch',[{component:slot,text:snap.parentCharacterId},...(source.slots.character?[{component:'character' as const,text:source.slots.character.sourceId}]:[])],'The variant belongs to a different character.',['Select a compatible variant or character.']);}
   if(dialogue?.line.trim()&&!audioOnly) {
     const visible=matches(/\b(?:visible lip movement|lip[- ]sync|speaks? (?:directly )?(?:to|into) (?:the )?(?:camera|lens)|mouth (?:is )?visible)\b/i);
-    if(dialogue.deliveryNotes&&positive(dialogue.deliveryNotes,/\b(?:visible lip movement|lip[- ]sync|lens interaction)\b/i)) visible.push({component:'dialogue',text:dialogue.deliveryNotes});
+    const delivery=getEffectiveDialogueDelivery(dialogue);
+    if(delivery&&positive(delivery,/\b(?:visible lip movement|lip[- ]sync|lens interaction)\b/i)) visible.push({component:'dialogue',text:delivery});
     if(dialogue.mode==='on_camera') visible.push(...matches(/\b(?:look(?:s|ing)? (?:directly )?(?:at|into) (?:the )?(?:camera|lens)|eye contact with (?:the )?(?:camera|lens))\b/i));
     const composition=fields.filter(e=>rearFields.includes(e)||positive(e.text,/\b(?:extreme wide shot|extreme long shot|mouth (?:is )?(?:hidden|obscured)|face (?:is )?not visible)\b/i));
     if(visible.length&&composition.length) add('P007','review','Visible speech may be obscured',[...visible,...composition],'Visible speech or lens interaction may not be visible in this composition.');

@@ -1,4 +1,5 @@
 import { captureMediaNames } from '../domain/mediaNaming';
+import { validatePerformanceDirection } from '../domain/dialoguePerformance';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
 export { SimilarSceneError } from '../domain/sceneDuplicates';
@@ -661,6 +662,8 @@ export async function saveSceneDraft(
     bumpInputRevision?: boolean;
   }
 ): Promise<SceneDraft> {
+  const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
+  if(performanceError)throw new Error(performanceError);
   const db = await openDatabase();
   const tx = db.transaction(['drafts', 'preferences'], 'readwrite');
   const dStore = tx.objectStore('drafts');
@@ -686,7 +689,7 @@ export async function saveSceneDraft(
     extraRequiredSlots: input.extraRequiredSlots ?? [],
     sceneInstructions: input.sceneInstructions ?? '',
     avoidText: input.avoidText,
-    dialogue: input.dialogue,
+    dialogue: input.dialogue ? structuredClone(input.dialogue) : undefined,
     settings: input.settings ?? {},
     sourceSceneId: input.sourceSceneId,
     templateId: input.templateId,
@@ -744,7 +747,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     extraRequiredSlots: [...draft.extraRequiredSlots],
     sceneInstructions: draft.sceneInstructions,
     avoidText: assembled.avoidText,
-    dialogue: draft.dialogue ? { ...draft.dialogue } : undefined,
+    dialogue: draft.dialogue ? structuredClone(draft.dialogue) : undefined,
     settings: { ...draft.settings },
     outputs: finalOutputs,
     manualOutputs: structuredClone(draft.manualOutputs),
@@ -863,7 +866,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
     extraRequiredSlots: [...scene.extraRequiredSlots],
     sceneInstructions: scene.sceneInstructions,
     avoidText: scene.avoidText,
-    dialogue: scene.dialogue ? { ...scene.dialogue } : undefined,
+    dialogue: scene.dialogue ? structuredClone(scene.dialogue) : undefined,
     settings: { ...scene.settings },
     sourceSceneId: scene.id,
     manualOutputs: {},

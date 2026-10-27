@@ -17,6 +17,7 @@ import {
   SCENE_COMPONENT_ORDER,
 } from './sceneDocument';
 import { CATEGORY_TO_SLOT, SLOT_LABELS } from './validation';
+import { getEffectiveDialogueDelivery, validatePerformanceDirection } from './dialoguePerformance';
 
 export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
@@ -113,7 +114,7 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
   const hasDialogueOptions = Boolean(
     draft.dialogue?.mode ||
       draft.dialogue?.language?.trim() ||
-      draft.dialogue?.deliveryNotes?.trim() ||
+      getEffectiveDialogueDelivery(draft.dialogue) ||
       draft.dialogue?.captionPreference
   );
   if (hasDialogueLine || hasDialogueSpeaker || hasDialogueOptions) {
@@ -146,6 +147,8 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
     errors.push('Language must be 100 characters or fewer.');
   if ((draft.dialogue?.deliveryNotes?.length ?? 0) > 1000)
     errors.push('Delivery notes must be 1,000 characters or fewer.');
+  const performanceError=validatePerformanceDirection(draft.dialogue?.performanceDirection);
+  if(performanceError)errors.push(performanceError);
 
   if (draft.sceneInstructions && draft.sceneInstructions.trim().length > 4000) {
     errors.push('Scene instructions must be 4,000 characters or fewer.');

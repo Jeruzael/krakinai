@@ -1,7 +1,7 @@
 import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
 import { StudioDialog } from '../components/StudioDialog';
 import { collectionSceneRoute, collectionRoute, collectionViewState, rememberCollectionScroll, getCollectionScroll } from '../domain/collectionNavigation';
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   Edit3,
@@ -23,6 +23,7 @@ import {
 import { PromptCard } from '../components/PromptCard';
 import { CollectionMediaPreview } from '../components/CollectionMediaPreview';
 import { getProjectRuntime } from '../domain/projectStoryboard';
+import { getCollectionCoverMediaIds } from '../domain/collectionCoverMedia';
 
 export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
   collectionId,
@@ -50,6 +51,9 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
   const [colDesc, setColDesc] = useState('');
   const [coverId, setCoverId] = useState<string|null|undefined>();
   const [coverPicker, setCoverPicker] = useState(false);
+  const coverTriggerRef=useRef<HTMLButtonElement>(null),restoreCoverFocus=useRef(false);
+  const closeCoverPicker=()=>{restoreCoverFocus.current=true;setCoverPicker(false);};
+  useEffect(()=>{if(!showCreateModal)restoreCoverFocus.current=false;if(!coverPicker && showCreateModal && restoreCoverFocus.current){const frame=requestAnimationFrame(()=>{coverTriggerRef.current?.focus();restoreCoverFocus.current=false;});return()=>cancelAnimationFrame(frame);}},[coverPicker,showCreateModal]);
   useEffect(() => {
     const state=collectionViewState(hashPath);
     if (['assets','variants','scenes'].includes(state.tab)) setDetailTab(state.tab as 'assets'|'variants'|'scenes');
@@ -365,10 +369,10 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
             </div>
           ))}
 
-        {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} onSelect={setCoverId} onClose={()=>setCoverPicker(false)} onUploaded={refreshSnapshot}/>}
+        {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} projectMediaIds={getCollectionCoverMediaIds(col,snapshot)} coverMediaIds={snapshot.collections.flatMap(item=>item.coverMediaId?[item.coverMediaId]:[])} saveActionLabel="Save Changes" onSelect={setCoverId} onClose={closeCoverPicker} onUploaded={refreshSnapshot}/>}
         {showCreateModal && !coverPicker && (
           <CollectionEditModal
-            coverControl={<><button type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
+            coverControl={<><button ref={coverTriggerRef} type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
             isEdit={true}
             name={colName}
             desc={colDesc}
@@ -579,10 +583,10 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
         </div>
       )}
 
-      {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} onSelect={setCoverId} onClose={()=>setCoverPicker(false)} onUploaded={refreshSnapshot}/>}
+      {coverPicker && <CollectionCoverPicker media={snapshot.media} currentId={coverId} projectMediaIds={getCollectionCoverMediaIds(snapshot.collections.find(item=>item.id===editingColId),snapshot)} coverMediaIds={snapshot.collections.flatMap(item=>item.coverMediaId?[item.coverMediaId]:[])} saveActionLabel={editingColId?'Save Changes':'Create Collection'} onSelect={setCoverId} onClose={closeCoverPicker} onUploaded={refreshSnapshot}/>}
       {showCreateModal && !coverPicker && (
         <CollectionEditModal
-          coverControl={<><button type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
+          coverControl={<><button ref={coverTriggerRef} type="button" className="btn btn-secondary" onClick={()=>setCoverPicker(true)}>Change Cover</button>{coverId === null && <p>Cover removed</p>}</>}
           isEdit={Boolean(editingColId)}
           name={colName}
           desc={colDesc}

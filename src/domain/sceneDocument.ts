@@ -2,10 +2,12 @@ import type {
   BuilderSlot,
   ComponentSnapshot,
   DialogueConfig,
+  DialoguePerformanceDirection,
   MediaLink,
   OutputMode,
   SceneSettings,
 } from '../types/domain';
+import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
   'character',
@@ -56,6 +58,7 @@ export interface SceneDocument {
     speaker: string;
     language: string | null;
     deliveryNotes: string | null;
+    performanceDirection?: DialoguePerformanceDirection;
     exactLine: string;
     captionPreference: NonNullable<DialogueConfig['captionPreference']>;
   } | null;
@@ -152,9 +155,8 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
             mode: dialogue.mode ?? 'spoken',
             speaker: dialogue.speaker,
             language: hasText(dialogue.language) ? dialogue.language : null,
-            deliveryNotes: hasText(dialogue.deliveryNotes)
-              ? dialogue.deliveryNotes
-              : null,
+            deliveryNotes: getEffectiveDialogueDelivery(dialogue) ?? null,
+            ...(dialogue.performanceDirection ? {performanceDirection:structuredClone(dialogue.performanceDirection)} : {}),
             exactLine: dialogue.line,
             captionPreference: dialogue.captionPreference ?? 'unspecified',
           }
