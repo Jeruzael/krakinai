@@ -1,0 +1,636 @@
+{
+  "format": "krakinai-uiux-polish-qa-v1",
+  "sourceBase": "82c38032cd0feff8111422f1161f792c5caf59ce",
+  "featureBranch": "codex/uiux-polish-media-identity",
+  "commands": [
+    {
+      "exitCode": 0,
+      "completedAt": "2026-10-27T16:01:57.4990053+08:00",
+      "command": "npm test -- --reporter=default --reporter=json --outputFile.json=qa-results/uiux-polish/vitest-final.json",
+      "startedAt": "2026-10-27T16:01:27.7705670+08:00"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "completedAt": "2026-10-27T16:08:31.6344955+08:00",
+      "startedAt": "2026-10-27T16:08:25.8414194+08:00"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "completedAt": "2026-10-27T16:08:40.9248463+08:00",
+      "startedAt": "2026-10-27T16:08:31.6510013+08:00"
+    },
+    {
+      "exitCode": 0,
+      "startedAt": "2026-10-27T15:53:08.9214221+08:00",
+      "completedAt": "2026-10-27T15:53:16.4883184+08:00",
+      "command": "npm audit --omit=dev --json"
+    },
+    {
+      "command": "npx playwright test",
+      "startedAt": "2026-10-27T16:05:58.9971235+08:00",
+      "completedAt": "2026-10-27T16:06:23.3388666+08:00",
+      "exitCode": 0
+    }
+  ],
+  "unitTests": {
+    "files": 50,
+    "tests": 329,
+    "passed": 329,
+    "failed": 0,
+    "skipped": 0
+  },
+  "playwright": {
+    "tests": 16,
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "durationMs": 21899.448999999997,
+    "cases": [
+      {
+        "name": "canonical output copy, save, and small legacy backup roundtrip",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "duplicate save requires an explicit decision",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "storyboard order and collection return survive navigation",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 1440",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 768",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 390",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "take preference, project note, comparison and removal keep immutable source scenes",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "polish visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "polish visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed"
+      },
+      {
+        "name": "polish visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed"
+      }
+    ]
+  },
+  "productionVulnerabilities": 0,
+  "protectedPathsUnchanged": [
+    "src/domain",
+    "src/storage",
+    "src/types",
+    "src/hooks/useObjectUrl.ts",
+    "package.json",
+    "package-lock.json"
+  ],
+  "validationFileSha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+  "screenshots": [
+    {
+      "file": "docs/qa/uiux-polish/before/editor-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 136410,
+      "sha256": "0a3c0f15dcbe03e3acc60a4bc5e0ce858402905fa7883d4b9fc01139dd27a140"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/editor-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 43269,
+      "sha256": "b28500a5f1385eefb95f03c45a6a1f780b8bd7c41b757773fb111ec8f36c1e2b"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/editor-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 96702,
+      "sha256": "55ea471dd0857de83dceee4065d76706871fb7df4a635d3c1bf8f9a91cd11563"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/generation-identity-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 111611,
+      "sha256": "baf5076daff14b58edb0f5c5cfad1bb6224e845d975429ecc45dbd91fb730099"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/generation-identity-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 38493,
+      "sha256": "96326e3dff4fdf12f3bb3f66da145e3e83e9a602219938d876ce0530d1a29652"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/generation-identity-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 87882,
+      "sha256": "62465f33d47d4bf9a1dd0c21756590a4b964b60c489d421cb2e6b7b972de765a"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/identity-anchor-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 105281,
+      "sha256": "52cb218d3c437fcc22ff13d882bd45aa12791d7dd845268198c69543773c69e0"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/identity-anchor-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 40877,
+      "sha256": "9a05f8867a3a9eff32c62d56595fdcd397e2ab37a00ebcfc3bae88be04d1280c"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/identity-anchor-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 90240,
+      "sha256": "3b103d6415299270e568b52c058e32da690f9667a3af3c7ac01c34e3c92516ac"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/library-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 96019,
+      "sha256": "7637d3faadea1ce46c098bacdb4e6bbdda7cdd0b68274890e2e9a2c3c6c8869d"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/library-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 35767,
+      "sha256": "16d8ae723f81f25ea28699e946d23128f20083ca405ed060aff43b0556b9bd49"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/library-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 92126,
+      "sha256": "76fce87ed8f34ab9b9e7e0b7c627aea8af99ef30e8595520c416de7cc0525dac"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/media-metadata-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 136410,
+      "sha256": "0a3c0f15dcbe03e3acc60a4bc5e0ce858402905fa7883d4b9fc01139dd27a140"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/media-metadata-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 43266,
+      "sha256": "02c7180cd7c2c048df59a5a8e50599b5095a7fb72778c29527b1425d51fab669"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/media-metadata-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 96697,
+      "sha256": "4335c93dce239592150e5892a7783241a004ca79c885f0612780273ed225e076"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/reference-pack-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 127130,
+      "sha256": "c03e9d021981ddde46ee94f97ebc22792ec44ee74bd249ec396fb621f922fbd9"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/reference-pack-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 33491,
+      "sha256": "898cd8b44bec16c7a62305d77c8105b45169ce40aca3bff965b63fd6d14641ae"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/reference-pack-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 83314,
+      "sha256": "e8fc08700a20dd10ded6d92242d35c1e79a664620f98ceaa6c84e9e5ffae6c91"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/take-compare-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 95092,
+      "sha256": "5ed59ef982a1d057861a84d8da6400cb99d89df4e6080097d12154773cc7f3eb"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/take-compare-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 30415,
+      "sha256": "325afe3e1c01fdb68b83a0fa9bab7acdf44fbd66cd9158ea326f1176ff3fcf94"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/take-compare-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 61303,
+      "sha256": "19db952d2de99aa5e9ecaabfd80b92e8348a34f158114063c611b9fecb70edce"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/takes-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 102747,
+      "sha256": "332853fbe5764dbcc94a624fd9c46e9128507cb4400d0f242dbe981918651c90"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/takes-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 28789,
+      "sha256": "27ac4cf748c02c391417d9a4581975d0757d310a93a9761becbab8d67a8a813a"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/takes-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 64220,
+      "sha256": "2381064e02bea81ed046c9a62c41b229ad1093a1d496b308d6a66f9a9ed0572c"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/variant-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 130056,
+      "sha256": "34eeea88bad78db96ae15d7a3141d4251a9e8296cdc98a7fd3fef39fac947df4"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/variant-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 43646,
+      "sha256": "d15f13a403f37cc61cadb1cdd97cca505fcb838c861def4d67b3ebf6ac4a9e82"
+    },
+    {
+      "file": "docs/qa/uiux-polish/before/variant-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 96861,
+      "sha256": "aa64203ef873e672a942a6a8c51301341ee0ac3aa09de1fda6aa49d6ca548e2e"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/editor-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 136623,
+      "sha256": "cb7917bc9a258d6faedd4713f0877835d6ae590b9173ddf5ee51d6fd85ef8959"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/editor-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 42505,
+      "sha256": "aa8907cbb5c9afc2391fb34f4d122fe4e5b04610b1657525b2c970822e2c827c"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/editor-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 96036,
+      "sha256": "59b24b05e899ea0588d26e96f33e64669475d35bb3672ec614dcf6745e246da8"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/generation-identity-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 119059,
+      "sha256": "8c754d83c0985099cbae99517a052e5f4bd36abe4e2e53590db1bb022f1f4f5b"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/generation-identity-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 42171,
+      "sha256": "a8c9fb084d137c19be6cb881eff591fc88e165bf69deb1df0de2004fd0f0dcd9"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/generation-identity-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 93066,
+      "sha256": "f2ff34c7f236e006ed2e970168df27733efceb912708dbb55bf879f3b2a8bb58"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/identity-anchor-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 114347,
+      "sha256": "7f83f0bacc6ddf686e438ea3a0d76f6c222e1aeb0947498d7acda4f2e5f7baa9"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/identity-anchor-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 41870,
+      "sha256": "58578959cb8694c1565eb7b27e61b38a08e1627ce277e9167c86d5596d19b588"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/identity-anchor-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 94730,
+      "sha256": "81a84debb106a5ec9157e5d664a7953abf7b9c9b81bcbf2742c3383e6b70bdd6"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/library-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 96049,
+      "sha256": "7261164299687c1a4bc8d1b758e6af10210ae006c090f4771c2d62523c9331ed"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/library-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 25157,
+      "sha256": "8d920ba66dbd3c4d67712cb562158927770ec5868b926de4ee0cb84a2783e851"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/library-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 91922,
+      "sha256": "49b3bc5b2a7918f44de83bc457f55201fe8ea536aa50a2b860c3f301c994c654"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/media-metadata-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 138025,
+      "sha256": "cf8c2993ec697297c162954161dbfc4d52a21553eb861abd09bc26b186f3f645"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/media-metadata-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 38162,
+      "sha256": "de4417bdafff667c3a129886d4719f127b871e36bddaa0b842d4793523fb5969"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/media-metadata-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 97027,
+      "sha256": "b8b6369851c72389b3d5821eefa6212405fd4b840d726a1262a9dd558991a966"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/reference-pack-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 110046,
+      "sha256": "d23f50843749d146e6e28c86c72fc1c871b683ac8b132bf968d4aa6397dc3fa9"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/reference-pack-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 42651,
+      "sha256": "8bbf202516cf8029aed72fe7732656912c5bf8b0feb1f04a8c49cd9957980001"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/reference-pack-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 72522,
+      "sha256": "17c55ac7e8490c22b9a91795f777304e3f3f49184e47936ddac9c6c68ebb2039"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/tag-picker-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 117692,
+      "sha256": "7f445e47e1c708dd2bfc348fa02562e601c05d334f33fa32abf33d781843fc40"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/tag-picker-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 33546,
+      "sha256": "f22274e47ed4f4b7879e29aaa272c6f18029567bd5dc684178fd57af7ab70d0a"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/tag-picker-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 70837,
+      "sha256": "59a878b30ca55453106280bb634168edf31649f4af29849b52965f03ef89c0cf"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/take-compare-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 81495,
+      "sha256": "6886dea9e5fa2d8d506b51c17a048ee4eae70b47d13ee3f1f060a35bc6d8b9ce"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/take-compare-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 30559,
+      "sha256": "743590807a13a6e54545fc967c4d6c67bda0fe52b8de099ab2df88397777a38d"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/take-compare-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 54966,
+      "sha256": "f7f2953687c6de9f68e40659e1508ec195ab273337bb3f4b6f5a5e245e735175"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/takes-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 89042,
+      "sha256": "b216a4014373421acceae50b2cb4c1c9e0134305f492c6b510241cfe461535fb"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/takes-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 28540,
+      "sha256": "1603758e60813768fd803cc9752c3c432c0d2682bb1e6b108857f11ebedfc85c"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/takes-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 52797,
+      "sha256": "a31c4aa3b1fd3793a6740e6565fef24c63c1e9096e04fa181e843d0d52b74fb5"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/variant-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 133052,
+      "sha256": "2b2562c0e3b4f6db4e6e0815fdd766ba1b46008f67024bca6b1c6f940347dfe7"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/variant-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 38589,
+      "sha256": "5edbbd89613d49a50ff545d3bc644115290dc486f778a0769138c2126001c5bc"
+    },
+    {
+      "file": "docs/qa/uiux-polish/after/variant-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 97540,
+      "sha256": "c22d0d376e2439ac7fe0d98efbd390901d7e06df992c7f77f946930a44055a8e"
+    }
+  ],
+  "warnings": {
+    "tests": {
+      "reactAct": 39,
+      "noColorForceColor": 0
+    },
+    "typecheck": {
+      "reactAct": 0,
+      "noColorForceColor": 0
+    },
+    "build": {
+      "reactAct": 0,
+      "noColorForceColor": 0
+    },
+    "browser": {
+      "reactAct": 0,
+      "noColorForceColor": 2
+    }
+  },
+  "actualUserProfileOpened": false,
+  "schemaOrStorageLimitsChanged": false,
+  "knownLimits": [
+    "Actual Windows File Explorer drag was not exercised; tests use native Chromium DataTransfer and file-input APIs.",
+    "No NVDA/JAWS manual screen-reader session was performed.",
+    "Maximum-size duplicate comparison latency was not benchmarked.",
+    "Optional clipboard screenshot paste is not implemented."
+  ],
+  "resolvedFindings": [
+    "Saved Master Identity is labelled as frozen instead of calling an unselected stale anchor current.",
+    "Long unbroken take note labels wrap without widening the modal."
+  ],
+  "earlierFailedAttempts": [
+    "Concurrent first full run: one existing dialogueCompatibility test timed out at 5s; isolated rerun passed 329/329 without timeout changes.",
+    "First synthetic video encoder emitted zero MP4 bytes and header-only WebM; explicit canvas frames now decode independently before upload.",
+    "New long-name geometry test caught note-label overflow at 768 and 390; fixed with wrapping and all three widths passed."
+  ]
+}

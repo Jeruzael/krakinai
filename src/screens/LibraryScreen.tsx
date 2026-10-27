@@ -15,6 +15,7 @@ import { CATEGORY_LABELS } from '../domain/validation';
 import type { MediaAsset, PromptCategory } from '../types/domain';
 import { PromptCard } from '../components/PromptCard';
 import { MediaThumbnail } from '../components/MediaThumbnail';
+import { LibraryTagFilters } from '../components/LibraryTagFilters';
 import {
   createDraftFromSavedScene,
   deleteSavedScene,
@@ -48,13 +49,26 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   } = useLibrary();
 
   const [scenesSearch, setScenesSearch] = useState('');
-  const [selectedSceneIds,setSelectedSceneIds] = useState<Set<string>>(new Set());
-  useEffect(() => {setSelectedSceneIds(new Set());},[mode,category]);
-  useEffect(() => {setSelectedSceneIds(previous=>{const ids=new Set(snapshot?.scenes.map(scene=>scene.id)??[]);const next=[...previous].filter(id=>ids.has(id));return next.length===previous.size?previous:new Set(next);});},[snapshot?.scenes]);
+  const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(
+    new Set()
+  );
+  useEffect(() => {
+    setSelectedSceneIds(new Set());
+  }, [mode, category]);
+  useEffect(() => {
+    setSelectedSceneIds((previous) => {
+      const ids = new Set(snapshot?.scenes.map((scene) => scene.id) ?? []);
+      const next = [...previous].filter((id) => ids.has(id));
+      return next.length === previous.size ? previous : new Set(next);
+    });
+  }, [snapshot?.scenes]);
 
   useEffect(() => {
     if (browseState.scrollY > 0) {
-      window.scrollTo({ top: browseState.scrollY, behavior: 'instant' as ScrollBehavior });
+      window.scrollTo({
+        top: browseState.scrollY,
+        behavior: 'instant' as ScrollBehavior,
+      });
     }
   }, [browseState.scrollY]);
 
@@ -81,16 +95,6 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
     if (!snapshot || mode !== 'favorites') return [];
     return snapshot.variants.filter((v) => v.favorite);
   }, [snapshot, mode]);
-
-  const availableTags = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const a of baseAssets) {
-      for (const t of a.tags) {
-        counts.set(t, (counts.get(t) ?? 0) + 1);
-      }
-    }
-    return Array.from(counts.keys()).sort((a, b) => a.localeCompare(b));
-  }, [baseAssets]);
 
   const filteredAssets = useMemo(() => {
     const tokens = browseState.query
@@ -162,9 +166,13 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   if (!snapshot) return null;
 
   const toggleTag = (tag: string) => {
-    const exists = browseState.selectedTags.includes(tag);
+    const exists = browseState.selectedTags.some(
+      (t) => t.trim().toLowerCase() === tag.trim().toLowerCase()
+    );
     const next = exists
-      ? browseState.selectedTags.filter((t) => t !== tag)
+      ? browseState.selectedTags.filter(
+          (t) => t.trim().toLowerCase() !== tag.trim().toLowerCase()
+        )
       : [...browseState.selectedTags, tag];
     updateBrowseState({ selectedTags: next, visibleCount: 24 });
   };
@@ -249,8 +257,33 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           </div>
         </div>
 
-        <SceneBulkActions selectedSceneIds={[...selectedSceneIds]} onClear={()=>setSelectedSceneIds(new Set())} onChanged={refreshSnapshot} />
-        <label style={{display:'flex',alignItems:'center',gap:8}}><input type="checkbox" aria-label="Select all visible scenes" checked={filteredScenes.length>0 && filteredScenes.every(scene=>selectedSceneIds.has(scene.id))} onChange={event=>setSelectedSceneIds(previous=>{const next=new Set(previous);filteredScenes.forEach(scene=>event.target.checked?next.add(scene.id):next.delete(scene.id));return next;})} /> Select all visible scenes</label>
+        <SceneBulkActions
+          selectedSceneIds={[...selectedSceneIds]}
+          onClear={() => setSelectedSceneIds(new Set())}
+          onChanged={refreshSnapshot}
+        />
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input
+            type="checkbox"
+            aria-label="Select all visible scenes"
+            checked={
+              filteredScenes.length > 0 &&
+              filteredScenes.every((scene) => selectedSceneIds.has(scene.id))
+            }
+            onChange={(event) =>
+              setSelectedSceneIds((previous) => {
+                const next = new Set(previous);
+                filteredScenes.forEach((scene) =>
+                  event.target.checked
+                    ? next.add(scene.id)
+                    : next.delete(scene.id)
+                );
+                return next;
+              })
+            }
+          />{' '}
+          Select all visible scenes
+        </label>
         {filteredScenes.length === 0 ? (
           <div className="card">
             <h2 className="section-title" style={{ marginBottom: 8 }}>
@@ -277,16 +310,38 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
               const previewMedia = resultMediaId
                 ? mediaMap.get(resultMediaId)
                 : fallbackRefId
-                ? mediaMap.get(fallbackRefId)
-                : undefined;
+                  ? mediaMap.get(fallbackRefId)
+                  : undefined;
 
-              const slotCount = ORDERED_BUILDER_SLOTS.filter(
-                (s) => Boolean(scene.slots[s])
+              const slotCount = ORDERED_BUILDER_SLOTS.filter((s) =>
+                Boolean(scene.slots[s])
               ).length;
 
               return (
                 <article key={scene.id} className="prompt-card">
-                  <label style={{display:'flex',alignItems:'center',gap:8,padding:12}}><input type="checkbox" aria-label={`Select scene ${scene.title}`} checked={selectedSceneIds.has(scene.id)} onChange={event=>setSelectedSceneIds(previous=>{const next=new Set(previous);if(event.target.checked)next.add(scene.id);else next.delete(scene.id);return next;})} /> Select scene</label>
+                  <label
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      padding: 12,
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      aria-label={`Select scene ${scene.title}`}
+                      checked={selectedSceneIds.has(scene.id)}
+                      onChange={(event) =>
+                        setSelectedSceneIds((previous) => {
+                          const next = new Set(previous);
+                          if (event.target.checked) next.add(scene.id);
+                          else next.delete(scene.id);
+                          return next;
+                        })
+                      }
+                    />{' '}
+                    Select scene
+                  </label>
                   <div
                     className="prompt-card-media"
                     onClick={() => navigate(`/output/${scene.id}`)}
@@ -415,8 +470,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
     mode === 'category' && category
       ? CATEGORY_LABELS[category]
       : mode === 'favorites'
-      ? 'Favorites'
-      : 'All Prompts';
+        ? 'Favorites'
+        : 'All Prompts';
 
   const visibleAssets = filteredAssets.slice(0, browseState.visibleCount);
   const hasActiveFilters =
@@ -529,40 +584,11 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           </div>
         </div>
 
-        {availableTags.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              gap: 6,
-              marginTop: 12,
-              alignItems: 'center',
-            }}
-          >
-            <span
-              className="muted-text"
-              style={{ fontSize: 12, marginRight: 4 }}
-            >
-              Tags:
-            </span>
-            {availableTags.map((tag) => {
-              const active = browseState.selectedTags.includes(tag);
-              return (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => toggleTag(tag)}
-                  className={`btn btn-sm ${
-                    active ? 'btn-primary' : 'btn-secondary'
-                  }`}
-                  style={{ minHeight: 30, padding: '4px 10px', fontSize: 12 }}
-                >
-                  {tag}
-                </button>
-              );
-            })}
-          </div>
-        )}
+        <LibraryTagFilters
+          assets={baseAssets}
+          selectedTags={browseState.selectedTags}
+          onToggle={toggleTag}
+        />
 
         {hasActiveFilters && (
           <div
@@ -584,18 +610,13 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
                 Query: “{browseState.query.trim()}”
               </span>
             )}
-            {browseState.selectedTags.map((t) => (
-              <span key={t} className="badge badge-primary">
-                Tag: {t}
-              </span>
-            ))}
             <button
               type="button"
               className="btn btn-secondary btn-sm"
               onClick={clearAllFilters}
               style={{ minHeight: 30, padding: '4px 10px' }}
             >
-              <X size={13} /> Clear All
+              <X size={13} /> Clear Filters
             </button>
           </div>
         )}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowDown,
   ArrowLeft,
@@ -6,7 +6,7 @@ import {
   Check,
   Star,
   Trash2,
-  Upload,
+  GripVertical,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import {
@@ -23,13 +23,11 @@ import type {
   ReviewStatus,
   VariantType,
 } from '../types/domain';
-import {
-  saveMediaAsset,
-  savePromptAsset,
-  saveVariant,
-} from '../storage/db';
+import { saveMediaAsset, savePromptAsset, saveVariant } from '../storage/db';
 import { MediaMetadataEditor } from '../components/MediaMetadataEditor';
 import { MediaThumbnail } from '../components/MediaThumbnail';
+import { MediaDropZone } from '../components/MediaDropZone';
+import { sameMediaBytes } from '../components/mediaFiles';
 
 interface EditorScreenProps {
   mode: 'create-asset' | 'edit-asset' | 'create-variant' | 'edit-variant';
@@ -63,16 +61,10 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
   parentCharacterId,
   initialCategory,
 }) => {
-  const {
-    snapshot,
-    navigate,
-    setDirtyFormGuard,
-    refreshSnapshot,
-    showToast,
-  } = useLibrary();
+  const { snapshot, navigate, setDirtyFormGuard, refreshSnapshot, showToast } =
+    useLibrary();
 
-  const isVariantMode =
-    mode === 'create-variant' || mode === 'edit-variant';
+  const isVariantMode = mode === 'create-variant' || mode === 'edit-variant';
   const isEditMode = mode === 'edit-asset' || mode === 'edit-variant';
 
   const existingAsset =
@@ -142,6 +134,12 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [uploadErrors, setUploadErrors] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
+  const uploadingRef = useRef(false);
+  const linksRef = useRef(mediaLinks);
+  linksRef.current = mediaLinks;
+  const draggedMedia = useRef<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
 
   useEffect(() => {
     setDirtyFormGuard(dirty);
@@ -180,83 +178,116 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
     if (!dirty) setDirty(true);
   };
 
-  const handleFilesSelected = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
+  const processFiles = async (files: File[]) => {
+    if (!files.length || uploadingRef.current || saving) return;
+    uploadingRef.current = true;
+    setUploading(true);
     setUploadErrors([]);
     const errs: string[] = [];
-    let currentCount = mediaLinks.length;
+    const originalLinks = linksRef.current;
+    let currentCount = originalLinks.length;
     let currentTotalBytes = snapshot.media.reduce(
-      (sum, m) => sum + m.byteSize,
+      (sum, m) => sum + m.byteSize + (m.posterBlob?.size ?? 0),
       0
     );
-
+    const attached = originalLinks
+      .map((link) => mediaMap.get(link.mediaId))
+      .filter((item): item is MediaAsset => !!item);
     const newLinks: MediaLink[] = [];
-    for (const file of files) {
-      const check = validateMediaCandidate({
-        name: file.name,
-        type: file.type,
-        size: file.size,
-        existingCount: currentCount,
-        currentTotalBytes,
-      });
-      if (!check.valid) {
-        errs.push(check.error || `${file.name}: Invalid media file.`);
-        continue;
+    try {
+      for (const file of files) {
+        try {
+          let duplicate = false;
+          for (const media of attached) {
+            if (await sameMediaBytes(file, media.blob)) {
+              duplicate = true;
+              break;
+            }
+          }
+          if (duplicate) {
+            errs.push(
+              `${file.name}: This file is already attached; skipped duplicate.`
+            );
+            continue;
+          }
+          const check = validateMediaCandidate({
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            existingCount: currentCount,
+            currentTotalBytes,
+          });
+          if (!check.valid) {
+            errs.push(check.error || `${file.name}: Invalid media file.`);
+            continue;
+          }
+
+          const savedMedia = await saveMediaAsset({
+            filename: file.name,
+            mimeType: file.type,
+            blob: file,
+          });
+          currentCount += 1;
+          currentTotalBytes += file.size;
+          attached.push(savedMedia);
+          newLinks.push({
+            mediaId: savedMedia.id,
+            role: 'reference',
+            altText: file.name,
+            order: currentCount - 1,
+            filename: savedMedia.filename,
+            mimeType: savedMedia.mimeType,
+          });
+        } catch (err) {
+          errs.push(
+            `${file.name}: ${err instanceof Error ? err.message : 'Failed to store file.'}`
+          );
+        }
       }
 
-      try {
-        const savedMedia = await saveMediaAsset({
-          filename: file.name,
-          mimeType: file.type,
-          blob: file,
-        });
-        currentCount += 1;
-        currentTotalBytes += file.size;
-        newLinks.push({
-          mediaId: savedMedia.id,
-          role: 'reference',
-          altText: file.name,
-          order: currentCount - 1,
-          filename: savedMedia.filename,
-          mimeType: savedMedia.mimeType,
-        });
-      } catch (err) {
-        errs.push(
-          err instanceof Error
-            ? err.message
-            : `${file.name}: Failed to store file.`
-        );
+      if (errs.length > 0) {
+        setUploadErrors(errs);
       }
-    }
-
-    if (errs.length > 0) {
-      setUploadErrors(errs);
-    }
-    if (newLinks.length > 0) {
-      await refreshSnapshot();
-      const combined = [...mediaLinks, ...newLinks];
-      setMediaLinks(combined);
-      if (!coverMediaId) {
-        setCoverMediaId(combined[0].mediaId);
+      if (newLinks.length > 0) {
+        const combined = [...originalLinks, ...newLinks];
+        linksRef.current = combined;
+        setMediaLinks(combined);
+        setCoverMediaId((current) => current ?? combined[0].mediaId);
+        markDirty();
+        await refreshSnapshot();
+        showToast(`Uploaded ${newLinks.length} media file(s).`, 'success');
       }
-      markDirty();
-      showToast(`Uploaded ${newLinks.length} sample file(s).`, 'success');
+    } catch (error) {
+      setUploadErrors([
+        ...errs,
+        error instanceof Error
+          ? error.message
+          : 'Could not refresh uploaded media.',
+      ]);
+    } finally {
+      uploadingRef.current = false;
+      setUploading(false);
     }
-    e.target.value = '';
   };
 
-  const moveMedia = (idx: number, direction: -1 | 1) => {
-    const target = idx + direction;
-    if (target < 0 || target >= mediaLinks.length) return;
+  const reorderMedia = (idx: number, target: number) => {
+    if (
+      uploadingRef.current ||
+      saving ||
+      idx < 0 ||
+      idx === target ||
+      target < 0 ||
+      target >= mediaLinks.length
+    )
+      return;
     const copy = [...mediaLinks];
     const [item] = copy.splice(idx, 1);
     copy.splice(target, 0, item);
     setMediaLinks(copy.map((l, i) => ({ ...l, order: i })));
     markDirty();
   };
+  const moveMedia = (idx: number, direction: -1 | 1) =>
+    reorderMedia(idx, idx + direction);
 
   const removeMedia = (idx: number) => {
     const removed = mediaLinks[idx];
@@ -272,6 +303,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (uploadingRef.current || saving) return;
     setFormError(null);
     setSaving(true);
 
@@ -373,23 +405,26 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
             {mode === 'edit-asset' && `Edit ${existingAsset?.title}`}
             {mode === 'create-variant' &&
               `Add Variant for ${parentCharacter?.title || 'Character'}`}
-            {mode === 'edit-variant' && `Edit Variant ${existingVariant?.title}`}
+            {mode === 'edit-variant' &&
+              `Edit Variant ${existingVariant?.title}`}
           </h1>
         </div>
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-          {dirty && <span className="badge badge-warning">Unsaved changes</span>}
+          {dirty && (
+            <span className="badge badge-warning">Unsaved changes</span>
+          )}
           <button
             type="submit"
             className="btn btn-primary"
-            disabled={saving}
+            disabled={saving || uploading}
           >
             <Check size={16} />{' '}
             {saving
               ? 'Saving...'
               : isVariantMode
-              ? 'Save Variant'
-              : 'Save Prompt'}
+                ? 'Save Variant'
+                : 'Save Prompt'}
           </button>
         </div>
       </div>
@@ -402,7 +437,10 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
 
       <div className="split-layout detail-split">
         {/* Left: Media Upload & Sample Management */}
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div
+          className="card"
+          style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
+        >
           <div>
             <h2 className="section-title" style={{ marginBottom: 4 }}>
               Sample & Reference Media (Optional)
@@ -414,27 +452,18 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
             </p>
           </div>
 
-          <div>
-            <label
-              htmlFor="media-file-upload"
-              className="btn btn-secondary"
-              style={{ width: '100%', cursor: 'pointer' }}
-            >
-              <Upload size={16} /> Choose Image or Video Files (
-              {mediaLinks.length}/6)
-            </label>
-            <input
-              id="media-file-upload"
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp,video/mp4,video/webm"
-              onChange={handleFilesSelected}
-              style={{ display: 'none' }}
-            />
-          </div>
+          <MediaDropZone
+            count={mediaLinks.length}
+            busy={uploading || saving}
+            onFiles={processFiles}
+          />
 
           {uploadErrors.length > 0 && (
-            <div className="banner banner-error" style={{ marginBottom: 0 }}>
+            <div
+              className="banner banner-error"
+              role="alert"
+              style={{ marginBottom: 0 }}
+            >
               <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13 }}>
                 {uploadErrors.map((err, i) => (
                   <li key={i}>{err}</li>
@@ -463,9 +492,44 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                 const isCover =
                   (coverMediaId || mediaLinks[0]?.mediaId) === link.mediaId;
                 return (
-                  <div
+                  <article
                     key={`${link.mediaId}_${idx}`}
-                    className="card"
+                    className="card editor-media-card"
+                    aria-label={`Attached media ${idx + 1}`}
+                    data-reorder-target={dropTarget === link.mediaId}
+                    onDragOver={(event) => {
+                      if (
+                        !draggedMedia.current ||
+                        !Array.from(event.dataTransfer.types).includes(
+                          'application/x-krakinai-media-order'
+                        )
+                      )
+                        return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      event.dataTransfer.dropEffect = 'move';
+                      setDropTarget(link.mediaId);
+                    }}
+                    onDragLeave={() => setDropTarget(null)}
+                    onDrop={(event) => {
+                      if (
+                        !draggedMedia.current ||
+                        event.dataTransfer.getData(
+                          'application/x-krakinai-media-order'
+                        ) !== draggedMedia.current
+                      )
+                        return;
+                      event.preventDefault();
+                      event.stopPropagation();
+                      reorderMedia(
+                        mediaLinks.findIndex(
+                          (item) => item.mediaId === draggedMedia.current
+                        ),
+                        idx
+                      );
+                      draggedMedia.current = null;
+                      setDropTarget(null);
+                    }}
                     style={{
                       padding: 12,
                       display: 'flex',
@@ -473,24 +537,32 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                       gap: 10,
                     }}
                   >
-                    <div style={{ height: 160, borderRadius: 8, overflow: 'hidden' }}>
-                      <MediaThumbnail media={m} altText={link.altText} />
-                    </div>
-                    {m && <MediaMetadataEditor media={m} onSaved={async () => { await refreshSnapshot(); }} />}
-
                     <div
                       style={{
-                        display: 'flex',
-                        gap: 8,
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
+                        height: 160,
+                        borderRadius: 8,
+                        overflow: 'hidden',
                       }}
                     >
+                      <MediaThumbnail media={m} altText={link.altText} />
+                    </div>
+                    {m && (
+                      <MediaMetadataEditor
+                        media={m}
+                        onSaved={async () => {
+                          await refreshSnapshot();
+                        }}
+                      />
+                    )}
+
+                    <div className="editor-media-controls">
                       <input
                         className="input"
                         style={{ flex: 1, minHeight: 36, fontSize: 13 }}
-                        aria-label="Accessibility Description" placeholder="Accessibility Description"
+                        aria-label="Accessibility Description"
+                        placeholder="Accessibility Description"
                         value={link.altText}
+                        disabled={uploading || saving}
                         onChange={(e) => {
                           const next = [...mediaLinks];
                           next[idx] = { ...link, altText: e.target.value };
@@ -502,6 +574,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                         className="select"
                         style={{ width: 130, minHeight: 36, fontSize: 13 }}
                         value={link.role}
+                        disabled={uploading || saving}
                         onChange={(e) => {
                           const next = [...mediaLinks];
                           next[idx] = {
@@ -536,15 +609,39 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                           setCoverMediaId(link.mediaId);
                           markDirty();
                         }}
+                        disabled={uploading || saving}
                       >
-                        <Star size={13} /> {isCover ? 'Cover Image' : 'Set Cover'}
+                        <Star size={13} />{' '}
+                        {isCover ? 'Cover Image' : 'Set Cover'}
                       </button>
 
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button
                           type="button"
+                          className="btn btn-secondary btn-sm media-reorder-handle"
+                          draggable={!uploading && !saving}
+                          disabled={uploading || saving}
+                          aria-label={`Drag sample ${idx + 1} to reorder`}
+                          title="Drag to reorder, or use Move Up / Down"
+                          onDragStart={(event) => {
+                            draggedMedia.current = link.mediaId;
+                            event.dataTransfer.effectAllowed = 'move';
+                            event.dataTransfer.setData(
+                              'application/x-krakinai-media-order',
+                              link.mediaId
+                            );
+                          }}
+                          onDragEnd={() => {
+                            draggedMedia.current = null;
+                            setDropTarget(null);
+                          }}
+                        >
+                          <GripVertical size={14} aria-hidden="true" />
+                        </button>
+                        <button
+                          type="button"
                           className="btn btn-secondary btn-sm"
-                          disabled={idx === 0}
+                          disabled={idx === 0 || uploading || saving}
                           onClick={() => moveMedia(idx, -1)}
                           aria-label={`Move sample ${idx + 1} up`}
                         >
@@ -553,7 +650,9 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                         <button
                           type="button"
                           className="btn btn-secondary btn-sm"
-                          disabled={idx === mediaLinks.length - 1}
+                          disabled={
+                            idx === mediaLinks.length - 1 || uploading || saving
+                          }
                           onClick={() => moveMedia(idx, 1)}
                           aria-label={`Move sample ${idx + 1} down`}
                         >
@@ -563,13 +662,14 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
                           type="button"
                           className="btn btn-danger btn-sm"
                           onClick={() => removeMedia(idx)}
+                          disabled={uploading || saving}
                           aria-label={`Remove sample ${idx + 1}`}
                         >
                           <Trash2 size={13} />
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
@@ -582,8 +682,7 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
             <div className="banner banner-info">
               <div>
                 <strong>
-                  Parent Character:{' '}
-                  {parentCharacter?.title || resolvedParentId}
+                  Parent Character: {parentCharacter?.title || resolvedParentId}
                 </strong>
                 <p style={{ margin: '4px 0 0', fontSize: 13 }}>
                   Locked Identity Context: This variant records only the changed
@@ -647,7 +746,8 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
           ) : (
             <div className="form-group">
               <label htmlFor="editor-variant-type" className="form-label">
-                Variant Type * (Maps to {SLOT_LABELS[VARIANT_TYPE_TO_SLOT[variantType]]})
+                Variant Type * (Maps to{' '}
+                {SLOT_LABELS[VARIANT_TYPE_TO_SLOT[variantType]]})
               </label>
               <select
                 id="editor-variant-type"
@@ -876,14 +976,14 @@ export const EditorScreen: React.FC<EditorScreenProps> = ({
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={saving}
+              disabled={saving || uploading}
             >
               <Check size={16} />{' '}
               {saving
                 ? 'Saving...'
                 : isVariantMode
-                ? 'Save Variant'
-                : 'Save Prompt'}
+                  ? 'Save Variant'
+                  : 'Save Prompt'}
             </button>
           </div>
         </div>
