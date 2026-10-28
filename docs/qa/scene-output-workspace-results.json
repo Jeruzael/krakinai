@@ -43,7 +43,9 @@
       "exitCode": 0,
       "reconciliationTests": 3,
       "countedHistoricalChecks": 207,
-      "historicalScreenshots": 45
+      "historicalScreenshots": 45,
+      "artifactSummaryRegressionTests": 3,
+      "totalTests": 6
     }
   },
   "outputIntegrity": {
@@ -545,7 +547,10 @@
       "src/components/scenePromptViewer.css": "9cf635fdc823505531ef0f71984ca015d1a01087793ae27dadbeac3802163272",
       "src/domain/promptSections.ts": "d0882f55cfbc75dc58f1e5a0b134bb5ad3e7334190e667c9731cfd92ed0917a5",
       "src/screens/PromptOutputScreen.tsx": "ae5843e83f3857ec21b7ef8a5be6e8c2ca865ef2ae9ffb95e7ce7f8bd15a749b",
-      "src/screens/promptOutput.css": "f31bd3f3ab83c4724976a78d5ada06fa8c26f97cd9bc4032d74447d8296b766a"
+      "src/screens/promptOutput.css": "f31bd3f3ab83c4724976a78d5ada06fa8c26f97cd9bc4032d74447d8296b766a",
+      "scripts/qa/ci-browser-summary.mjs": "a378dfdeaa9211483be3f75ca88c1a026255b50829995952a32137b9c43de5e7",
+      "scripts/qa/ci-summary.mjs": "7abb6dda0f88e26377db37b8a7830594fede68c0921d6dc033c8ec39729f8ce1",
+      "scripts/qa/reconcile-results.test.mjs": "94f8015f716df8ae51b9041830e06afe84ec4a4c0f8151047236f97272b835df"
     }
   },
   "screenshots": {
@@ -896,5 +901,38 @@
     "200% reflow tested at the equivalent 720x450 CSS viewport, not via the browser chrome zoom control.",
     "External provider generation quality and current provider capability claims were not retested."
   ],
-  "remoteCi": "Reported separately in the PR checks and final delivery; this file records local validation."
+  "remoteCi": "Reported separately in the PR checks and final delivery; this file records local validation.",
+  "ciSummaryFollowup": {
+    "initialRun": "https://github.com/Jeruzael/krakinai/actions/runs/40675070219",
+    "initialTestedCommit": "95bd803e5e1bb77c7c4b2fbfc9f8a9930a50710b",
+    "initialRunConclusion": "failure",
+    "initialRunPassedChecks": {
+      "unit": 409,
+      "browser": 72,
+      "typecheck": true,
+      "build": true,
+      "productionAuditVulnerabilities": 0
+    },
+    "initialFailure": "Evidence summary rejected 72 passing browser cases because the legacy report cap was 64.",
+    "repair": "Extracted summary collection for focused tests; finite case bound is 128; unchanged complete-artifact byte bound is 65536. No results are truncated.",
+    "regressionEvidence": {
+      "before": {
+        "passed": 3,
+        "failed": 3,
+        "exitCode": 1
+      },
+      "after": {
+        "passed": 6,
+        "failed": 0,
+        "exitCode": 0
+      }
+    },
+    "actualLocalBrowserReport": {
+      "tests": 72,
+      "passed": 72,
+      "summaryBytes": 14962,
+      "exitCode": 0
+    },
+    "hostedRerun": "Pending signed follow-up commit and push."
+  }
 }

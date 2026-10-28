@@ -1,5 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { summarizeBrowserSmoke } from './ci-browser-summary.mjs';
 
 const gitSha = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
 const workingTreeDirty = Boolean(execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim());
@@ -30,29 +31,7 @@ if (existsSync('qa-results/vitest.xml')) {
 }
 if (existsSync('qa-results/playwright.json')) {
   const result = JSON.parse(readFileSync('qa-results/playwright.json', 'utf8'));
-  const cases = [];
-  const walk = suite => {
-    for (const spec of suite.specs ?? []) {
-      for (const entry of spec.tests ?? []) {
-        cases.push({ name: spec.title, status: entry.status, expectedStatus: entry.expectedStatus,
-          skipReason: entry.annotations?.find(annotation => annotation.type === 'skip')?.description ?? null });
-      }
-    }
-    for (const nested of suite.suites ?? []) walk(nested);
-  };
-  for (const suite of result.suites ?? []) walk(suite);
-  // The UI suite now includes 31 cases. Keep a finite case cap as well as the
-  // separate 64 KiB artifact bound below; never silently truncate results.
-  if (cases.length > 64) throw new Error('Browser smoke report exceeded its 64-case artifact bound.');
-  summary.browserSmoke = {
-    tests: result.stats?.expected + result.stats?.unexpected + result.stats?.flaky + result.stats?.skipped,
-    passed: result.stats?.expected,
-    failed: result.stats?.unexpected,
-    flaky: result.stats?.flaky,
-    skipped: result.stats?.skipped,
-    durationMs: result.stats?.duration,
-    cases,
-  };
+  summary.browserSmoke = summarizeBrowserSmoke(result);
 }
 
 mkdirSync('qa-results', { recursive: true });

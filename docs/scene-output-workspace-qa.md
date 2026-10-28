@@ -22,11 +22,17 @@ The ordinary output workspace contains configuration, real associated media and 
 | `npm run build` | Passed | 0 |
 | `npm audit --omit=dev` | 0 vulnerabilities | 0 |
 | `npm run test:e2e` | **72 passed**, 0 failures/flaky/skips | 0 |
-| `npm run test:qa` | 3 reconciliation tests; historical ledger 207 checks / 45 screenshots | 0 |
+| `npm run test:qa` | 6 checks (3 ledger + 3 CI summary regressions); historical ledger 207 checks / 45 screenshots | 0 |
 
 The historical ledger is a separate evidence set from this branch's 72 Playwright test cases. The new output-specific browser files contain 15 cases, including screenshots. Four integrity cases each exercise eight output selections, for **32 byte-integrity iterations**.
 
 Actual machine evidence: [results and hashes](qa/scene-output-workspace-results.json). Local raw reports/logs remain under `qa-results/` and are excluded from the commit. GitHub Actions for the pushed commit is reported separately in PR checks and the final delivery.
+
+## Hosted CI reporting follow-up
+
+[Initial GitHub Actions run](https://github.com/Jeruzael/krakinai/actions/runs/40675070219) tested signed commit `95bd803e5e1bb77c7c4b2fbfc9f8a9930a50710b`: 409 unit tests, all 72 browser tests, typecheck, build, production audit and ledger checks passed. The run failed afterward at `node scripts/qa/ci-summary.mjs` because its legacy 64-case cap rejected the expanded 72-case report.
+
+The reporting-only correction extracts case collection into `scripts/qa/ci-browser-summary.mjs` and permits up to 128 cases. The complete artifact's 64 KiB bound remains unchanged, all cases are retained, and excess cases still fail explicitly. Three new regression checks failed against the old bound and passed after correction; `npm run test:qa` now passes all six checks. Running the actual CI summary command against the local 72-case report succeeds and writes 14,962 bytes. Application sources and workflow permissions/commands are unchanged by this follow-up. Hosted rerun is pending the signed follow-up commit and push; its final status will appear in the PR checks and delivery.
 
 ## Output integrity
 
@@ -106,6 +112,9 @@ Playwright uses its own contexts on `127.0.0.1:4173`. Before screenshots were ca
 - `e2e/output-workspace.spec.mjs`
 - `e2e/performance-studio.spec.mjs`
 - `e2e/scene-workflows.spec.mjs`
+- `scripts/qa/ci-browser-summary.mjs`
+- `scripts/qa/ci-summary.mjs`
+- `scripts/qa/reconcile-results.test.mjs`
 - `src/__tests__/appWorkflow.test.tsx`
 - `src/__tests__/promptOutputWorkspace.test.tsx`
 - `src/__tests__/promptSections.test.ts`
