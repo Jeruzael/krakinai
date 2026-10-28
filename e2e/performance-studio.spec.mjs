@@ -89,6 +89,7 @@ test('version 2 acting persists through all outputs, Script Board, Edit a Copy a
       .selectOption(workflow);
     if (mode)
       await page.getByRole('tab', { name: new RegExp(`^${mode}`) }).click();
+    await page.getByRole('button', { name: 'Show Prompt', exact: true }).click();
     const raw = page.getByRole('button', { name: 'Raw', exact: true });
     if (await raw.isVisible()) await raw.click();
     const text = await page
@@ -100,6 +101,7 @@ test('version 2 acting persists through all outputs, Script Board, Edit a Copy a
     else expect(text).toContain(exactDialogue);
     if (workflow === 'json')
       expect(JSON.parse(text).dialogue.performanceDirection).toEqual(direction);
+    await page.keyboard.press('Escape');
   }
   await page.getByRole('button', { name: 'Save Scene', exact: true }).click();
   await expect(page).toHaveURL(/#\/output\/scene_/);

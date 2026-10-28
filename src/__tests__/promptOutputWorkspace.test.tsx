@@ -2,7 +2,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { LibraryProvider, useLibrary } from '../context/LibraryContext';
-import { ConfirmModal } from '../components/SharedModals';
+import {
+  ConfirmModal,
+  ClipboardFallbackModal,
+} from '../components/SharedModals';
 import { PromptOutputScreen } from '../screens/PromptOutputScreen';
 import {
   clearAllStoresForTesting,
@@ -116,18 +119,19 @@ function OutputHost({ id }: { id: string }) {
     <>
       <PromptOutputScreen id={routeId} />
       <ConfirmModal />
+      <ClipboardFallbackModal />
     </>
   );
 }
 
-async function renderOutput(id: string) {
+async function renderOutput(id: string, waitForImages = true) {
   render(
     <LibraryProvider>
       <OutputHost id={id} />
     </LibraryProvider>
   );
   await screen.findByRole('heading', { name: 'Quiet Library', level: 1 });
-  await waitFor(() =>
+  if (waitForImages) await waitFor(() =>
     expect(
       screen
         .getAllByAltText('Character view 1')
@@ -137,6 +141,122 @@ async function renderOutput(id: string) {
 }
 
 describe('Prompt Output studio workspace', () => {
+  it('can preview an existing reference-pack association even when it is absent from the current slot links', async () => {
+    const user = userEvent.setup(),
+      draft = await createFixture(),
+      media = (await getAllSnapshot()).media[0];
+    for (const slot of Object.values(draft.slots))
+      if (slot) slot.mediaLinks = [];
+    await saveSceneDraft({
+      ...draft,
+      referencePack: {
+        version: 1,
+        entries: [
+          {
+            associationId: 'captured_pack_reference',
+            mediaId: media.id,
+            sourceSlot: 'legacy',
+            sourceId: 'preserved_reference',
+            sourceTitle: 'Captured reference',
+            role: 'reference',
+            altText: 'Captured pack image',
+            filename: media.filename,
+            purpose: 'general',
+            order: 0,
+          },
+        ],
+      },
+      bumpInputRevision: false,
+    });
+    await renderOutput(draft.id, false);
+    await user.selectOptions(
+      screen.getByLabelText('Workspace Layout'),
+      'split'
+    );
+    const visual = screen.getByRole('region', { name: 'Scene Visual' });
+    expect(
+      within(visual).getByRole('button', { name: 'Preview Media' })
+    ).toBeEnabled();
+    expect(within(visual).getByAltText('Captured pack image')).toBeVisible();
+  });
+  it('keeps the chosen visual association when switching workspace layouts', async () => {
+    const user = userEvent.setup(),
+      draft = await createFixture();
+    await renderOutput(draft.id);
+    const layout = screen.getByLabelText('Workspace Layout');
+    await user.selectOptions(layout, 'split');
+    const picker = screen.getByLabelText('Associated media');
+    const sample = within(picker)
+      .getAllByRole('option')
+      .find((option) => option.textContent?.startsWith('Sample'))!;
+    await user.selectOptions(picker, sample.getAttribute('value')!);
+    await user.selectOptions(layout, 'tabs');
+    await user.click(screen.getByRole('tab', { name: 'Preview' }));
+    expect(
+      within(screen.getByRole('region', { name: 'Scene Visual' })).getAllByText(
+        'Sample'
+      ).length
+    ).toBeGreaterThan(0);
+  });
+  it('keeps the existing manual editor reachable in Studio Tools', async () => {
+    const user = userEvent.setup(),
+      draft = await createFixture();
+    await renderOutput(draft.id);
+    await user.selectOptions(screen.getByLabelText('Workspace Layout'), 'tabs');
+    await user.click(screen.getByRole('tab', { name: 'Tools' }));
+    await user.click(screen.getByRole('button', { name: 'Edit This Output' }));
+    expect(
+      screen.getByRole('textbox', { name: 'Manual prompt output' })
+    ).toBeVisible();
+    expect(
+      screen.getByRole('textbox', { name: 'Manual prompt output' })
+    ).toHaveFocus();
+  });
+  it('keeps the manual clipboard fallback operable when copy is blocked in the prompt viewer', async () => {
+    const user = userEvent.setup();
+    vi.spyOn(navigator.clipboard, 'writeText').mockRejectedValue(
+      new Error('Synthetic clipboard denial')
+    );
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    await user.click(screen.getByRole('button', { name: 'Copy Prompt' }));
+    const fallback = await screen.findByRole('dialog', {
+      name: 'Manual Copy Required',
+    });
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(
+      within(fallback).getByLabelText('Selectable Prompt Text')
+    ).toHaveValue(assembleScenePrompt(draft).outputs.structured);
+    await user.click(within(fallback).getByRole('button', { name: 'Close' }));
+    expect(screen.getByRole('dialog', { name: /^Scene Prompt/ })).toBeVisible();
+  });
+  it('opens a complete prompt only on request and switches layouts without storing presentation state', async () => {
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    await renderOutput(draft.id);
+    const before = await getAllSnapshot();
+    expect(
+      screen.queryByRole('region', { name: 'Complete prompt text' })
+    ).not.toBeInTheDocument();
+    const layout = screen.getByRole('combobox', { name: 'Workspace Layout' });
+    await user.selectOptions(layout, 'split');
+    await user.selectOptions(layout, 'tabs');
+    expect(screen.getByRole('tab', { name: 'Configuration' })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    expect(screen.getByRole('dialog')).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
+    expect(
+      screen.getByRole('region', { name: 'Complete prompt text' }).textContent
+    ).toBe(assembleScenePrompt(draft).outputs.structured);
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: 'Show Prompt' })).toHaveFocus();
+    expect((await getAllSnapshot()).drafts).toEqual(before.drafts);
+    expect((await getAllSnapshot()).scenes).toEqual(before.scenes);
+  });
   beforeEach(async () => {
     vi.restoreAllMocks();
     window.location.hash = '#/';
@@ -144,30 +264,48 @@ describe('Prompt Output studio workspace', () => {
   });
 
   it('saves a new project take atomically and retains the originating shot return', async () => {
-    const user=userEvent.setup(); const draft=await createFixture();
-    const collection=await createCollection({name:'Film'});
-    const project=await addProjectShot({collectionId:collection.id,title:'Waiting'});
-    const shotId=project.project!.shots[0].id;
-    window.location.hash=`#/output/${draft.id}?collection=${collection.id}&shot=${shotId}&takeTarget=1`;
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    const collection = await createCollection({ name: 'Film' });
+    const project = await addProjectShot({
+      collectionId: collection.id,
+      title: 'Waiting',
+    });
+    const shotId = project.project!.shots[0].id;
+    window.location.hash = `#/output/${draft.id}?collection=${collection.id}&shot=${shotId}&takeTarget=1`;
     await renderOutput(draft.id);
-    await user.click(screen.getByRole('button',{name:'Save New Take'}));
-    await screen.findByRole('button',{name:'Back to Collection'});
-    const saved=await getAllSnapshot();
+    await user.click(screen.getByRole('button', { name: 'Save New Take' }));
+    await screen.findByRole('button', { name: 'Back to Collection' });
+    const saved = await getAllSnapshot();
     expect(saved.scenes).toHaveLength(1);
-    expect(saved.collections[0].project!.shots[0].takeSceneIds).toEqual([saved.scenes[0].id]);
-    expect(saved.scenes[0].saveProjectTarget).toEqual({collectionId:collection.id,shotId});
-    await user.click(screen.getByRole('button',{name:'Back to Collection'}));
-    expect(window.location.hash).toContain(`/collections/${collection.id}?tab=storyboard`);
+    expect(saved.collections[0].project!.shots[0].takeSceneIds).toEqual([
+      saved.scenes[0].id,
+    ]);
+    expect(saved.scenes[0].saveProjectTarget).toEqual({
+      collectionId: collection.id,
+      shotId,
+    });
+    await user.click(
+      screen.getByRole('button', { name: 'Back to Collection' })
+    );
+    expect(window.location.hash).toContain(
+      `/collections/${collection.id}?tab=storyboard`
+    );
   });
 
   it('does not silently save a detached scene when the requested shot is unavailable', async () => {
-    const user=userEvent.setup(); const draft=await createFixture();
-    window.location.hash=`#/output/${draft.id}?collection=deleted&shot=missing&takeTarget=1`;
+    const user = userEvent.setup();
+    const draft = await createFixture();
+    window.location.hash = `#/output/${draft.id}?collection=deleted&shot=missing&takeTarget=1`;
     await renderOutput(draft.id);
-    await user.click(screen.getByRole('button',{name:'Save Scene'}));
+    await user.click(screen.getByRole('button', { name: 'Save Scene' }));
     expect((await getAllSnapshot()).scenes).toHaveLength(0);
-    expect(screen.getAllByText(/This project shot is unavailable/).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('button',{name:'Continue as Standalone Draft'}));
+    expect(
+      screen.getAllByText(/This project shot is unavailable/).length
+    ).toBeGreaterThan(0);
+    await user.click(
+      screen.getByRole('button', { name: 'Continue as Standalone Draft' })
+    );
     expect(window.location.hash).toBe(`#/output/${draft.id}`);
   });
 
@@ -175,11 +313,14 @@ describe('Prompt Output studio workspace', () => {
     const user = userEvent.setup();
     const draft = await createFixture();
     await renderOutput(draft.id);
-    await user.click(screen.getByRole('button', {name:'Save Scene'}));
+    await user.click(screen.getByRole('button', { name: 'Save Scene' }));
     await waitFor(() => expect(window.location.hash).toMatch(/output\/scene_/));
-    act(() => { window.location.hash = `#/output/${draft.id}`; window.dispatchEvent(new HashChangeEvent('hashchange')); });
-    await user.click(await screen.findByRole('button', {name:'Save Scene'}));
-    await screen.findByRole('dialog', {name:'Similar saved scene'});
+    act(() => {
+      window.location.hash = `#/output/${draft.id}`;
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await user.click(await screen.findByRole('button', { name: 'Save Scene' }));
+    await screen.findByRole('dialog', { name: 'Similar saved scene' });
     expect((await getAllSnapshot()).scenes).toHaveLength(1);
   });
 
@@ -189,24 +330,43 @@ describe('Prompt Output studio workspace', () => {
     const existing = await saveSceneFromDraft(draft.id);
     await renderOutput(draft.id);
     const before = await getAllSnapshot();
-    await user.click(screen.getByRole('button', {name:'Edit This Output'}));
+    await user.click(screen.getByRole('button', { name: 'Edit This Output' }));
     await user.clear(screen.getByLabelText('Manual prompt output'));
-    await user.type(screen.getByLabelText('Manual prompt output'), 'Unfinished structured text');
-    await user.click(screen.getByRole('tab', {name:'Narrative'}));
-    await user.click(screen.getByRole('button', {name:'Edit This Output'}));
+    await user.type(
+      screen.getByLabelText('Manual prompt output'),
+      'Unfinished structured text'
+    );
+    await user.click(screen.getByRole('tab', { name: 'Narrative' }));
+    await user.click(screen.getByRole('button', { name: 'Edit This Output' }));
     await user.clear(screen.getByLabelText('Manual prompt output'));
-    await user.type(screen.getByLabelText('Manual prompt output'), 'Unfinished narrative text');
-    await user.click(screen.getByRole('button', {name:'Save Scene'}));
-    await screen.findByRole('dialog', {name:'Similar saved scene'});
-    await user.click(screen.getByRole('button', {name:'Cancel'}));
-    expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished narrative text');
-    await user.click(screen.getByRole('button', {name:'Save Scene'}));
-    await user.click(await screen.findByRole('button', {name:'Open Existing Scene'}));
+    await user.type(
+      screen.getByLabelText('Manual prompt output'),
+      'Unfinished narrative text'
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Scene' }));
+    await screen.findByRole('dialog', { name: 'Similar saved scene' });
+    await user.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(screen.getByLabelText('Manual prompt output')).toHaveValue(
+      'Unfinished narrative text'
+    );
+    await user.click(screen.getByRole('button', { name: 'Save Scene' }));
+    await user.click(
+      await screen.findByRole('button', { name: 'Open Existing Scene' })
+    );
     await waitFor(() => expect(window.location.hash).toContain(existing.id));
-    act(() => { window.location.hash = `#/output/${draft.id}`; window.dispatchEvent(new HashChangeEvent('hashchange')); });
-    await waitFor(() => expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished structured text'));
-    await user.click(screen.getByRole('tab', {name:'Narrative'}));
-    expect(screen.getByLabelText('Manual prompt output')).toHaveValue('Unfinished narrative text');
+    act(() => {
+      window.location.hash = `#/output/${draft.id}`;
+      window.dispatchEvent(new HashChangeEvent('hashchange'));
+    });
+    await waitFor(() =>
+      expect(screen.getByLabelText('Manual prompt output')).toHaveValue(
+        'Unfinished structured text'
+      )
+    );
+    await user.click(screen.getByRole('tab', { name: 'Narrative' }));
+    expect(screen.getByLabelText('Manual prompt output')).toHaveValue(
+      'Unfinished narrative text'
+    );
     const after = await getAllSnapshot();
     expect(after.drafts).toEqual(before.drafts);
     expect(after.scenes).toEqual(before.scenes);
@@ -215,9 +375,16 @@ describe('Prompt Output studio workspace', () => {
   it('guards rapid first save clicks', async () => {
     const draft = await createFixture();
     await renderOutput(draft.id);
-    const save = screen.getByRole('button', {name:'Save Scene'});
-    act(() => { save.click(); save.click(); });
-    await waitFor(() => expect(screen.queryByRole('button', {name:'Save Scene'})).not.toBeInTheDocument());
+    const save = screen.getByRole('button', { name: 'Save Scene' });
+    act(() => {
+      save.click();
+      save.click();
+    });
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Save Scene' })
+      ).not.toBeInTheDocument()
+    );
     expect((await getAllSnapshot()).scenes).toHaveLength(1);
   });
 
@@ -225,13 +392,25 @@ describe('Prompt Output studio workspace', () => {
     const draft = await createFixture();
     await saveSceneFromDraft(draft.id);
     await renderOutput(draft.id);
-    const save = screen.getByRole('button', {name:'Save Scene'});
-    act(() => { save.click(); save.click(); });
-    const dialog = await screen.findByRole('dialog', {name:'Similar saved scene'});
+    const save = screen.getByRole('button', { name: 'Save Scene' });
+    act(() => {
+      save.click();
+      save.click();
+    });
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Similar saved scene',
+    });
     expect((await getAllSnapshot()).scenes).toHaveLength(1);
-    const version = within(dialog).getByRole('button', {name:'Save as New Version'});
-    act(() => { version.click(); version.click(); });
-    await waitFor(async () => expect((await getAllSnapshot()).scenes).toHaveLength(2));
+    const version = within(dialog).getByRole('button', {
+      name: 'Save as New Version',
+    });
+    act(() => {
+      version.click();
+      version.click();
+    });
+    await waitFor(async () =>
+      expect((await getAllSnapshot()).scenes).toHaveLength(2)
+    );
   });
 
   it('switches export workflows without altering canonical scenes and copies complete generation JSON', async () => {
@@ -239,21 +418,46 @@ describe('Prompt Output studio workspace', () => {
     const draft = await createFixture();
     await renderOutput(draft.id);
     const before = (await getAllSnapshot()).drafts;
-    const writeText = vi.spyOn(navigator.clipboard, 'writeText').mockResolvedValue();
-    await user.selectOptions(screen.getByLabelText('Target Workflow'), 'generation_json');
-    expect(screen.getByRole('tab', { name: 'Generation JSON' })).toHaveAttribute('aria-selected', 'true');
-    const text = screen.getByRole('region', { name: 'Complete prompt text' }).textContent!;
+    const writeText = vi
+      .spyOn(navigator.clipboard, 'writeText')
+      .mockResolvedValue();
+    await user.selectOptions(
+      screen.getByLabelText('Target Workflow'),
+      'generation_json'
+    );
+    expect(
+      screen.getByRole('tab', { name: 'Generation JSON' })
+    ).toHaveAttribute('aria-selected', 'true');
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    const text = screen.getByRole('region', {
+      name: 'Complete prompt text',
+    }).textContent!;
     expect(JSON.parse(text).schema).toBe('krakinai.generation-prompt.v1');
     expect(JSON.parse(text).character.description).toBe(identity);
-    expect(screen.queryByRole('button', { name: 'Edit This Output' })).not.toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
+    expect(
+      screen.queryByRole('button', { name: 'Edit This Output' })
+    ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Copy Prompt' }));
     expect(writeText).toHaveBeenCalledWith(text);
-    await user.selectOptions(screen.getByLabelText('Target Workflow'), 'gemini_omni_flash');
-    expect(screen.getByRole('tab', { name: /Structured/ })).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByRole('region', { name: 'Complete prompt text' }).textContent).toContain(identity);
+    await user.keyboard('{Escape}');
+    await user.selectOptions(
+      screen.getByLabelText('Target Workflow'),
+      'gemini_omni_flash'
+    );
+    expect(screen.getByRole('tab', { name: /Structured/ })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    expect(
+      screen.getByRole('region', { name: 'Complete prompt text' }).textContent
+    ).toContain(identity);
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('tab', { name: 'Narrative' }));
     expect(screen.getByLabelText('Target Workflow')).toHaveValue('canonical');
-    expect(screen.getByRole('button', { name: 'Edit This Output' })).toBeVisible();
+    expect(
+      screen.getByRole('button', { name: 'Edit This Output' })
+    ).toBeVisible();
     expect((await getAllSnapshot()).drafts).toEqual(before);
   });
 
@@ -293,14 +497,19 @@ describe('Prompt Output studio workspace', () => {
       expect(panel).not.toBeNull();
       expect(panel).toHaveAttribute('aria-labelledby', tab.id);
     }
-    await user.click(screen.getByRole('button', { name: 'Raw' }));
     await user.click(within(formats).getByRole('tab', { name: 'Narrative' }));
     await user.keyboard('{ArrowRight}{ArrowRight}');
     expect(within(formats).getByRole('tab', { name: 'Compact' })).toHaveFocus();
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
     expect(
       screen.getByRole('region', { name: 'Complete prompt text' }).textContent
     ).toBe(assembleScenePrompt(draft).outputs.compact);
+    await user.keyboard('{Escape}');
+    within(formats).getByRole('tab', { name: 'Compact' }).focus();
     await user.keyboard('{Home}');
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+    await user.click(screen.getByRole('button', { name: 'Raw' }));
     expect(
       screen.getByRole('region', { name: 'Complete prompt text' }).textContent
     ).toBe(assembleScenePrompt(draft).outputs.full);
@@ -368,7 +577,10 @@ describe('Prompt Output studio workspace', () => {
       ].join('\n')
     );
     expect(
-      within(actions).getByRole('button', { name: 'Save Scene' })
+      within(screen.getByRole('region', { name: 'Scene actions' })).getByRole(
+        'button',
+        { name: 'Save Scene' }
+      )
     ).toBeVisible();
   });
 
@@ -414,7 +626,12 @@ describe('Prompt Output studio workspace', () => {
     const user = userEvent.setup();
     const draft = await createFixture();
     await renderOutput(draft.id);
+    await user.selectOptions(
+      screen.getByRole('combobox', { name: 'Workspace Layout' }),
+      'split'
+    );
     expect(screen.getByText('No text overlay.')).not.toBeVisible();
+    await user.click(screen.getByText('Advanced Options'));
     await user.click(screen.getByText('Avoid / Negative Text (Separate)'));
     expect(screen.getByText('No text overlay.')).toBeVisible();
     expect(
@@ -482,23 +699,41 @@ describe('Prompt Output studio workspace', () => {
       screen.getByRole('textbox', { name: 'Review Notes' }),
       'Save this scene with these notes.'
     );
-    const beforeNotesUrl = screen.getAllByAltText('Character view 1')[0].getAttribute('src');
+    const beforeNotesUrl = screen
+      .getAllByAltText('Character view 1')[0]
+      .getAttribute('src');
     await user.click(screen.getByRole('tab', { name: 'Prompt' }));
     await waitFor(() => {
       // A refreshed media object produces a new URL after the asynchronous
       // blur save. Wait for its effect before beginning the next interaction.
       const images = screen.getAllByAltText('Character view 1');
-      expect(images.every(image => image.getAttribute('src') && image.getAttribute('src') !== beforeNotesUrl)).toBe(true);
+      expect(
+        images.every(
+          (image) =>
+            image.getAttribute('src') &&
+            image.getAttribute('src') !== beforeNotesUrl
+        )
+      ).toBe(true);
     });
     await waitFor(async () =>
-      expect((await getAllSnapshot()).drafts[0].reviewNotes).toBe('Save this scene with these notes.')
+      expect((await getAllSnapshot()).drafts[0].reviewNotes).toBe(
+        'Save this scene with these notes.'
+      )
     );
     await user.click(screen.getByRole('tab', { name: 'Review' }));
-    const beforeSceneUrl = screen.getAllByAltText('Character view 1')[0].getAttribute('src');
+    const beforeSceneUrl = screen
+      .getAllByAltText('Character view 1')[0]
+      .getAttribute('src');
     await user.click(screen.getByRole('button', { name: 'Save Scene' }));
     await waitFor(() => {
       const images = screen.getAllByAltText('Character view 1');
-      expect(images.every(image => image.getAttribute('src') && image.getAttribute('src') !== beforeSceneUrl)).toBe(true);
+      expect(
+        images.every(
+          (image) =>
+            image.getAttribute('src') &&
+            image.getAttribute('src') !== beforeSceneUrl
+        )
+      ).toBe(true);
     });
     expect(
       await screen.findByText('Saved Scene (Immutable Snapshot)')
@@ -506,7 +741,11 @@ describe('Prompt Output studio workspace', () => {
     const saved = (await getAllSnapshot()).scenes[0];
     expect(saved.outputs.full).toBe(assembleScenePrompt(draft).outputs.full);
     expect(saved.reviewNotes).toBe('Save this scene with these notes.');
-    expect(JSON.parse(JSON.stringify(saved.slots), (key, value) => key === 'namesCaptured' ? undefined : value)).toEqual(draft.slots);
+    expect(
+      JSON.parse(JSON.stringify(saved.slots), (key, value) =>
+        key === 'namesCaptured' ? undefined : value
+      )
+    ).toEqual(draft.slots);
   });
 
   it('uploads an external result from Review without changing the prompt or references', async () => {
@@ -598,11 +837,13 @@ describe('Prompt Output studio workspace', () => {
     expect(
       screen.queryByRole('button', { name: 'Edit This Output' })
     ).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
     await user.click(screen.getByRole('button', { name: 'Raw' }));
     const raw = screen.getByRole('region', {
       name: 'Complete prompt text',
     }).textContent;
     expect(raw).toBe(serializeSceneJson(draft));
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('button', { name: 'Copy JSON' }));
     expect(writeText).toHaveBeenLastCalledWith(raw);
     await user.click(screen.getByRole('button', { name: 'Download .json' }));
@@ -635,10 +876,15 @@ describe('Prompt Output studio workspace', () => {
     });
     await user.clear(editor);
     await user.type(editor, '<img src=x onerror=alert(1)> **HAIR**');
+    expect(screen.getByText(/Unsaved editing buffer/)).toBeVisible();
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
     await user.click(screen.getByRole('button', { name: 'Raw' }));
+    expect(
+      screen.getByRole('region', { name: 'Complete prompt text' }).textContent
+    ).toBe(assembleScenePrompt(draft).outputs.structured);
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('tab', { name: 'Project JSON' }));
     await user.click(screen.getByRole('tab', { name: /Structured/ }));
-    await user.click(screen.getByRole('button', { name: 'Formatted' }));
     expect(
       screen.getByRole('textbox', { name: 'Manual prompt output' })
     ).toHaveValue('<img src=x onerror=alert(1)> **HAIR**');
@@ -650,6 +896,7 @@ describe('Prompt Output studio workspace', () => {
         screen.queryByRole('textbox', { name: 'Manual prompt output' })
       ).not.toBeInTheDocument()
     );
+    await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
     expect(
       screen
         .getByRole('region', { name: 'Complete prompt text' })
@@ -679,16 +926,18 @@ describe('Prompt Output studio workspace', () => {
       'aria-selected',
       'true'
     );
-    await user.click(screen.getByRole('button', { name: 'Raw' }));
     for (const [label, text] of [
       ['Narrative', outputs.full],
       ['Structured', outputs.structured],
       ['Compact', outputs.compact],
     ]) {
       await user.click(screen.getByRole('tab', { name: new RegExp(label) }));
+      await user.click(screen.getByRole('button', { name: 'Show Prompt' }));
+      await user.click(screen.getByRole('button', { name: 'Raw' }));
       expect(
         screen.getByRole('region', { name: 'Complete prompt text' }).textContent
       ).toBe(text);
+      await user.keyboard('{Escape}');
     }
     await user.click(screen.getByRole('tab', { name: 'Project JSON' }));
     expect((await getAllSnapshot()).scenes[0].outputs).toEqual(outputs);

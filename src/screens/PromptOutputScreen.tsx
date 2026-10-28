@@ -40,7 +40,9 @@ import {
   type StudioReference,
 } from '../components/ReferenceBoard';
 import { buildSceneDocument, serializeSceneJson } from '../domain/sceneDocument';
-import { FormattedPrompt } from '../components/FormattedPrompt';
+import { ScenePromptViewerDialog } from '../components/ScenePromptViewerDialog';
+import { SceneOutputWorkspace, type OutputWorkspaceLayout } from '../components/SceneOutputWorkspace';
+import { indexPromptSections } from '../domain/promptSections';
 import { serializeGenerationJson } from '../domain/generationDocument';
 import { formatGenerationText, getProviderNotices, type ExportPresetId } from '../domain/exportPresets';
 import { runScenePreflight } from '../domain/scenePreflight';
@@ -117,6 +119,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     hashPath,
     navigate,
     copyText,
+    clipboardFallback,
     openCollectionModal,
     openConfirmDialog,
     closeConfirmDialog,
@@ -147,7 +150,21 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     null
   );
   const tabId = useId();
-  const [view, setView] = useState<'formatted' | 'raw'>('formatted');
+  const [layoutChoice, setLayoutChoice] =
+    useState<OutputWorkspaceLayout | null>(null);
+  const [largeWorkspace, setLargeWorkspace] = useState(
+    () => window.matchMedia?.('(min-width: 1200px)').matches ?? false
+  );
+  const workspaceLayout = layoutChoice ?? (largeWorkspace ? 'split' : 'tabs');
+  const [promptSection, setPromptSection] = useState<string | null>(null);
+  const showPromptRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    const query = window.matchMedia?.('(min-width: 1200px)');
+    if (!query) return;
+    const update = () => setLargeWorkspace(query.matches);
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
   const [editingModes, setEditingModes] = useState<
     Partial<Record<OutputMode, boolean>>
   >({});
@@ -188,6 +205,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     setManualBuffers(restored?.manualBuffers ?? {});
     setAcknowledgedStaleModes({});
     setReviewNotesBuffer(null);
+    setPromptSection(null);
   }, [id]);
 
   const mediaMap = useMemo(() => {
@@ -567,22 +585,323 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     }
   };
 
+  const promptSections = indexPromptSections(activeText);
+  const outputTools = (
+    <details className="output-disclosure output-advanced">
+      <summary>Advanced Options</summary>
+      <div className="output-advanced-content">
+        {providerNotices.length > 0 && (
+          <details className="output-disclosure">
+            <summary>Provider guidance and limits</summary>
+            <div className="output-disclosure-body">
+              {providerNotices.map((notice) => (
+                <p key={notice} className="muted-text">
+                  {notice}
+                </p>
+              ))}
+            </div>
+          </details>
+        )}{' '}
+        <details className="output-disclosure">
+          <summary>Avoid / Negative Text (Separate)</summary>
+          <div className="output-disclosure-body">
+            <p className="muted-text output-negative-text">
+              {avoidText ||
+                'No avoid / negative text specified for this scene.'}
+            </p>
+            {avoidText && (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() => copyText(avoidText, 'Avoid text copied.')}
+              >
+                <Copy size={13} /> Copy Avoid Text
+              </button>
+            )}
+          </div>
+        </details>
+        <details className="output-disclosure">
+          <summary>Settings (User Instructions)</summary>
+          <div className="output-disclosure-body">
+            <p className="muted-text">
+              Set these options manually in your external generator.
+            </p>
+            <p className="muted-text output-negative-text">
+              {settings.toolNotes || 'No additional tool / provider notes.'}
+            </p>
+          </div>
+        </details>
+      </div>
+    </details>
+  );
+  const outputEditingActions = (
+    <>
+      <div className="output-edit-actions">
+        {manualOverride && (
+          <span className="badge badge-warning">Edited output</span>
+        )}
+        {!isSavedScene && !derivedView && !isEditingManual && (
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={() => {
+              setManualBuf(activeText);
+              setIsEditingManual(true);
+            }}
+          >
+            <Edit3 size={14} /> Edit This Output
+          </button>
+        )}
+        {!isSavedScene && manualOverride && !isEditingManual && (
+          <button
+            type="button"
+            className="btn btn-secondary btn-sm"
+            onClick={handleDiscardManualOverride}
+          >
+            <RotateCcw size={14} /> Reset to Assembled
+          </button>
+        )}
+      </div>
+    </>
+  );
+  const outputConfiguration = (
+    <div className="output-configuration">
+      {' '}
+      <div className="output-workflow-control">
+        <label htmlFor={`${tabId}-workflow`} className="form-label">
+          Target Workflow
+        </label>
+        <select
+          id={`${tabId}-workflow`}
+          className="select"
+          value={workflow}
+          onChange={(event) => {
+            const next = event.target.value as Workflow;
+            setWorkflow(next);
+            setMode(
+              next === 'json' || next === 'generation_json'
+                ? next
+                : next === 'canonical'
+                  ? canonicalMode
+                  : 'structured'
+            );
+          }}
+        >
+          <option value="canonical">
+            Current format · canonical scene text
+          </option>
+          <option value="generic_structured">Generic Structured</option>
+          <option value="gemini_omni_flash">Gemini Omni Flash</option>
+          <option value="custom">Custom starting template</option>
+          <option value="json">Project JSON</option>
+          <option value="generation_json">Generation JSON</option>
+        </select>
+      </div>
+      <div className="output-format-header">
+        <div
+          className="tabs-bar output-format-tabs"
+          role="tablist"
+          aria-label="Prompt format"
+          onKeyDown={handleTabKeys}
+        >
+          {OUTPUT_MODES.map((item) => (
+            <button
+              key={item.value}
+              type="button"
+              role="tab"
+              id={`${tabId}-mode-${item.value}`}
+              aria-selected={mode === item.value}
+              aria-controls={`${tabId}-mode-panel-${item.value}`}
+              tabIndex={mode === item.value ? 0 : -1}
+              className={`tab-btn ${mode === item.value ? 'active' : ''}`}
+              onClick={() => {
+                setMode(item.value);
+                setWorkflow(
+                  item.value === 'json' || item.value === 'generation_json'
+                    ? item.value
+                    : 'canonical'
+                );
+              }}
+            >
+              {item.label}
+              {item.value === 'structured' && (
+                <span className="output-recommended">Recommended</span>
+              )}
+            </button>
+          ))}
+        </div>
+      </div>
+      <GenerationIdentityControl
+        compact
+        source={record}
+        liveMaster={liveMaster}
+        saved={!!savedScene}
+        onChange={async (generation) => {
+          if (!draft) return;
+          try {
+            await saveSceneDraft({
+              ...draft,
+              generation,
+              bumpInputRevision: false,
+            });
+            await refreshSnapshot();
+          } catch (error) {
+            showToast(
+              error instanceof Error
+                ? error.message
+                : 'Could not save identity source.',
+              'error'
+            );
+          }
+        }}
+      />
+    </div>
+  );
+  const outputSummary = (
+    <section className="output-summary" aria-label="Prompt summary">
+      <h3>Prompt Summary</h3>
+      {OUTPUT_MODES.map((item) => (
+        <div
+          key={item.value}
+          role="tabpanel"
+          id={`${tabId}-mode-panel-${item.value}`}
+          aria-labelledby={`${tabId}-mode-${item.value}`}
+          hidden={mode !== item.value}
+          tabIndex={0}
+        >
+          {mode === item.value && (
+            <>
+              <p>
+                <strong>{activeModeLabel}</strong>
+                <span className="muted-text">
+                  {' '}
+                  · {activeText.length.toLocaleString()} characters
+                </span>
+              </p>
+              <div className="output-component-chips">
+                {ORDERED_BUILDER_SLOTS.filter((slot) => record.slots[slot]).map(
+                  (slot) => (
+                    <span className="badge" key={slot}>
+                      {COMPONENT_LABELS[slot]}
+                    </span>
+                  )
+                )}
+                {record.dialogue?.line && (
+                  <span className="badge">Dialogue</span>
+                )}
+                {record.sceneInstructions && (
+                  <span className="badge">Instructions</span>
+                )}
+              </div>
+            </>
+          )}
+        </div>
+      ))}
+    </section>
+  );
+  const promptActions = (
+    <section
+      className="output-quick-actions"
+      role="region"
+      aria-label="Prompt actions"
+    >
+      <div className="output-quick-context">
+        <h3>Quick Actions <span className="output-active-mode">{activeModeLabel}</span></h3>
+      </div>
+      {isEditingManual && <p className="output-buffer-notice" role="status">Manual edits are unsaved. Copy and Download use the last saved output.</p>}
+      <div className="output-quick-buttons">
+        <button
+          ref={showPromptRef}
+          type="button"
+          className="btn btn-primary"
+          onClick={() => setPromptSection('')}
+        >
+          Show Prompt
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={handleCopyActivePrompt}
+        >
+          <Copy size={15} aria-hidden="true" />{' '}
+          {jsonMode ? 'Copy JSON' : 'Copy Prompt'}
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          aria-label={jsonMode ? 'Download .json' : 'Download selected .txt'}
+          onClick={handleDownloadSelected}
+        >
+          <Download size={15} aria-hidden="true" /> Download Selected
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary btn-sm"
+          aria-label={
+            derivedView
+              ? 'Download Structured full specification .txt'
+              : 'Download full specification .txt'
+          }
+          onClick={handleDownloadTxt}
+        >
+          <Download size={14} aria-hidden="true" /> Full Specification
+        </button>
+      </div>
+      {outputEditingActions}
+    </section>
+  );
+  const workspaceMedia: StudioReference[] = [
+    ...resultLinks.map((link, index) => ({
+      ...link,
+      key: `result_${index}_${link.mediaId}`,
+      label: 'External result',
+      sourceTitle: title,
+    })),
+    ...(record.referencePack?.entries ?? []).slice().sort((a, b) => a.order - b.order).map(entry => ({
+      ...entry,
+      key: `pack_${entry.associationId}`,
+      label: `Reference pack · ${entry.purpose}`,
+    })),
+    ...studioReferences,
+  ];
+
   return (
     <div className="output-workspace">
-      {draft && projectContext.requested && <div className="card" role="status">{projectContext.error || 'Save this draft as a new take in the originating project shot.'}{projectContext.error && <button className="btn btn-secondary" onClick={() => navigate(`/output/${draft.id}`, true)}>Continue as Standalone Draft</button>}</div>}
+      {draft && projectContext.requested && (
+        <div className="card" role="status">
+          {projectContext.error ||
+            'Save this draft as a new take in the originating project shot.'}
+          {projectContext.error && (
+            <button
+              className="btn btn-secondary"
+              onClick={() => navigate(`/output/${draft.id}`, true)}
+            >
+              Continue as Standalone Draft
+            </button>
+          )}
+        </div>
+      )}
       <header className="output-header">
         <div className="output-heading">
           <div className="output-record-meta">
-            {savedScene ? <CollectionReturnControl sceneId={savedScene.id} /> : <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              onClick={() =>
-                navigate(draft ? carryProjectTarget(`/builder/${draft.id}`, hashPath) : '/scenes')
-              }
-            >
-              <ArrowLeft size={15} />{' '}
-              {draft ? 'Back to Builder' : 'Back to Saved Scenes'}
-            </button>}
+            {savedScene ? (
+              <CollectionReturnControl sceneId={savedScene.id} />
+            ) : (
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={() =>
+                  navigate(
+                    draft
+                      ? carryProjectTarget(`/builder/${draft.id}`, hashPath)
+                      : '/scenes'
+                  )
+                }
+              >
+                <ArrowLeft size={15} />{' '}
+                {draft ? 'Back to Builder' : 'Back to Saved Scenes'}
+              </button>
+            )}
             <span
               className={`badge ${savedScene ? 'badge-success' : 'badge-warning'}`}
             >
@@ -596,20 +915,42 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             Your prompt and reference files, ready for your external generator.
           </p>
         </div>
-        <div
-          className="output-settings"
-          aria-label="Settings (User Instructions)"
-        >
-          <button type="button" className="btn btn-secondary btn-sm" onClick={() => setShowPreflight(true)}>
-            Preflight · {preflightFindings.length} findings
-          </button>
-          <span className="badge">
-            Aspect Ratio: {settings.aspectRatio || '16:9'}
-          </span>
-          <span className="badge">
-            Intended Duration:{' '}
-            {settings.durationSeconds ? `${settings.durationSeconds}s` : 'N/A'}
-          </span>
+        <div className="output-header-controls">
+          <div className="output-layout-control">
+            <label htmlFor={`${tabId}-layout`}>Workspace Layout</label>
+            <select
+              id={`${tabId}-layout`}
+              className="select"
+              value={workspaceLayout}
+              onChange={(event) =>
+                setLayoutChoice(event.target.value as OutputWorkspaceLayout)
+              }
+            >
+              <option value="split">Split View</option>
+              <option value="tabs">Studio Tabs</option>
+            </select>
+          </div>
+          <div
+            className="output-settings"
+            aria-label="Settings (User Instructions)"
+          >
+            <button
+              type="button"
+              className="btn btn-secondary btn-sm"
+              onClick={() => setShowPreflight(true)}
+            >
+              Preflight · {preflightFindings.length} findings
+            </button>
+            <span className="badge">
+              Aspect Ratio: {settings.aspectRatio || 'Not set'}
+            </span>
+            <span className="badge">
+              Intended Duration:{' '}
+              {settings.durationSeconds
+                ? `${settings.durationSeconds}s`
+                : 'N/A'}
+            </span>
+          </div>
         </div>
       </header>
 
@@ -655,204 +996,63 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           hidden={activeTab !== 'prompt'}
           className="output-tab-panel"
         >
-          <div className="output-workflow-control">
-            <label htmlFor={`${tabId}-workflow`} className="form-label">Target Workflow</label>
-            <select id={`${tabId}-workflow`} className="select" value={workflow} onChange={event => {
-              const next = event.target.value as Workflow;
-              setWorkflow(next);
-              setMode(next === 'json' || next === 'generation_json' ? next : next === 'canonical' ? canonicalMode : 'structured');
-            }}>
-              <option value="canonical">Current format · canonical scene text</option>
-              <option value="generic_structured">Generic Structured</option>
-              <option value="gemini_omni_flash">Gemini Omni Flash</option>
-              <option value="custom">Custom starting template</option>
-              <option value="json">Project JSON</option>
-              <option value="generation_json">Generation JSON</option>
-            </select>
-          </div>
-          <div className="output-format-header">
-            <div
-              className="tabs-bar output-format-tabs"
-              role="tablist"
-              aria-label="Prompt format"
-              onKeyDown={handleTabKeys}
-            >
-              {OUTPUT_MODES.map((item) => (
-                <button
-                  key={item.value}
-                  type="button"
-                  role="tab"
-                  id={`${tabId}-mode-${item.value}`}
-                  aria-selected={mode === item.value}
-                  aria-controls={`${tabId}-mode-panel-${item.value}`}
-                  tabIndex={mode === item.value ? 0 : -1}
-                  className={`tab-btn ${mode === item.value ? 'active' : ''}`}
-                  onClick={() => {
-                    setMode(item.value);
-                    setWorkflow(item.value === 'json' || item.value === 'generation_json' ? item.value : 'canonical');
-                  }}
-                >
-                  {item.label}
-                  {item.value === 'structured' && (
-                    <span className="output-recommended">Recommended</span>
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="output-edit-actions">
-              {manualOverride && (
-                <span className="badge badge-warning">Edited output</span>
-              )}
-              {!isSavedScene && !derivedView && !isEditingManual && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => {
-                    setManualBuf(activeText);
-                    setIsEditingManual(true);
-                  }}
-                >
-                  <Edit3 size={14} /> Edit This Output
-                </button>
-              )}
-              {!isSavedScene && manualOverride && !isEditingManual && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={handleDiscardManualOverride}
-                >
-                  <RotateCcw size={14} /> Reset to Assembled
-                </button>
-              )}
-            </div>
-          </div>
-          <GenerationIdentityControl source={record} liveMaster={liveMaster} saved={!!savedScene} onChange={async generation => {
-            if (!draft) return;
-            try { await saveSceneDraft({...draft,generation,bumpInputRevision:false}); await refreshSnapshot(); }
-            catch(error) { showToast(error instanceof Error ? error.message : 'Could not save identity source.', 'error'); }
-          }} />
-          <div
-            className="output-view-options"
-            role="group"
-            aria-label="Prompt presentation"
-          >
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              aria-pressed={view === 'formatted'}
-              onClick={() => setView('formatted')}
-            >
-              Formatted
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary btn-sm"
-              aria-pressed={view === 'raw'}
-              onClick={() => setView('raw')}
-            >
-              Raw
-            </button>
-          </div>
-          {jsonMode && (
+          {activeTab === 'prompt' && jsonMode && (
             <p className="output-json-notice muted-text">
-              JSON uses a KRAKINAI-specific schema, not an official provider
-              schema. It is derived from preserved scene components and
-              settings; free-form manual text edits are not interpreted or
-              translated into JSON.
+              JSON uses a KRAKINAI-specific schema. It preserves structured
+              source data; manual prose is not translated into JSON.
             </p>
           )}
-          {providerNotices.length > 0 && <details className="output-disclosure">
-            <summary>Provider guidance and limits</summary>
-            <div className="output-disclosure-body">{providerNotices.map(notice => <p key={notice} className="muted-text">{notice}</p>)}</div>
-          </details>}
-          <p className="muted-text output-order">
-            Character → Clothing → Environment → Action → Camera → Lighting →
-            Style → Dialogue → Instructions
-          </p>
-          {OUTPUT_MODES.map((item) => (
-            <div
-              key={item.value}
-              role="tabpanel"
-              id={`${tabId}-mode-panel-${item.value}`}
-              aria-labelledby={`${tabId}-mode-${item.value}`}
-              tabIndex={0}
-              hidden={mode !== item.value}
+          <SceneOutputWorkspace
+            layout={workspaceLayout}
+            configuration={outputConfiguration}
+            summary={outputSummary}
+            actions={activeTab === 'prompt' ? promptActions : null}
+            tools={outputTools}
+            sections={promptSections}
+            onSection={setPromptSection}
+            media={workspaceMedia}
+            mediaMap={mediaMap}
+          />
+          {isEditingManual && (
+            <section
+              className="output-manual-panel"
+              aria-label="Manual output editor"
             >
-              {mode === item.value &&
-                (isEditingManual ? (
-                  <div className="output-manual-editor">
-                    <label htmlFor={`${tabId}-manual`} className="form-label">
-                      Manual prompt output
-                    </label>
-                    <textarea
-                      id={`${tabId}-manual`}
-                      className="textarea output-manual-textarea"
-                      rows={9}
-                      value={manualBuf}
-                      onChange={(e) => setManualBuf(e.target.value)}
-                    />
-                    <div className="output-edit-actions">
-                      <button
-                        type="button"
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => setIsEditingManual(false)}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        className="btn btn-primary btn-sm"
-                        onClick={handleSaveManualOverride}
-                      >
-                        Save Manual Output Override
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  <div
-                    role="region"
-                    aria-label="Complete prompt text"
-                    tabIndex={0}
-                    className={`output-prompt-viewer ${view === 'raw' || jsonMode ? 'output-raw-viewer' : 'output-formatted-viewer'}`}
+              <p className="banner banner-warning">
+                Unsaved editing buffer. Show Prompt, Copy and Download use the
+                last saved output until you save this override.
+              </p>
+              <div className="output-manual-editor">
+                <label htmlFor={`${tabId}-manual`} className="form-label">
+                  Manual prompt output
+                </label>
+                <textarea
+                  id={`${tabId}-manual`}
+                  autoFocus
+                  className="textarea output-manual-textarea"
+                  rows={9}
+                  value={manualBuf}
+                  onChange={(e) => setManualBuf(e.target.value)}
+                />
+                <div className="output-edit-actions">
+                  <button
+                    type="button"
+                    className="btn btn-secondary btn-sm"
+                    onClick={() => setIsEditingManual(false)}
                   >
-                    {view === 'formatted' && !jsonMode ? (
-                      <FormattedPrompt text={activeText} />
-                    ) : (
-                      activeText
-                    )}
-                  </div>
-                ))}
-            </div>
-          ))}
-          <details className="output-disclosure">
-            <summary>Avoid / Negative Text (Separate)</summary>
-            <div className="output-disclosure-body">
-              <p className="muted-text output-negative-text">
-                {avoidText ||
-                  'No avoid / negative text specified for this scene.'}
-              </p>
-              {avoidText && (
-                <button
-                  type="button"
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => copyText(avoidText, 'Avoid text copied.')}
-                >
-                  <Copy size={13} /> Copy Avoid Text
-                </button>
-              )}
-            </div>
-          </details>
-          <details className="output-disclosure">
-            <summary>Settings (User Instructions)</summary>
-            <div className="output-disclosure-body">
-              <p className="muted-text">
-                Set these options manually in your external generator.
-              </p>
-              <p className="muted-text output-negative-text">
-                {settings.toolNotes || 'No additional tool / provider notes.'}
-              </p>
-            </div>
-          </details>
+                    Cancel Editing
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={handleSaveManualOverride}
+                  >
+                    Save Manual Output Override
+                  </button>
+                </div>
+              </div>
+            </section>
+          )}
         </section>
 
         <section
@@ -868,18 +1068,43 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             external AI tool. Download and attach these reference files
             manually:
           </p>
-          <div className="studio-inline" style={{marginBottom:12}}>
-            <button type="button" className="btn btn-secondary" onClick={() => setShowReferencePack(true)}>Manage Reference Pack</button>
-            <span className="muted-text">{record.referencePack ? `${record.referencePack.entries.length} selected associations` : 'All linked references · legacy export behavior'}</span>
+          <div className="studio-inline" style={{ marginBottom: 12 }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setShowReferencePack(true)}
+            >
+              Manage Reference Pack
+            </button>
+            <span className="muted-text">
+              {record.referencePack
+                ? `${record.referencePack.entries.length} selected associations`
+                : 'All linked references · legacy export behavior'}
+            </span>
           </div>
-          {record.referencePack && <ReferenceBoard
-            items={[...record.referencePack.entries].sort((a,b) => a.order-b.order).map(entry => ({key:entry.associationId,mediaId:entry.mediaId,label:`${entry.order+1} · ${entry.purpose}`,sourceTitle:entry.sourceTitle,role:entry.role,altText:entry.altText,filename:entry.filename,displayName:entry.displayName,exportFilename:entry.exportFilename,namesCaptured:entry.namesCaptured}))}
-            mediaMap={mediaMap}
-            historical={!!savedScene}
-            title="Selected Reference Pack"
-            collapseThumbnails
-            downloadable
-          />}
+          {record.referencePack && (
+            <ReferenceBoard
+              items={[...record.referencePack.entries]
+                .sort((a, b) => a.order - b.order)
+                .map((entry) => ({
+                  key: entry.associationId,
+                  mediaId: entry.mediaId,
+                  label: `${entry.order + 1} · ${entry.purpose}`,
+                  sourceTitle: entry.sourceTitle,
+                  role: entry.role,
+                  altText: entry.altText,
+                  filename: entry.filename,
+                  displayName: entry.displayName,
+                  exportFilename: entry.exportFilename,
+                  namesCaptured: entry.namesCaptured,
+                }))}
+              mediaMap={mediaMap}
+              historical={!!savedScene}
+              title="Selected Reference Pack"
+              collapseThumbnails
+              downloadable
+            />
+          )}
           <ReferenceBoard
             items={studioReferences}
             mediaMap={mediaMap}
@@ -1000,10 +1225,11 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
         </section>
       </div>
 
+      {activeTab !== 'prompt' && promptActions}
       <footer
         className="card output-action-footer"
         role="region"
-        aria-label="Prompt actions"
+        aria-label="Scene actions"
       >
         {isStale && (
           <div className="banner banner-warning output-stale-warning">
@@ -1043,31 +1269,6 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             </span>
           </div>
           <div className="output-footer-buttons">
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleDownloadTxt}
-            >
-              <Download size={16} />{' '}
-              {derivedView
-                ? 'Download Structured full specification .txt'
-                : 'Download full specification .txt'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleDownloadSelected}
-            >
-              <Download size={16} />{' '}
-              {jsonMode ? 'Download .json' : 'Download selected .txt'}
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={handleCopyActivePrompt}
-            >
-              <Copy size={16} /> {jsonMode ? 'Copy JSON' : 'Copy Prompt'}
-            </button>
             {draft && (
               <button
                 type="button"
@@ -1075,7 +1276,8 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 disabled={saveBusy}
                 onClick={() => void handleSaveScene()}
               >
-                <BookmarkCheck size={16} /> {projectContext.target ? 'Save New Take' : 'Save Scene'}
+                <BookmarkCheck size={16} />{' '}
+                {projectContext.target ? 'Save New Take' : 'Save Scene'}
               </button>
             )}
             {savedScene && (
@@ -1113,36 +1315,141 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           </div>
         </div>
       </footer>
+      {promptSection !== null && !clipboardFallback && (
+        <ScenePromptViewerDialog
+          title={title}
+          formatLabel={activeModeLabel}
+          text={activeText}
+          json={jsonMode}
+          initialSection={promptSection || undefined}
+          returnFocusRef={showPromptRef}
+          onClose={() => setPromptSection(null)}
+          onCopy={() => {
+            if (isStale) setPromptSection(null);
+            return handleCopyActivePrompt();
+          }}
+          onDownload={handleDownloadSelected}
+        />
+      )}
       {saveError && <p role="alert">{saveError}</p>}
-      {similarScenes.length > 0 && <StudioDialog title="Similar saved scene" onClose={() => { if (!saveGuard.current) { setSimilarScenes([]); setSaveError(''); } }}>
-        <p>A similar saved scene already exists.</p>
-        <label htmlFor={`${tabId}-duplicate-target`}>Existing scene</label>
-        <select id={`${tabId}-duplicate-target`} value={duplicateTarget} disabled={saveBusy} onChange={event => setDuplicateTarget(event.target.value)}>
-          {similarScenes.map(scene => <option key={scene.id} value={scene.id}>{scene.title} · {scene.id}</option>)}
-        </select>
-        {saveError && <p role="alert">{saveError}</p>}
-        <div className="output-footer-buttons">
-          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => { setSimilarScenes([]); navigate(`/output/${duplicateTarget}`); }}>Open Existing Scene</button>
-          <button className="btn btn-primary" disabled={saveBusy} onClick={() => void handleSaveScene('version')}>Save as New Version</button>
-          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => void handleSaveScene('take')}>Save as Separate Take</button>
-          <button className="btn btn-secondary" disabled={saveBusy} onClick={() => {setSimilarScenes([]);setSaveError('');}}>Cancel</button>
-        </div>
-      </StudioDialog>}
-      {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={component => { setShowPreflight(false); setPreflightSource(component); }} onEditComponent={editPreflightSource} readOnly={!!savedScene} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
-      {showReferencePack && <ReferencePackManager source={record} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} readOnly={!!savedScene} onEditCopy={editPreflightSource} onCopyText={async text => { await copyText(text, 'Reference checklist copied.'); }} onApply={async referencePack => {
-        if (!draft) return;
-        await saveSceneDraft({...draft,referencePack,bumpInputRevision:false});
-        await refreshSnapshot(); setShowReferencePack(false);
-      }} />}
-      {preflightSource && <StudioDialog title={`Preserved source: ${preflightSource}`} onClose={() => setPreflightSource(null)}>
-        <pre style={{whiteSpace:'pre-wrap',overflowWrap:'anywhere'}}>{
-          preflightSource === 'dialogue' ? JSON.stringify(record.dialogue ?? {}, null, 2) :
-          preflightSource === 'settings' ? JSON.stringify(record.settings, null, 2) :
-          preflightSource === 'instructions' ? record.sceneInstructions :
-          preflightSource === 'references' ? JSON.stringify(references, null, 2) :
-          buildSceneDocument(record).components[preflightSource]?.prompt ?? '(empty source)'
-        }</pre>
-      </StudioDialog>}
+      {similarScenes.length > 0 && (
+        <StudioDialog
+          title="Similar saved scene"
+          onClose={() => {
+            if (!saveGuard.current) {
+              setSimilarScenes([]);
+              setSaveError('');
+            }
+          }}
+        >
+          <p>A similar saved scene already exists.</p>
+          <label htmlFor={`${tabId}-duplicate-target`}>Existing scene</label>
+          <select
+            id={`${tabId}-duplicate-target`}
+            value={duplicateTarget}
+            disabled={saveBusy}
+            onChange={(event) => setDuplicateTarget(event.target.value)}
+          >
+            {similarScenes.map((scene) => (
+              <option key={scene.id} value={scene.id}>
+                {scene.title} · {scene.id}
+              </option>
+            ))}
+          </select>
+          {saveError && <p role="alert">{saveError}</p>}
+          <div className="output-footer-buttons">
+            <button
+              className="btn btn-secondary"
+              disabled={saveBusy}
+              onClick={() => {
+                setSimilarScenes([]);
+                navigate(`/output/${duplicateTarget}`);
+              }}
+            >
+              Open Existing Scene
+            </button>
+            <button
+              className="btn btn-primary"
+              disabled={saveBusy}
+              onClick={() => void handleSaveScene('version')}
+            >
+              Save as New Version
+            </button>
+            <button
+              className="btn btn-secondary"
+              disabled={saveBusy}
+              onClick={() => void handleSaveScene('take')}
+            >
+              Save as Separate Take
+            </button>
+            <button
+              className="btn btn-secondary"
+              disabled={saveBusy}
+              onClick={() => {
+                setSimilarScenes([]);
+                setSaveError('');
+              }}
+            >
+              Cancel
+            </button>
+          </div>
+        </StudioDialog>
+      )}
+      {showPreflight && (
+        <ScenePreflightDialog
+          findings={preflightFindings}
+          onClose={() => setShowPreflight(false)}
+          onViewSource={(component) => {
+            setShowPreflight(false);
+            setPreflightSource(component);
+          }}
+          onEditComponent={editPreflightSource}
+          readOnly={!!savedScene}
+          intentionalIds={intentionalIds}
+          onIntentionalIdsChange={setIntentionalIds}
+        />
+      )}
+      {showReferencePack && (
+        <ReferencePackManager
+          source={record}
+          mediaMap={mediaMap}
+          onClose={() => setShowReferencePack(false)}
+          readOnly={!!savedScene}
+          onEditCopy={editPreflightSource}
+          onCopyText={async (text) => {
+            await copyText(text, 'Reference checklist copied.');
+          }}
+          onApply={async (referencePack) => {
+            if (!draft) return;
+            await saveSceneDraft({
+              ...draft,
+              referencePack,
+              bumpInputRevision: false,
+            });
+            await refreshSnapshot();
+            setShowReferencePack(false);
+          }}
+        />
+      )}
+      {preflightSource && (
+        <StudioDialog
+          title={`Preserved source: ${preflightSource}`}
+          onClose={() => setPreflightSource(null)}
+        >
+          <pre style={{ whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>
+            {preflightSource === 'dialogue'
+              ? JSON.stringify(record.dialogue ?? {}, null, 2)
+              : preflightSource === 'settings'
+                ? JSON.stringify(record.settings, null, 2)
+                : preflightSource === 'instructions'
+                  ? record.sceneInstructions
+                  : preflightSource === 'references'
+                    ? JSON.stringify(references, null, 2)
+                    : (buildSceneDocument(record).components[preflightSource]
+                        ?.prompt ?? '(empty source)')}
+          </pre>
+        </StudioDialog>
+      )}
     </div>
   );
 };

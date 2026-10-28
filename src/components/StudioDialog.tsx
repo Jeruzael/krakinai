@@ -9,6 +9,7 @@ export const StudioDialog: React.FC<{
   footer?: React.ReactNode;
   className?: string;
   size?: 'default' | 'wide';
+  returnFocusRef?: React.RefObject<HTMLElement>;
 }> = ({
   title,
   onClose,
@@ -16,6 +17,7 @@ export const StudioDialog: React.FC<{
   footer,
   className = '',
   size = 'default',
+  returnFocusRef,
 }) => {
   const titleId = useId();
   const backdrop = useRef<HTMLDivElement>(null);
@@ -90,7 +92,8 @@ export const StudioDialog: React.FC<{
         else el.setAttribute('aria-hidden', hidden);
       });
       document.body.style.overflow = previousOverflow;
-      if (trigger?.isConnected) trigger.focus();
+      const destination = returnFocusRef?.current ?? trigger;
+      if (destination?.isConnected) destination.focus({ preventScroll: true });
     };
   }, []);
 
