@@ -1,0 +1,592 @@
+{
+  "schema": "krakinai.performance-studio-qa.v1",
+  "date": "2026-10-28",
+  "scope": "Actual local verification of uncommitted independent PR B source; no hosted CI claimed.",
+  "baseCommit": "ae510d3b90f731c115eaf6f1daf261ebaec88981",
+  "branch": "codex/advanced-performance-studio",
+  "workingTreeDirty": true,
+  "runtime": {
+    "node": "v22.23.3",
+    "playwright": "1.64.1",
+    "chromium": {
+      "name": "chromium",
+      "revision": "1248",
+      "installByDefault": true,
+      "browserVersion": "156.0.8078.4",
+      "title": "Chrome for Testing"
+    },
+    "origin": "http://127.0.0.1:4273",
+    "browserProfile": "Fresh synthetic Playwright contexts; no user profile access"
+  },
+  "commands": [
+    {
+      "command": "npm test -- --reporter=default --reporter=json --outputFile=qa-results/unit-final.json",
+      "exitCode": 0,
+      "files": 58,
+      "passed": 391,
+      "failed": 0,
+      "skipped": 0,
+      "warnings": {
+        "reactAct": 28
+      }
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Main JS chunk 524.76 kB minified (153.02 kB gzip); existing >500 kB chunk warning"
+      ]
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "exitCode": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "passed": 3,
+      "historicalLedgerChecks": 207,
+      "historicalLedgerScreenshots": 45
+    },
+    {
+      "command": "npx playwright test --config playwright.performance.local.mjs",
+      "exitCode": 0,
+      "stats": {
+        "startTime": "2026-10-27T18:50:26.407Z",
+        "duration": 108248.627,
+        "expected": 45,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "warnings": {
+        "noColorForceColor": 2
+      }
+    },
+    {
+      "command": "$env:PERFORMANCE_STUDIO_PHASE=before; npx playwright test e2e/performance-studio-screenshots.spec.mjs --config playwright.performance.local.mjs",
+      "exitCode": 0,
+      "passed": 3,
+      "source": "Unchanged base product source, before implementation edits"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "intermediateRuns": [
+    {
+      "command": "npm test (during simultaneous browser and build runs)",
+      "passed": 390,
+      "failed": 1,
+      "failure": "dialogueCompatibility: retains mode, delivery, language, captions and exact multiline words through builder save, immutable save, and ZIP restore; exceeded existing 5000ms timeout",
+      "log": "qa-results/unit-concurrent-timeout.log",
+      "resolution": "Isolated compatibility rerun passed3/3 with no assertion or timeout changes; full sequential suite rerun recorded above."
+    }
+  ],
+  "review": {
+    "status": "Approved with comments; no blocking product defects",
+    "focusedTests": 31,
+    "files": 5,
+    "commentsResolved": [
+      "Wait for sidebar transition before reflow screenshot",
+      "Normalize new .gitignore line ending; diff --check clean"
+    ]
+  },
+  "preservation": {
+    "formatter": "getEffectiveDialogueDelivery, shared by all existing output paths and Project Script",
+    "version1": "Original validator/formatter retained; no reinterpretation, replacement requires explicit action",
+    "noMetadata": "Legacy golden scenes without metadata retain exact immutable output bytes",
+    "newMetadata": "Save/reload/Edit a Copy/backup/restore equality and saved scene immutability tested",
+    "exactDialogue": [
+      "Filipino",
+      "English",
+      "Taglish",
+      "whitespace",
+      "quotes",
+      "line breaks",
+      "punctuation",
+      "emoji"
+    ],
+    "malformedMetadata": "Rejected before draft write/restore; full library equality asserted",
+    "browserAssertions": [
+      {
+        "name": "performance-studio-preservation",
+        "exactCopy": true,
+        "immutable": true,
+        "valid": true,
+        "metadataPreserved": true,
+        "oldScenesUnchanged": true,
+        "assetsVariantsMediaUnchanged": true
+      }
+    ],
+    "protectedValidationSha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+    "schemaChange": false,
+    "zip64Change": false,
+    "providerChange": false
+  },
+  "screenshotCount": 19,
+  "screenshots": [
+    {
+      "phase": "before",
+      "file": "before/studio-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 116980,
+      "sha256": "5cec56f8b07cfc6771fd0b71b8ce8c94c6a84489aa8ad93a0b83cee0d5ce1337",
+      "source": "qa-results/performance-studio/before/studio-1440.png",
+      "productSource": "ae510d3b90f731c115eaf6f1daf261ebaec88981 (before product edits)"
+    },
+    {
+      "phase": "before",
+      "file": "before/studio-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 30046,
+      "sha256": "5bb34e2369cf6332d6d6a7289df04bf35adb716ca578de0bf1dcb4aeba242fa0",
+      "source": "qa-results/performance-studio/before/studio-390.png",
+      "productSource": "ae510d3b90f731c115eaf6f1daf261ebaec88981 (before product edits)"
+    },
+    {
+      "phase": "before",
+      "file": "before/studio-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 79706,
+      "sha256": "758cde5478625f8db7f28768846b03dbdb9758df5b541a2fdcf66105da589557",
+      "source": "qa-results/performance-studio/before/studio-768.png",
+      "productSource": "ae510d3b90f731c115eaf6f1daf261ebaec88981 (before product edits)"
+    },
+    {
+      "phase": "after",
+      "file": "after/emotions-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 116670,
+      "sha256": "10627e2c4fd0fb5826561d5cf2a17158e704ea3b2cc1e5047e01f77987b8b34f",
+      "source": "qa-results/performance-studio/after/emotions-1440.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/emotions-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 31394,
+      "sha256": "68b4a21905ceacf7661a4ba7268acc929ad5f844773fbf15c314c6314abdbf5e",
+      "source": "qa-results/performance-studio/after/emotions-390.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/emotions-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 81899,
+      "sha256": "11c73082ce33fde5eda1557d24d9c2da46b9445f767ca36d08ca8eb65a204994",
+      "source": "qa-results/performance-studio/after/emotions-768.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/reflow-200-percent.png",
+      "width": 720,
+      "height": 450,
+      "bytes": 32113,
+      "sha256": "93dbc2c4a197983b1eab5666195e2a4e3c51f53c1d757c0f9e7c5b7b0d46286a",
+      "source": "qa-results/performance-studio/after/reflow-200-percent.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/studio-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 116710,
+      "sha256": "c3a977181b318189859b1cad229b49a55e013faff8a39665ca313d92f56ef3d6",
+      "source": "qa-results/performance-studio/after/studio-1440.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/studio-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 32611,
+      "sha256": "11faff59c3c4466fe5e4a60bc57fc90bcfbbc211aa23c188949ca6b70706cb7e",
+      "source": "qa-results/performance-studio/after/studio-390.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/studio-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 78405,
+      "sha256": "cd3a6ac0c51e5fdbed60447d905b5eaab0e637fe6e0494a5b1cba569217b91be",
+      "source": "qa-results/performance-studio/after/studio-768.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/techniques-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 120927,
+      "sha256": "54b47d7aab2a1353d741225fbc686ab4083c9b7ba82dd9b8dca1376d290262c7",
+      "source": "qa-results/performance-studio/after/techniques-1440.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/techniques-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 24993,
+      "sha256": "73a1ad14815985e2ebb7ed9d286df7a3325aabacf338b0bb77dd2a3bdf08b56c",
+      "source": "qa-results/performance-studio/after/techniques-390.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/techniques-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 80912,
+      "sha256": "1ab044f7bc6ee63f52278a3c6c5ba0014af280e2926659ae06d836d0a72b24c2",
+      "source": "qa-results/performance-studio/after/techniques-768.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/unicode-preview-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 172703,
+      "sha256": "f2d00bceecf5e5fd7c112cb4bee3d685da3c745a9f17139212d9747678ff448a",
+      "source": "qa-results/performance-studio/after/unicode-preview-1440.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/unicode-preview-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 28612,
+      "sha256": "c46b6b8beae48a7a9fab5df7786a3165dd743df69636446d3657dfd2d2aa5967",
+      "source": "qa-results/performance-studio/after/unicode-preview-390.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/unicode-preview-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 125017,
+      "sha256": "a9acce3c3afeb0a1d48276e0890d469dcb5ebcfb135a7017b6d66391432353da",
+      "source": "qa-results/performance-studio/after/unicode-preview-768.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/voice-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 117867,
+      "sha256": "4c4f0992f22d7a8214b95518a71d7feffa8cf68434e5e3ca49570b219427582b",
+      "source": "qa-results/performance-studio/after/voice-1440.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/voice-390.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 28247,
+      "sha256": "9758cf38060acdd71a7be16e5bb6c8a21c40e752e9550f73f39bb08c61639b66",
+      "source": "qa-results/performance-studio/after/voice-390.png",
+      "productSource": "uncommitted source hashes below"
+    },
+    {
+      "phase": "after",
+      "file": "after/voice-768.png",
+      "width": 768,
+      "height": 1024,
+      "bytes": 87368,
+      "sha256": "bb1bb1a9092b20f0b3e62307b728656beb7a31d7a5b0925ec9563f67f7d91c83",
+      "source": "qa-results/performance-studio/after/voice-768.png",
+      "productSource": "uncommitted source hashes below"
+    }
+  ],
+  "responsiveChecks": {
+    "widths": [
+      [
+        1440,
+        900
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "horizontalOverflow": false,
+    "reflow200Percent": {
+      "viewport": [
+        720,
+        450
+      ],
+      "method": "Equivalent CSS viewport emulation; not browser chrome zoom",
+      "sidebarTransitionAwaited": true
+    },
+    "keyboard": true,
+    "reducedMotion": true,
+    "longUnicode": true
+  },
+  "sourceHashes": [
+    {
+      "file": ".gitignore",
+      "sha256": "8d07335767acf8cb49199ee86f7d8a93e6dd699b7735b6428e2c6fee24844d22",
+      "bytes": 252
+    },
+    {
+      "file": "e2e/dialogue-cover-fixture.mjs",
+      "sha256": "085a1cfcc57aa7b453fa66980cb522c16bb41fab0206abf936bd313f1d579d7a",
+      "bytes": 3715
+    },
+    {
+      "file": "e2e/dialogue-cover-screenshots.spec.mjs",
+      "sha256": "02cf53daf5c6985265149d8abe2338d46291d3ca06d28778014e6bed1a9cbd31",
+      "bytes": 3371
+    },
+    {
+      "file": "e2e/dialogue-cover.spec.mjs",
+      "sha256": "84a4a64c7249cce38bac11978cffc014990f4a78363bc0e0a67dddba57dfd594",
+      "bytes": 15011
+    },
+    {
+      "file": "e2e/performance-studio-screenshots.spec.mjs",
+      "sha256": "e1883937e294a28101b8beec5735f2cfbff52a5f5b6712b3abf12b5aa5766d8e",
+      "bytes": 4152
+    },
+    {
+      "file": "e2e/performance-studio.spec.mjs",
+      "sha256": "f350eea91925af139f05a27d047abc9b9f005cb7701135be4547f2a9c91e4b0a",
+      "bytes": 11082
+    },
+    {
+      "file": "package-lock.json",
+      "sha256": "c4e5413b3d4535ee9a1cfacf7760b5344cf3d35a55e5390a3a32d35524e39d34",
+      "bytes": 144374
+    },
+    {
+      "file": "package.json",
+      "sha256": "975c9620034ef146d0d5b65a3aae481e74b2f6e5c3995ed4223fd93d22adb34e",
+      "bytes": 1010
+    },
+    {
+      "file": "src/__tests__/dialogueCompatibility.test.tsx",
+      "sha256": "46ec545a52fccb2df2b9ffebe40190e10b0aecff59ebae93f36b9221427d5730",
+      "bytes": 6227
+    },
+    {
+      "file": "src/__tests__/dialoguePerformancePersistence.test.ts",
+      "sha256": "8a5056ae77e317fc2e388280e161fb4b98e521711c26d6d7f05ca0dbc2c1c660",
+      "bytes": 4052
+    },
+    {
+      "file": "src/__tests__/performanceDirection.test.tsx",
+      "sha256": "91797b4669eaf384259b1b6301953b332cbf189b52da2f2f80a529a5377a9947",
+      "bytes": 3210
+    },
+    {
+      "file": "src/__tests__/performanceStudio.test.ts",
+      "sha256": "29af3e5b6520df7193ba32d2657bb3d4b7ea67bded0cf847c333e64be112cd08",
+      "bytes": 7044
+    },
+    {
+      "file": "src/__tests__/performanceStudioControls.test.tsx",
+      "sha256": "8ba4f91fccba97869d01ccbdacbdddd7aa4dfa06a96baddeb214e99ec9d0afdb",
+      "bytes": 5811
+    },
+    {
+      "file": "src/__tests__/performanceStudioPersistence.test.ts",
+      "sha256": "bff96120030d21e51a883afddf828a45376535742341b35f0609269ee860bd17",
+      "bytes": 4045
+    },
+    {
+      "file": "src/components/LegacyPerformanceDirection.tsx",
+      "sha256": "005c7af1b3474b630ebfacb0344ac801ca1b9d747ca036c461a3580f85509612",
+      "bytes": 6207
+    },
+    {
+      "file": "src/components/PerformanceDirection.tsx",
+      "sha256": "007b66026c9c528d4f2ef53b8e93fc62df044d046a5fa3fdc6d9349c9af4c0c5",
+      "bytes": 20046
+    },
+    {
+      "file": "src/components/performanceDirection.css",
+      "sha256": "ddb2f8ca1c39fc3b63b4861e04473516c96132066b5d82798e2e78858eff7081",
+      "bytes": 4085
+    },
+    {
+      "file": "src/domain/dialoguePerformance.ts",
+      "sha256": "15278b8a6232c4a941d4dcd9b7fa9b2de9aec6daa547b175aecdf348139cdd60",
+      "bytes": 9769
+    },
+    {
+      "file": "src/domain/performanceCatalog.ts",
+      "sha256": "d6554ce4d919da20248d2516295feff063c9f6290ae03aebd4308f69b1197d22",
+      "bytes": 6716
+    },
+    {
+      "file": "src/domain/validation.ts",
+      "sha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+      "bytes": 7169
+    },
+    {
+      "file": "src/storage/backup.ts",
+      "sha256": "de6027817edb8abfb1c161daea0ffad9b6cbb68775be1011badff4d7fd2b7bde",
+      "bytes": 16055
+    },
+    {
+      "file": "src/types/domain.ts",
+      "sha256": "68546a2891923e702d4af67dd386a21ae92dc72d0829cc25a6c4e48314d56c96",
+      "bytes": 9510
+    }
+  ],
+  "sourceFingerprintSha256": "4e2cef51e18f5fbf8055534dc0be0f99f82868b7d1b9569e8d6afd547be4b5f4",
+  "changedFiles": [
+    ".gitignore",
+    "docs/performance-studio-qa.md",
+    "docs/qa/performance-studio/after/emotions-1440.png",
+    "docs/qa/performance-studio/after/emotions-390.png",
+    "docs/qa/performance-studio/after/emotions-768.png",
+    "docs/qa/performance-studio/after/reflow-200-percent.png",
+    "docs/qa/performance-studio/after/studio-1440.png",
+    "docs/qa/performance-studio/after/studio-390.png",
+    "docs/qa/performance-studio/after/studio-768.png",
+    "docs/qa/performance-studio/after/techniques-1440.png",
+    "docs/qa/performance-studio/after/techniques-390.png",
+    "docs/qa/performance-studio/after/techniques-768.png",
+    "docs/qa/performance-studio/after/unicode-preview-1440.png",
+    "docs/qa/performance-studio/after/unicode-preview-390.png",
+    "docs/qa/performance-studio/after/unicode-preview-768.png",
+    "docs/qa/performance-studio/after/voice-1440.png",
+    "docs/qa/performance-studio/after/voice-390.png",
+    "docs/qa/performance-studio/after/voice-768.png",
+    "docs/qa/performance-studio/before/studio-1440.png",
+    "docs/qa/performance-studio/before/studio-390.png",
+    "docs/qa/performance-studio/before/studio-768.png",
+    "docs/qa/performance-studio/gallery.md",
+    "docs/qa/performance-studio/qa_results.json",
+    "docs/superpowers/plans/2026-10-28-performance-studio.md",
+    "e2e/dialogue-cover-fixture.mjs",
+    "e2e/dialogue-cover-screenshots.spec.mjs",
+    "e2e/dialogue-cover.spec.mjs",
+    "e2e/performance-studio-screenshots.spec.mjs",
+    "e2e/performance-studio.spec.mjs",
+    "src/__tests__/dialogueCompatibility.test.tsx",
+    "src/__tests__/dialoguePerformancePersistence.test.ts",
+    "src/__tests__/performanceDirection.test.tsx",
+    "src/__tests__/performanceStudio.test.ts",
+    "src/__tests__/performanceStudioControls.test.tsx",
+    "src/__tests__/performanceStudioPersistence.test.ts",
+    "src/components/LegacyPerformanceDirection.tsx",
+    "src/components/PerformanceDirection.tsx",
+    "src/components/performanceDirection.css",
+    "src/domain/dialoguePerformance.ts",
+    "src/domain/performanceCatalog.ts",
+    "src/types/domain.ts"
+  ],
+  "logs": [
+    {
+      "file": "qa-results/unit-final.json",
+      "sha256": "a44bd1ff06ca80d84218af8d23d6b864abb8f377a41aed640ab92a045256f918",
+      "bytes": 140470,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/unit-final.log",
+      "sha256": "ce17911d9a2e2272a199eb2ca7f631e691ec057ddb1db883906106e5343dee86",
+      "bytes": 42005,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/unit-concurrent-timeout.json",
+      "sha256": "63ba6aa83461785aa0e9fb4452a93a89d195b9c14a60d7d645303f7653a3b207",
+      "bytes": 140912,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/unit-concurrent-timeout.log",
+      "sha256": "0b0b3f71011452f285d146cb1c89aa230aacedadd8379c7b0784a48ccc88e02c",
+      "bytes": 43603,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/dialogue-compatibility-isolated.log",
+      "sha256": "f2b9cdc47b7107ebcfd90bc1187e684e19759e740037ee3daef013eae15160bc",
+      "bytes": 792,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/typecheck-final.log",
+      "sha256": "5adf8d20709638df757ec99acbb68cf2d7263b0df6fdf6916af125d6cc5ad35d",
+      "bytes": 69,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/build-final.log",
+      "sha256": "ee884232d2d44e2fe1acb76efae008479d526beb08eabb415e8019c48cc2d9e9",
+      "bytes": 948,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/audit.json",
+      "sha256": "90ab22bce043a945c83aaa3f0a2ad09a8a3d8c970b87736460bf6316e3741eaf",
+      "bytes": 385,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/test-qa.log",
+      "sha256": "2ef7e32307bd387a4b1b222232fbddf99bd2819de97a6e4462e9e332d15a3efa",
+      "bytes": 911,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/playwright.json",
+      "sha256": "924ef4bc762ceb843febad93f2ac5d0c898976defaea0db057b22d3c5b90a0c6",
+      "bytes": 57477,
+      "retainedLocallyIgnored": true
+    },
+    {
+      "file": "qa-results/playwright-final.log",
+      "sha256": "4f19e4ddcf725139009db966508a96e4066d7f399801ec2dc32044699b334e38",
+      "bytes": 6374,
+      "retainedLocallyIgnored": true
+    }
+  ],
+  "limitations": [
+    "Signed commit, PR creation and hosted GitHub CI pending local signing handoff",
+    "Descriptive acting instructions do not guarantee synthesis, voice reproduction, accent, lip synchronization or emotional performance",
+    "Sequential technique changes use custom prose; no structured timeline editor",
+    "Initial npm ci reported six dev-tree audit findings; production audit is clean",
+    "Existing asynchronous media act warnings and chunk/environment warnings remain"
+  ]
+}

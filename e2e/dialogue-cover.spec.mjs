@@ -31,7 +31,7 @@ test('delivery choices persist and exact Taglish directions reach every output a
   page,
   context,
 }, info) => {
-  const ids = await seedDialogueCoverFixture(page),
+  const ids = await seedDialogueCoverFixture(page, { legacyPerformance: true }),
     before = await storedProof(page);
   await openDialogue(page, ids);
   for (const name of ['Angry', 'Energetic', 'Lecturing'])
@@ -159,7 +159,7 @@ test('delivery choices persist and exact Taglish directions reach every output a
 test('custom-only, presets-only and clear performance keep spoken text exact and impose no default style', async ({
   page,
 }) => {
-  const ids = await seedDialogueCoverFixture(page);
+  const ids = await seedDialogueCoverFixture(page, { legacyPerformance: true });
   await openDialogue(page, ids);
   for (const input of await page
     .locator('.performance-direction input[type=checkbox]')

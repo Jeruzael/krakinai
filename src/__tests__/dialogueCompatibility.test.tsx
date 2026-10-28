@@ -72,6 +72,7 @@ describe('Dialogue and legacy data compatibility', () => {
       screen.getByLabelText('Dialogue Mode'),
       'voiceover'
     );
+    await user.click(screen.getByRole('button', { name: /^Custom Instructions/ }));
     await user.type(
       screen.getByLabelText('Custom Notes'),
       'User-entered calm delivery.'

@@ -14,7 +14,7 @@ for (const [width, height] of [
   test(`dialogue and cover visual evidence ${width}`, async ({ page }) => {
     test.setTimeout(90000);
     await page.setViewportSize({ width, height });
-    const ids = await seedDialogueCoverFixture(page);
+    const ids = await seedDialogueCoverFixture(page, { legacyPerformance: true });
     const dir = `qa-results/dialogue-cover/${phase}`;
     await mkdir(dir, { recursive: true });
     const capture = async (name) => {

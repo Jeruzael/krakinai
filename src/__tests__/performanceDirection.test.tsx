@@ -5,7 +5,7 @@ import { PerformanceDirection } from '../components/PerformanceDirection';
 import type { DialogueConfig } from '../types/domain';
 afterEach(cleanup);
 function Harness({
-  initial = { speaker: 'Mika', line: '“Sandali lang!”\nTara na. 😊' },
+  initial = { speaker: 'Mika', line: '“Sandali lang!”\nTara na. 😊', performanceDirection: { version: 1, styles: [] } },
 }: {
   initial?: DialogueConfig;
 }) {
@@ -26,6 +26,7 @@ it('defaults to no performance, keeps legacy custom text exact and never infers 
         speaker: 'Mika',
         line: 'Exact',
         deliveryNotes: ' Angry?\nActually calm — preserve this. ',
+        performanceDirection: { version: 1, styles: [] },
       }}
     />
   );
@@ -40,7 +41,7 @@ it('defaults to no performance, keeps legacy custom text exact and never infers 
   expect(screen.getByRole('combobox', { name: 'Speaking Pace' })).toHaveValue(
     ''
   );
-  expect(state()).not.toHaveProperty('performanceDirection');
+  expect(state().performanceDirection).toEqual({ version: 1, styles: [] });
 });
 it('selects compatible presets, explains opposites, removes selections and clears only directions', () => {
   render(<Harness />);

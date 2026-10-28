@@ -1,9 +1,9 @@
 import { seedPolishFixture } from './uiux-fixture.mjs';
 export const exactDialogue = '  “Sandali lang—wait!”\nTara na, Ari. 😊  ';
-export async function seedDialogueCoverFixture(page) {
+export async function seedDialogueCoverFixture(page, { legacyPerformance = false } = {}) {
   const ids = await seedPolishFixture(page);
   const extra = await page.evaluate(
-    async ({ ids, exactDialogue }) => {
+    async ({ ids, exactDialogue, legacyPerformance }) => {
       const db = await import('/src/storage/db.ts');
       const snap = await db.getAllSnapshot(),
         draft = snap.drafts.find((d) => d.id === ids.draftId);
@@ -13,6 +13,7 @@ export async function seedDialogueCoverFixture(page) {
           speaker: 'Ari',
           line: exactDialogue,
           deliveryNotes: 'Keep the last pause.\nHuwag baguhin ang linya.',
+          ...(legacyPerformance ? { performanceDirection: { version: 1, styles: [] } } : {}),
         },
       });
       const canvas = document.createElement('canvas');
@@ -85,7 +86,7 @@ export async function seedDialogueCoverFixture(page) {
         otherCollectionId: other.id,
       };
     },
-    { ids, exactDialogue }
+    { ids, exactDialogue, legacyPerformance }
   );
   await page.reload();
   return { ...ids, ...extra };

@@ -171,12 +171,28 @@ export interface ComponentSnapshot {
 export type DialogueDeliveryStyle = 'calm' | 'angry' | 'sad' | 'happy' | 'nervous' | 'confident' | 'apologetic' | 'sarcastic' | 'energetic' | 'playful' | 'urgent' | 'lecturing' | 'whispering';
 export type DialogueSpeakingPace = 'slow' | 'natural' | 'fast';
 export type DialogueBodyLanguage = 'subtle' | 'natural' | 'expressive' | 'strong_pointing';
-export interface DialoguePerformanceDirection {
+export interface DialoguePerformanceDirectionV1 {
   version: 1;
   styles: DialogueDeliveryStyle[];
   pace?: DialogueSpeakingPace;
   gestures?: DialogueBodyLanguage;
 }
+
+export interface DialoguePerformanceDirectionV2 {
+  version: 2;
+  emotion?: {
+    primary?: import('../domain/performanceCatalog').EmotionId;
+    secondary?: import('../domain/performanceCatalog').EmotionId;
+    intensity?: 'subtle' | 'mild' | 'moderate' | 'strong' | 'extreme';
+    custom?: string;
+  };
+  techniques?: import('../domain/performanceCatalog').TechniqueId[];
+  customTechnique?: string;
+  voice?: import('../domain/performanceCatalog').VoiceDirection;
+  speech?: import('../domain/performanceCatalog').SpeechDirection;
+  gestures?: import('../domain/performanceCatalog').BodyGesture[];
+}
+export type DialoguePerformanceDirection = DialoguePerformanceDirectionV1 | DialoguePerformanceDirectionV2;
 
 export interface DialogueConfig {
   speaker: string;
