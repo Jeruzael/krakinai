@@ -16,8 +16,9 @@ export const GenerationIdentityControl: React.FC<{
   source: SceneDraft | SavedScene;
   liveMaster?: PromptAsset;
   saved?: boolean;
+  compact?: boolean;
   onChange?: (choice: SceneGenerationChoice) => void | Promise<void>;
-}> = ({ source, liveMaster, saved = false, onChange }) => {
+}> = ({ source, liveMaster, saved = false, compact = false, onChange }) => {
   const id = useId();
   const anchor = source.slots.character?.identityAnchor;
   const candidate: SceneGenerationChoice = {
@@ -53,6 +54,22 @@ export const GenerationIdentityControl: React.FC<{
       : liveMaster && getIdentityAnchorStatus(liveMaster) === 'stale'
         ? 'Stale'
         : 'Draft or unavailable';
+  const explanation = (
+    <>
+      <span className="muted-text">
+        Master Identity is the complete authoritative description. An Identity
+        Anchor is optional shorter text that you approve for generation.
+      </span>
+      <span className="muted-text">
+        {resolved.reason ??
+          (saved
+            ? 'Frozen generation identity. Edit a Copy to change.'
+            : available
+              ? 'Applies to generation exports; canonical outputs keep the master.'
+              : 'Approve an anchor, then refresh the selected Character snapshot to use it.')}
+      </span>
+    </>
+  );
   return (
     <div className="generation-identity-control">
       <label htmlFor={id} className="form-label">
@@ -92,18 +109,14 @@ export const GenerationIdentityControl: React.FC<{
           revision {character.sourceRevision}
         </span>
       )}
-      <span className="muted-text">
-        Master Identity is the complete authoritative description. An Identity
-        Anchor is optional shorter text that you approve for generation.
-      </span>
-      <span className="muted-text">
-        {resolved.reason ??
-          (saved
-            ? 'Frozen generation identity. Edit a Copy to change.'
-            : available
-              ? 'Applies to generation exports; canonical outputs keep the master.'
-              : 'Approve an anchor, then refresh the selected Character snapshot to use it.')}
-      </span>
+      {compact ? (
+        <details className="generation-identity-help">
+          <summary>Identity source details</summary>
+          <div>{explanation}</div>
+        </details>
+      ) : (
+        explanation
+      )}
     </div>
   );
 };

@@ -158,21 +158,28 @@ describe('KRAKINAI End-to-End UI & Navigation Workflow', () => {
 
     // S07 Prompt Output
     const copyBtn = await screen.findByRole('button', { name: /Copy Prompt/i }, { timeout: 5000 });
+    await user.click(screen.getByRole('button', {name:'Show Prompt'}));
     expect(
       screen.getByText(/Sunlit corner coffee roastery with oak counter/i)
     ).toBeInTheDocument();
 
+    await user.keyboard('{Escape}');
+
     // Switch to Structured and Compact tabs
     await user.click(screen.getByRole('tab', { name: /Structured/i }));
+    await user.click(screen.getByRole('button', {name:'Show Prompt'}));
     expect(
       screen.getByRole('heading', { name: 'CHARACTER IDENTITY' })
     ).toBeInTheDocument();
 
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('tab', { name: /Compact/i }));
+    await user.click(screen.getByRole('button', {name:'Show Prompt'}));
     expect(
       screen.getByText(/Sunlit corner coffee roastery with oak counter/i)
     ).toBeInTheDocument();
 
+    await user.keyboard('{Escape}');
     await user.click(screen.getByRole('tab', { name: /Narrative/i }));
 
     // Test clipboard denial fallback

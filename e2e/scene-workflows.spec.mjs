@@ -64,6 +64,7 @@ test('canonical output copy, save, and small legacy backup roundtrip', async ({ 
   await page.goto(`/#/output/${draftId}`);
   await expect(page.getByRole('heading', { name: 'Synthetic Café Scene', level: 1 })).toBeVisible();
   await page.getByRole('tab', { name: 'Narrative' }).click();
+  await page.getByRole('button', { name: 'Show Prompt', exact: true }).click();
   await page.getByRole('button', { name: 'Raw' }).click();
   const prompt = page.getByRole('region', { name: 'Complete prompt text' });
   await expect(prompt).toContainText('A quiet café with oak tables');
@@ -74,6 +75,7 @@ test('canonical output copy, save, and small legacy backup roundtrip', async ({ 
   const copied = await page.evaluate(() => navigator.clipboard.readText());
   // Windows clipboard canonicalizes LF to CRLF; compare the actual text content.
   expect(copied.replace(/\r\n/g, '\n')).toBe(exactOutput.replace(/\r\n/g, '\n'));
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Save Scene' }).click();
   await expect(page).toHaveURL(/#\/output\/scene_/);
   const original = await snapshot(page);

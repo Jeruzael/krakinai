@@ -87,6 +87,7 @@ test('delivery choices persist and exact Taglish directions reach every output a
       .selectOption(workflow);
     if (mode)
       await page.getByRole('tab', { name: new RegExp(`^${mode}`) }).click();
+    await page.getByRole('button', { name: 'Show Prompt', exact: true }).click();
     const raw = page.getByRole('button', { name: 'Raw', exact: true });
     if (await raw.isVisible()) await raw.click();
     const text = await page
@@ -96,6 +97,7 @@ test('delivery choices persist and exact Taglish directions reach every output a
     if (workflow === 'json' || workflow === 'generation_json')
       expect(JSON.parse(text).dialogue.exactLine).toBe(exactDialogue);
     else expect(text).toContain(exactDialogue);
+    await page.keyboard.press('Escape');
   }
   await page
     .getByLabel('Target Workflow', { exact: true })
@@ -103,6 +105,8 @@ test('delivery choices persist and exact Taglish directions reach every output a
   await page.getByRole('tab', { name: 'Narrative', exact: true }).click();
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await page.getByRole('button', { name: 'Copy Prompt', exact: true }).click();
+  await page.getByRole('button', {name:'Show Prompt',exact:true}).click();
+  await page.getByRole('button', {name:'Raw',exact:true}).click();
   const rawText = await page
     .getByRole('region', { name: 'Complete prompt text' })
     .textContent();
@@ -112,6 +116,7 @@ test('delivery choices persist and exact Taglish directions reach every output a
       '\n'
     )
   ).toBe(rawText.replace(/\r\n/g, '\n'));
+  await page.keyboard.press('Escape');
   await page.getByRole('button', { name: 'Save Scene', exact: true }).click();
   await expect(page).toHaveURL(/#\/output\/scene_/);
   const savedId = page.url().split('#/output/')[1].split('?')[0];
