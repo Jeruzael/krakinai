@@ -13,15 +13,17 @@ KRAKINAI manages reusable creative instructions, reference files, and sample res
 1. **Save a Character (`Characters`)**: Paste a character identity prompt (describing stable facial, hair, and body traits) and optionally attach up to 6 reference images or playable video samples.
 2. **Add Variants (`Variants`)**: Create reusable look layers linked to a parent character (`Outfit`, `Expression`, `Pose`, `Camera Angle`, `Location`, `Visual Style`). Each variant stores only the changed layer and maps deterministically to its target Scene Builder slot.
 3. **Compose a Shot (`Scene Builder`)**:
+   - Choose **Shot Type** beneath Scene Title: Character Scene, Property / Environment, Graphic / Motion Design, or Existing Footage. [Requirements and original-source workflow](docs/context-aware-shot-types.md). Missing Shot Type retains legacy Character Scene behavior.
    - Select up to one component per ordered slot:
      1. `Character` (optional for scenery/product/B-roll shots; locked identity text in builder)
      2. `Clothing & Accessories`
-     3. `Environment` _(required for assembly)_
-     4. `Action & Emotion` _(required for assembly)_
+     3. `Environment` _(required for Character Scene and Property / Environment)_
+     4. `Action & Emotion` _(required for Character Scene)_
      5. `Camera & Movement`
      6. `Lighting & Mood`
      7. `Art Style`
-   - Add optional scene instructions, spoken dialogue (requires a character and speaker label), aspect ratio (`16:9`, `9:16`, `1:1`), and intended duration (`1–60s`).
+   - Graphic shots require an original supported image and animation instructions; footage requires an original video and editing instructions. Inactive layers remain in the draft and do not enter active outputs. No fake Character, Environment or Action is needed for a floor-plan graphic.
+   - Add spoken dialogue, aspect ratio (`16:9`, `9:16`, `1:1`), and intended duration (`1–60s`). Voiceover/off-screen narration in non-character shots needs a speaker and exact line; on-camera/unspecified spoken dialogue requires a relevant Character. Character Scene retains its existing dialogue requirements.
    - Selecting an asset or variant snapshots its revision, text, and reference media IDs so later library edits never silently rewrite saved scenes.
    - The **Reference Board** displays selected input references only (`References only. This app does not render a combined scene.`).
 4. **Inspect & Copy Output (`Prompt Output`)**:

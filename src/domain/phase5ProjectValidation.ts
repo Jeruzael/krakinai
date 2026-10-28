@@ -1,5 +1,6 @@
 import type {Collection,ProjectShot,SavedScene,PromptAsset,Variant,MediaAsset,CharacterBibleEntry,ProjectTransition} from '../types/domain';
 import {projectMembersFromShots} from './projectStoryboard';
+import {isShotType} from './shotTypeRules';
 
 const statuses=new Set(['planned','prompt_ready','generated','reviewed','final']);
 const reasons=new Set(['new_day','costume_change','flashback','timeline','deliberate','other']);
@@ -18,6 +19,7 @@ export function validateProject(collection:Collection, scenes:SavedScene[], chec
     if (shot.order!==index) return 'Project shot order must be contiguous.';
     if (typeof shot.code!=='string' || !shot.code.trim() || shot.code.length>40 || typeof shot.title!=='string' || shot.title.length>240 || !statuses.has(shot.status)) return 'Invalid project shot fields or status.';
     if (shot.plannedDurationSeconds!==undefined && (!Number.isFinite(shot.plannedDurationSeconds) || shot.plannedDurationSeconds<=0 || shot.plannedDurationSeconds>86400)) return 'Invalid planned duration.';
+    if (shot.plannedShotType!==undefined && !isShotType(shot.plannedShotType)) return 'Invalid planned Shot Type.';
     if (shot.continuityNotes!==undefined && (typeof shot.continuityNotes!=='string'||shot.continuityNotes.length>10000)) return 'Invalid continuity notes.';
     if (shot.intentionalWardrobeChange!==undefined && !reasons.has(shot.intentionalWardrobeChange)) return 'Invalid wardrobe change reason.';
     if(references) for(const mediaId of [shot.firstFrameMediaId,shot.lastFrameMediaId]) if(mediaId!==undefined && !references.media.some(m=>m.id===mediaId&&m.mimeType.startsWith('image/'))) return 'Project frame must reference an existing image.';
@@ -64,6 +66,7 @@ export function validateProject(collection:Collection, scenes:SavedScene[], chec
 export function validateShotChange(shot:ProjectShot):void {
   if (!shot.id || typeof shot.code!=='string'||!shot.code.trim()||shot.code.length>40||typeof shot.title!=='string'||shot.title.length>240||!statuses.has(shot.status)) throw new Error('Invalid shot fields or status.');
   if (shot.plannedDurationSeconds!==undefined && (!Number.isFinite(shot.plannedDurationSeconds)||shot.plannedDurationSeconds<=0||shot.plannedDurationSeconds>86400)) throw new Error('Invalid planned duration.');
+  if (shot.plannedShotType!==undefined && !isShotType(shot.plannedShotType)) throw new Error('Invalid planned Shot Type.');
   if (shot.continuityNotes!==undefined && (typeof shot.continuityNotes!=='string'||shot.continuityNotes.length>10000)) throw new Error('Invalid continuity notes.');
   if(shot.intentionalWardrobeChange!==undefined&&!reasons.has(shot.intentionalWardrobeChange))throw new Error('Invalid wardrobe change reason.');
 }

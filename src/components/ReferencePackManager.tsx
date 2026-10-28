@@ -20,8 +20,10 @@ import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import { StudioDialog } from './StudioDialog';
 import { MediaPreviewDialog } from './MediaPreviewDialog';
 import { MediaThumbnail } from './MediaThumbnail';
+import { getActiveReferencePack, getSourceReferenceEntries } from '../domain/shotTypeRules';
 import './referencePack.css';
 const referenceGroups = [
+  ['source', 'Original Source Media'],
   ['character', 'Character Identity'],
   ['wardrobe', 'Outfit'],
   ['environment', 'Environment'],
@@ -53,9 +55,9 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
 }) => {
   const [selected, setSelected] = useState<ReferencePackEntry[]>(
     () =>
-      source.referencePack?.entries
+      getActiveReferencePack(source)?.entries
         .map((entry) => ({ ...entry }))
-        .sort((a, b) => a.order - b.order) ?? []
+        .sort((a, b) => a.order - b.order) ?? getSourceReferenceEntries(source)
   );
   const [error, setError] = useState('');
   const [status, setStatus] = useState('');
@@ -96,7 +98,7 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
       return copy;
     });
   const suggest = () => {
-    const chosen: ReferencePackEntry[] = [];
+    const chosen: ReferencePackEntry[] = candidates.filter(entry => entry.sourceSlot === 'source').map(entry => ({...entry}));
     for (const slot of ['character', 'wardrobe', 'environment']) {
       const entry = candidates.find(
         (item) =>
@@ -160,6 +162,7 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
             ? 'Historical reference selection is read-only. Edit a Copy to change it.'
             : 'Choose associations, purpose, and attachment order. Changes remain local until you apply the pack.'}
         </p>
+        {all.some(entry => entry.sourceSlot === 'source') && <p className="muted-text">Original source media is required input and stays included in this pack. Copying a checklist does not attach files to an external tool.</p>}
         <p role="status">
           {selected.length} selected{status ? ` · ${status}` : ''}
         </p>
@@ -262,7 +265,7 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
                                       : label
                                   }
                                   checked={index >= 0}
-                                  disabled={readOnly || busy}
+                                  disabled={readOnly || busy || entry.sourceSlot === 'source'}
                                   onChange={() =>
                                     setSelected((items) =>
                                       index >= 0

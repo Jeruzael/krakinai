@@ -1,0 +1,709 @@
+{
+  "feature": "Context-aware Shot Types",
+  "baselineCommit": "8d2d14533918ecfa1597d5ef7d5c0f71deccf672",
+  "branch": "codex/context-aware-shot-types",
+  "recordedAtUTC": "2026-10-28T13:20:20.153015+00:00",
+  "localValidation": {
+    "baselineUnit": {
+      "passed": 409,
+      "files": 61,
+      "exitCode": 0
+    },
+    "unit": {
+      "command": "npm test -- --maxWorkers=2 --minWorkers=1",
+      "passed": 461,
+      "files": 68,
+      "exitCode": 0,
+      "durationMs": 92415.92211914062
+    },
+    "typecheck": {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    "build": {
+      "command": "npm run build",
+      "exitCode": 0,
+      "mainChunkKB": 562.25,
+      "gzipKB": 164.48
+    },
+    "productionAudit": {
+      "command": "npm audit --omit=dev",
+      "vulnerabilities": 0,
+      "exitCode": 0
+    },
+    "qa": {
+      "command": "npm run test:qa",
+      "tests": 6,
+      "historicalChecks": 207,
+      "historicalScreenshots": 45,
+      "exitCode": 0
+    },
+    "browser": {
+      "command": "npm run test:e2e",
+      "passed": 83,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0,
+      "durationMs": 238172.28199999998,
+      "exitCode": 0
+    },
+    "diffCheck": {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  },
+  "compatibility": {
+    "legacyGoldenCapturedBeforeImplementation": true,
+    "legacyHashCount": 16,
+    "legacyHashes": [
+      "51786e827fec66e71f47605eccb0f0f21b698df1baf960afd4b20caad613aa28",
+      "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+      "1503c9c667c8e80767bd23c82bbd730d30ab947e057e7560976e68873fba6e4f",
+      "ac96ecab0022438be38cf1e3aa9913252011b48a2bbe0f81335db7a2014a036c",
+      "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+      "fedc7f668511c8be67c46d9e5580ac4a0140f68effa6aa5277b76e8ff499c2f0",
+      "82c79dcee02894ccf8ed52c86f0913599d9fd180d779a3379b342be3dfa2ed56",
+      "44ea102d6ae091ca01a736e9fb1bcf555025c7d931d29f8a7a26d582afa4ecef",
+      "51786e827fec66e71f47605eccb0f0f21b698df1baf960afd4b20caad613aa28",
+      "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+      "1503c9c667c8e80767bd23c82bbd730d30ab947e057e7560976e68873fba6e4f",
+      "ac96ecab0022438be38cf1e3aa9913252011b48a2bbe0f81335db7a2014a036c",
+      "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+      "fedc7f668511c8be67c46d9e5580ac4a0140f68effa6aa5277b76e8ff499c2f0",
+      "82c79dcee02894ccf8ed52c86f0913599d9fd180d779a3379b342be3dfa2ed56",
+      "44ea102d6ae091ca01a736e9fb1bcf555025c7d931d29f8a7a26d582afa4ecef"
+    ],
+    "goldenSnapshotSha256": "2d9cc8c4767efe923a6688a6b0ce15fb1374cafd2eec3936c1897be80355260c",
+    "missingAndExplicitCharacterTypeEquivalent": true,
+    "protectedFiles": {
+      "src/domain/validation.ts": {
+        "gitBlob": "273829917548f63559b0fc1f5dff741fffbc0640",
+        "sha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae"
+      },
+      "package.json": {
+        "gitBlob": "62399f66c69aa3c066b165cc3e6074362f6ba10f",
+        "sha256": "975c9620034ef146d0d5b65a3aae481e74b2f6e5c3995ed4223fd93d22adb34e"
+      },
+      "package-lock.json": {
+        "gitBlob": "ef592989b98b4d9cdcbc2d9bc1ce310e5a3846e1",
+        "sha256": "c4e5413b3d4535ee9a1cfacf7760b5344cf3d35a55e5390a3a32d35524e39d34"
+      },
+      "vite.config.ts": {
+        "gitBlob": "964eeac181fc43136b8e16f91d5481d12d244308",
+        "sha256": "78c72be755682a568a891c4d104d3212a6352a3c6a63de147545b05d2aed287a"
+      },
+      "playwright.config.mjs": {
+        "gitBlob": "d2dc5a6985ef9658fa34018e72ba7f88402f0fa0",
+        "sha256": "33d458dbd4dcbad066bbf8a1a72d8559af9580186b16d237d1f32caec58b0b7e"
+      }
+    },
+    "databaseNameVersionAndEightStoresUnchanged": true,
+    "projectExportLimitMiB": 128,
+    "runtimeAndTestFingerprints": {
+      "e2e/shot-types-fixture.mjs": "ad20759e6f522dc2a650bbbbdb2b1560d8a172912ba172083fd0df2d6bca2cf7",
+      "e2e/shot-types.spec.mjs": "8ab87d51245712781db3340b99af3cd41d5591f17795b087980c3c6dec8e3f11",
+      "scripts/qa/capture-shot-types-before.mjs": "932ecf8508906e349443ecfe4b44a874d695af3ea77713d9f02718d685fddf64",
+      "scripts/qa/verify-shot-types-archives.py": "0f2a8bace044207c718acf413e8e1745674ee32b367ef537c8bf267dbc72be55",
+      "src/__tests__/__snapshots__/shotTypeLegacy.test.ts.snap": "2d9cc8c4767efe923a6688a6b0ce15fb1374cafd2eec3936c1897be80355260c",
+      "src/__tests__/shotTypeCorrections.test.tsx": "270a21d841e2bb74c0ba5d107912fdbaecf63661e32e021c2c31d2ca3a21ac3f",
+      "src/__tests__/shotTypeExports.test.ts": "9c6ff122c44bb3fb49b7acd41e5e9ee334b15faae08d59e16f5b9b00b6ef8d10",
+      "src/__tests__/shotTypeLegacy.test.ts": "d05c1299796812b640485922d52979ca96b8eea0acd10e11bdc1a50d0051f1e4",
+      "src/__tests__/shotTypePersistence.test.ts": "8acd6d48555f3b6e927a5c2ebc375cc6e49d299260e477e1722301ac70d3adf9",
+      "src/__tests__/shotTypes.test.ts": "32d26802f8a031efdb58064e575287bf65ba92e39993ad184079c82febfd11bb",
+      "src/__tests__/shotTypesSourceMedia.test.tsx": "c0d2b8d79c2efa01196b334969253ac525f7eb46c904bd27af27a98e2f5f310e",
+      "src/__tests__/shotTypesUI.test.tsx": "28eff87bb83b901318fb1a1731f760887edef5b4bc0411317140ecba0c676236",
+      "src/components/ReferenceBoard.tsx": "712941d25c9df7a639538badd54f89147bc04956a528587bf8f24c6bed19c4bf",
+      "src/components/ReferencePackManager.tsx": "8c97f0f53f0958573021b16bbfa3dc9b9060c109dddba094b94d5b05334094a1",
+      "src/components/SceneOutputWorkspace.tsx": "72e1ca1d02d753fc5fbff2859f635791c10ae7b8cd5cd0790ed01cb42e4eec86",
+      "src/components/SourceMediaPicker.tsx": "5c99a77431fec632385f1e4e7644cf637cab49a00bda5a1e448d28f9aa341cbb",
+      "src/components/sourceMediaPicker.css": "5867ea03edeaf83bc227df26c1458f06932a08277b3e306f2cfde7e02587d360",
+      "src/domain/exportPresets.ts": "4e176becddc8b72824431c3e85da6675efe23475ebf31ad9e0201bc8437f74ca",
+      "src/domain/generationDocument.ts": "07f2403d949bc1a9c860cd769eb558e43cac9916ccbc184a10b01aa3af9226fe",
+      "src/domain/phase4Validation.ts": "dca5681c6e276f2185a82436262c0233ba2688489ed5b4fe75d89b93a8fd8105",
+      "src/domain/phase5ProjectValidation.ts": "18854f2c1ffa32d93f90b2eabd2d3d1b2170b881f7ca1e14a9f8d3993dd514bc",
+      "src/domain/projectExport.ts": "57340d5332f29ce1cff2b46bb870ece877917ea31fc169c62c590a1e97cd116b",
+      "src/domain/projectRoutes.ts": "db46ac8051ad93c965e26c2e82d7e667ae2c442891ad24ce9f15b4091b76cbb7",
+      "src/domain/projectStoryboard.ts": "376de77bbc090cf6d875c9f31a28ab89ca13433e44aa18364bf6801132e9a596",
+      "src/domain/promptAssembler.ts": "c759420d399ba250bcef514df86ad756ac1bc2c13f192263a9c1751d0799c33d",
+      "src/domain/promptSections.ts": "5d65e565763fca03bc80a2457d7c610b75e28a4bec894e4e48ee07f295c865ad",
+      "src/domain/referencePack.ts": "bf68987f3b05f295f0621324b8dd9c329cb3971e29624ae27e9d022ee24ee9d8",
+      "src/domain/sceneDocument.ts": "5c5cb5d8d80d7cec451ee5ed65c793295530a1247b72d5ed0d7d5dd24bdc0d77",
+      "src/domain/sceneDuplicates.ts": "69fcaeb9ccc358a696ff01e0c6f3f11abaed299c1816d4377dc4c1044fe55af0",
+      "src/domain/scenePreflight.ts": "cc437a6553b8d0b1424a5056a3389c475ff424aaf660aacaf8821e110c161e42",
+      "src/domain/shotTypeRules.ts": "b951b5293b60217df2b4411647d6143244dc42836d16ea66d443e7cd53815ad8",
+      "src/screens/CollectionWorkspace.tsx": "2c63bc288bb3cfbeb7270638abbe532e8f1f7b0c3685626a9b382069af09bda0",
+      "src/screens/PromptOutputScreen.tsx": "30a86852be63d523a65b501ead5cfb863fe0b6444d265ed311fc6655914cad74",
+      "src/screens/SceneBuilderScreen.tsx": "a4a097a53b5b31bf351a9f2409e4ccad212dd75580845d89937e9dcc5cc68fad",
+      "src/screens/TemplatesScreen.tsx": "fe379f4aad9851e6f58bb45acf1de56ca42f6a9fd44cdb559d7540703212a366",
+      "src/storage/backup.ts": "5892bb6abf2e9fd60d7c1eb9e7bbaf384b9b0780045c06ca5b4913b0a28ed9b2",
+      "src/storage/db.ts": "23dcf6e4f9db94d652fe5d3b33d01c144f73eede06959d327b20e6440e5ddf0c",
+      "src/storage/projects.ts": "03eb42dc9c05c73d708215da28634663837fc93bbeba317c8b667b92018a6775",
+      "src/types/domain.ts": "fb79cf14ff731ee88ba049cd9b7880ae2c6f79155eeecd0eb5d8a7b796641001"
+    }
+  },
+  "sourceIntegrity": {
+    "fixture": {
+      "draftId": "draft_qa_midori_floorplan",
+      "sourceId": "media_qa_midori_floorplan",
+      "collectionId": "collection_qa_midori",
+      "shotId": "shot_qa_midori_3",
+      "originalFilename": "MIDORI-two-bedroom-original.png",
+      "originalSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa",
+      "originalByteSize": 61534
+    },
+    "blockingFindings": 0,
+    "formats": [
+      {
+        "workflow": "canonical",
+        "mode": "Narrative",
+        "key": "full",
+        "bytes": 759,
+        "sha256": "e59afa7cab0689303fd5abbf7ad43f3ceaaf3b0086d08f6c016f2b71b30e7d72",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "canonical",
+        "mode": "Structured",
+        "key": "structured",
+        "bytes": 803,
+        "sha256": "5f61831f4cdc76c5e27981d3cedb58eac94e9ebea55d1e8b6606f728fb4abb3a",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "canonical",
+        "mode": "Compact",
+        "key": "compact",
+        "bytes": 759,
+        "sha256": "e59afa7cab0689303fd5abbf7ad43f3ceaaf3b0086d08f6c016f2b71b30e7d72",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "generic_structured",
+        "mode": null,
+        "key": "generic_structured",
+        "bytes": 950,
+        "sha256": "4ffeb91ed2b05520029827fdf1692d8d61c997f674dadf240a9b5d4e8d5a6be0",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "gemini_omni_flash",
+        "mode": null,
+        "key": "gemini_omni_flash",
+        "bytes": 950,
+        "sha256": "4ffeb91ed2b05520029827fdf1692d8d61c997f674dadf240a9b5d4e8d5a6be0",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "custom",
+        "mode": null,
+        "key": "custom",
+        "bytes": 950,
+        "sha256": "4ffeb91ed2b05520029827fdf1692d8d61c997f674dadf240a9b5d4e8d5a6be0",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "json",
+        "mode": null,
+        "key": "json",
+        "bytes": 1460,
+        "sha256": "6197581282bec25341fdb3123c572be7b138807251fa02fbbbb1c4aa1439d634",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      },
+      {
+        "workflow": "generation_json",
+        "mode": null,
+        "key": "generation_json",
+        "bytes": 1617,
+        "sha256": "3d05264d1b6dd7faa05f6132d14c620b616b3ce8a1906216e70c402fc498869c",
+        "copyApiPayloadEqualsAssembly": true,
+        "selectedDownloadEqualsAssembly": true
+      }
+    ],
+    "originalBytesUnchangedAfterCopyAndDownload": true,
+    "sourceReusedWithoutBinaryDuplication": true,
+    "restoredSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa",
+    "archives": [
+      {
+        "path": "qa-results/shot-types/midori-reference.zip",
+        "archiveBytes": 55803,
+        "archiveSha256": "f5c7bf1e4926fe72f86646a2222974e687ebd87e6a2f2a73122943a0dcd89391",
+        "entries": 2,
+        "sourcePaths": [
+          "media/001-MIDORI-two-bedroom-original.png"
+        ],
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa",
+        "originalBytes": 61534,
+        "crcReadbackPassed": true,
+        "pngHeaderDimensions": [
+          960,
+          720
+        ],
+        "sourceMetadataVerified": true
+      },
+      {
+        "path": "qa-results/shot-types/midori-project.zip",
+        "archiveBytes": 64131,
+        "archiveSha256": "fe237295d7a3266de3c34f3647317198a473283b2d4a0feac455953d32bbea6b",
+        "entries": 11,
+        "sourcePaths": [
+          "MIDORI---Fictional-Condominium---Synthetic-QA-63-6f-6c-6c-65-63-74-69-6f-6e-5f-71-61-5f-6d-69-64-6f-72-69/media/0001-6d-65-64-69-61-5f-71-61-5f-6d-69-64-6f-72-69-5f-66-6c-6f-6f-72-70-6c-61-6e-MIDORI-two-bedroom-original.png"
+        ],
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa",
+        "originalBytes": 61534,
+        "crcReadbackPassed": true,
+        "pngHeaderDimensions": [
+          960,
+          720
+        ],
+        "sourceMetadataVerified": true
+      },
+      {
+        "path": "qa-results/shot-types/midori-full-backup.zip",
+        "archiveBytes": 60193,
+        "archiveSha256": "3f382417311cf3f5ca731b11410ab087ca6b4191391a486918a856312e9450e4",
+        "entries": 2,
+        "sourcePaths": [
+          "media/media_qa_midori_floorplan.png"
+        ],
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa",
+        "originalBytes": 61534,
+        "crcReadbackPassed": true,
+        "pngHeaderDimensions": [
+          960,
+          720
+        ],
+        "sourceMetadataVerified": true
+      }
+    ]
+  },
+  "browserEvidence": {
+    "sourcePicker": {
+      "validPngDecoded": [
+        960,
+        720
+      ],
+      "rejectedMime": "text/plain",
+      "uploadCreatesOriginal": "media_1e021c4c2ecd",
+      "existingSelectionReusesId": "media_qa_midori_floorplan",
+      "mediaRetainedAfterRemoval": 2,
+      "keyboardPreviewFocusRestored": true
+    },
+    "dialogueAndSourceFailures": {
+      "exactLine": "  Welcome to MIDORI.\nTwo bedrooms, one home. 😊  ",
+      "voiceoverAssembledWithoutCharacter": true,
+      "onCameraBlockedWithoutCharacter": true,
+      "failures": [
+        {
+          "failure": "missing",
+          "rejected": true,
+          "error": "Original source file is missing from storage: media_qa_midori_floorplan.",
+          "sceneCount": 0
+        },
+        {
+          "failure": "wrong MIME",
+          "rejected": true,
+          "error": "Original source image has an unsupported MIME type: video/mp4. Original source MIME metadata does not match stored file: media_qa_midori_floorplan. MIDORI-two-bedroom-original.png: Unsupported format. Accept JPEG, PNG, WebP (up to 10 MiB) or playable MP4/WebM (up to 50 MiB).",
+          "sceneCount": 0
+        }
+      ]
+    },
+    "reviewRegressions": {
+      "orders": [
+        0,
+        1
+      ],
+      "negatives": [
+        "Authored no text overlay."
+      ],
+      "backupValid": true,
+      "packPreserved": true,
+      "inactiveCharacterRetained": true
+    },
+    "responsive": [
+      {
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "builder": {
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "bodyWidth": 1440
+        },
+        "output": {
+          "viewport": 1440,
+          "scrollWidth": 1440,
+          "bodyWidth": 1440
+        },
+        "blockingFindings": 0,
+        "promptDialogFocusRestored": true,
+        "screenshots": [
+          "after-builder-1440.png",
+          "after-output-1440.png",
+          "after-prompt-1440.png"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "builder": {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "bodyWidth": 768
+        },
+        "output": {
+          "viewport": 768,
+          "scrollWidth": 768,
+          "bodyWidth": 768
+        },
+        "blockingFindings": 0,
+        "promptDialogFocusRestored": true,
+        "screenshots": [
+          "after-builder-768.png",
+          "after-output-768.png",
+          "after-prompt-768.png"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "builder": {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "bodyWidth": 390
+        },
+        "output": {
+          "viewport": 390,
+          "scrollWidth": 390,
+          "bodyWidth": 390
+        },
+        "blockingFindings": 0,
+        "promptDialogFocusRestored": true,
+        "screenshots": [
+          "after-builder-390.png",
+          "after-output-390.png",
+          "after-prompt-390.png"
+        ]
+      }
+    ],
+    "assemblySourceChecks": [
+      {
+        "failure": "deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "stale deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "unsupported MIME",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "inconsistent metadata",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      }
+    ]
+  },
+  "review": {
+    "initialSourcePatchSha256": "e1009583b85940a9c8bc057cca65a8f0843a6f539a341091abb2f060021afd79",
+    "findings": [
+      "Duplicate active/inactive pack orders could make a backup unrestorable.",
+      "Copied aggregate negatives could survive an inactive type switch, including refreshed saved-copy history."
+    ],
+    "status": "Both resolved; independently reproduced after correction.",
+    "regressionEvidence": "Initial four corrections failed; older-copy and refreshed-saved-copy extensions separately failed, then all seven correction cases passed. Final full suite and Chromium regression passed.",
+    "unresolvedMaterialFindings": 0
+  },
+  "screenshots": [
+    {
+      "path": "docs/images/context-aware-shot-types/before-builder-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 125814,
+      "sha256": "d310fa9e26ed76d8eb5cc7e10437f2e7ace451ea24f07cc761833e0ca2950b88"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-builder-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 144519,
+      "sha256": "6262e71e21f04a9be9fde3b8b7539e70ecfecb4a8754417be7d36db48c456533"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-output-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 137462,
+      "sha256": "7fda9daad43cdd22c3b1cf16d0bb813c3873ec292b8ad2d454f18a532cd46691"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-prompt-1440.png",
+      "width": 1440,
+      "height": 900,
+      "bytes": 102161,
+      "sha256": "d1abb8837e49d914be6fff9a86f86198559e1541002ca968ed60a48247332760"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/before-builder-768.png",
+      "width": 768,
+      "height": 1871,
+      "bytes": 144565,
+      "sha256": "b6370b14fa45ff94f3bcfd4e15d367de3db0468d216a6fb13f7e99bc39f7b888"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-builder-768.png",
+      "width": 768,
+      "height": 2999,
+      "bytes": 228937,
+      "sha256": "30268ff11659ad1baa52723d36e1d3c50118ea87aed2d18086a029e1c1c2db9d"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-output-768.png",
+      "width": 768,
+      "height": 1122,
+      "bytes": 104026,
+      "sha256": "6dcb83f801bf82d2d7000554b6d4d9de7950a9d2abf6d995dbf16d7a664b6c35"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-prompt-768.png",
+      "width": 768,
+      "height": 1122,
+      "bytes": 94370,
+      "sha256": "08b4140f3ae988fd303a4b57f5357cac32e9aa495fdb7def9e565b58804bf264"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/before-builder-390.png",
+      "width": 390,
+      "height": 1884,
+      "bytes": 98534,
+      "sha256": "85e6b25bcf79b09785f48ba73a973e635f0a77abffff608fa7939c27d012a8e3"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-builder-390.png",
+      "width": 390,
+      "height": 3144,
+      "bytes": 174502,
+      "sha256": "1beb2f7ca57ff5c64d80df93aa21c21b0f719605b7bbd2ea77888ef52f590b84"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-output-390.png",
+      "width": 390,
+      "height": 1192,
+      "bytes": 61941,
+      "sha256": "3330dcfebb1693dde04a9c2ea5e50b846a0c25cca761a291652c400fb8eac026"
+    },
+    {
+      "path": "docs/images/context-aware-shot-types/after-prompt-390.png",
+      "width": 390,
+      "height": 1192,
+      "bytes": 60792,
+      "sha256": "fb297839fb01bc71ff76046fb1a535eee9dfb2bad8ae225cf9e1503d32c93531"
+    }
+  ],
+  "beforeSourceSnapshot": {
+    "baselineCommit": "8d2d14533918ecfa1597d5ef7d5c0f71deccf672",
+    "sourceHashes": {
+      "src/screens/SceneBuilderScreen.tsx": "51ad364939cc7c1b9fffc2b461cf43f43c51011e5ef714bc8b329e31d64cd77b",
+      "src/domain/promptAssembler.ts": "864de5ac98345f25bb1acda9f5c78c6178bbb4d555f7303407bcc75d61cb2e54",
+      "src/types/domain.ts": "68546a2891923e702d4af67dd386a21ae92dc72d0829cc25a6c4e48314d56c96"
+    },
+    "screenshots": [
+      {
+        "path": "qa-results/shot-types/before/builder-1440.png",
+        "width": 1440,
+        "height": 900,
+        "sha256": "d310fa9e26ed76d8eb5cc7e10437f2e7ace451ea24f07cc761833e0ca2950b88",
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa"
+      },
+      {
+        "path": "qa-results/shot-types/before/builder-768.png",
+        "width": 768,
+        "height": 1024,
+        "sha256": "b6370b14fa45ff94f3bcfd4e15d367de3db0468d216a6fb13f7e99bc39f7b888",
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa"
+      },
+      {
+        "path": "qa-results/shot-types/before/builder-390.png",
+        "width": 390,
+        "height": 844,
+        "sha256": "85e6b25bcf79b09785f48ba73a973e635f0a77abffff608fa7939c27d012a8e3",
+        "sourceSha256": "6fbc36b8960dcbb56fd75fec5cd69d2c208b8620061ea2b1d3e5bf8288ad4cfa"
+      }
+    ],
+    "syntheticContextsOnly": true
+  },
+  "warnings": {
+    "viteChunkOver500KB": true,
+    "developmentInclusiveAudit": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 1,
+      "critical": 2,
+      "total": 6
+    },
+    "developmentAuditExitCode": 1,
+    "reactActWarningCount": 22,
+    "playwrightCli": "NO_COLOR ignored when FORCE_COLOR is present."
+  },
+  "scope": {
+    "actualUserBrowserProfileUsed": false,
+    "actualBrowserDataModified": false,
+    "newDependencies": false,
+    "newDatabaseStoreOrMigration": false,
+    "storageLimitsOrZip64GateRaised": false,
+    "historicalSavedScenesRewritten": false
+  },
+  "limitations": [
+    "Chromium automated checks; manual screen-reader, Firefox and Safari verification not performed.",
+    "Full-backup restore and project take linking in the browser use existing storage APIs; reference/project ZIPs and selected prompt downloads exercise UI controls.",
+    "Unit fixtures can use opaque bytes; browser media is a decodable fictional 960x720 PNG. Python verifies ZIP CRC, exact bytes, metadata and PNG headers; browser preview checks decoding.",
+    "No external generator was called. These exports are KRAKINAI specifications, not official provider schemas.",
+    "Legacy negative ancestry recovery uses exact available immutable lineage and never guesses authored text; historical lineage already deleted cannot be reconstructed.",
+    "Large-library ZIP64 certification and native Save As were not retested; PR #12 and existing gates remain separate."
+  ],
+  "remoteCi": "Reported separately in the PR checks and final delivery for the signed head; this artifact records local verification.",
+  "changedFiles": [
+    "README.md",
+    "docs/context-aware-shot-types-qa.md",
+    "docs/context-aware-shot-types.md",
+    "docs/images/context-aware-shot-types/after-builder-1440.png",
+    "docs/images/context-aware-shot-types/after-builder-390.png",
+    "docs/images/context-aware-shot-types/after-builder-768.png",
+    "docs/images/context-aware-shot-types/after-output-1440.png",
+    "docs/images/context-aware-shot-types/after-output-390.png",
+    "docs/images/context-aware-shot-types/after-output-768.png",
+    "docs/images/context-aware-shot-types/after-prompt-1440.png",
+    "docs/images/context-aware-shot-types/after-prompt-390.png",
+    "docs/images/context-aware-shot-types/after-prompt-768.png",
+    "docs/images/context-aware-shot-types/before-builder-1440.png",
+    "docs/images/context-aware-shot-types/before-builder-390.png",
+    "docs/images/context-aware-shot-types/before-builder-768.png",
+    "docs/qa/context-aware-shot-types-results.json",
+    "docs/scene-prompt-schema.md",
+    "docs/superpowers/plans/2026-10-28-shot-types.md",
+    "docs/superpowers/specs/2026-10-28-shot-types-design.md",
+    "e2e/shot-types-fixture.mjs",
+    "e2e/shot-types.spec.mjs",
+    "scripts/qa/capture-shot-types-before.mjs",
+    "scripts/qa/verify-shot-types-archives.py",
+    "src/__tests__/__snapshots__/shotTypeLegacy.test.ts.snap",
+    "src/__tests__/shotTypeCorrections.test.tsx",
+    "src/__tests__/shotTypeExports.test.ts",
+    "src/__tests__/shotTypeLegacy.test.ts",
+    "src/__tests__/shotTypePersistence.test.ts",
+    "src/__tests__/shotTypes.test.ts",
+    "src/__tests__/shotTypesSourceMedia.test.tsx",
+    "src/__tests__/shotTypesUI.test.tsx",
+    "src/components/ReferenceBoard.tsx",
+    "src/components/ReferencePackManager.tsx",
+    "src/components/SceneOutputWorkspace.tsx",
+    "src/components/SourceMediaPicker.tsx",
+    "src/components/sourceMediaPicker.css",
+    "src/domain/exportPresets.ts",
+    "src/domain/generationDocument.ts",
+    "src/domain/phase4Validation.ts",
+    "src/domain/phase5ProjectValidation.ts",
+    "src/domain/projectExport.ts",
+    "src/domain/projectRoutes.ts",
+    "src/domain/projectStoryboard.ts",
+    "src/domain/promptAssembler.ts",
+    "src/domain/promptSections.ts",
+    "src/domain/referencePack.ts",
+    "src/domain/sceneDocument.ts",
+    "src/domain/sceneDuplicates.ts",
+    "src/domain/scenePreflight.ts",
+    "src/domain/shotTypeRules.ts",
+    "src/screens/CollectionWorkspace.tsx",
+    "src/screens/PromptOutputScreen.tsx",
+    "src/screens/SceneBuilderScreen.tsx",
+    "src/screens/TemplatesScreen.tsx",
+    "src/storage/backup.ts",
+    "src/storage/db.ts",
+    "src/storage/projects.ts",
+    "src/types/domain.ts"
+  ],
+  "assemblySourceSafeguard": {
+    "comparedWith": "b94628f4ebf1d7180f96b7adf30ad38d8757038e",
+    "implementation": "Required-source shots read a fresh storage snapshot and reuse validateShotSourceMedia before navigation. Invalid or unreadable stored sources block assembly with Source Media guidance. Character/property handlers retain the original path.",
+    "sharedValidationAndPersistenceUnchanged": [
+      "src/domain/shotTypeRules.ts",
+      "src/domain/validation.ts",
+      "src/domain/promptAssembler.ts",
+      "src/domain/sceneDocument.ts",
+      "src/domain/generationDocument.ts",
+      "src/domain/referencePack.ts",
+      "src/storage/db.ts",
+      "src/storage/backup.ts"
+    ],
+    "browserCases": [
+      {
+        "failure": "deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "stale deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "unsupported MIME",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "inconsistent metadata",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      }
+    ],
+    "redEvidence": {
+      "tests": 1,
+      "failed": 1,
+      "exitCode": 1,
+      "observed": "Deleted source had blocking Preflight but Assemble navigated to Draft Output."
+    },
+    "focusedGreen": {
+      "tests": 4,
+      "passed": 4,
+      "exitCode": 0
+    },
+    "readSemantics": "Validation uses the current stored map at the read; existing immutable-save validation remains in place.",
+    "screenshots": "Existing feature screenshot assets retained; follow-up adds no layout change.",
+    "allEightMidoriOutputHashesUnchanged": true,
+    "allSixteenLegacyHashesUnchanged": true
+  }
+}

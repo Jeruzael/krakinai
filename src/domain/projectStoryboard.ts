@@ -1,4 +1,11 @@
 import type { Collection, CollectionMemberRef, ProjectShot, SavedScene } from '../types/domain';
+import { resolveShotType } from './shotTypeRules';
+
+export function getProjectShotType(shot: ProjectShot, selectedScene?: SavedScene) {
+  const savedType = selectedScene ? resolveShotType(selectedScene) : undefined;
+  return { shotType: savedType ?? shot.plannedShotType, source: selectedScene ? 'saved' as const : shot.plannedShotType ? 'planned' as const : 'unspecified' as const,
+    mismatch: Boolean(savedType && shot.plannedShotType && savedType !== shot.plannedShotType) };
+}
 
 export function getProjectShots(collection: Collection, scenes: SavedScene[]): ProjectShot[] {
   if (collection.project) return [...collection.project.shots].sort((a,b) => a.order-b.order);

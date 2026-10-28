@@ -11,6 +11,7 @@ import { StudioDialog } from './StudioDialog';
 import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 
 export interface StudioReference {
+  isSource?: boolean;
   key: string;
   mediaId: string;
   label: string;
@@ -160,7 +161,7 @@ export const ReferenceBoard: React.FC<{
           <div className="reference-caption">
             <div className="studio-inline">
               <span className="badge badge-primary">{featured.label}</span>
-              <span className="badge">{featured.role}</span>
+              <span className="badge">{featured.isSource ? 'Original input' : featured.role}</span>
               {media?.isBundledIllustration && (
                 <span className="badge badge-warning">Demo illustration</span>
               )}
@@ -255,7 +256,7 @@ export const ReferenceBoard: React.FC<{
                   <div className="reference-caption">
                     <div className="studio-inline">
                       <span className="badge badge-primary">{item.label}</span>
-                      <span className="badge">{item.role}</span>
+                      <span className="badge">{item.isSource ? 'Original input' : item.role}</span>
                       {record?.isBundledIllustration && (
                         <span className="badge badge-warning">
                           Demo illustration

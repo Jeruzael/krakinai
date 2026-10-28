@@ -53,6 +53,7 @@ import { resolveGenerationIdentity } from '../domain/identityAnchors';
 import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { getGenerationPackReferences } from '../domain/referencePack';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, SHOT_TYPE_LABELS } from '../domain/shotTypeRules';
 import { CollectionReturnControl } from '../components/CollectionReturnControl';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
 import { collectionSceneRoute } from '../domain/collectionNavigation';
@@ -246,7 +247,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   }
 
   const assembled = draft ? assembleScenePrompt(draft) : null;
-  const source = savedScene ?? draft!;
+  const rawSource = savedScene ?? draft!;
+  const source = {...rawSource, avoidText:getSceneLevelAvoidText(rawSource), slots:getActiveSceneSlots(rawSource),
+    sourceMediaLinks:getActiveSourceMediaLinks(rawSource),referencePack:getActiveReferencePack(rawSource)};
   const liveMaster = snapshot.assets.find(asset => asset.id === source.slots.character?.sourceId);
   const generationOptions = {
     identity: resolveGenerationIdentity(source, liveMaster, !!savedScene).identity,
@@ -479,7 +482,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     e.target.value = '';
   };
 
-  const record = savedScene ?? draft!;
+  const record = source;
   // The display keeps every slot association, including repeated links to one blob.
   // Exports continue to use the original assembler/saved-scene reference checklist.
   const studioReferences: StudioReference[] = ORDERED_BUILDER_SLOTS.flatMap(
@@ -501,6 +504,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
       }));
     }
   );
+  studioReferences.unshift(...getActiveSourceMediaLinks(record).map((link,index)=>({
+    ...link,key:`source_${index}_${link.mediaId}`,label:'Original source',sourceTitle:link.filename??title,isSource:true,
+  })));
   // Match checklist entries to existing slot associations one at a time so an
   // unavailable file or repeated media ID cannot erase a distinct association.
   const referenceIdentity = (link: MediaLink) =>
@@ -514,6 +520,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const unmatchedSlotReferences = ORDERED_BUILDER_SLOTS.flatMap((slot) =>
     (record.slots[slot]?.mediaLinks ?? []).map(referenceIdentity)
   );
+  unmatchedSlotReferences.push(...getActiveSourceMediaLinks(record).map(referenceIdentity));
   references.forEach((link, index) => {
     const matchingSlotIndex = unmatchedSlotReferences.indexOf(
       referenceIdentity(link)
@@ -541,7 +548,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   const resultLinks =
     savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? [];
   const reviewNotes = reviewNotesBuffer ?? record.reviewNotes;
-  const preflightFindings = runScenePreflight(record, new Set(mediaMap.keys()));
+  const preflightFindings = runScenePreflight(record, mediaMap);
   const providerNotices = !jsonMode && workflow !== 'canonical'
     ? getProviderNotices(record, workflow as ExportPresetId, generationOptions) : [];
   const editPreflightSource = () => {
@@ -731,7 +738,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           ))}
         </div>
       </div>
-      <GenerationIdentityControl
+      {!getShotTypeRules(record).inapplicableSlots.includes('character') && <GenerationIdentityControl
         compact
         source={record}
         liveMaster={liveMaster}
@@ -754,7 +761,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
             );
           }
         }}
-      />
+      />}
     </div>
   );
   const outputSummary = (
@@ -779,6 +786,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 </span>
               </p>
               <div className="output-component-chips">
+                {record.shotType && <span className="badge">{SHOT_TYPE_LABELS[record.shotType]}</span>}
                 {ORDERED_BUILDER_SLOTS.filter((slot) => record.slots[slot]).map(
                   (slot) => (
                     <span className="badge" key={slot}>
@@ -851,6 +859,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     </section>
   );
   const workspaceMedia: StudioReference[] = [
+    ...studioReferences.filter(item=>item.isSource),
     ...resultLinks.map((link, index) => ({
       ...link,
       key: `result_${index}_${link.mediaId}`,
@@ -861,8 +870,9 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
       ...entry,
       key: `pack_${entry.associationId}`,
       label: `Reference pack · ${entry.purpose}`,
+      isSource:entry.sourceSlot==='source',
     })),
-    ...studioReferences,
+    ...studioReferences.filter(item=>!item.isSource),
   ];
 
   return (
@@ -1421,9 +1431,11 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
           }}
           onApply={async (referencePack) => {
             if (!draft) return;
+            const activeIds=new Set(getActiveReferencePack(draft)?.entries.map(entry=>entry.associationId));
+            const inactive=(draft.referencePack?.entries??[]).filter(entry=>!activeIds.has(entry.associationId));
             await saveSceneDraft({
               ...draft,
-              referencePack,
+              referencePack:{...referencePack,entries:[...referencePack.entries,...inactive].map((entry,order)=>({...entry,order}))},
               bumpInputRevision: false,
             });
             await refreshSnapshot();

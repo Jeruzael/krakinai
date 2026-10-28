@@ -3,6 +3,7 @@ import { strToU8, zipSync } from 'fflate';
 import type { BuilderSlot, MediaAsset, MediaLink, ReferencePack, ReferencePackEntry, SavedScene, SceneDraft } from '../types/domain';
 import type { GenerationReference } from './generationDocument';
 import { SCENE_COMPONENT_ORDER } from './sceneDocument';
+import { getActiveSceneSlots, getSourceReferenceEntries, resolveShotType } from './shotTypeRules';
 
 const identity = (link: MediaLink) => JSON.stringify([link.mediaId, link.role, link.viewLabel ?? '', link.altText]);
 const purposeFor = (slot: ReferencePackEntry['sourceSlot']): ReferencePackEntry['purpose'] => slot === 'character' ? 'identity' : slot === 'wardrobe' ? 'outfit' : slot === 'environment' ? 'environment' : slot === 'action' ? 'motion' : 'general';
@@ -16,11 +17,15 @@ export function collectReferenceCandidates(source: SceneDraft | SavedScene, medi
    entries.push({associationId:JSON.stringify([slot,sourceId,key,occurrence]),mediaId:link.mediaId,sourceSlot:slot,sourceId,sourceTitle,role:link.role,altText:link.altText,filename:link.filename ?? media?.filename,mimeType:link.mimeType ?? media?.mimeType,displayName:link.displayName,exportFilename:link.exportFilename,namesCaptured:link.namesCaptured,purpose:purposeFor(slot),order:entries.length});
   }
  };
- for (const slot of SCENE_COMPONENT_ORDER) { const snapshot=source.slots[slot as BuilderSlot]; if(snapshot) add(snapshot.mediaLinks,slot,snapshot.sourceId,snapshot.sourceTitle); }
+ const activeSlots=getActiveSceneSlots(source);
+ for (const slot of SCENE_COMPONENT_ORDER) { const snapshot=activeSlots[slot as BuilderSlot]; if(snapshot) add(snapshot.mediaLinks,slot,snapshot.sourceId,snapshot.sourceTitle); }
+ const sourceEntries=getSourceReferenceEntries(source);
+ for(const entry of sourceEntries) { const media=mediaMap.get(entry.mediaId); entries.push({...entry,filename:entry.filename??media?.filename,mimeType:entry.mimeType??media?.mimeType,order:entries.length}); }
  // Legacy saved checklists can repeat snapshot associations. Consume matching occurrences only.
  const matched = new Map<string,number>();
  for(const slot of SCENE_COMPONENT_ORDER) for(const link of source.slots[slot]?.mediaLinks ?? []) { const key=identity(link); matched.set(key,(matched.get(key)??0)+1); }
- if('references' in source) add(source.references.filter(link=>{const key=identity(link);const count=matched.get(key)??0;if(count){matched.set(key,count-1);return false;}return true;}),'legacy',source.id,source.title);
+ for(const link of source.sourceMediaLinks??[]) {const key=identity(link);matched.set(key,(matched.get(key)??0)+1);}
+ if('references' in source) add(source.references.filter(link=>{const key=identity(link);const count=matched.get(key)??0;if(count){matched.set(key,count-1);return false;}return resolveShotType(source)==='character_scene' || Object.values(activeSlots).some(slot=>slot?.mediaLinks.some(active=>identity(active)===key));}),'legacy',source.id,source.title);
  add(source.resultMediaLinks,'result',source.id,source.title);
  return entries;
 }

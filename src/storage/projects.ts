@@ -1,4 +1,4 @@
-import type {Collection,ProjectShot,ProductionStatus,SavedScene} from '../types/domain';
+import type {Collection,ProjectShot,ProductionStatus,SavedScene,ShotType} from '../types/domain';
 import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
@@ -29,21 +29,23 @@ function changed(collection:Collection,shots:ProjectShot[]):Collection{
 }
 function findShot(collection:Collection,shotId:string):ProjectShot{requireId(shotId,'shot ID');const shot=collection.project!.shots.find(s=>s.id===shotId);if(!shot)throw new Error('Project shot not found.');return shot;}
 export function initializeProject(collectionId:string):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>raw.project?raw:established(raw,scenes));}
-export function addProjectShot({collectionId,title,sceneId,beforeId,afterId}:{collectionId:string;title?:string;sceneId?:string;beforeId?:string;afterId?:string}):Promise<Collection>{
+export function addProjectShot({collectionId,title,sceneId,beforeId,afterId,plannedShotType}:{collectionId:string;title?:string;sceneId?:string;beforeId?:string;afterId?:string;plannedShotType?:ShotType}):Promise<Collection>{
   return mutate(collectionId,(raw,scenes)=>{
     const c=established(raw,scenes);if(beforeId&&afterId)throw new Error('Choose before or after, not both.');
     if(sceneId&&!scenes.some(s=>s.id===sceneId))throw new Error('Saved scene not found.');
     const shots=[...c.project!.shots].sort((a,b)=>a.order-b.order);let index=shots.length;
     if(beforeId){index=shots.findIndex(s=>s.id===beforeId);if(index<0)throw new Error('Before shot not found.');}
     if(afterId){index=shots.findIndex(s=>s.id===afterId);if(index<0)throw new Error('After shot not found.');index++;}
-    const shot:ProjectShot={id:generateId('shot'),order:index,code:String(shots.length+1).padStart(2,'0'),title:title?.trim()??'',takeSceneIds:sceneId?[sceneId]:[],selectedSceneId:sceneId,status:sceneId?'prompt_ready':'planned'};
+    const shot:ProjectShot={id:generateId('shot'),order:index,code:String(shots.length+1).padStart(2,'0'),title:title?.trim()??'',takeSceneIds:sceneId?[sceneId]:[],selectedSceneId:sceneId,status:sceneId?'prompt_ready':'planned',...(plannedShotType !== undefined ? {plannedShotType} : {})};
     validateShotChange(shot);shots.splice(index,0,shot);return changed(c,renumber(shots));
   });
 }
-type ShotPatch={code?:string;title?:string;status?:ProductionStatus;plannedDurationSeconds?:number|null;continuityNotes?:string};
+type ShotPatch={code?:string;title?:string;status?:ProductionStatus;plannedDurationSeconds?:number|null;continuityNotes?:string;plannedShotType?:ShotType|null};
 export function updateProjectShot({collectionId,shotId,patch}:{collectionId:string;shotId:string;patch:ShotPatch}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
-  const c=established(raw,scenes);const old=findShot(c,shotId);if(Object.keys(patch).some(k=>!['code','title','status','plannedDurationSeconds','continuityNotes'].includes(k)))throw new Error('Unsupported shot patch field.');
-  const next:ProjectShot={...old,...patch,plannedDurationSeconds:patch.plannedDurationSeconds===null?undefined:patch.plannedDurationSeconds??old.plannedDurationSeconds};validateShotChange(next);
+  const c=established(raw,scenes);const old=findShot(c,shotId);if(Object.keys(patch).some(k=>!['code','title','status','plannedDurationSeconds','continuityNotes','plannedShotType'].includes(k)))throw new Error('Unsupported shot patch field.');
+  const next:ProjectShot={...old,...patch,plannedShotType:patch.plannedShotType===null?undefined:patch.plannedShotType??old.plannedShotType,plannedDurationSeconds:patch.plannedDurationSeconds===null?undefined:patch.plannedDurationSeconds??old.plannedDurationSeconds};
+  if(next.plannedShotType===undefined)delete next.plannedShotType;
+  validateShotChange(next);
   if(JSON.stringify(next)===JSON.stringify(old))return raw;
   return changed(c,c.project!.shots.map(s=>s.id===shotId?next:s));
 });}

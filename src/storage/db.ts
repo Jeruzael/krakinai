@@ -1,5 +1,7 @@
 import { captureMediaNames } from '../domain/mediaNaming';
 import { validatePerformanceDirection } from '../domain/dialoguePerformance';
+import { validatePhase4Record } from '../domain/phase4Validation';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getCapturedAvoidPrefix, getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
 export { SimilarSceneError } from '../domain/sceneDuplicates';
@@ -260,7 +262,9 @@ export function collectReferencedMediaIds(snap: {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
     for (const l of d.resultMediaLinks ?? []) ids.add(l.mediaId);
+    for (const l of d.sourceMediaLinks ?? []) ids.add(l.mediaId);
     if (options.includeOptionalMetadata !== false) for (const l of d.referencePack?.entries ?? []) ids.add(l.mediaId);
+    else for (const l of d.referencePack?.entries ?? []) if (l.sourceSlot === 'source') ids.add(l.mediaId);
   }
   for (const sc of snap.scenes) {
     for (const slot of ORDERED_BUILDER_SLOTS) {
@@ -268,8 +272,10 @@ export function collectReferencedMediaIds(snap: {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
     if (options.includeOptionalMetadata !== false) for (const l of sc.referencePack?.entries ?? []) ids.add(l.mediaId);
+    else for (const l of sc.referencePack?.entries ?? []) if (l.sourceSlot === 'source') ids.add(l.mediaId);
     for (const l of sc.references ?? []) ids.add(l.mediaId);
     for (const l of sc.resultMediaLinks ?? []) ids.add(l.mediaId);
+    for (const l of sc.sourceMediaLinks ?? []) ids.add(l.mediaId);
   }
   for (const t of snap.templates) {
     for (const l of t.includedCharacterSnapshot?.mediaLinks ?? []) {
@@ -655,6 +661,25 @@ export function checkCharacterReplacementInDraft(
   };
 }
 
+// Older saved copies may predate explicit negative provenance. Recover only
+// exact prefixes supported by their immutable ancestry; never tokenize prose.
+function savedAvoidPrefix(scene: SavedScene, scenes: SavedScene[]): string {
+  const byId=new Map(scenes.map(value=>[value.id,value]));
+  const seen=new Set<string>(),parts:string[]=[];
+  let current:SavedScene|undefined=scene,remaining=scene.avoidText??'';
+  while(current&&!seen.has(current.id)) {
+    seen.add(current.id);
+    const prefix=current.inheritedAvoidPrefix??ORDERED_BUILDER_SLOTS.map(slot=>current!.slots[slot]?.avoidText).filter(value=>value?.trim()).join(', ');
+    if(prefix) {
+      if(remaining!==prefix&&!remaining.startsWith(`${prefix}, `))break;
+      parts.push(prefix);remaining=remaining===prefix?'':remaining.slice(prefix.length+2);
+    }
+    if(current.inheritedAvoidPrefix!==undefined)break;
+    current=current.sourceSceneId?byId.get(current.sourceSceneId):undefined;
+  }
+  return parts.join(', ');
+}
+
 export async function saveSceneDraft(
   input: Omit<SceneDraft, 'id' | 'inputRevision' | 'updatedAt'> & {
     id?: string;
@@ -664,12 +689,21 @@ export async function saveSceneDraft(
 ): Promise<SceneDraft> {
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
   if(performanceError)throw new Error(performanceError);
+  const metadataError=validatePhase4Record({ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
+  if(metadataError)throw new Error(metadataError);
   const db = await openDatabase();
-  const tx = db.transaction(['drafts', 'preferences'], 'readwrite');
+  const needsInheritedPrefix=input.inheritedAvoidPrefix===undefined&&input.shotType!==undefined&&input.shotType!=='character_scene'&&Boolean(input.sourceSceneId);
+  const tx = db.transaction(needsInheritedPrefix?['drafts', 'preferences', 'scenes']:['drafts', 'preferences'], 'readwrite');
   const dStore = tx.objectStore('drafts');
   const pStore = tx.objectStore('preferences');
 
   const existing = input.id ? await getFromStore<SceneDraft>(dStore, input.id) : undefined;
+  let inheritedAvoidPrefix=input.inheritedAvoidPrefix??existing?.inheritedAvoidPrefix;
+  if(inheritedAvoidPrefix===undefined&&needsInheritedPrefix) {
+    const scenes=await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
+    const sourceScene=scenes.find(scene=>scene.id===input.sourceSceneId);
+    if(sourceScene)inheritedAvoidPrefix=savedAvoidPrefix(sourceScene,scenes);
+  }
   const now = new Date().toISOString();
   const nextRevision =
     input.inputRevision !== undefined
@@ -683,6 +717,9 @@ export async function saveSceneDraft(
   const record: SceneDraft = {
     id: existing?.id || input.id || generateId('draft'),
     title: input.title,
+    ...(inheritedAvoidPrefix!==undefined?{inheritedAvoidPrefix}:{}),
+    ...(input.shotType !== undefined ? { shotType: input.shotType } : {}),
+    ...(input.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(input.sourceMediaLinks) } : {}),
     slots: structuredClone(input.slots),
     generation: input.generation ? structuredClone(input.generation) : undefined,
     referencePack: input.referencePack ? structuredClone(input.referencePack) : undefined,
@@ -723,10 +760,16 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
   if (!draft) throw new Error('Scene draft not found.');
 
-  const character = draft.slots.character;
+  const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
+  const sourceErrors = validateShotSourceMedia(draft, mediaMap);
+  if (sourceErrors.length) throw new Error(sourceErrors.join(' '));
+  const hydratedDraft: SceneDraft = draft.sourceMediaLinks === undefined ? draft : { ...draft, sourceMediaLinks: draft.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })) };
+  const activeSlots = getActiveSceneSlots(draft);
+  const activePack = getActiveReferencePack(hydratedDraft);
+  const character = activeSlots.character;
   const liveMaster = character ? await getFromStore<PromptAsset>(tx.objectStore('assets'), character.sourceId) : undefined;
-  const resolvedIdentity = resolveGenerationIdentity(draft, liveMaster);
-  const assembled = assembleScenePrompt(draft);
+  const resolvedIdentity = resolveGenerationIdentity({ ...draft, slots: activeSlots }, liveMaster);
+  const assembled = assembleScenePrompt(hydratedDraft);
   if (!assembled.valid) {
     throw new Error(assembled.errors.join(' '));
   }
@@ -741,9 +784,12 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   const scene: SavedScene = {
     id: generateId('scene'),
     title: draft.title.trim(),
-    slots: structuredClone(draft.slots),
+    ...(draft.inheritedAvoidPrefix!==undefined?{inheritedAvoidPrefix:getCapturedAvoidPrefix(draft)}:{}),
+    ...(draft.shotType !== undefined ? { shotType: draft.shotType } : {}),
+    ...(draft.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(getActiveSourceMediaLinks(draft)) } : {}),
+    slots: structuredClone(activeSlots),
     generation: resolvedIdentity.generation,
-    referencePack: draft.referencePack ? structuredClone(draft.referencePack) : undefined,
+    referencePack: activePack ? structuredClone(activePack) : undefined,
     extraRequiredSlots: [...draft.extraRequiredSlots],
     sceneInstructions: draft.sceneInstructions,
     avoidText: assembled.avoidText,
@@ -761,11 +807,11 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     updatedAt: now,
   };
 
-  const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
   for (const slot of Object.values(scene.slots)) if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
   scene.references = captureMediaNames(scene.references, mediaMap);
   scene.resultMediaLinks = captureMediaNames(scene.resultMediaLinks, mediaMap);
-  if (scene.referencePack) scene.referencePack.entries = captureMediaNames(scene.referencePack.entries, mediaMap);
+  if (scene.sourceMediaLinks) scene.sourceMediaLinks = captureMediaNames(scene.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })), mediaMap);
+  if (scene.referencePack) scene.referencePack.entries = captureMediaNames(scene.referencePack.entries.map(entry => entry.sourceSlot === 'source' ? { ...entry, filename: mediaMap.get(entry.mediaId)?.filename ?? entry.filename, mimeType: mediaMap.get(entry.mediaId)?.mimeType ?? entry.mimeType } : entry), mediaMap);
   const scenes = await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
   const retry = options.requestId ? scenes.find(saved => saved.saveRequestId === options.requestId) : undefined;
   if (retry) {
@@ -860,6 +906,9 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
 
   return saveSceneDraft({
     title: `${scene.title} (Copy)`,
+    inheritedAvoidPrefix:savedAvoidPrefix(scene,snap.scenes),
+    ...(scene.shotType !== undefined ? { shotType: scene.shotType } : {}),
+    ...(scene.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(scene.sourceMediaLinks) } : {}),
     slots: structuredClone(scene.slots),
     generation: scene.generation ? structuredClone(scene.generation) : undefined,
     referencePack: scene.referencePack ? structuredClone(scene.referencePack) : undefined,
@@ -895,6 +944,7 @@ export async function createDraftFromTemplate(templateId: string): Promise<Scene
 
   return saveSceneDraft({
     title: `${tpl.name} Draft`,
+    ...(tpl.shotType !== undefined ? { shotType: tpl.shotType } : {}),
     slots,
     extraRequiredSlots: [...tpl.requiredSlots],
     sceneInstructions: tpl.sceneInstructionsDefault ?? '',
@@ -919,9 +969,10 @@ export async function saveDraftAsTemplate(params: {
   }
 
   const defaults: Template['defaults'] = {};
+  const activeSlots = getActiveSceneSlots(params.draft);
   for (const slot of ORDERED_BUILDER_SLOTS) {
     if (slot === 'character') continue;
-    const snap = params.draft.slots[slot];
+    const snap = activeSlots[slot];
     if (snap) {
       defaults[slot] = {
         slot,
@@ -933,8 +984,8 @@ export async function saveDraftAsTemplate(params: {
     }
   }
 
-  const requiredSlots = new Set<BuilderSlot>(['environment', 'action', ...params.draft.extraRequiredSlots]);
-  if (params.includeCharacterIdentity && params.draft.slots.character) {
+  const requiredSlots = new Set<BuilderSlot>(getShotTypeRules(params.draft).requiredSlots);
+  if (params.includeCharacterIdentity && activeSlots.character) {
     requiredSlots.add('character');
   }
 
@@ -942,6 +993,7 @@ export async function saveDraftAsTemplate(params: {
   const tpl: Template = {
     id: generateId('template'),
     name,
+    ...(params.draft.shotType !== undefined ? { shotType: params.draft.shotType } : {}),
     description: params.description.trim(),
     category: 'Custom',
     requiredSlots: Array.from(requiredSlots),
@@ -949,8 +1001,8 @@ export async function saveDraftAsTemplate(params: {
     sceneInstructionsDefault: params.draft.sceneInstructions,
     settingsDefault: { ...params.draft.settings },
     includedCharacterSnapshot:
-      params.includeCharacterIdentity && params.draft.slots.character
-        ? structuredClone(params.draft.slots.character)
+      params.includeCharacterIdentity && activeSlots.character
+        ? structuredClone(activeSlots.character)
         : undefined,
     isStarter: false,
     revision: 1,
