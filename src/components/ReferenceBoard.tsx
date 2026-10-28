@@ -1,5 +1,8 @@
-import { getMediaDisplayName, getDownloadFilename } from '../domain/mediaNaming';
-import React, { useState } from 'react';
+import {
+  getMediaDisplayName,
+  getDownloadFilename,
+} from '../domain/mediaNaming';
+import React, { useState, useEffect, useRef } from 'react';
 import { Download, Grid2X2, Image, Maximize2 } from 'lucide-react';
 import type { MediaAsset } from '../types/domain';
 import { MediaThumbnail } from './MediaThumbnail';
@@ -36,8 +39,39 @@ export const ReferenceBoard: React.FC<{
   historical = false,
 }) => {
   const [featuredKey, setFeaturedKey] = useState<string | null>(null);
-  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewItem, setPreviewItem] = useState<StudioReference | null>(null);
+  const [galleryPage, setGalleryPage] = useState(0);
+  const [thumbnailsOpen, setThumbnailsOpen] = useState(false);
+  const previewButtons = useRef<Record<string, HTMLButtonElement | null>>({}),
+    featuredButton = useRef<HTMLButtonElement>(null),
+    restorePreview = useRef<string | null>(null);
+  useEffect(() => {
+    if (previewItem || !restorePreview.current) return;
+    const frame = requestAnimationFrame(() => {
+      (restorePreview.current === 'featured'
+        ? featuredButton.current
+        : previewButtons.current[restorePreview.current!]
+      )?.focus();
+      restorePreview.current = null;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [previewItem]);
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const galleryButtons = useRef<Record<string, HTMLButtonElement | null>>({}),
+    galleryOrigin = useRef('all'),
+    restoreGallery = useRef(false);
+  const openGallery = (origin: string) => {
+    galleryOrigin.current = origin;
+    setGalleryOpen(true);
+  };
+  useEffect(() => {
+    if (galleryOpen || !restoreGallery.current) return;
+    const frame = requestAnimationFrame(() => {
+      galleryButtons.current[galleryOrigin.current]?.focus();
+      restoreGallery.current = false;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [galleryOpen]);
   const featured = items.find((item) => item.key === featuredKey) ?? items[0];
   const media = featured ? mediaMap.get(featured.mediaId) : undefined;
   const thumbnailStrip = (
@@ -64,7 +98,10 @@ export const ReferenceBoard: React.FC<{
         <button
           type="button"
           className="reference-thumb reference-more"
-          onClick={() => setGalleryOpen(true)}
+          ref={(el) => {
+            galleryButtons.current.more = el;
+          }}
+          onClick={() => openGallery('more')}
           aria-label={`View All ${items.length} references`}
         >
           <Grid2X2 size={20} />
@@ -74,6 +111,17 @@ export const ReferenceBoard: React.FC<{
     </div>
   );
 
+  if (previewItem && mediaMap.get(previewItem.mediaId))
+    return (
+      <MediaPreviewDialog
+        media={mediaMap.get(previewItem.mediaId)!}
+        title={previewItem.sourceTitle}
+        altText={previewItem.altText}
+        onClose={() => setPreviewItem(null)}
+      />
+    );
+  const pageCount = Math.max(1, Math.ceil(items.length / 12)),
+    page = Math.min(galleryPage, pageCount - 1);
   return (
     <section className="reference-board" aria-label={title}>
       <div className="studio-panel-heading">
@@ -88,7 +136,7 @@ export const ReferenceBoard: React.FC<{
       {featured ? (
         <>
           <div className="reference-featured">
-            {!previewOpen && !galleryOpen && (
+            {!previewItem && !galleryOpen && (
               <MediaThumbnail
                 media={media}
                 altText={featured.altText || featured.sourceTitle}
@@ -98,7 +146,11 @@ export const ReferenceBoard: React.FC<{
             <button
               type="button"
               className="icon-btn reference-expand"
-              onClick={() => setPreviewOpen(true)}
+              ref={featuredButton}
+              onClick={() => {
+                restorePreview.current = 'featured';
+                setPreviewItem(featured);
+              }}
               disabled={!media}
               aria-label="Expand Media"
             >
@@ -113,7 +165,10 @@ export const ReferenceBoard: React.FC<{
                 <span className="badge badge-warning">Demo illustration</span>
               )}
             </div>
-            <strong>{featured.sourceTitle}</strong><span className="muted-text">{getMediaDisplayName(media,featured,historical)}</span>
+            <strong>{featured.sourceTitle}</strong>
+            <span className="muted-text">
+              {getMediaDisplayName(media, featured, historical)}
+            </span>
             {!media && (
               <span className="muted-text">
                 File unavailable: {featured.filename || featured.mediaId}
@@ -137,7 +192,11 @@ export const ReferenceBoard: React.FC<{
             )}
           </div>
           {collapseThumbnails ? (
-            <details className="studio-disclosure reference-secondary">
+            <details
+              className="studio-disclosure reference-secondary"
+              open={thumbnailsOpen}
+              onToggle={(event) => setThumbnailsOpen(event.currentTarget.open)}
+            >
               <summary>Show reference thumbnails ({items.length})</summary>
               {thumbnailStrip}
             </details>
@@ -151,7 +210,10 @@ export const ReferenceBoard: React.FC<{
             <button
               type="button"
               className="btn btn-secondary btn-sm"
-              onClick={() => setGalleryOpen(true)}
+              ref={(el) => {
+                galleryButtons.current.all = el;
+              }}
+              onClick={() => openGallery('all')}
             >
               <Grid2X2 size={14} /> View All ({items.length})
             </button>
@@ -165,26 +227,21 @@ export const ReferenceBoard: React.FC<{
           <p>References only. This app does not render a combined scene.</p>
         </div>
       )}
-      {previewOpen && media && featured && (
-        <MediaPreviewDialog
-          media={media}
-          title={featured.sourceTitle}
-          altText={featured.altText}
-          onClose={() => setPreviewOpen(false)}
-        />
-      )}
       {galleryOpen && (
         <StudioDialog
           title="All references"
-          onClose={() => setGalleryOpen(false)}
+          onClose={() => {
+            restoreGallery.current = true;
+            setGalleryOpen(false);
+          }}
           className="reference-gallery-dialog"
         >
           <p className="muted-text">
-            All {items.length} reference associations are shown. Preview
-            selection does not change saved references or exports.
+            All {items.length} reference associations are available in pages of
+            12. Preview selection does not change saved references or exports.
           </p>
           <div className="reference-gallery">
-            {items.map((item) => {
+            {items.slice(page * 12, (page + 1) * 12).map((item) => {
               const record = mediaMap.get(item.mediaId);
               return (
                 <article key={item.key} className="reference-gallery-item">
@@ -192,7 +249,7 @@ export const ReferenceBoard: React.FC<{
                     <MediaThumbnail
                       media={record}
                       altText={item.altText || item.sourceTitle}
-                      showVideoControls={true}
+                      enableHoverPreview
                     />
                   </div>
                   <div className="reference-caption">
@@ -209,6 +266,28 @@ export const ReferenceBoard: React.FC<{
                     <span className="muted-text">
                       {getMediaDisplayName(record, item, historical)}
                     </span>
+                    <span
+                      className="muted-text"
+                      title={item.filename || record?.filename}
+                    >
+                      Original:{' '}
+                      {item.filename || record?.filename || item.mediaId}
+                    </span>
+                    <button
+                      ref={(el) => {
+                        previewButtons.current[item.key] = el;
+                      }}
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      disabled={!record}
+                      aria-label={`Preview ${item.label}: ${item.sourceTitle}`}
+                      onClick={() => {
+                        restorePreview.current = item.key;
+                        setPreviewItem(item);
+                      }}
+                    >
+                      Preview
+                    </button>
                     {downloadable && (
                       <button
                         type="button"
@@ -231,6 +310,34 @@ export const ReferenceBoard: React.FC<{
                 </article>
               );
             })}
+          </div>
+          <div className="reference-gallery-pagination">
+            <p aria-live="polite">
+              {items.length
+                ? `${page * 12 + 1}–${Math.min((page + 1) * 12, items.length)} of ${items.length} associations`
+                : '0 associations'}{' '}
+              · Page {page + 1} of {pageCount}
+            </p>
+            <div>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                aria-label="Previous references page"
+                disabled={page === 0}
+                onClick={() => setGalleryPage(page - 1)}
+              >
+                Previous
+              </button>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                aria-label="Next references page"
+                disabled={page === pageCount - 1}
+                onClick={() => setGalleryPage(page + 1)}
+              >
+                Next
+              </button>
+            </div>
           </div>
         </StudioDialog>
       )}

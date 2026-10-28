@@ -1,0 +1,991 @@
+{
+  "schema": "krakinai.media-inspection-qa.v1",
+  "date": "2026-10-28",
+  "scope": "Local pre-commit source verification; exact-head GitHub CI is linked in the final PR handoff.",
+  "baseCommit": "ae510d3b90f731c115eaf6f1daf261ebaec88981",
+  "branch": "codex/media-preview-storyboard-list",
+  "workingTreeDirty": true,
+  "runtime": {
+    "node": "v22.23.3",
+    "playwright": "1.64.1",
+    "browser": {
+      "name": "chromium",
+      "revision": "1248",
+      "installByDefault": true,
+      "browserVersion": "156.0.8078.4",
+      "title": "Chrome for Testing"
+    }
+  },
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "passed": 367,
+      "files": 56,
+      "durationSeconds": 27.99,
+      "reactActWarnings": 28
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warnings": [
+        "Vite main chunk exceeds 500 kB."
+      ],
+      "bundleLines": [
+        "dist/index.html                                 0.75 kB │ gzip:   0.49 kB",
+        "dist/assets/CollectionWorkspace-BipOmjTj.css   13.09 kB │ gzip:   3.00 kB",
+        "dist/assets/index-DzJbLEG4.css                 47.46 kB │ gzip:   8.99 kB",
+        "dist/assets/CollectionWorkspace-e2k-W0pL.js    82.18 kB │ gzip:  23.00 kB",
+        "dist/assets/index-CRGVrKot.js                 512.06 kB │ gzip: 149.64 kB"
+      ]
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "exitCode": 0,
+      "vulnerabilities": 0
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "testsPassed": 3,
+      "historicalLedgerChecks": 207,
+      "historicalLedgerScreenshots": 45
+    },
+    {
+      "command": "npm run test:e2e",
+      "exitCode": 0,
+      "stats": {
+        "startTime": "2026-10-27T18:56:57.914Z",
+        "duration": 98157.99799999999,
+        "expected": 51,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "colorWarnings": 2
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "intermediateFailures": [
+    "Old preview test assumed only Close was tabbable; updated to verify new controls and focus wrapping.",
+    "Legacy dialogueCompatibility hit the unchanged five-second timeout under concurrent jobs; final sequential full run passed all 367."
+  ],
+  "tdd": {
+    "componentBaselineFailed": 3,
+    "listBaselineFailed": 1,
+    "observedBaselineMediaWidthPx": 515.765625,
+    "galleryFocusRedThenGreen": true
+  },
+  "review": {
+    "unresolvedSourceFindings": 0,
+    "focusedTestsPassed": 17,
+    "resolvedFinding": "Gallery original opener focus after Preview/Escape/Escape."
+  },
+  "browserCases": [
+    {
+      "file": "dialogue-cover-screenshots.spec.mjs",
+      "name": "dialogue and cover visual evidence 1440",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 3472,
+      "attachments": []
+    },
+    {
+      "file": "dialogue-cover-screenshots.spec.mjs",
+      "name": "dialogue and cover visual evidence 768",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1689,
+      "attachments": []
+    },
+    {
+      "file": "dialogue-cover-screenshots.spec.mjs",
+      "name": "dialogue and cover visual evidence 390",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1527,
+      "attachments": []
+    },
+    {
+      "file": "dialogue-cover.spec.mjs",
+      "name": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2344,
+      "attachments": [
+        {
+          "name": "delivery-output-preservation",
+          "value": {
+            "formats": 7,
+            "exactLine": "  “Sandali lang—wait!”\nTara na, Ari. 😊  ",
+            "existingScenesUnchanged": true,
+            "assetsAndMediaUnchanged": true,
+            "selectedPresets": {
+              "version": 1,
+              "styles": [
+                "angry",
+                "energetic",
+                "lecturing"
+              ],
+              "pace": "fast",
+              "gestures": "strong_pointing"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "file": "dialogue-cover.spec.mjs",
+      "name": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1096,
+      "attachments": []
+    },
+    {
+      "file": "dialogue-cover.spec.mjs",
+      "name": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1693,
+      "attachments": []
+    },
+    {
+      "file": "dialogue-cover.spec.mjs",
+      "name": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1163,
+      "attachments": [
+        {
+          "name": "cover-upload-preservation",
+          "value": {
+            "newImage": {
+              "id": "media_96a79362c80f",
+              "filename": "新しい-cover.png",
+              "safeFilename": "___-cover.png",
+              "mimeType": "image/png",
+              "byteSize": 2991,
+              "createdAt": "2026-10-27T18:57:13.861Z",
+              "sha256": "cdeb977b0953a85f8979749c2b836e6b7c3569225fdc81136f822c490aaf9cd8"
+            },
+            "existingMediaUnchanged": true,
+            "collectionsAndScenesUnchanged": true
+          }
+        }
+      ]
+    },
+    {
+      "file": "dialogue-cover.spec.mjs",
+      "name": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1199,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection-screenshots.spec.mjs",
+      "name": "media inspection visual evidence 1440",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2618,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection-screenshots.spec.mjs",
+      "name": "media inspection visual evidence 768",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2527,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection-screenshots.spec.mjs",
+      "name": "media inspection visual evidence 390",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2394,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2697,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2713,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2409,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "repeated image/video previews release URLs and pause detached players with heap observations",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 3185,
+      "attachments": [
+        {
+          "name": "preview-resource-observation",
+          "value": {
+            "cycles": 12,
+            "imageCycles": 6,
+            "videoCycles": 6,
+            "observedJsHeapMaximum": 13290496,
+            "activeUrlsBefore": 2,
+            "activeUrlsAfter": 2,
+            "jsHeapBefore": 9998688,
+            "jsHeapAfter": 11234024,
+            "note": "Synthetic Chromium JS heap after forced GC; not whole-process or large-library certification."
+          }
+        }
+      ]
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "eleven-shot List/Grid layout stays bounded at 1440x900",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2273,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "eleven-shot List/Grid layout stays bounded at 768x1024",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2240,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "eleven-shot List/Grid layout stays bounded at 390x844",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2236,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "eleven-shot List/Grid layout stays bounded at 720x450",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2218,
+      "attachments": []
+    },
+    {
+      "file": "media-inspection.spec.mjs",
+      "name": "camera media has explicit touch Preview with no hover playback",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2039,
+      "attachments": []
+    },
+    {
+      "file": "scene-workflows.spec.mjs",
+      "name": "canonical output copy, save, and small legacy backup roundtrip",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 756,
+      "attachments": []
+    },
+    {
+      "file": "scene-workflows.spec.mjs",
+      "name": "duplicate save requires an explicit decision",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 577,
+      "attachments": []
+    },
+    {
+      "file": "scene-workflows.spec.mjs",
+      "name": "storyboard order and collection return survive navigation",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 754,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 3432,
+      "attachments": [
+        {
+          "name": "video-and-preservation-proof",
+          "value": {
+            "video": {
+              "width": 320,
+              "height": 180
+            },
+            "bytes": 27354,
+            "shots": 11,
+            "media": [
+              {
+                "id": "media_64f17298c491",
+                "filename": "synthetic-storyboard-motion.webm",
+                "safeFilename": "synthetic-storyboard-motion.webm",
+                "mimeType": "video/webm",
+                "byteSize": 27354,
+                "createdAt": "2026-10-27T18:57:48.576Z",
+                "sha256": "fadac350202bbff776dde815d2312404973c24b6c7a5c25f3415f3c00adef910"
+              }
+            ],
+            "allStoresEqual": true,
+            "errors": []
+          }
+        }
+      ]
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "reduced motion disables hover and explicit Preview stays usable",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1896,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2421,
+      "attachments": [
+        {
+          "name": "storyboard-drag-trace",
+          "value": [
+            {
+              "name": "dragstart",
+              "target": "icon-btn cw-drag-grip",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": false,
+              "x": 609,
+              "y": 450
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-selection",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 729,
+              "y": 452
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-selection",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 751,
+              "y": 452
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-selection",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 773,
+              "y": 451
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-topline",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 817,
+              "y": 450
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-topline",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 840,
+              "y": 450
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-topline",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 842,
+              "y": 450
+            },
+            {
+              "name": "dragover",
+              "target": "cw-shot-topline",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 842,
+              "y": 450
+            },
+            {
+              "name": "drop",
+              "target": "cw-shot-topline",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": true,
+              "x": 842,
+              "y": 450
+            },
+            {
+              "name": "dragend",
+              "target": "icon-btn cw-drag-grip",
+              "types": [
+                "application/x-krakinai-storyboard-shot"
+              ],
+              "prevented": false,
+              "x": 842,
+              "y": 450
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "continuity forms stack, footer and focus remain reachable at 1440x900",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2318,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "continuity forms stack, footer and focus remain reachable at 768x1024",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2307,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "continuity forms stack, footer and focus remain reachable at 390x844",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2322,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "continuity forms stack, footer and focus remain reachable at 720x450",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2275,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2354,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1876,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1925,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2385,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-cleanup.spec.mjs",
+      "name": "uses visible Preview rather than hover and never navigates on playback",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1861,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "name": "storyboard visual evidence 1440",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2489,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "name": "storyboard visual evidence 768",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2373,
+      "attachments": []
+    },
+    {
+      "file": "storyboard-screenshots.spec.mjs",
+      "name": "storyboard visual evidence 390",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 2296,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "long take names and IDs stay inside the dialog at 1440",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 719,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "long take names and IDs stay inside the dialog at 768",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 707,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "long take names and IDs stay inside the dialog at 390",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 707,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1896,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 843,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 722,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 747,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 937,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "take preference, project note, comparison and removal keep immutable source scenes",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 879,
+      "attachments": []
+    },
+    {
+      "file": "uiux-polish.spec.mjs",
+      "name": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1057,
+      "attachments": []
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "name": "polish visual evidence 1440",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1611,
+      "attachments": []
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "name": "polish visual evidence 768",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1544,
+      "attachments": []
+    },
+    {
+      "file": "uiux-screenshots.spec.mjs",
+      "name": "polish visual evidence 390",
+      "status": "expected",
+      "expectedStatus": "passed",
+      "durationMs": 1443,
+      "attachments": []
+    }
+  ],
+  "testedSourceSha256": {
+    "e2e/media-inspection-fixture.mjs": "afad660c0dbfe26c5ed956d6b13a4cab0926e11ff4d3d4ed4ec1ab7288dd1096",
+    "e2e/media-inspection-screenshots.spec.mjs": "eb6f6ef1122fd90f42d4b3e5015698337aadefde6d994815cd6c4121f40b874a",
+    "e2e/media-inspection.spec.mjs": "680eda97066cf64450e526f0f9b241baee7a56333c68baf103cb47b64801700a",
+    "src/__tests__/mediaInspection.test.tsx": "333a13f54c54d52d8482351c0eda1f0a279dc3a7cb5e8ec78275cc84e77f0183",
+    "src/__tests__/mediaPreview.test.tsx": "3db566d58ab3e01f0ab49a3383537d9367d789fc1ea379799f7d39517223f4e8",
+    "src/components/MediaPreviewDialog.tsx": "79ac39cd8bfca8f6e96f05e3e3644e9a85b4f1805e8c1f6cba34b3a20de61024",
+    "src/components/MediaThumbnail.tsx": "e72c5d01b65c85d56e15abd18390f153d41da85291ea21035ea05a2938326007",
+    "src/components/ReferenceBoard.tsx": "05d33d467e8927f28879d103f759ffc41241fbf3f6767470538585300f80d2da",
+    "src/components/SharedModals.tsx": "5e599ba5c72575ecd7375b34360f262e2a3fc173590909ddb0b78cf820e17143",
+    "src/components/mediaInspection.css": "970c34933e1e6336e571bda27228d72358794e3dfc1f4fb20f8dbe58158691f4",
+    "src/screens/CollectionWorkspace.tsx": "c964a62bcbaf11bfa003c8682684add73e63e3044e0019347729888222630380",
+    "src/screens/collectionWorkspace.css": "c891ab9290e4a179518e272620b84a068637f6f9bbc54c5067b2939e7296873d"
+  },
+  "protectedValidationSha256": "50660f5c044585676932402583c25e8b52ece28af04a714cc909898cc1970fae",
+  "screenshots": [
+    {
+      "path": "docs/qa/media-inspection/before/list-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 130631,
+      "sha256": "d5c29f1d136e0aca3c92f1105ace90a331ba5772169db0ff5a4d9f8ec0972380"
+    },
+    {
+      "path": "docs/qa/media-inspection/before/list-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 30170,
+      "sha256": "59cd699abd71b0a981c184dfd75326fde550f3e1fc48fbb644c8f2cf072bf75a"
+    },
+    {
+      "path": "docs/qa/media-inspection/before/list-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 88091,
+      "sha256": "e50689a2884ab8bd67cbfa5c206409f93deb9b8fac5b5ada92b31493afa825e1"
+    },
+    {
+      "path": "docs/qa/media-inspection/before/picker-1440.png",
+      "phase": "before",
+      "width": 1440,
+      "height": 900,
+      "bytes": 132272,
+      "sha256": "e23137afd08d7047f0ff6912edbfbbf80d90566cbe9bb47b335e275e7f6afd24"
+    },
+    {
+      "path": "docs/qa/media-inspection/before/picker-390.png",
+      "phase": "before",
+      "width": 390,
+      "height": 844,
+      "bytes": 40233,
+      "sha256": "1c0601a00e6a3ea080e9e937e825d2f1ff60967390f11b25842b21f1f92f56f5"
+    },
+    {
+      "path": "docs/qa/media-inspection/before/picker-768.png",
+      "phase": "before",
+      "width": 768,
+      "height": 1024,
+      "bytes": 65498,
+      "sha256": "a22804156e340699eefb4988bcb7524e247d4b7ce94376c26a774da0f3554f50"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/gallery-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 123800,
+      "sha256": "d19bd0dfd37df19b15fdffed4f2526e89e7a4de87f4a8355d6e6f5b1276f0229"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/gallery-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 38451,
+      "sha256": "244d32714da1ca47027cbaf83cc7bf045fd61fb16039070b85ce0e41aba55a33"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/gallery-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 80022,
+      "sha256": "3553b0348fd2c48563d7b47f8298b1348a4e284f9722822d303b04b7a5bb35a3"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/list-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 128129,
+      "sha256": "36eea4c783eabb5c06be80865900ae0ad21a657b420741e8efaf59dd9f7095fc"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/list-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 30312,
+      "sha256": "639bda622039fcb9ad015ec8607cde085ffd628055d467c90c0d7977a847d8ce"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/list-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 86217,
+      "sha256": "09f491f602567fa6c61eed29ea1a1fd4622d5f32cf7b96e4fe5f6c91a7bc77f2"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/picker-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 134839,
+      "sha256": "c3b34302b0467ae593aaf639522d1e1a077973c8aa5ac764e5d31f1af27682d2"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/picker-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 42143,
+      "sha256": "5f5e8a4fc2cf5363e2adfc52cb738171eb4e7b478397ae22b364b892fa1e9773"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/picker-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 66858,
+      "sha256": "a4a984e6dd0acef71f7214c4e08da9fb8dfa697ea2601c6ca32024989f968b3a"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/zoom-1440.png",
+      "phase": "after",
+      "width": 1440,
+      "height": 900,
+      "bytes": 101648,
+      "sha256": "ff9dd92c9ec80fc560350715b9077b831b0ba98c63af6a8f8d46f9da61e7ee7a"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/zoom-390.png",
+      "phase": "after",
+      "width": 390,
+      "height": 844,
+      "bytes": 25787,
+      "sha256": "6f9948447368d1532371b1ed8d7a111858b5cd25119ca65329c4f43f0fc5978f"
+    },
+    {
+      "path": "docs/qa/media-inspection/after/zoom-768.png",
+      "phase": "after",
+      "width": 768,
+      "height": 1024,
+      "bytes": 46857,
+      "sha256": "fb6a796ce980891725b760e0f152dc6539af418408c49c5e9d9f5f97fcccefaa"
+    }
+  ],
+  "screenshotCount": 18,
+  "screenshotBytes": 1391958,
+  "limitations": [
+    "Chromium synthetic contexts and viewport/touch emulation; no actual user profile touched.",
+    "Native video controls enabled; play/pause/seek exercised through media APIs; no manual fullscreen or audible audio audit.",
+    "Resource observation is JS heap and URL/DOM state, not native decoder/GPU/whole-process peak-memory certification.",
+    "No Safari/Firefox, physical device or human screen-reader audit."
+  ],
+  "changedFiles": [
+    {
+      "status": "M",
+      "path": "src/__tests__/mediaPreview.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/MediaPreviewDialog.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/MediaThumbnail.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ReferenceBoard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/SharedModals.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/CollectionWorkspace.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/collectionWorkspace.css"
+    },
+    {
+      "status": "A",
+      "path": "docs/media-inspection-qa.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/README.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/gallery-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/gallery-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/gallery-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/list-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/list-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/list-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/picker-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/picker-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/picker-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/zoom-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/zoom-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/after/zoom-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/list-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/list-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/list-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/picker-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/picker-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/before/picker-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/media-inspection/qa_results.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/plans/2026-10-28-media-preview-list.md"
+    },
+    {
+      "status": "A",
+      "path": "e2e/media-inspection-fixture.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/media-inspection-screenshots.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/media-inspection.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/mediaInspection.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/mediaInspection.css"
+    }
+  ]
+}

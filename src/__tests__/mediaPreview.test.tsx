@@ -222,6 +222,12 @@ describe('media previews', () => {
     const close = screen.getByRole('button', { name: 'Close Media: Still' });
     expect(close).toHaveFocus();
     await user.tab();
+    expect(screen.getByRole('button',{name:'Fit to Screen'})).toHaveFocus();
+    await user.tab({shift:true});
+    expect(close).toHaveFocus();
+    await user.tab({shift:true});
+    expect(screen.getByRole('region',{name:'Image viewport; scroll to pan when zoomed'})).toHaveFocus();
+    await user.tab();
     expect(close).toHaveFocus();
     await user.keyboard('{Escape}');
     expect(screen.queryByRole('dialog')).toBeNull();

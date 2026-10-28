@@ -13,6 +13,8 @@ interface MediaThumbnailProps {
   showVideoControls?: boolean;
   emptyLabel?: string;
   roleBadge?: string;
+  imageZoom?: number | 'actual';
+  onImageDimensions?: (size: { width: number; height: number }) => void;
 }
 
 export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
@@ -22,6 +24,8 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   showVideoControls = false,
   emptyLabel = 'No sample yet. Add an image or video when ready.',
   roleBadge,
+  imageZoom,
+  onImageDimensions,
 }) => {
   const url = useMediaObjectUrl(media);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -29,6 +33,25 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   const hovering = useRef(false);
   const eligible = useRef(false);
   const generation = useRef(0);
+  const [natural, setNatural] = useState({ width: 0, height: 0 });
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  useEffect(() => {
+    if (imageZoom === undefined || !surfaceRef.current) return;
+    const surface = surfaceRef.current;
+    const measure = () =>
+      setViewport({ width: surface.clientWidth, height: surface.clientHeight });
+    measure();
+    const observer =
+      typeof ResizeObserver === 'undefined'
+        ? undefined
+        : new ResizeObserver(measure);
+    observer?.observe(surface);
+    window.addEventListener('resize', measure);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [imageZoom, url]);
   const stop = useCallback((video = videoRef.current) => {
     generation.current += 1;
     if (!video) return;
@@ -166,11 +189,28 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
 
   const isVideo =
     media.mimeType === 'video/mp4' || media.mimeType === 'video/webm';
+  const zoomable = imageZoom !== undefined && !isVideo;
+  const fit = natural.width
+    ? Math.min(
+        1,
+        (viewport.width || natural.width) / natural.width,
+        (viewport.height || natural.height) / natural.height
+      )
+    : 1;
+  const scale =
+    imageZoom === 'actual' ? 1 : fit * Math.min(4, Math.max(1, imageZoom ?? 1));
+  const imageWidth = natural.width * scale,
+    imageHeight = natural.height * scale;
 
   return (
     <div
       onPointerEnter={start}
       ref={surfaceRef}
+      tabIndex={zoomable ? 0 : undefined}
+      role={zoomable ? 'region' : undefined}
+      aria-label={
+        zoomable ? 'Image viewport; scroll to pan when zoomed' : undefined
+      }
       onPointerLeave={() => {
         if (enableHoverPreview && !showVideoControls) {
           hovering.current = false;
@@ -182,9 +222,12 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
         width: '100%',
         height: '100%',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems:
+          zoomable && imageHeight > viewport.height ? 'flex-start' : 'center',
+        justifyContent:
+          zoomable && imageWidth > viewport.width ? 'flex-start' : 'center',
         background: '#F8FAFC',
+        overflow: zoomable ? 'auto' : undefined,
       }}
     >
       {isVideo ? (
@@ -245,11 +288,29 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
           src={url}
           alt={altText || media.filename}
           loading="lazy"
+          draggable={false}
+          onLoad={(event) => {
+            if (imageZoom === undefined && !onImageDimensions) return;
+            const img = event.currentTarget,
+              size = { width: img.naturalWidth, height: img.naturalHeight };
+            setNatural(size);
+            onImageDimensions?.(size);
+          }}
           onError={() => {
             stop();
             setDecodeError(true);
           }}
-          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+          style={
+            zoomable && natural.width
+              ? {
+                  width: imageWidth,
+                  height: imageHeight,
+                  maxWidth: 'none',
+                  maxHeight: 'none',
+                  flexShrink: 0,
+                }
+              : { width: '100%', height: '100%', objectFit: 'contain' }
+          }
         />
       )}
 
