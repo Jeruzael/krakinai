@@ -18,14 +18,20 @@ Baseline: master `8d2d14533918ecfa1597d5ef7d5c0f71deccf672`. Branch: `codex/cont
 | `npm run build` | Passed | 0 |
 | `npm audit --omit=dev` | **0 vulnerabilities** | 0 |
 | `npm run test:qa` | **6 checks passed**; historical ledger remains 207 checks / 45 screenshots | 0 |
-| `npm run test:e2e` | **79 passed**, 0 failures/flaky/skips | 0 |
+| `npm run test:e2e` | **83 passed**, 0 failures/flaky/skips | 0 |
 | `python scripts/qa/verify-shot-types-archives.py` | Three archives read independently; original hashes/metadata/CRC match | 0 |
 | `node scripts/qa/ci-summary.mjs` | Complete browser case list, within unchanged artifact size bound | 0 |
 | `git diff --check` | Passed | 0 |
 
-The historical ledger is separate from the 79 current Playwright cases. Seven current cases target Shot Types. Unit checks include original-field defaults, all four rules, inactive filtering, dialogue/performance, malformed metadata, missing/wrong stored originals, failed atomic scene/project saves, duplicate identity, templates, planning mismatch, reachability, old backups and new metadata roundtrips.
+The historical ledger is separate from the 83 current Playwright cases. Eleven current cases target Shot Types. Unit checks include original-field defaults, all four rules, inactive filtering, dialogue/performance, malformed metadata, missing/wrong stored originals, failed atomic scene/project saves, duplicate identity, templates, planning mismatch, reachability, old backups and new metadata roundtrips.
 
 The clean baseline passed 409 tests. Required feature assertions were observed failing before implementation. Independent review identified two defects: duplicate pack orders after applying from Output, and inherited negative text leaking through refreshed saved-copy history. Both were reproduced, corrected, independently checked afterward, and covered by seven focused unit corrections plus a Chromium regression. An initial full browser run had 78 passes and one new-harness failure: direct API fixture writes bypassed the mounted library context. Adding an explicit fixture reload corrected it; the isolated case and final full run passed. No timeouts increased, retries enabled or tests skipped.
+
+## Final Assemble Prompt source safeguard
+
+Compared with the original PR head `b94628f`, only the Scene Builder handler changes at runtime. Existing feature screenshot assets are retained; this safeguard adds no layout change. It refreshes the stored media map for required-source shots and calls the existing `validateShotSourceMedia()` before navigation. Missing originals, unsupported MIME, inconsistent metadata or an unreadable storage snapshot block assembly with actionable Source Media guidance. The existing draft save remains intact; no validator, assembler, output, reference or persistence rule changes.
+
+The deletion browser regression failed before the fix: Preflight was blocking but Assemble opened Draft Output. Four browser cases now pass for deletion, deletion with a stale rendered map, unsupported MIME and inconsistent byte metadata. Each verifies blocking Preflight, no navigation, unchanged draft inputs/associations, and successful assembly after a valid original replacement. Existing character scenes remain on their original handler path; the full 461-unit/83-browser run, including the 16 frozen legacy output hashes, passed. The shared rules module and storage/serializer/reference modules match the original PR commit.
 
 ## Browser-tested behavior
 
@@ -41,9 +47,9 @@ Synthetic original: `MIDORI-two-bedroom-original.png`, **61,534 bytes**, SHA-256
 
 | Archive | ZIP bytes | Entries | SHA-256 |
 | --- | --- | --- | --- |
-| midori-reference.zip | 55,803 | 2 | `38309bf896fe84715f1d05bff0574ac424788c882ca7c709e8de60cf2872f35d` |
-| midori-project.zip | 64,130 | 11 | `ad02872a87bc29030c4304c1ae1a9f14878425153e82bce852880e66de5dab02` |
-| midori-full-backup.zip | 60,197 | 2 | `eb93473f08ad183aed5e24f098b5c936d6eb33e0cbc2927b149f6e4704948145` |
+| midori-reference.zip | 55,803 | 2 | `f5c7bf1e4926fe72f86646a2222974e687ebd87e6a2f2a73122943a0dcd89391` |
+| midori-project.zip | 64,131 | 11 | `fe237295d7a3266de3c34f3647317198a473283b2d4a0feac455953d32bbea6b` |
+| midori-full-backup.zip | 60,193 | 2 | `3f382417311cf3f5ca731b11410ab087ca6b4191391a486918a856312e9450e4` |
 
 The restored original hash is identical. This small synthetic compatibility test does not extend any large-library ZIP64 verified ceiling.
 
@@ -62,7 +68,7 @@ All **12** published PNG files exist and their hashes/dimensions are in the mach
 - Automated browser checks use Chromium. Manual screen-reader, Firefox and Safari testing remain unverified. ARIA labels, keyboard interactions and focus have automated coverage; this is not a general accessibility certification.
 - Source validation follows existing MIME/file-size/storage rules and checks stored byte metadata. No external generator was called; output documents are KRAKINAI specifications, not official provider request schemas or rendered media.
 - A historical copied record whose original ancestry was already deleted may lack enough provenance to distinguish old component negatives from authored prose. Recovery uses exact available prefixes and never guesses arbitrary user text. New copies retain provenance across refresh/save/copy operations.
-- Vite warns about the **561.87 kB** main chunk (164.31 kB gzip), over its 500 kB threshold. The build passes. Full development-inclusive audit exits 1 with **6 existing advisories** (3 moderate, 1 high, 2 critical); production audit exits 0 with none. Dependencies are unchanged. Final unit output contains 31 React act warnings; all assertions passed. Playwright reports the existing NO_COLOR/FORCE_COLOR precedence warning.
+- Vite warns about the **562.25 kB** main chunk (164.48 kB gzip), over its 500 kB threshold. The build passes. Full development-inclusive audit exits 1 with **6 existing advisories** (3 moderate, 1 high, 2 critical); production audit exits 0 with none. Dependencies are unchanged. Final unit output contains 22 React act warnings; all assertions passed. Playwright reports the existing NO_COLOR/FORCE_COLOR precedence warning.
 - Actual Windows Save As, large-library capacity and ZIP64 recovery were not retested. Existing limits and the separate PR #12 safeguards remain untouched.
 
 ## Reproduce and publication

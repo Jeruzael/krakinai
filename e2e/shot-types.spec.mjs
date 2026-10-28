@@ -163,6 +163,47 @@ test('voiceover needs no graphic character, on-camera remains blocked, missing o
   report('source-dialogue-validation', { exactLine, voiceoverAssembledWithoutCharacter: true, onCameraBlockedWithoutCharacter: true, failures });
 });
 
+for(const failure of ['deleted original','stale deleted original','unsupported MIME','inconsistent metadata']) {
+  test(`assembly rechecks stored source: ${failure} blocks navigation until replacement`,async({page})=>{
+    const ids=await seedShotTypes(page);await configureMidori(page,ids);
+    const before=await readDraft(page,ids.draftId);
+    await page.evaluate(async({sourceId,failure})=>{
+      const {openDatabase}=await import('/src/storage/db.ts');const db=await openDatabase();
+      await new Promise((resolve,reject)=>{
+        const tx=db.transaction('media','readwrite'),store=tx.objectStore('media');
+        tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error);tx.onerror=()=>reject(tx.error);
+        if(failure.includes('deleted'))store.delete(sourceId);
+        else{const request=store.get(sourceId);request.onsuccess=()=>{
+          const original=request.result;
+          store.put(failure==='unsupported MIME'?{...original,mimeType:'application/octet-stream'}:{...original,byteSize:original.byteSize+1});
+        };}
+      });
+    },{sourceId:ids.sourceId,failure});
+    // One case checks visible Preflight first; the rest retain a stale rendered map.
+    if(failure==='deleted original'){
+      await page.reload();
+      await page.getByRole('button',{name:/^Preflight ·/}).click();
+      await expect(page.getByRole('dialog',{name:'Scene Preflight'}).getByRole('region',{name:'Blocking findings'})).toContainText(/source.*missing/i);
+      await page.keyboard.press('Escape');
+    }
+    await page.getByRole('button',{name:'Assemble Prompt',exact:true}).click();
+    await expect(page.locator('.banner-error')).toContainText('Source Media');
+    await expect(page).toHaveURL(new RegExp(`#/builder/${ids.draftId}$`));
+    const after=await readDraft(page,ids.draftId);
+    const stable=({updatedAt,...draft})=>draft;
+    expect(stable(after)).toEqual(stable(before));
+    await page.getByRole('button',{name:/^Preflight ·/}).click();
+    await expect(page.getByRole('dialog',{name:'Scene Preflight'}).getByRole('region',{name:'Blocking findings'})).toContainText(/source/i);
+    await page.keyboard.press('Escape');
+    await page.getByLabel('Replace original source image',{exact:true}).setInputFiles({name:'MIDORI-valid-replacement.png',mimeType:'image/png',buffer:Buffer.from(ids.originalPngBase64,'base64')});
+    await expect(page.locator('.source-media-original strong')).toHaveText('MIDORI-valid-replacement.png');
+    await expectClearPreflight(page);
+    await page.getByRole('button',{name:'Assemble Prompt',exact:true}).click();
+    await expect(page).toHaveURL(new RegExp(`#/output/${ids.draftId}$`));
+    report(`assembly-source-${failure.replaceAll(' ','-')}`,{failure,preflightBlocking:true,navigationBlocked:true,draftPreserved:true,validReplacementAssembled:true});
+  });
+}
+
 test('review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable',async({page})=>{
   const ids=await seedShotTypes(page);
   const draftId=await page.evaluate(async ids=>{

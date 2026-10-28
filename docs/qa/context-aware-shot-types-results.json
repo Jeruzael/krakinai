@@ -2,7 +2,7 @@
   "feature": "Context-aware Shot Types",
   "baselineCommit": "8d2d14533918ecfa1597d5ef7d5c0f71deccf672",
   "branch": "codex/context-aware-shot-types",
-  "recordedAtUTC": "2026-10-28T12:39:14.495949+00:00",
+  "recordedAtUTC": "2026-10-28T13:20:20.153015+00:00",
   "localValidation": {
     "baselineUnit": {
       "passed": 409,
@@ -13,7 +13,8 @@
       "command": "npm test -- --maxWorkers=2 --minWorkers=1",
       "passed": 461,
       "files": 68,
-      "exitCode": 0
+      "exitCode": 0,
+      "durationMs": 92415.92211914062
     },
     "typecheck": {
       "command": "npm run typecheck",
@@ -22,8 +23,8 @@
     "build": {
       "command": "npm run build",
       "exitCode": 0,
-      "mainChunkKB": 561.87,
-      "gzipKB": 164.31
+      "mainChunkKB": 562.25,
+      "gzipKB": 164.48
     },
     "productionAudit": {
       "command": "npm audit --omit=dev",
@@ -39,11 +40,11 @@
     },
     "browser": {
       "command": "npm run test:e2e",
-      "passed": 79,
+      "passed": 83,
       "failed": 0,
       "flaky": 0,
       "skipped": 0,
-      "durationMs": 236993.107,
+      "durationMs": 238172.28199999998,
       "exitCode": 0
     },
     "diffCheck": {
@@ -100,7 +101,7 @@
     "projectExportLimitMiB": 128,
     "runtimeAndTestFingerprints": {
       "e2e/shot-types-fixture.mjs": "ad20759e6f522dc2a650bbbbdb2b1560d8a172912ba172083fd0df2d6bca2cf7",
-      "e2e/shot-types.spec.mjs": "350e94dfa71e28fa6b2fa72019f4c10f50f0007cb88843555f5bafdb97671d67",
+      "e2e/shot-types.spec.mjs": "8ab87d51245712781db3340b99af3cd41d5591f17795b087980c3c6dec8e3f11",
       "scripts/qa/capture-shot-types-before.mjs": "932ecf8508906e349443ecfe4b44a874d695af3ea77713d9f02718d685fddf64",
       "scripts/qa/verify-shot-types-archives.py": "0f2a8bace044207c718acf413e8e1745674ee32b367ef537c8bf267dbc72be55",
       "src/__tests__/__snapshots__/shotTypeLegacy.test.ts.snap": "2d9cc8c4767efe923a6688a6b0ce15fb1374cafd2eec3936c1897be80355260c",
@@ -132,7 +133,7 @@
       "src/domain/shotTypeRules.ts": "b951b5293b60217df2b4411647d6143244dc42836d16ea66d443e7cd53815ad8",
       "src/screens/CollectionWorkspace.tsx": "2c63bc288bb3cfbeb7270638abbe532e8f1f7b0c3685626a9b382069af09bda0",
       "src/screens/PromptOutputScreen.tsx": "30a86852be63d523a65b501ead5cfb863fe0b6444d265ed311fc6655914cad74",
-      "src/screens/SceneBuilderScreen.tsx": "7c1863ede08033cdf3da09229399a2d2e644a71e0f4823534feb30f35e838b8a",
+      "src/screens/SceneBuilderScreen.tsx": "a4a097a53b5b31bf351a9f2409e4ccad212dd75580845d89937e9dcc5cc68fad",
       "src/screens/TemplatesScreen.tsx": "fe379f4aad9851e6f58bb45acf1de56ca42f6a9fd44cdb559d7540703212a366",
       "src/storage/backup.ts": "5892bb6abf2e9fd60d7c1eb9e7bbaf384b9b0780045c06ca5b4913b0a28ed9b2",
       "src/storage/db.ts": "23dcf6e4f9db94d652fe5d3b33d01c144f73eede06959d327b20e6440e5ddf0c",
@@ -232,7 +233,7 @@
       {
         "path": "qa-results/shot-types/midori-reference.zip",
         "archiveBytes": 55803,
-        "archiveSha256": "38309bf896fe84715f1d05bff0574ac424788c882ca7c709e8de60cf2872f35d",
+        "archiveSha256": "f5c7bf1e4926fe72f86646a2222974e687ebd87e6a2f2a73122943a0dcd89391",
         "entries": 2,
         "sourcePaths": [
           "media/001-MIDORI-two-bedroom-original.png"
@@ -248,8 +249,8 @@
       },
       {
         "path": "qa-results/shot-types/midori-project.zip",
-        "archiveBytes": 64130,
-        "archiveSha256": "ad02872a87bc29030c4304c1ae1a9f14878425153e82bce852880e66de5dab02",
+        "archiveBytes": 64131,
+        "archiveSha256": "fe237295d7a3266de3c34f3647317198a473283b2d4a0feac455953d32bbea6b",
         "entries": 11,
         "sourcePaths": [
           "MIDORI---Fictional-Condominium---Synthetic-QA-63-6f-6c-6c-65-63-74-69-6f-6e-5f-71-61-5f-6d-69-64-6f-72-69/media/0001-6d-65-64-69-61-5f-71-61-5f-6d-69-64-6f-72-69-5f-66-6c-6f-6f-72-70-6c-61-6e-MIDORI-two-bedroom-original.png"
@@ -265,8 +266,8 @@
       },
       {
         "path": "qa-results/shot-types/midori-full-backup.zip",
-        "archiveBytes": 60197,
-        "archiveSha256": "eb93473f08ad183aed5e24f098b5c936d6eb33e0cbc2927b149f6e4704948145",
+        "archiveBytes": 60193,
+        "archiveSha256": "3f382417311cf3f5ca731b11410ab087ca6b4191391a486918a856312e9450e4",
         "entries": 2,
         "sourcePaths": [
           "media/media_qa_midori_floorplan.png"
@@ -289,7 +290,7 @@
         720
       ],
       "rejectedMime": "text/plain",
-      "uploadCreatesOriginal": "media_b2d5a970312b",
+      "uploadCreatesOriginal": "media_1e021c4c2ecd",
       "existingSelectionReusesId": "media_qa_midori_floorplan",
       "mediaRetainedAfterRemoval": 2,
       "keyboardPreviewFocusRestored": true
@@ -394,6 +395,36 @@
           "after-output-390.png",
           "after-prompt-390.png"
         ]
+      }
+    ],
+    "assemblySourceChecks": [
+      {
+        "failure": "deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "stale deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "unsupported MIME",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "inconsistent metadata",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
       }
     ]
   },
@@ -536,7 +567,7 @@
       "total": 6
     },
     "developmentAuditExitCode": 1,
-    "reactActWarningCount": 31,
+    "reactActWarningCount": 22,
     "playwrightCli": "NO_COLOR ignored when FORCE_COLOR is present."
   },
   "scope": {
@@ -615,5 +646,64 @@
     "src/storage/db.ts",
     "src/storage/projects.ts",
     "src/types/domain.ts"
-  ]
+  ],
+  "assemblySourceSafeguard": {
+    "comparedWith": "b94628f4ebf1d7180f96b7adf30ad38d8757038e",
+    "implementation": "Required-source shots read a fresh storage snapshot and reuse validateShotSourceMedia before navigation. Invalid or unreadable stored sources block assembly with Source Media guidance. Character/property handlers retain the original path.",
+    "sharedValidationAndPersistenceUnchanged": [
+      "src/domain/shotTypeRules.ts",
+      "src/domain/validation.ts",
+      "src/domain/promptAssembler.ts",
+      "src/domain/sceneDocument.ts",
+      "src/domain/generationDocument.ts",
+      "src/domain/referencePack.ts",
+      "src/storage/db.ts",
+      "src/storage/backup.ts"
+    ],
+    "browserCases": [
+      {
+        "failure": "deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "stale deleted original",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "unsupported MIME",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      },
+      {
+        "failure": "inconsistent metadata",
+        "preflightBlocking": true,
+        "navigationBlocked": true,
+        "draftPreserved": true,
+        "validReplacementAssembled": true
+      }
+    ],
+    "redEvidence": {
+      "tests": 1,
+      "failed": 1,
+      "exitCode": 1,
+      "observed": "Deleted source had blocking Preflight but Assemble navigated to Draft Output."
+    },
+    "focusedGreen": {
+      "tests": 4,
+      "passed": 4,
+      "exitCode": 0
+    },
+    "readSemantics": "Validation uses the current stored map at the read; existing immutable-save validation remains in place.",
+    "screenshots": "Existing feature screenshot assets retained; follow-up adds no layout change.",
+    "allEightMidoriOutputHashesUnchanged": true,
+    "allSixteenLegacyHashesUnchanged": true
+  }
 }

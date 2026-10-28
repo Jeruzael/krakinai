@@ -53,7 +53,7 @@ import { GenerationIdentityControl } from '../components/GenerationIdentityContr
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { PerformanceDirection } from '../components/PerformanceDirection';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
-import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, resolveShotType, SHOT_TYPES, SHOT_TYPE_LABELS, SHOT_TYPE_DESCRIPTIONS } from '../domain/shotTypeRules';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, resolveShotType, validateShotSourceMedia, SHOT_TYPES, SHOT_TYPE_LABELS, SHOT_TYPE_DESCRIPTIONS } from '../domain/shotTypeRules';
 import { SourceMediaPicker } from '../components/SourceMediaPicker';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
@@ -411,6 +411,20 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     if (context.error) { setAssemblyErrors([context.error]); return; }
     const saved = await persistDraftImmediate(draft, false);
     if (!saved) return;
+    if (getShotTypeRules(saved).sourceKind) {
+      try {
+        // Re-read storage: the rendered media map can predate a deletion or change.
+        const current = await refreshSnapshot();
+        const errors = validateShotSourceMedia(saved, new Map(current.media.map(media => [media.id, media])));
+        if (errors.length) {
+          setAssemblyErrors([...errors, 'Review Source Media and the required instructions. Restore the original file or select a valid replacement, then assemble again.']);
+          return;
+        }
+      } catch {
+        setAssemblyErrors(['Could not verify the original file in storage. Your draft is saved. Check Source Media and retry assembly.']);
+        return;
+      }
+    }
     const res = assembleScenePrompt(saved);
     if (!res.valid) {
       setAssemblyErrors(res.errors);
