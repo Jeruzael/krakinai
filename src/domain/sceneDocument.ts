@@ -6,8 +6,10 @@ import type {
   MediaLink,
   OutputMode,
   SceneSettings,
+  ShotType,
 } from '../types/domain';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
+import { getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, getSourceFidelityInstructions, resolveShotType, SHOT_TYPE_LABELS } from './shotTypeRules';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
   'character',
@@ -20,6 +22,10 @@ export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
 ];
 
 export interface SceneDocumentSource {
+  inheritedAvoidPrefix?: string;
+  sourceSceneId?: string;
+  shotType?: ShotType;
+  sourceMediaLinks?: MediaLink[];
   title: string;
   slots: Partial<Record<ComponentSnapshot['slot'], ComponentSnapshot>>;
   sceneInstructions: string;
@@ -50,7 +56,8 @@ interface SceneComponentDocument {
 
 export interface SceneDocument {
   schema: 'krakinai.scene-prompt.v1';
-  scene: { title: string; type: 'single_shot'; instructions: string };
+  scene: { title: string; type: 'single_shot'; instructions: string; shotType?: ShotType; sourceFidelity?: string };
+  sourceMedia?: {mediaId:string|null;filename:string|null;mimeType:string|null}[];
   components: Record<BuilderSlot, SceneComponentDocument | null>;
   dialogue: {
     type: 'spoken_audio';
@@ -89,12 +96,16 @@ const safeFilename = (text: string | undefined): string | null =>
     : null;
 
 export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
+  const activeSlots=getActiveSceneSlots(source);
+  const sources=getActiveSourceMediaLinks(source);
+  const shotType=resolveShotType(source);
   const components = {} as SceneDocument['components'];
   const references: MediaLink[] = [];
   const seenMedia = new Set<string>();
+  for(const link of sources)if(!seenMedia.has(link.mediaId)){references.push({...link});seenMedia.add(link.mediaId);}
   const negativeParts: string[] = [];
   for (const slot of SCENE_COMPONENT_ORDER) {
-    const snap = source.slots[slot];
+    const snap = activeSlots[slot];
     if (!snap) {
       components[slot] = null;
       continue;
@@ -137,16 +148,24 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
       }
     }
   }
-  if (hasText(source.avoidText)) negativeParts.push(source.avoidText);
+  const sceneAvoid=getSceneLevelAvoidText(source);
+  if (hasText(sceneAvoid)) negativeParts.push(sceneAvoid);
   const dialogue = source.dialogue;
-  const selectedReferences = source.references ?? references;
+  let selectedReferences = source.references ?? references;
+  if(shotType!=='character_scene') {
+    const activeIds=new Set(references.map(l=>l.mediaId));
+    selectedReferences=selectedReferences.filter(l=>activeIds.has(l.mediaId));
+    for(const link of sources)if(!selectedReferences.some(l=>l.mediaId===link.mediaId))selectedReferences=[...selectedReferences,link];
+  }
   return {
     schema: 'krakinai.scene-prompt.v1',
     scene: {
       title: source.title,
       type: 'single_shot',
       instructions: source.sceneInstructions ?? '',
+      ...(shotType!=='character_scene'?{shotType,sourceFidelity:getSourceFidelityInstructions(source)}:{}),
     },
+    ...(sources.length?{sourceMedia:sources.map(l=>({mediaId:safeMetadata(l.mediaId),filename:safeFilename(l.filename),mimeType:safeMetadata(l.mimeType)}))}:{}),
     components,
     dialogue:
       dialogue && hasText(dialogue.speaker) && hasText(dialogue.line)
@@ -162,7 +181,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
           }
         : null,
     avoidText:
-      source.references !== undefined
+      source.references !== undefined && shotType==='character_scene'
         ? (source.avoidText ?? '')
         : negativeParts.join(', '),
     settings: {
@@ -255,6 +274,7 @@ export function formatSceneDocumentText(
         'Scene Type: Single-shot video',
       ]
     : [`# ${doc.scene.title}`, 'Scene Type: Single-shot video'];
+  if(doc.scene.shotType)overview.push(`Shot Type: ${SHOT_TYPE_LABELS[doc.scene.shotType]}`);
   if (doc.settings.aspectRatio !== null)
     overview.push(`Aspect Ratio: ${doc.settings.aspectRatio}`);
   if (doc.settings.durationSeconds !== null)
@@ -262,6 +282,7 @@ export function formatSceneDocumentText(
   if (hasText(doc.settings.toolNotes))
     overview.push(`Tool / Provider Notes: ${doc.settings.toolNotes}`);
   const blocks = [overview.join('\n')];
+  if(doc.sourceMedia?.length)blocks.push(`${structured?'=== ORIGINAL SOURCE MEDIA ===':'## Original Source Media'}\n${doc.sourceMedia.map(l=>`${l.filename??l.mediaId} | ID: ${l.mediaId} | ${l.mimeType}`).join('\n')}\n${doc.scene.sourceFidelity??''}`);
   for (const slot of SCENE_COMPONENT_ORDER) {
     const component = doc.components[slot];
     if (!component || !hasText(component.prompt)) continue;
@@ -276,7 +297,9 @@ export function formatSceneDocumentText(
   if (dialogue) blocks.push(dialogue);
   if (hasText(doc.scene.instructions))
     blocks.push(
-      `${structured ? '=== ADDITIONAL SCENE INSTRUCTIONS ===' : '## Additional Scene Instructions'}\n${doc.scene.instructions}`
+      `${doc.scene.shotType && getShotTypeRules({shotType:doc.scene.shotType}).requiresInstructions
+        ? structured?`=== ${getShotTypeRules({shotType:doc.scene.shotType}).instructionLabel.toUpperCase()} ===`:`## ${getShotTypeRules({shotType:doc.scene.shotType}).instructionLabel}`
+        : structured ? '=== ADDITIONAL SCENE INSTRUCTIONS ===' : '## Additional Scene Instructions'}\n${doc.scene.instructions}`
     );
   return blocks.join('\n\n');
 }

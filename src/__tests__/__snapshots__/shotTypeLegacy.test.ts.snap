@@ -1,0 +1,26 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`preserves the exact legacy draft/saved bytes across every output contract 1`] = `
+[
+  {
+    "compact": "51786e827fec66e71f47605eccb0f0f21b698df1baf960afd4b20caad613aa28",
+    "custom": "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+    "full": "1503c9c667c8e80767bd23c82bbd730d30ab947e057e7560976e68873fba6e4f",
+    "generation": "ac96ecab0022438be38cf1e3aa9913252011b48a2bbe0f81335db7a2014a036c",
+    "generic": "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+    "project": "fedc7f668511c8be67c46d9e5580ac4a0140f68effa6aa5277b76e8ff499c2f0",
+    "provider": "82c79dcee02894ccf8ed52c86f0913599d9fd180d779a3379b342be3dfa2ed56",
+    "structured": "44ea102d6ae091ca01a736e9fb1bcf555025c7d931d29f8a7a26d582afa4ecef",
+  },
+  {
+    "compact": "51786e827fec66e71f47605eccb0f0f21b698df1baf960afd4b20caad613aa28",
+    "custom": "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+    "full": "1503c9c667c8e80767bd23c82bbd730d30ab947e057e7560976e68873fba6e4f",
+    "generation": "ac96ecab0022438be38cf1e3aa9913252011b48a2bbe0f81335db7a2014a036c",
+    "generic": "0624e7bd311dcd27524fc01d0cc1604c8ffda585acd395ad9d2bf18906b08ebe",
+    "project": "fedc7f668511c8be67c46d9e5580ac4a0140f68effa6aa5277b76e8ff499c2f0",
+    "provider": "82c79dcee02894ccf8ed52c86f0913599d9fd180d779a3379b342be3dfa2ed56",
+    "structured": "44ea102d6ae091ca01a736e9fb1bcf555025c7d931d29f8a7a26d582afa4ecef",
+  },
+]
+`;

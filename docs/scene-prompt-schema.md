@@ -6,6 +6,8 @@ JSON is a locally derived KRAKINAI document, identified by `"schema": "krakinai.
 
 ## Document contract
 
+The table below describes the legacy Character Scene contract, whose bytes are preserved. New non-character scenes add optional `scene.shotType`; source-based scenes also add `scene.sourceFidelity` and root `sourceMedia`. Inactive components are `null` and original input references remain separate from results. See the [complete optional Shot Type metadata contract](context-aware-shot-types.md#optional-record-and-json-metadata). These extensions retain `scene.type: "single_shot"` and do not change historical saved strings.
+
 | Field            | Type and meaning                                                                                                        |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------- | ----- |
 | `schema`         | Literal `krakinai.scene-prompt.v1`                                                                                      |
@@ -43,7 +45,7 @@ Reference metadata fields are `mediaId`, `role`, `altText`, `viewLabel`, `order`
 
 Modes are `spoken` (unspecified position), `on_camera`, `voiceover`, and `off_screen`. Caption preferences are `unspecified`, `none`, and `requested`. Optional legacy values default to `spoken`, `null` language/delivery, and `unspecified` captions in the derived document only. No language, delivery, accent or lip-sync behavior is inferred. Speaker and exact spoken words are separate strings and retain punctuation, whitespace, quotes, Unicode and multiline content.
 
-Dialogue requires the existing character selection, speaker and nonblank line. Additional fields are optional. Clear Dialogue removes only the dialogue configuration, preserving selected components and scene instructions.
+Character Scene retains its existing character-selection, speaker and nonblank-line requirements. Non-character shots allow voiceover/off-screen narration without an on-screen character; on-camera or unspecified spoken mode still requires a relevant active character. Additional fields are optional. Clear Dialogue removes only the dialogue configuration, preserving selected components and scene instructions.
 
 ## Workflow and compatibility
 

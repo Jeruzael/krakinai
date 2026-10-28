@@ -4,11 +4,12 @@ import {
   SCENE_COMPONENT_ORDER,
   type SceneDocumentSource,
 } from "./sceneDocument";
+import { getActiveSceneSlots, getSceneLevelAvoidText, getSourceReferenceEntries, resolveShotType } from './shotTypeRules';
 
 export interface GenerationReference {
   associationId?: string;
   mediaId: string;
-  sourceSlot?: BuilderSlot | "result" | "legacy";
+  sourceSlot?: BuilderSlot | "result" | "legacy" | "source";
   purpose?: "identity" | "outfit" | "environment" | "motion" | "general";
   order: number;
   filename: string | null;
@@ -34,14 +35,15 @@ const safeFilename = (value: string | undefined | null): string | null =>
     : null;
 
 function negativeInstructions(source: SceneDocumentSource): string[] {
+  const activeSlots=getActiveSceneSlots(source);
   const parts = SCENE_COMPONENT_ORDER.map(
-    (slot) => source.slots[slot]?.avoidText,
+    (slot) => activeSlots[slot]?.avoidText,
   ).filter(hasText);
-  let extra = source.avoidText;
+  let extra: string|undefined = getSceneLevelAvoidText(source);
   // Saved scenes hold the assembler's component-joined prefix plus scene negatives.
   // Only remove this exact prefix; never tokenize authored punctuation.
-  if (source.references !== undefined && parts.length && extra) {
-    const prefix = parts.join(", ");
+  if (resolveShotType(source)==='character_scene' && source.references !== undefined && parts.length && extra) {
+    const prefix = SCENE_COMPONENT_ORDER.map(slot=>source.slots[slot]?.avoidText).filter(hasText).join(", ");
     if (extra === prefix) extra = undefined;
     else if (extra.startsWith(`${prefix}, `))
       extra = extra.slice(prefix.length + 2);
@@ -64,7 +66,7 @@ export function buildGenerationDocument(
   const effective = (slot: BuilderSlot) =>
     project.components[slot]?.prompt ?? null;
   const character = project.components.character;
-  const references: GenerationReference[] =
+  let references: GenerationReference[] =
     options.references ??
     project.referenceFiles.map((reference) => ({
       mediaId: reference.mediaId ?? "",
@@ -74,6 +76,20 @@ export function buildGenerationDocument(
       filename: reference.filename,
       mimeType: reference.mimeType,
     }));
+  if(resolveShotType(source)!=='character_scene') {
+    const activeSlots=getActiveSceneSlots(source);
+    const requiredSources=getSourceReferenceEntries(source);
+    const activeIds=new Set(project.referenceFiles.map(r=>r.mediaId));
+    references=references.filter(ref=>ref.sourceSlot==='result'||
+      (ref.sourceSlot==='source'?requiredSources.some(s=>s.mediaId===ref.mediaId):
+        ref.sourceSlot&&ref.sourceSlot!=='legacy'?Boolean(activeSlots[ref.sourceSlot]):
+          activeIds.has(ref.mediaId)&&!requiredSources.some(s=>s.mediaId===ref.mediaId)));
+    for(const entry of requiredSources)if(!references.some(ref=>ref.sourceSlot==='source'&&ref.mediaId===entry.mediaId)) {
+      references.push({associationId:entry.associationId,mediaId:entry.mediaId,sourceSlot:'source',purpose:'general',order:references.length,
+        filename:entry.filename??null,mimeType:entry.mimeType??null,role:'reference',altText:entry.altText||null});
+    }
+    references=references.map((ref,order)=>({...ref,order}));
+  }
   return {
     schema: "krakinai.generation-prompt.v1" as const,
     scene: {
@@ -83,7 +99,9 @@ export function buildGenerationDocument(
       aspectRatio: project.settings.aspectRatio,
       instructions: project.scene.instructions,
       toolNotes: project.settings.toolNotes,
+      ...(project.scene.shotType?{shotType:project.scene.shotType,sourceFidelity:project.scene.sourceFidelity}:{}),
     },
+    ...(project.sourceMedia?{sourceMedia:project.sourceMedia}:{}),
     character: character
       ? {
           name: character.title,

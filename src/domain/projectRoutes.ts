@@ -32,6 +32,7 @@ export async function startProjectShotDraft(collectionId: string, shotId: string
     throw new Error('Selected take is unavailable. Choose an existing take or a planned shot.');
   const draft = selectedId ? await createDraftFromSavedScene(selectedId) : await saveSceneDraft({
     title:`${shot.code} — ${shot.title}`,slots:{},extraRequiredSlots:[],sceneInstructions:'',settings:{},manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed',
+    ...(shot.plannedShotType ? {shotType:shot.plannedShotType} : {}),
   });
   return `/builder/${encodeURIComponent(draft.id)}?${new URLSearchParams({collection:collection.id,shot:shot.id,takeTarget:'1',tab:'storyboard'}).toString()}`;
 }

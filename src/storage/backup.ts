@@ -1,5 +1,6 @@
 import { validatePhase5Metadata } from '../domain/phase5MetadataValidation';
 import { validateProject } from '../domain/phase5ProjectValidation';
+import { getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import {
   SCHEMA_VERSION,
@@ -424,6 +425,24 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
       isBundledIllustration: mEntry.isBundledIllustration,
       createdAt: mEntry.createdAt,
     });
+  }
+
+  const storedMedia = new Map(mediaRecords.map(media => [media.id, media]));
+  for (const value of [...manifest.drafts, ...manifest.scenes]) {
+    const links = [...(value.sourceMediaLinks ?? []), ...(value.referencePack?.entries.filter(entry => entry.sourceSlot === 'source') ?? [])];
+    // Drafts can be incomplete. Existing associations must still resolve to valid original bytes.
+    if (links?.length) {
+      for (const link of links) {
+        const original = storedMedia.get(link.mediaId);
+        const shotType = original?.mimeType.startsWith('video/') ? 'existing_footage' : 'graphic_motion';
+        const errors = validateShotSourceMedia({ shotType, sourceMediaLinks: [link], sceneInstructions: 'Validate original source association.' }, storedMedia);
+        if (errors.length) return { valid: false, error: errors.join(' ') };
+      }
+    }
+    if (manifest.scenes.includes(value as SavedScene) && getShotTypeRules(value).sourceKind) {
+      const errors = validateShotSourceMedia(value, storedMedia);
+      if (errors.length) return { valid: false, error: errors.join(' ') };
+    }
   }
 
   // Verify all referenced media IDs across assets, variants, drafts, scenes, templates resolve

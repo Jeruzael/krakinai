@@ -34,6 +34,8 @@ export type AspectRatioOption = '16:9' | '9:16' | '1:1';
 
 export type OutputMode = 'full' | 'structured' | 'compact';
 
+export type ShotType = 'character_scene' | 'property_environment' | 'graphic_motion' | 'existing_footage';
+
 export interface ProvenanceMetadata {
   toolName?: string;
   modelLabel?: string;
@@ -91,7 +93,7 @@ export interface ReferencePackEntry {
   namesCaptured?: true;
   associationId: string;
   mediaId: string;
-  sourceSlot: BuilderSlot | 'result' | 'legacy';
+  sourceSlot: BuilderSlot | 'result' | 'legacy' | 'source';
   sourceId: string;
   sourceTitle: string;
   role: MediaRole;
@@ -217,6 +219,9 @@ export interface ManualOutputOverride {
 }
 
 export interface SceneDraft {
+  inheritedAvoidPrefix?: string;
+  shotType?: ShotType;
+  sourceMediaLinks?: MediaLink[];
   generation?: SceneGenerationChoice;
   referencePack?: ReferencePack;
   id: string;
@@ -238,6 +243,9 @@ export interface SceneDraft {
 }
 
 export interface SavedScene {
+  inheritedAvoidPrefix?: string;
+  shotType?: ShotType;
+  sourceMediaLinks?: MediaLink[];
   saveProjectTarget?: { collectionId: string; shotId: string };
   sourceDraftId?: string;
   sourceDraftInputRevision?: number;
@@ -303,6 +311,7 @@ export interface ProjectTransition {
 }
 
 export interface ProjectShot {
+  plannedShotType?: ShotType;
   id: string;
   order: number;
   code: string;
@@ -341,6 +350,7 @@ export interface TemplateSlotDefault {
 }
 
 export interface Template {
+  shotType?: ShotType;
   id: string;
   name: string;
   description: string;

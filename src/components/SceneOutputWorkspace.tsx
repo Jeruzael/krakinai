@@ -24,7 +24,7 @@ function SceneVisual({
   const first = items.find((item) => mediaMap.has(item.mediaId)) ?? items[0];
   const item = items.find((item) => item.key === selected) ?? first;
   const media = item ? mediaMap.get(item.mediaId) : undefined;
-  const role = media?.isBundledIllustration
+  const role = item?.isSource ? 'Original Source' : media?.isBundledIllustration
     ? 'Sample · Demo illustration'
     : item?.role === 'result'
       ? 'Result'
@@ -59,7 +59,7 @@ function SceneVisual({
             >
               {items.map((option) => (
                 <option key={option.key} value={option.key}>
-                  {option.role === 'result'
+                  {option.isSource ? 'Original Source' : option.role === 'result'
                     ? 'Result'
                     : option.role === 'sample'
                       ? 'Sample'

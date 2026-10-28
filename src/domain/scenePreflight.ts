@@ -1,7 +1,8 @@
-import type { BuilderSlot, SceneDraft } from '../types/domain';
+import type { BuilderSlot, MediaAsset, SceneDraft } from '../types/domain';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 import { buildSceneDocument, SCENE_COMPONENT_ORDER, type SceneDocumentSource } from './sceneDocument';
 import { assembleScenePrompt } from './promptAssembler';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
 export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references';
 export interface PreflightFinding {
   id: string;
@@ -42,7 +43,8 @@ function speakerMatchesCharacter(speaker: string, title: string): boolean {
   const identityName = fullTitle.replace(/\s*\/\s*(?:base identity|master identity|character identity)$/u, '').trim();
   return name === fullTitle || (identityName.length > 0 && name === identityName);
 }
-export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>): PreflightFinding[] {
+export function runScenePreflight(input: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>|ReadonlyMap<string,MediaAsset>): PreflightFinding[] {
+  const source={...input,slots:getActiveSceneSlots(input),referencePack:getActiveReferencePack(input)};
   const findings: PreflightFinding[]=[];
   const add=(ruleId: PreflightFinding['ruleId'], severity: PreflightFinding['severity'], title: string, evidence: Evidence[], explanation: string, suggestedActions=['Review the source directions and edit if needed.']) => {
     const unique=evidence.filter((e,i,a)=>a.findIndex(x=>x.component===e.component&&x.text===e.text)===i);
@@ -56,12 +58,17 @@ export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSl
   const matches=(pattern:RegExp)=>fields.filter(e=>positive(e.text,pattern));
   const pair=(id:PreflightFinding['ruleId'],title:string,a:RegExp,b:RegExp,severity:PreflightFinding['severity']='review')=> {const left=matches(a),right=matches(b);if(left.length&&right.length) add(id,severity,title,[...left,...right],'Explicit source directions may conflict. This deterministic check needs human review.');};
   const validation=assembleScenePrompt({...source,extraRequiredSlots:source.extraRequiredSlots??[]} as SceneDraft);
-  for(const error of validation.errors.filter(e=>!e.includes('parent character mismatch'))) {
-    const component: PreflightComponent=error.includes('ialogue')||error.includes('Speaker')||error.includes('Delivery')||error.includes('caption')||error.includes('Language')?'dialogue':error.includes('instructions')?'instructions':'settings';
+  const sourceErrors=validateShotSourceMedia(source,availableMediaIds&&'get' in availableMediaIds?availableMediaIds:undefined);
+  if(availableMediaIds&&!('get' in availableMediaIds))for(const link of getActiveSourceMediaLinks(source))if(!availableMediaIds.has(link.mediaId))sourceErrors.push(`Original source file is missing from storage: ${link.mediaId}.`);
+  for(const error of [...new Set([...validation.errors,...sourceErrors])].filter(e=>!e.includes('parent character mismatch'))) {
+    const component: PreflightComponent=/source (?:file|image|video|media|mime)/i.test(error)?'references':error.includes('ialogue')||error.includes('Speaker')||error.includes('Delivery')||error.includes('caption')||error.includes('Language')?'dialogue':/instructions/i.test(error)?'instructions':'settings';
     const slot=SCENE_COMPONENT_ORDER.find(s=>error.includes(`(${s})`));
-    const text=slot?(source.slots[slot]?.overrideText??source.slots[slot]?.promptText??''):component==='dialogue'?(error.startsWith('Dialogue performance')?JSON.stringify(source.dialogue?.performanceDirection??null,null,2):error.includes('Speaker')||error.includes('speaker')?source.dialogue?.speaker??'':error.includes('Language')?source.dialogue?.language??'':error.includes('Delivery')?source.dialogue?.deliveryNotes??'':error.includes('mode')?source.dialogue?.mode??'':error.includes('caption')?source.dialogue?.captionPreference??'':source.dialogue?.line??''):component==='instructions'?source.sceneInstructions:error.includes('title')?source.title:String(source.settings.durationSeconds??'');
+    const text=slot?(source.slots[slot]?.overrideText??source.slots[slot]?.promptText??''):component==='references'?JSON.stringify(source.sourceMediaLinks??[],null,2):error.includes('Shot Type')?String(source.shotType??''):component==='dialogue'?(error.startsWith('Dialogue performance')?JSON.stringify(source.dialogue?.performanceDirection??null,null,2):error.includes('Speaker')||error.includes('speaker')?source.dialogue?.speaker??'':error.includes('Language')?source.dialogue?.language??'':error.includes('Delivery')?source.dialogue?.deliveryNotes??'':error.includes('mode')?source.dialogue?.mode??'':error.includes('caption')?source.dialogue?.captionPreference??'':source.dialogue?.line??''):component==='instructions'?source.sceneInstructions:error.includes('title')?source.title:String(source.settings.durationSeconds??'');
     add('P000','blocking',error,[{component:slot??component,text}],error,['Complete the required scene information.']);
   }
+  const checkMissingReferences=()=>{if(availableMediaIds){const links=source.referencePack?.entries??source.references??[...getActiveSourceMediaLinks(source),...SCENE_COMPONENT_ORDER.flatMap(s=>source.slots[s]?.mediaLinks??[])];for(const link of links)if(!availableMediaIds.has(link.mediaId))add('P008','review','Selected reference is unavailable',[{component:'references',text:link.mediaId}],'The selected media ID is missing from local storage.',['Restore the media or explicitly change the selection.']);}};
+  // Source-based graphics/footage do not run physical-character or lighting heuristics.
+  if(getShotTypeRules(source).sourceKind){checkMissingReferences();return findings;}
   const rear=/\b(?:rear(?:[- ]facing| view| shot)|back view|camera (?:is )?behind (?:the )?(?:subject|character)|from behind|camera\s+\d+°?\s+behind)\b/i;
   const rearFields = fields.filter(e => positive(e.text, rear) || positiveRearPlacement(e.text));
   const gazeFields = matches(/\b(?:look(?:s|ing)? (?:directly )?(?:at|into) (?:the )?(?:camera|lens)|direct(?:-to-camera| eye contact)|eye contact with (?:the )?(?:camera|lens))\b/i);
@@ -85,6 +92,6 @@ export function runScenePreflight(source: SceneDocumentSource & {extraRequiredSl
     const composition=fields.filter(e=>rearFields.includes(e)||positive(e.text,/\b(?:extreme wide shot|extreme long shot|mouth (?:is )?(?:hidden|obscured)|face (?:is )?not visible)\b/i));
     if(visible.length&&composition.length) add('P007','review','Visible speech may be obscured',[...visible,...composition],'Visible speech or lens interaction may not be visible in this composition.');
   }
-  if(availableMediaIds) {const links=source.referencePack?.entries??source.references??SCENE_COMPONENT_ORDER.flatMap(s=>source.slots[s]?.mediaLinks??[]);for(const link of links)if(!availableMediaIds.has(link.mediaId))add('P008','review','Selected reference is unavailable',[{component:'references',text:link.mediaId}],'The selected media ID is missing from local storage.',['Restore the media or explicitly change the selection.']);}
+  checkMissingReferences();
   return findings;
 }

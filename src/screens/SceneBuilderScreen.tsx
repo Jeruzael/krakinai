@@ -33,6 +33,7 @@ import type {
   PromptAsset,
   ReviewStatus,
   SceneDraft,
+  ShotType,
   Variant,
 } from '../types/domain';
 import {
@@ -52,6 +53,8 @@ import { GenerationIdentityControl } from '../components/GenerationIdentityContr
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { PerformanceDirection } from '../components/PerformanceDirection';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, resolveShotType, SHOT_TYPES, SHOT_TYPE_LABELS, SHOT_TYPE_DESCRIPTIONS } from '../domain/shotTypeRules';
+import { SourceMediaPicker } from '../components/SourceMediaPicker';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
@@ -68,6 +71,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   } = useLibrary();
 
   const [draft, setDraft] = useState<SceneDraft | null>(null);
+  const latestDraft = useRef<SceneDraft | null>(null);
+  latestDraft.current = draft;
   const [saveState, setSaveState] = useState<'saved' | 'saving' | 'error'>(
     'saved'
   );
@@ -157,7 +162,14 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     );
   }
 
-  // Collect reference board thumbnails across all active slots
+  const shotRules = getShotTypeRules(draft);
+  const activeSlots = getActiveSceneSlots(draft);
+  const activeSources = getActiveSourceMediaLinks(draft);
+  const activePack = getActiveReferencePack(draft);
+  const activeDraft = { ...draft, slots: activeSlots, sourceMediaLinks: activeSources, referencePack: activePack };
+  const requiredSlots = [...new Set([...shotRules.requiredSlots, ...(shotRules.conditionalCharacterRequired ? ['character' as const] : [])])];
+  const selectedRequiredCount = requiredSlots.filter(slot => activeSlots[slot]).length;
+  // Inactive selections stay in the draft; only applicable references appear here.
   const referenceBoardItems: Array<{
     slot: BuilderSlot;
     slotLabel: string;
@@ -167,7 +179,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   }> = [];
 
   for (const slot of ORDERED_BUILDER_SLOTS) {
-    const snap = draft.slots[slot];
+    const snap = activeSlots[slot];
     if (!snap) continue;
     for (const link of snap.mediaLinks ?? []) {
       referenceBoardItems.push({
@@ -415,7 +427,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         draft,
         name: tplName,
         description: tplDesc,
-        includeCharacterIdentity: tplIncludeChar,
+        includeCharacterIdentity: tplIncludeChar && !getShotTypeRules(draft).inapplicableSlots.includes('character'),
       });
       await refreshSnapshot();
       setShowTemplateModal(false);
@@ -459,12 +471,12 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     setOverrideCompactBuf(selected.overrideCompactText ?? '');
     setDetailSlot(slot);
   };
-  const preflightFindings = runScenePreflight(draft, new Set(mediaMap.keys()));
+  const preflightFindings = runScenePreflight(draft, mediaMap);
   const openPreflightComponent = (component: PreflightFinding['components'][number]) => {
     setShowPreflight(false);
     if (ORDERED_BUILDER_SLOTS.includes(component as BuilderSlot)) openDetails(component as BuilderSlot);
     else requestAnimationFrame(() => {
-      const target = document.querySelector<HTMLElement>(`[data-preflight="${component}"]`);
+      const target = document.querySelector<HTMLElement>(`[data-preflight="${component === 'references' && shotRules.sourceKind ? 'source' : component}"]`);
       const details = target?.closest('details');
       if (details) details.open = true;
       target?.focus();
@@ -541,16 +553,18 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       <div className="recipe-layout">
         <div className="recipe-board-panel" tabIndex={-1} data-preflight="references">
           <button type="button" className="btn btn-secondary btn-sm" style={{marginBottom:8}} onClick={() => setShowReferencePack(true)}>
-            Manage Reference Pack · {draft.referencePack ? `${draft.referencePack.entries.length} selected` : 'all linked (legacy)'}
+            Manage Reference Pack · {activePack ? `${activePack.entries.length} selected` : 'all linked (legacy)'}
           </button>
           <ReferenceBoard
-            items={referenceBoardItems.map((item, index) => ({
+            items={[...activeSources.map((link, index) => ({
+              key: `source-${index}-${link.mediaId}`, mediaId: link.mediaId, label: 'Original Source', sourceTitle: mediaMap.get(link.mediaId)?.filename || link.filename || 'Original source', role: link.role, isSource: true,
+            })), ...referenceBoardItems.map((item, index) => ({
               key: `${item.slot}-${index}-${item.mediaId}`,
               mediaId: item.mediaId,
               label: recipeLabels[item.slot],
               sourceTitle: item.sourceTitle,
               role: item.role,
-            }))}
+            }))]}
             mediaMap={mediaMap}
           />
           <details className="studio-disclosure">
@@ -644,24 +658,33 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 scheduleDraftAutosave({ ...draft, title: event.target.value })
               }
             />
+            <div className="form-group builder-shot-type">
+              <label htmlFor="builder-shot-type" className="form-label">Shot Type</label>
+              <select id="builder-shot-type" className="select" value={resolveShotType(draft)} aria-describedby="builder-shot-description" onChange={event => {
+                setDetailSlot(null); setPickerSlot(null);
+                scheduleDraftAutosave({ ...draft, shotType: event.target.value as ShotType });
+              }}>{SHOT_TYPES.map(type => <option key={type} value={type}>{SHOT_TYPE_LABELS[type]}</option>)}</select>
+              <span id="builder-shot-description" className="muted-text">{SHOT_TYPE_DESCRIPTIONS[resolveShotType(draft)]} Selections for other shot types are preserved.</span>
+            </div>
+            {shotRules.sourceKind && <SourceMediaPicker kind={shotRules.sourceKind} links={draft.sourceMediaLinks ?? []} mediaMap={mediaMap} onUploaded={async () => { await refreshSnapshot(); }} onError={message => showToast(message, 'error')} onChange={async sourceMediaLinks => {
+              const saved = await persistDraftImmediate({ ...(latestDraft.current ?? draft), sourceMediaLinks });
+              if (!saved) throw new Error('Source association could not be saved. Retry your selection.');
+            }} />}
             <div className="studio-panel-heading">
               <h2 className="section-title">Scene Recipe</h2>
               <span className="muted-text" style={{ fontSize: 12 }}>
-                {Object.values(draft.slots).filter(Boolean).length} / 7 selected
+                {requiredSlots.length ? `${selectedRequiredCount} / ${requiredSlots.length} required components` : 'No required component assets'}
               </span>
             </div>
             <div className="recipe-rows">
               {ORDERED_BUILDER_SLOTS.map((slot) => {
                 const selected = draft.slots[slot];
-                const required =
-                  slot === 'environment' ||
-                  slot === 'action' ||
-                  draft.extraRequiredSlots.includes(slot) ||
-                  (slot === 'character' && Boolean(draft.dialogue?.line));
+                const inactive = shotRules.inapplicableSlots.includes(slot);
+                const required = requiredSlots.includes(slot);
                 const Icon = recipeIcons[slot];
                 const newer =
                   selected && getLatestLibrarySource(selected).hasNewerRevision;
-                const status = selected
+                const status = inactive ? 'Not Applicable' : selected
                   ? slot === 'character'
                     ? 'Locked'
                     : selected.overrideText
@@ -674,13 +697,14 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     : 'Optional';
                 return (
                   <div
-                    className="recipe-row"
+                    className={`recipe-row${inactive ? ' is-inactive' : ''}`}
                     data-testid="recipe-row"
                     key={slot}
                   >
                     <button
                       type="button"
                       className="recipe-row-main"
+                      disabled={inactive}
                       onClick={() => openDetails(slot)}
                       aria-label={`Open ${recipeLabels[slot]} details: ${selected?.sourceTitle || 'Not selected'}`}
                     >
@@ -690,12 +714,12 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                       <span className="recipe-row-copy">
                         <strong>
                           {recipeLabels[slot]}
-                          {slot === 'character' && selected && (
+                          {slot === 'character' && selected && !inactive && (
                             <Lock size={11} aria-label="Identity locked" />
                           )}
                         </strong>
                         <span>
-                          {selected?.sourceTitle ||
+                          {inactive ? (selected ? `${selected.sourceTitle} · Preserved for other shot types` : 'Not used for this shot type') : selected?.sourceTitle ||
                             `Choose ${recipeLabels[slot].toLowerCase()} · ${required ? 'required' : 'optional'}`}
                         </span>
                       </span>
@@ -709,6 +733,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                       type="button"
                       className="btn btn-secondary recipe-row-change"
                       aria-label={`${selected ? 'Change' : 'Select'} ${recipeLabels[slot]}`}
+                      disabled={inactive}
                       onClick={() => setPickerSlot(slot)}
                     >
                       {selected ? 'Change' : 'Select'}
@@ -718,17 +743,17 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               })}
             </div>
             <div className="recipe-options">
-              <GenerationIdentityControl source={draft} liveMaster={snapshot.assets.find(asset => asset.id === draft.slots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />
-              <details className="studio-disclosure">
+              {!shotRules.inapplicableSlots.includes('character') && <GenerationIdentityControl source={activeDraft} liveMaster={snapshot.assets.find(asset => asset.id === activeSlots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />}
+              <details key={shotRules.instructionLabel} className="studio-disclosure" open={shotRules.requiresInstructions || undefined}>
                 <summary>
-                  Scene Instructions{' '}
+                  {shotRules.instructionLabel}{' '}
                   <span className="muted-text">
-                    {draft.sceneInstructions ? 'Added' : 'Optional'}
+                    {draft.sceneInstructions ? 'Added' : shotRules.requiresInstructions ? 'Required' : 'Optional'}
                   </span>
                 </summary>
                 <div className="form-group">
                   <label htmlFor="builder-instructions" className="form-label">
-                    Scene Instructions (Optional)
+                    {shotRules.instructionLabel} ({shotRules.requiresInstructions ? 'Required' : 'Optional'})
                   </label>
                   <textarea
                     id="builder-instructions"
@@ -753,7 +778,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                   </span>
                 </summary>
                 <p className="recipe-board-note">
-                  Spoken dialogue requires a selected character. Text is
+                  {shotRules.allowsAudioOnlyWithoutCharacter ? 'Voiceover and off-screen speech can accompany this shot without a visible character. Spoken or on-camera speech requires a relevant character.' : 'Spoken dialogue requires a selected character.'} Text is
                   preserved verbatim. Delivery, language, and captions are used
                   only when you specify them; external tools may handle speech
                   differently.
@@ -1039,8 +1064,11 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       </div>
 
       {showPreflight && <ScenePreflightDialog findings={preflightFindings} onClose={() => setShowPreflight(false)} onViewSource={openPreflightComponent} onEditComponent={openPreflightComponent} intentionalIds={intentionalIds} onIntentionalIdsChange={setIntentionalIds} />}
-      {showReferencePack && <ReferencePackManager source={draft} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} onApply={async referencePack => {
-        const saved = await persistDraftImmediate({...draft,referencePack}, false);
+      {showReferencePack && <ReferencePackManager source={activeDraft} mediaMap={mediaMap} onClose={() => setShowReferencePack(false)} onApply={async referencePack => {
+        const activeIds = new Set(activePack?.entries.map(entry => entry.associationId) ?? []);
+        const inactiveEntries = (draft.referencePack?.entries ?? []).filter(entry => !activeIds.has(entry.associationId));
+        const combined = [...referencePack.entries, ...inactiveEntries];
+        const saved = await persistDraftImmediate({...draft,referencePack:{...referencePack, entries: combined.map((entry, order) => ({...entry, order}))}}, false);
         if (!saved) throw new Error('Reference Pack could not be saved. Your selection remains available here.');
         setShowReferencePack(false);
       }} />}
@@ -1217,7 +1245,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       {pickerSlot && (
         <AssetPickerModal
           slot={pickerSlot}
-          activeCharacterId={draft.slots.character?.sourceId}
+          activeCharacterId={activeSlots.character?.sourceId}
           mediaMap={mediaMap}
           onSelectAsset={handleSelectAssetForSlot}
           onSelectVariant={handleSelectVariantForSlot}
@@ -1275,11 +1303,13 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               <input
                 type="checkbox"
                 checked={tplIncludeChar}
+                disabled={shotRules.inapplicableSlots.includes('character')}
                 onChange={(event) => setTplIncludeChar(event.target.checked)}
               />
               Include selected character identity for private reuse (excluded by
               default)
             </label>
+            <p className="muted-text">Shot Type: {SHOT_TYPE_LABELS[resolveShotType(draft)]}. The template copies applicable layers and requirements. Attach an original source to each new graphic or footage draft.</p>
           </form>
         </StudioDialog>
       )}

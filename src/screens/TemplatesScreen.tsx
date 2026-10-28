@@ -5,6 +5,9 @@ import { SLOT_LABELS } from '../domain/validation';
 import type { Template, TemplateCategory } from '../types/domain';
 import { createDraftFromTemplate } from '../storage/db';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
+import { getShotTypeRules, resolveShotType, SHOT_TYPE_LABELS } from '../domain/shotTypeRules';
+
+const templateRules = (template: Template) => getShotTypeRules({ shotType: template.shotType, extraRequiredSlots: template.requiredSlots });
 
 const CATEGORIES: Array<'All' | TemplateCategory> = [
   'All',
@@ -161,6 +164,7 @@ export const TemplatesScreen: React.FC = () => {
             <div className="prompt-card-body">
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 <span className="badge badge-primary">{tpl.category}</span>
+                <span className="badge">{SHOT_TYPE_LABELS[resolveShotType(tpl)]}</span>
                 {tpl.isStarter && <span className="badge">Starter</span>}
               </div>
 
@@ -174,11 +178,12 @@ export const TemplatesScreen: React.FC = () => {
               <p className="prompt-card-excerpt">{tpl.description}</p>
 
               <div className="tag-list">
-                {tpl.requiredSlots.map((slot) => (
+                {templateRules(tpl).requiredSlots.map((slot) => (
                   <span key={slot} className="badge badge-warning">
                     Requires: {SLOT_LABELS[slot]}
                   </span>
                 ))}
+                {templateRules(tpl).sourceKind && <span className="badge badge-warning">Requires: Original {templateRules(tpl).sourceKind} and instructions</span>}
               </div>
 
               <div className="prompt-card-actions">
@@ -233,17 +238,19 @@ export const TemplatesScreen: React.FC = () => {
 
             <div className="modal-body">
               <p style={{ marginTop: 0 }}>{previewTemplate.description}</p>
+              <p>Shot Type: <strong>{SHOT_TYPE_LABELS[resolveShotType(previewTemplate)]}</strong></p>
 
               <div style={{ marginBottom: 16 }}>
                 <strong style={{ fontSize: 13 }}>
                   Required Slots for Assembly:
                 </strong>
                 <div className="tag-list" style={{ marginTop: 6 }}>
-                  {previewTemplate.requiredSlots.map((s) => (
+                  {templateRules(previewTemplate).requiredSlots.map((s) => (
                     <span key={s} className="badge badge-warning">
                       {SLOT_LABELS[s]}
                     </span>
                   ))}
+                  {templateRules(previewTemplate).sourceKind && <span className="badge badge-warning">Original {templateRules(previewTemplate).sourceKind} and {templateRules(previewTemplate).instructionLabel.toLowerCase()}</span>}
                 </div>
               </div>
 
@@ -259,7 +266,7 @@ export const TemplatesScreen: React.FC = () => {
               >
                 {ORDERED_BUILDER_SLOTS.map((slot) => {
                   const def = previewTemplate.defaults[slot];
-                  if (!def) return null;
+                  if (!def || templateRules(previewTemplate).inapplicableSlots.includes(slot)) return null;
                   return (
                     <div
                       key={slot}

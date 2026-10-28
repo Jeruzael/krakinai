@@ -1,4 +1,5 @@
 import type { SavedScene, OutputMode } from '../types/domain';
+import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, resolveShotType } from './shotTypeRules';
 const ignored = new Set(['sourceTitle','displayName','exportFilename','namesCaptured','filename','mimeType','approvedAt','updatedAt','createdAt']);
 function stable(value: unknown): unknown {
   if (Array.isArray(value)) return value.map(stable);
@@ -15,7 +16,10 @@ export function sceneDuplicateKey(scene: SavedScene): string {
     }
     return [mode,text];
   }));
-  return JSON.stringify(stable({slots:scene.slots,extraRequiredSlots:scene.extraRequiredSlots,sceneInstructions:scene.sceneInstructions,avoidText:scene.avoidText,dialogue:scene.dialogue,settings:scene.settings,outputs,manualOutputs:Object.fromEntries(Object.entries(scene.manualOutputs).map(([key,value])=>[key,value?.text])),generation:scene.generation,referencePack:scene.referencePack,references:scene.references}));
+  const shotType=resolveShotType(scene);
+  const pack=getActiveReferencePack(scene);
+  const referencePack=pack&&shotType!=='character_scene'?{...pack,entries:pack.entries.map(entry=>entry.sourceSlot==='source'?{...entry,associationId:undefined,sourceId:undefined}:entry)}:pack;
+  return JSON.stringify(stable({...(shotType!=='character_scene'?{shotType,sourceMediaLinks:getActiveSourceMediaLinks(scene)}:{}),slots:getActiveSceneSlots(scene),extraRequiredSlots:scene.extraRequiredSlots,sceneInstructions:scene.sceneInstructions,avoidText:scene.avoidText,dialogue:scene.dialogue,settings:scene.settings,outputs,manualOutputs:Object.fromEntries(Object.entries(scene.manualOutputs).map(([key,value])=>[key,value?.text])),generation:scene.generation,referencePack,references:scene.references}));
 }
 export function findSimilarScenes(candidate: SavedScene, scenes: SavedScene[]): SavedScene[] { const key=sceneDuplicateKey(candidate); return scenes.filter(scene=>sceneDuplicateKey(scene)===key); }
 export class SimilarSceneError extends Error {

@@ -18,6 +18,7 @@ import {
 } from './sceneDocument';
 import { CATEGORY_TO_SLOT, SLOT_LABELS } from './validation';
 import { getEffectiveDialogueDelivery, validatePerformanceDirection } from './dialoguePerformance';
+import { dialogueRequiresCharacter, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
 
 export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
@@ -81,8 +82,9 @@ export interface AssembledPromptResult {
   references: MediaLink[];
 }
 
-export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
-  const errors: string[] = [];
+export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
+  const draft = {...input, avoidText:getSceneLevelAvoidText(input), slots:getActiveSceneSlots(input)};
+  const errors: string[] = validateShotSourceMedia(draft);
   const title = (draft.title ?? '').trim();
   if (!title) {
     errors.push('Scene title is required.');
@@ -90,11 +92,7 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
     errors.push('Scene title must be 100 characters or fewer.');
   }
 
-  const requiredSlots = new Set<BuilderSlot>([
-    'environment',
-    'action',
-    ...(draft.extraRequiredSlots ?? []),
-  ]);
+  const requiredSlots = getShotTypeRules(draft).requiredSlots;
 
   for (const reqSlot of requiredSlots) {
     const snap = draft.slots[reqSlot];
@@ -118,7 +116,7 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
       draft.dialogue?.captionPreference
   );
   if (hasDialogueLine || hasDialogueSpeaker || hasDialogueOptions) {
-    if (!draft.slots.character || !draft.slots.character.promptText.trim()) {
+    if (dialogueRequiresCharacter(draft,draft.dialogue) && (!draft.slots.character || !draft.slots.character.promptText.trim())) {
       errors.push('Dialogue requires a selected Character in the scene.');
     }
     if (!hasDialogueSpeaker) {
@@ -183,6 +181,9 @@ export function assembleScenePrompt(draft: SceneDraft): AssembledPromptResult {
   const document = buildSceneDocument(draft);
   const references: MediaLink[] = [];
   const seenMediaIds = new Set<string>();
+  for(const link of getActiveSourceMediaLinks(draft)) {
+    if(!seenMediaIds.has(link.mediaId)){references.push({...link});seenMediaIds.add(link.mediaId);}
+  }
   for (const slot of ORDERED_BUILDER_SLOTS) {
     for (const link of draft.slots[slot]?.mediaLinks ?? []) {
       if (!seenMediaIds.has(link.mediaId)) {

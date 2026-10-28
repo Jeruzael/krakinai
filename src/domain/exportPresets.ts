@@ -6,6 +6,7 @@ import {
   DIALOGUE_MODE_LABELS,
   type SceneDocumentSource,
 } from "./sceneDocument";
+import { getShotTypeRules, SHOT_TYPE_LABELS } from './shotTypeRules';
 
 export type ExportPresetId =
   "generic_structured" | "gemini_omni_flash" | "custom";
@@ -95,11 +96,13 @@ export function formatGenerationText(
     `Scene Title: ${doc.scene.title}`,
     "Scene Type: Single-shot video",
   ];
+  if(doc.scene.shotType)overview.push(`Shot Type: ${SHOT_TYPE_LABELS[doc.scene.shotType]}`);
   if (doc.scene.aspectRatio !== null)
     overview.push(`Aspect Ratio: ${doc.scene.aspectRatio}`);
   if (doc.scene.durationSeconds !== null)
     overview.push(`Intended Duration: ${doc.scene.durationSeconds}s`);
   section("SCENE OVERVIEW", overview.join("\n"));
+  if(doc.sourceMedia?.length)section('ORIGINAL SOURCE MEDIA',`${doc.sourceMedia.map(l=>`${l.filename??l.mediaId} | ID: ${l.mediaId} | ${l.mimeType}`).join('\n')}\n${doc.scene.sourceFidelity??''}`);
   section("CHARACTER IDENTITY", doc.character?.description ?? null);
   for (const [title, content] of [
     ["WARDROBE & ACCESSORIES", doc.wardrobe],
@@ -137,7 +140,7 @@ export function formatGenerationText(
     } else lines.push(`Exact Spoken Line: ${dialogue.exactLine}`);
     section("SPOKEN DIALOGUE SCRIPT", lines.join("\n"));
   }
-  section("ADDITIONAL SCENE INSTRUCTIONS", doc.scene.instructions);
+  section(doc.scene.shotType&&getShotTypeRules({shotType:doc.scene.shotType}).requiresInstructions?getShotTypeRules({shotType:doc.scene.shotType}).instructionLabel.toUpperCase():"ADDITIONAL SCENE INSTRUCTIONS", doc.scene.instructions);
   section("TOOL / PROVIDER NOTES", doc.scene.toolNotes);
   section(
     "NEGATIVE INSTRUCTIONS",
