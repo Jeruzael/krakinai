@@ -3,6 +3,7 @@ import { LibraryProvider, useLibrary } from './context/LibraryContext';
 import { AppShell } from './components/AppShell';
 import { HomeScreen } from './screens/HomeScreen';
 import { LibraryScreen } from './screens/LibraryScreen';
+import { CinematographyScreen } from './screens/CinematographyScreen';
 import { PromptDetailScreen } from './screens/PromptDetailScreen';
 import { EditorScreen } from './screens/EditorScreen';
 import { VariantsScreen } from './screens/VariantsScreen';
@@ -48,6 +49,7 @@ const RouteDispatcher: React.FC = () => {
   if (libCatMatch) {
     const cat = libCatMatch[1] as PromptCategory;
     if (cat in CATEGORY_TO_SLOT) {
+      if (cat === 'camera') return <CinematographyScreen />;
       return <LibraryScreen mode="category" category={cat} />;
     }
   }

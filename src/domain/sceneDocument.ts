@@ -9,6 +9,7 @@ import type {
   ShotType,
 } from '../types/domain';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
+import type {CameraComposition} from '../types/cinematography';
 import { getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, getSourceFidelityInstructions, resolveShotType, SHOT_TYPE_LABELS } from './shotTypeRules';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
@@ -47,6 +48,7 @@ interface SceneComponentDocument {
     parentCharacterId: string | null;
   };
   snapshot: {
+    cameraComposition?:CameraComposition;
     promptText: string;
     compactText: string | null;
     overrideText: string | null;
@@ -134,6 +136,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
         parentCharacterId: snap.parentCharacterId ?? null,
       },
       snapshot: {
+        ...(slot==='camera'&&snap.cameraComposition?{cameraComposition:structuredClone(snap.cameraComposition)}:{}),
         promptText: snap.promptText,
         compactText: snap.compactText ?? null,
         overrideText: snap.overrideText ?? null,

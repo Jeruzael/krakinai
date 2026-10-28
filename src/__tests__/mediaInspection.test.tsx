@@ -128,7 +128,7 @@ it('keeps asset/variant preview independent from selection and retains picker se
     />
   );
   await user.type(
-    screen.getByRole('textbox', { name: 'Search Camera & Movement' }),
+    screen.getByRole('textbox', { name: 'Search Camera & Cinematography' }),
     'motion'
   );
   await user.click(
@@ -143,12 +143,12 @@ it('keeps asset/variant preview independent from selection and retains picker se
     ).toHaveFocus()
   );
   expect(
-    screen.getByRole('textbox', { name: 'Search Camera & Movement' })
+    screen.getByRole('textbox', { name: 'Search Camera & Cinematography' })
   ).toHaveValue('motion');
   await user.click(screen.getByRole('button', { name: /^Select$/ }));
   expect(asset).toHaveBeenCalledWith(snapshot.assets[0]);
   await user.clear(
-    screen.getByRole('textbox', { name: 'Search Camera & Movement' })
+    screen.getByRole('textbox', { name: 'Search Camera & Cinematography' })
   );
   await user.click(screen.getByRole('button', { name: /Character Variants/ }));
   await user.click(

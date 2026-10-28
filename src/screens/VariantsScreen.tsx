@@ -9,7 +9,7 @@ import {
   PlusCircle,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
-import { SLOT_LABELS } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import type { MediaAsset, VariantType } from '../types/domain';
 import { MediaPreviewDialog } from '../components/MediaPreviewDialog';
 import { MediaThumbnail } from '../components/MediaThumbnail';

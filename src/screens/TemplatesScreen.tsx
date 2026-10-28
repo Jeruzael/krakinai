@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Eye, LayoutTemplate, PlayCircle, X } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
-import { SLOT_LABELS } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import type { Template, TemplateCategory } from '../types/domain';
 import { createDraftFromTemplate } from '../storage/db';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';

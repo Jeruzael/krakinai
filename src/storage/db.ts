@@ -1,6 +1,7 @@
 import { captureMediaNames } from '../domain/mediaNaming';
 import { validatePerformanceDirection } from '../domain/dialoguePerformance';
 import { validatePhase4Record } from '../domain/phase4Validation';
+import { validateCameraCompositionSlots } from '../domain/cameraCompositionValidation';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getCapturedAvoidPrefix, getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
@@ -687,6 +688,8 @@ export async function saveSceneDraft(
     bumpInputRevision?: boolean;
   }
 ): Promise<SceneDraft> {
+  const cameraError = validateCameraCompositionSlots(input.slots);
+  if (cameraError) throw new Error(cameraError);
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
   if(performanceError)throw new Error(performanceError);
   const metadataError=validatePhase4Record({ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
@@ -759,6 +762,9 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   try {
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
   if (!draft) throw new Error('Scene draft not found.');
+
+  const cameraError = validateCameraCompositionSlots(draft.slots);
+  if (cameraError) throw new Error(cameraError);
 
   const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
   const sourceErrors = validateShotSourceMedia(draft, mediaMap);

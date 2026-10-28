@@ -1,3 +1,4 @@
+import type {CameraComposition} from './cinematography';
 export const SCHEMA_VERSION = 1;
 
 export type PromptCategory =
@@ -154,6 +155,7 @@ export interface Variant {
 export type SnapshotSourceType = 'asset' | 'variant' | 'template';
 
 export interface ComponentSnapshot {
+  cameraComposition?: CameraComposition;
   identityRevision?: number;
   identityAnchor?: IdentityAnchor;
   slot: BuilderSlot;

@@ -29,6 +29,7 @@ import {
   ORDERED_BUILDER_SLOTS,
 } from '../domain/promptAssembler';
 import { CATEGORY_TO_SLOT } from '../domain/validation';
+import { rebaseCameraComposition } from '../domain/cameraComposition';
 
 export interface ToastMessage {
   id: string;
@@ -350,7 +351,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
 
       const nextSlots = {
         ...draft.slots,
-        [targetSlot]: createSnapshotFromAsset(asset),
+        [targetSlot]: targetSlot === 'camera'
+          ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromAsset(asset))
+          : createSnapshotFromAsset(asset),
       };
       const saved = await saveSceneDraft({
         ...draft,
@@ -386,7 +389,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
             if (parentAsset) {
               nextSlots.character = createSnapshotFromAsset(parentAsset);
             }
-            nextSlots[variant.targetSlot] = createSnapshotFromVariant(variant);
+            nextSlots[variant.targetSlot] = variant.targetSlot === 'camera'
+              ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromVariant(variant))
+              : createSnapshotFromVariant(variant);
             const saved = await saveSceneDraft({
               ...draft,
               slots: nextSlots,
@@ -407,7 +412,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!nextSlots.character && parentAsset) {
         nextSlots.character = createSnapshotFromAsset(parentAsset);
       }
-      nextSlots[variant.targetSlot] = createSnapshotFromVariant(variant);
+      nextSlots[variant.targetSlot] = variant.targetSlot === 'camera'
+        ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromVariant(variant))
+        : createSnapshotFromVariant(variant);
 
       const saved = await saveSceneDraft({
         ...draft,

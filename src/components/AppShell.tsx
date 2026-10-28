@@ -56,7 +56,7 @@ const CATEGORY_NAV_ITEMS: Array<{
   },
   {
     category: 'camera',
-    label: 'Camera & Movement',
+    label: 'Camera & Cinematography',
     icon: <Camera size={18} />,
   },
   {

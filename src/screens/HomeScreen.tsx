@@ -51,7 +51,7 @@ const CATEGORY_TILES: Array<{
   },
   {
     id: 'camera',
-    label: 'Camera & Movement',
+    label: 'Camera & Cinematography',
     desc: 'Framing, lenses & camera motion',
     icon: <Camera size={20} color="#7C3AED" />,
   },

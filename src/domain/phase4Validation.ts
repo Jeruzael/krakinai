@@ -2,6 +2,7 @@ import { ORDERED_BUILDER_SLOTS } from './promptAssembler';
 import { validatePerformanceDirection } from './dialoguePerformance';
 import { isShotType } from './shotTypeRules';
 import { MAX_FILES_PER_RECORD, MAX_MANIFEST_BYTES } from './validation';
+import {validateCameraComposition,validateCameraCompositionSlots} from './cameraCompositionValidation';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -21,6 +22,8 @@ function identityError(value: Record<string, unknown>): string | undefined {
 /** Validate optional Stage B metadata without resolving historical source or media IDs. */
 export function validatePhase4Record(value: unknown): string | undefined {
   if (!record(value)) return 'Invalid record.';
+  const cameraError=validateCameraCompositionSlots(value.slots)??validateCameraComposition(value.cameraComposition,typeof value.slot==='string'?value.slot:'');
+  if(cameraError)return cameraError;
   if (value.inheritedAvoidPrefix !== undefined && !text(value.inheritedAvoidPrefix,MAX_MANIFEST_BYTES)) return 'Invalid inherited negative prefix.';
   if (value.shotType !== undefined && !isShotType(value.shotType)) return 'Invalid Shot Type.';
   if (value.sourceMediaLinks !== undefined) {
