@@ -11,6 +11,9 @@ import {
   Upload,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
+import {isDirectPrompt} from '../domain/directPrompt';
+import {DirectPromptScreen} from './DirectPromptScreen';
+import {SceneRevisionActions} from '../components/SceneRevisionHistory';
 import {
   assembleScenePrompt,
   formatSceneExportTxt,
@@ -115,6 +118,11 @@ function rememberDraftEditor(value: DraftEditorBuffers & {id:string}) {
 }
 
 export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
+  const {snapshot}=useLibrary();
+  const record=snapshot?.scenes.find(s=>s.id===id)??snapshot?.drafts.find(d=>d.id===id);
+  return record&&isDirectPrompt(record)?<DirectPromptScreen id={id} preview/>:<RecipePromptOutputScreen id={id}/>;
+};
+const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const {
     snapshot,
     hashPath,
@@ -220,9 +228,10 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
   if (!snapshot) return null;
 
   const isSavedScene = id.startsWith('scene_');
-  const savedScene = isSavedScene
+  const savedCandidate = isSavedScene
     ? snapshot.scenes.find((s) => s.id === id)
     : undefined;
+  const savedScene=savedCandidate?.authoringMode!=='direct_prompt'?savedCandidate:undefined;
   const draft = !isSavedScene
     ? snapshot.drafts.find((d) => d.id === id)
     : undefined;
@@ -400,7 +409,7 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
     setSaveError('');
     const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target]);
     if (saveToken.current?.binding !== binding) saveToken.current = {binding, id: crypto.randomUUID()};
-    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
+    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(draft.revisionIntent?{expectedInputRevision:draft.inputRevision,...(projectContext.target?{expectedProjectRevision:draft.authoredProjectTarget?.expectedProjectRevision??snapshot.collections.find(c=>c.id===projectContext.target!.collectionId)?.project?.revision??0}:{})}:{}), ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
     try {
       const saved = await saveSceneFromDraft(draft.id, options);
       await refreshSnapshot();
@@ -919,6 +928,14 @@ export const PromptOutputScreen: React.FC<{ id: string }> = ({ id }) => {
                 ? 'Saved Scene (Immutable Snapshot)'
                 : `Draft Output (Input Rev ${draft?.inputRevision})`}
             </span>
+            {savedScene && (
+              <details className="output-version-menu">
+                <summary className="btn btn-secondary btn-sm">Versions &amp; Takes</summary>
+                <div className="output-version-popover">
+                  <SceneRevisionActions scene={savedScene} />
+                </div>
+              </details>
+            )}
           </div>
           <h1 className="page-title">{title}</h1>
           <p className="muted-text output-subtitle">

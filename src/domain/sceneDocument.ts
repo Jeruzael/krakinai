@@ -10,6 +10,9 @@ import type {
 } from '../types/domain';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 import type {CameraComposition} from '../types/cinematography';
+import type {SceneAuthoringFields, SceneRevision} from '../types/sceneAuthoring';
+import {isDirectPrompt} from './directPrompt';
+import {buildDirectPromptDocument} from './directPromptDocument';
 import { getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, getSourceFidelityInstructions, resolveShotType, SHOT_TYPE_LABELS } from './shotTypeRules';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
@@ -22,7 +25,9 @@ export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
   'style',
 ];
 
-export interface SceneDocumentSource {
+export interface SceneDocumentSource extends SceneAuthoringFields {
+  sceneRevision?: SceneRevision;
+  referencePack?: import('../types/domain').ReferencePack;
   inheritedAvoidPrefix?: string;
   sourceSceneId?: string;
   shotType?: ShotType;
@@ -98,6 +103,7 @@ const safeFilename = (text: string | undefined): string | null =>
     : null;
 
 export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
+  if(isDirectPrompt(source))throw new Error('Direct Prompt has no assembled component document. Use its original prompt or direct JSON export.');
   const activeSlots=getActiveSceneSlots(source);
   const sources=getActiveSourceMediaLinks(source);
   const shotType=resolveShotType(source);
@@ -205,6 +211,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
 }
 
 export function serializeSceneJson(source: SceneDocumentSource): string {
+  if(isDirectPrompt(source))return JSON.stringify(buildDirectPromptDocument(source),null,2);
   return JSON.stringify(buildSceneDocument(source), null, 2);
 }
 

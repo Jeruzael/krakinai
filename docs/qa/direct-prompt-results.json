@@ -1,0 +1,1682 @@
+{
+  "reportVersion": 1,
+  "generatedAt": "2026-10-29T20:31:46.555Z",
+  "scope": "Phase 6 Stage A: Direct Prompt and immutable revisions; future stages design only",
+  "branch": "codex/direct-prompt-revisions",
+  "base": "eb15dc1583f59cbee195eba9d356b0d35ef290fb",
+  "localTestedTree": "Uncommitted feature patch; product hashes below identify tested source. The PR supplies exact signed-commit hosted CI separately.",
+  "runtime": {
+    "platform": "win32",
+    "node": "v22.23.3",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4"
+  },
+  "commands": [
+    {
+      "ExitCode": 0,
+      "Command": "npm test -- --maxWorkers=2 --minWorkers=1 --reporter=default --reporter=json --outputFile.json=qa-results/direct-prompts/full-unit.json --reporter=junit --outputFile.junit=qa-results/vitest.xml"
+    },
+    {
+      "Command": "npm run typecheck",
+      "ExitCode": 0
+    },
+    {
+      "Command": "npm run build",
+      "ExitCode": 0
+    },
+    {
+      "Command": "npm audit --omit=dev",
+      "ExitCode": 0
+    },
+    {
+      "Command": "npm run test:qa",
+      "ExitCode": 0
+    },
+    {
+      "Command": "npm run test:e2e",
+      "ExitCode": 0
+    },
+    {
+      "Command": "git diff --check",
+      "ExitCode": 0,
+      "output": ""
+    }
+  ],
+  "gitEvidence": [
+    {
+      "Command": "git status --short --untracked-files=all",
+      "ExitCode": 0,
+      "output": "M src/App.tsx\n M src/__tests__/promptOutputWorkspace.test.tsx\n M src/components/ProjectTakeManager.tsx\n M src/context/LibraryContext.tsx\n M src/domain/generationDocument.ts\n M src/domain/phase4Validation.ts\n M src/domain/projectExport.ts\n M src/domain/projectRoutes.ts\n M src/domain/sceneDocument.ts\n M src/domain/sceneDuplicates.ts\n M src/domain/scenePreflight.ts\n M src/screens/CollectionWorkspace.tsx\n M src/screens/LibraryScreen.tsx\n M src/screens/PromptOutputScreen.tsx\n M src/screens/SceneBuilderScreen.tsx\n M src/screens/promptOutput.css\n M src/storage/backup.ts\n M src/storage/db.ts\n M src/storage/projects.ts\n M src/types/domain.ts\n?? docs/direct-prompt-contract.md\n?? docs/direct-prompt-qa.md\n?? docs/qa/direct-prompt-results.json\n?? docs/screenshots/direct-prompts/after/editor-1366.png\n?? docs/screenshots/direct-prompts/after/editor-1440.png\n?? docs/screenshots/direct-prompts/after/editor-390.png\n?? docs/screenshots/direct-prompts/after/editor-768.png\n?? docs/screenshots/direct-prompts/after/history-1366.png\n?? docs/screenshots/direct-prompts/after/history-1440.png\n?? docs/screenshots/direct-prompts/after/history-390.png\n?? docs/screenshots/direct-prompts/after/history-768.png\n?? docs/screenshots/direct-prompts/after/output-1366.png\n?? docs/screenshots/direct-prompts/after/output-1440.png\n?? docs/screenshots/direct-prompts/after/output-390.png\n?? docs/screenshots/direct-prompts/after/output-768.png\n?? docs/screenshots/direct-prompts/before/builder-1366.png\n?? docs/screenshots/direct-prompts/before/builder-1440.png\n?? docs/screenshots/direct-prompts/before/builder-390.png\n?? docs/screenshots/direct-prompts/before/builder-768.png\n?? docs/screenshots/direct-prompts/before/output-1366.png\n?? docs/screenshots/direct-prompts/before/output-1440.png\n?? docs/screenshots/direct-prompts/before/output-390.png\n?? docs/screenshots/direct-prompts/before/output-768.png\n?? docs/superpowers/plans/2026-10-30-direct-prompt-revisions.md\n?? docs/superpowers/specs/2026-10-30-direct-prompt-revisions-design.md\n?? e2e/direct-prompt-fixture.mjs\n?? e2e/direct-prompt-screenshots.spec.mjs\n?? e2e/direct-prompt.spec.mjs\n?? e2e/fixtures/direct-prompt-baseline.json\n?? src/__tests__/directPrompt.test.ts\n?? src/__tests__/directPromptBackup.test.ts\n?? src/__tests__/directPromptExport.test.ts\n?? src/__tests__/directPromptStorage.test.ts\n?? src/__tests__/directPromptWorkspace.test.tsx\n?? src/__tests__/sceneRevisionHistory.test.tsx\n?? src/__tests__/sceneRevisionRegressions.test.tsx\n?? src/__tests__/sceneRevisions.test.ts\n?? src/components/DirectPromptWorkspace.tsx\n?? src/components/SceneRevisionHistory.tsx\n?? src/components/directPrompt.css\n?? src/components/sceneRevisions.css\n?? src/domain/directPrompt.ts\n?? src/domain/directPromptDocument.ts\n?? src/domain/directPromptReferences.ts\n?? src/domain/exactPromptText.ts\n?? src/domain/sceneRevisions.ts\n?? src/screens/DirectPromptScreen.tsx\n?? src/storage/sceneAuthoring.ts\n?? src/types/sceneAuthoring.ts"
+    },
+    {
+      "Command": "git diff --name-status",
+      "ExitCode": 0,
+      "output": "M\tsrc/App.tsx\nM\tsrc/__tests__/promptOutputWorkspace.test.tsx\nM\tsrc/components/ProjectTakeManager.tsx\nM\tsrc/context/LibraryContext.tsx\nM\tsrc/domain/generationDocument.ts\nM\tsrc/domain/phase4Validation.ts\nM\tsrc/domain/projectExport.ts\nM\tsrc/domain/projectRoutes.ts\nM\tsrc/domain/sceneDocument.ts\nM\tsrc/domain/sceneDuplicates.ts\nM\tsrc/domain/scenePreflight.ts\nM\tsrc/screens/CollectionWorkspace.tsx\nM\tsrc/screens/LibraryScreen.tsx\nM\tsrc/screens/PromptOutputScreen.tsx\nM\tsrc/screens/SceneBuilderScreen.tsx\nM\tsrc/screens/promptOutput.css\nM\tsrc/storage/backup.ts\nM\tsrc/storage/db.ts\nM\tsrc/storage/projects.ts\nM\tsrc/types/domain.ts"
+    }
+  ],
+  "unit": {
+    "files": 83,
+    "passed": 581,
+    "failed": 0,
+    "skipped": 0,
+    "total": 581,
+    "newTests": 60,
+    "existingTests": 521
+  },
+  "browser": {
+    "startTime": "2026-10-29T20:25:28.123Z",
+    "duration": 294394.609,
+    "expected": 113,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "uniqueCases": 113,
+    "attempts": 113,
+    "newCases": 19,
+    "existingCases": 94,
+    "cases": [
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 5401
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1338
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1317
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1583
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1554
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1069
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1228
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 7330
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1456
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "library-first composition previews the existing fallback source draft before updating it",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1064
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1113
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1942
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1645
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1539
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 6797
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1249
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1822
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1299
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1366
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1098
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1366",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1142
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1178
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 926
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "a shared saved scene revises the explicit project being viewed, preserving its original project",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1223
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "managed recipe editor and reviewed output reject another tab changes without replacing its draft",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1322
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct prompt import saves without components and copies/downloads the exact complete original",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 5336
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "storyboard revision comparison preserves original text, fifteen planned shots, and preferred take",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1388
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "restoring an earlier prompt creates version three and never silently selects it",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1324
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "saved direct scenes expose a distinct alternate take workflow",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1016
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1329
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "stale browser tab cannot overwrite a changed direct draft",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1338
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "quota and interrupted transactions roll back new scene and storyboard shot together",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 819
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "same-request saves are idempotent and cross-project revisions are rejected",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 800
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mixed library backup restores exact versions and original media into another isolated browser context",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 3666
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "project destination creates a new planned shot atomically without selecting it",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1394
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mode changes and saved-draft reload preserve earlier recipe and direct data",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1559
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "legacy recipe output hashes remain identical to the captured master baseline",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 894
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 942
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2748
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2738
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2554
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2883
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2907
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2560
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "repeated image/video previews release URLs and pause detached players with heap observations",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 3324
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 1440x900",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2397
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 768x1024",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2404
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 390x844",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2391
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 720x450",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2356
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera media has explicit touch Preview with no hover playback",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2188
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2221
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2121
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1942
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1078
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 8236
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 27666
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 8174
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 32150
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 853
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 793
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 911
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "reference and sample previews use the existing associations without reassigning media",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 795
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "complete long raw output and missing-media/empty states do not invent scene details",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1237
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "an associated decodable result video is labeled Result and opens the existing explicit player",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1007
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 695
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2023
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1535
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1471
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2878
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1331
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1273
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "canonical output copy, save, and small legacy backup roundtrip",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 4842
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "duplicate save requires an explicit decision",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 731
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "storyboard order and collection return survive navigation",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 803
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 9938
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 5402
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1696
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1621
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1313
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1312
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1306
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1108
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 1440x900",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1372
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 768x1024",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1492
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 390x844",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1526
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 3845
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "reduced motion disables hover and explicit Preview stays usable",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2016
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2576
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 1440x900",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2394
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 768x1024",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2425
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 390x844",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2388
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 720x450",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2407
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2461
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2022
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2029
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2520
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "uses visible Preview rather than hover and never navigates on playback",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1944
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2530
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2539
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 2409
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 809
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 873
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 784
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1979
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 978
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 826
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 808
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1037
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "take preference, project note, comparison and removal keep immutable source scenes",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 960
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1129
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1767
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1625
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "attempts": 1,
+        "durationMs": 1495
+      }
+    ]
+  },
+  "historicalQaLedger": {
+    "checks": 207,
+    "screenshots": 45,
+    "scriptTests": 6,
+    "separateFromCurrentPlaywrightCases": true
+  },
+  "warnings": {
+    "unit": [
+      "An update to MediaThumbnail inside a test was not wrapped in act(...)."
+    ],
+    "unitReactActNoticeCount": 23,
+    "browser": [
+      "The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set."
+    ],
+    "browserColorNoticeCount": 2,
+    "build": "Vite warns that the main chunk exceeds 500 kB. Build succeeds.",
+    "productionVulnerabilities": 0
+  },
+  "legacyOutputBaseline": {
+    "base": "eb15dc1583f59cbee195eba9d356b0d35ef290fb",
+    "draft": {
+      "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+      "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+      "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+      "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+      "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+      "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+      "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+      "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+      "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+      "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+      "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+    },
+    "saved": {
+      "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+      "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+      "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+      "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+      "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+      "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+      "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+      "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+      "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+      "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+      "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+    }
+  },
+  "copyDownload": {
+    "sourceSha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913",
+    "clipboardReadbackSha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913",
+    "downloadSha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913",
+    "utf8Bytes": 166,
+    "sourceLineEndings": "CRLF",
+    "platform": "Win32",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.8078.4 Safari/537.36",
+    "downloadFilename": "Imported_MIDORI_original.txt"
+  },
+  "fullBackup": {
+    "fixture": "isolated synthetic mixed recipe/direct library; decodable canvas PNG",
+    "compressedBytes": 22854,
+    "archiveSha256": "2f8432ca519c4a006d07a2b356f25e8d788285b26952da48cb647ceeb3675faa",
+    "counts": {
+      "assets": 10,
+      "variants": 1,
+      "scenes": 3,
+      "drafts": 4,
+      "collections": 2,
+      "media": 1,
+      "templates": 4
+    },
+    "media": [
+      {
+        "id": "media_output_reference",
+        "filename": "synthetic-scene-reference.png",
+        "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+      }
+    ],
+    "sceneOutputHashes": [
+      {
+        "id": "scene_c34969ae288e",
+        "authoringMode": "direct_prompt",
+        "sha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913"
+      },
+      {
+        "id": "scene_f2ec18f0d964",
+        "authoringMode": "direct_prompt",
+        "sha256": "0e2a8812bb6fb8d95a1dcfc03f3cd58070cd0dddbc334acad2dad53ea46289a0"
+      },
+      {
+        "id": "scene_output_workspace_fixture",
+        "authoringMode": "recipe",
+        "sha256": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467"
+      }
+    ],
+    "cameraCompositionPreserved": true,
+    "allComparedRecordsEqual": true,
+    "wholeBrowserRestartVerified": true,
+    "retainedSyntheticProfile": "qa-results/direct-prompts/profiles/restart-1793305596203"
+  },
+  "screenshots": {
+    "beforeBase": "eb15dc1583f59cbee195eba9d356b0d35ef290fb",
+    "beforeSourceDiffGuard": true,
+    "beforeCount": 8,
+    "afterCount": 12,
+    "files": [
+      {
+        "path": "docs/screenshots/direct-prompts/after/editor-1366.png",
+        "bytes": 96490,
+        "width": 1366,
+        "height": 768,
+        "sha256": "2daa8791b9a4208cb6dec8620b31dd431ed90f05de0c7bde8f2bea727ba6829c"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/editor-1440.png",
+        "bytes": 121944,
+        "width": 1440,
+        "height": 900,
+        "sha256": "e05565579ead92663cee1d177db9d7b6cdc1eab9175a36841a99706ed991a4ac"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/editor-390.png",
+        "bytes": 37494,
+        "width": 390,
+        "height": 844,
+        "sha256": "7d91962abe34c6c0e4b8e7ae8e32cb072833867c282a37be9979eaf36a6c4bae"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/editor-768.png",
+        "bytes": 85210,
+        "width": 768,
+        "height": 1024,
+        "sha256": "599f74f6e324921710729c1622007c9ca2d7e20afdbcfe05c1c84e97e762d115"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/history-1366.png",
+        "bytes": 106780,
+        "width": 1366,
+        "height": 768,
+        "sha256": "1e1e4f424498a224c911c07a394a00a4728992804264e3001d2ed9ac97278944"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/history-1440.png",
+        "bytes": 124294,
+        "width": 1440,
+        "height": 900,
+        "sha256": "028859eb4751dc9b21734e9189aedd50433fa2d4f8aacb9166e73f832d9af439"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/history-390.png",
+        "bytes": 50537,
+        "width": 390,
+        "height": 844,
+        "sha256": "c8c997d0137cdbc26aabdcec8ca45ff978bc3c9b96508a79b1e219ef60e290f5"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/history-768.png",
+        "bytes": 91947,
+        "width": 768,
+        "height": 1024,
+        "sha256": "c3ac5d5b898504aebba0c1d9d0c26aeb8014b0734ba12e34a469072343864e20"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/output-1366.png",
+        "bytes": 101343,
+        "width": 1366,
+        "height": 768,
+        "sha256": "0019c7309960736d26bbd2b05febfd1719ff860eafbbe5318b2d8120e943315d"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/output-1440.png",
+        "bytes": 117799,
+        "width": 1440,
+        "height": 900,
+        "sha256": "8497ce935712352a02d53959beb46db632c420d9de542e7d8692d6fee14afda6"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/output-390.png",
+        "bytes": 38554,
+        "width": 390,
+        "height": 844,
+        "sha256": "2b2113633cf63c908a461cdf41d91726cf389591a9db64a4d350fa4bbc3f5d2a"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/after/output-768.png",
+        "bytes": 92520,
+        "width": 768,
+        "height": 1024,
+        "sha256": "387c429692cc4c62e07ef9c87da1e21bd1f1ab2dc8b612df68ffcaf7a62145fe"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/builder-1366.png",
+        "bytes": 103925,
+        "width": 1366,
+        "height": 768,
+        "sha256": "e2f31c002f007ee118ef97c36ac2aefd82c829172ea653ec5e7ddd2c44bdf6eb"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/builder-1440.png",
+        "bytes": 124669,
+        "width": 1440,
+        "height": 900,
+        "sha256": "a6bc81b560d9535625a9ca6d95f7beca8af5d3598a09e9f57291d829d1650c3a"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/builder-390.png",
+        "bytes": 36576,
+        "width": 390,
+        "height": 844,
+        "sha256": "d24d3f72dc8895d7ec9a1ff3c3f21a07a20aee49e778f29c8f8ce5cd6b724def"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/builder-768.png",
+        "bytes": 86716,
+        "width": 768,
+        "height": 1024,
+        "sha256": "ae8f7dd6579d5e77c7caab888d371edf37b4943c33fd002686353d4ee1088d59"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/output-1366.png",
+        "bytes": 104570,
+        "width": 1366,
+        "height": 768,
+        "sha256": "26855d8726f9d45721eb5a3b23fd3a6c7ca3184c744f34eb7f5d422271639b68"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/output-1440.png",
+        "bytes": 131122,
+        "width": 1440,
+        "height": 900,
+        "sha256": "8a566641c7abf65c27a17ec896b8305b61b1cb415d995af744a2454f137fe318"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/output-390.png",
+        "bytes": 46655,
+        "width": 390,
+        "height": 844,
+        "sha256": "65828ebe3c44376696508139624ac8fbb8b834d7bab002d3607971589ea6462d"
+      },
+      {
+        "path": "docs/screenshots/direct-prompts/before/output-768.png",
+        "bytes": 102049,
+        "width": 768,
+        "height": 1024,
+        "sha256": "dc2ff1dfc511d6a6ba96bdf74930e07801c1dbb06ca7f1af657fa36a76449c23"
+      }
+    ],
+    "reflow": {
+      "width": 720,
+      "height": 450,
+      "equivalentZoomPercent": 200,
+      "nativeBrowserZoomTested": false
+    }
+  },
+  "review": {
+    "freshWholeBranchReview": true,
+    "importantGroups": 6,
+    "alternateTakeLabelRegradedImportant": true,
+    "allFindingsCorrectedWithRegressionEvidence": true,
+    "secondReviewRun": false
+  },
+  "earlierFailures": [
+    "Initial baseline discovery overlapped new test creation and failed on not-yet-created modules; not counted as a clean baseline.",
+    "Concurrent baseline run: 518/521; three existing UI timeout failures. Existing-suite serial rerun: 521/521. Final verification serializes heavy gates and limits Vitest to two workers.",
+    "New backup browser fixture initially omitted required variant tags; corrected fixture, then both integrity cases passed.",
+    "First complete browser run: 112 passed, 1 failed (legacy 1440px Show Prompt below fold). Compact Versions menu fixes the layout; unchanged regression passes. Final full results are recorded above."
+  ],
+  "privacy": {
+    "onlySyntheticFixtures": true,
+    "actualBrowserDataUntouched": true,
+    "localhost5173Untouched": true,
+    "qaProfilesRetainedNotDeleted": true,
+    "rawQaAndZipAndProfilesIgnored": true,
+    "protectedPathsUnchanged": [
+      "src/domain/promptAssembler.ts",
+      "src/domain/cameraComposition.ts",
+      "src/domain/validation.ts",
+      "package.json",
+      "package-lock.json",
+      ".github/workflows/ci.yml"
+    ],
+    "separateValidationWorkUntouched": true
+  },
+  "productFileHashes": [
+    {
+      "path": "src/App.tsx",
+      "sha256": "3ba31ec8b22a45db0bbde1124451458f24022baddbe824fbf967371a48270f21"
+    },
+    {
+      "path": "src/components/directPrompt.css",
+      "sha256": "0365d777ccf8cc856bb206e44eaf49fd6a72ddd827343eabe3b7f933d798d94e"
+    },
+    {
+      "path": "src/components/DirectPromptWorkspace.tsx",
+      "sha256": "c013a6f61b217a88495e4a9d3f499340ac50b277623bcd1f2662b326effd8ab4"
+    },
+    {
+      "path": "src/components/ProjectTakeManager.tsx",
+      "sha256": "d8da9748d8c57951c428b75311d86678d989ec92b4728932abc4d7ffa606bd42"
+    },
+    {
+      "path": "src/components/SceneRevisionHistory.tsx",
+      "sha256": "83c889b1dee206fe96e4215c33fb1db9ff8a7b6d6aba8b9c1c04b03b7c48ef53"
+    },
+    {
+      "path": "src/components/sceneRevisions.css",
+      "sha256": "8c1a846e546a034bb8f3c15b901ef0ed3ad23ba4f84f0001537a485098e7a48f"
+    },
+    {
+      "path": "src/context/LibraryContext.tsx",
+      "sha256": "04e7564c3d368534afb43b791dd00e60af28eb58f513083188b77cbf65ec46e8"
+    },
+    {
+      "path": "src/domain/directPrompt.ts",
+      "sha256": "a63e2ae0daa9651a7083344931dafb0b417e5bd766a08865d67f8e726d65ec1d"
+    },
+    {
+      "path": "src/domain/directPromptDocument.ts",
+      "sha256": "f51eeeaca92201069d235dfd58ef09d6a9e7c33e829e492cc2b21b38073e13e1"
+    },
+    {
+      "path": "src/domain/directPromptReferences.ts",
+      "sha256": "b8c88cad68ff6462529138b157b4f81e514915ed77fe41528fb4d2c1ea32eef3"
+    },
+    {
+      "path": "src/domain/exactPromptText.ts",
+      "sha256": "31e6bf4bbe236d2a678c31f46233f13eb2f406a53762944fe5c0b8f7180bf823"
+    },
+    {
+      "path": "src/domain/generationDocument.ts",
+      "sha256": "35dd48138d4f4870e704beeca22a97446645605ebb22250692c6ed3688b2f0c8"
+    },
+    {
+      "path": "src/domain/phase4Validation.ts",
+      "sha256": "acbfd498cc0097292df30d341a4f942a95fb1c3a2b72fb7995e791cf9627f29e"
+    },
+    {
+      "path": "src/domain/projectExport.ts",
+      "sha256": "900515815ce3dc86706c9fc6cb490dbddf6b0ee08471ae68be4e96021bc69c8e"
+    },
+    {
+      "path": "src/domain/projectRoutes.ts",
+      "sha256": "d2e51af477d21c5d11c23f4c5e75085fd445d05f0a5dafdf242f0e9c8125e0a9"
+    },
+    {
+      "path": "src/domain/sceneDocument.ts",
+      "sha256": "6bf959ea2b358903c12d2b00f336ec55f95cd54ff9b40f6abbdf1146b13217a2"
+    },
+    {
+      "path": "src/domain/sceneDuplicates.ts",
+      "sha256": "3ea25cfb89ed5bc9d8c37a80ba681ff0a4d4564bca8eeeb4ac94e9d4f08d192e"
+    },
+    {
+      "path": "src/domain/scenePreflight.ts",
+      "sha256": "7a9f14ab116e5c6a8939eefc568a58a01e092ef4f1e4b50c7734e962730f3179"
+    },
+    {
+      "path": "src/domain/sceneRevisions.ts",
+      "sha256": "5a81b5e30147b4db29bc824e4abfeac01f745bd4c9eb759cbf953d2980ff2413"
+    },
+    {
+      "path": "src/screens/CollectionWorkspace.tsx",
+      "sha256": "c572346d20ce29114d2f18caa1b3a75f8066595d5e085aee24db69fc404e6500"
+    },
+    {
+      "path": "src/screens/DirectPromptScreen.tsx",
+      "sha256": "7eb245aead8b10ce494f0a8179ba4cf5567bb24261c315fc39d67efc96a4f4f5"
+    },
+    {
+      "path": "src/screens/LibraryScreen.tsx",
+      "sha256": "8ee5e8799702db0e13d058ff401a7fe06b007ab87585682364561996fb407629"
+    },
+    {
+      "path": "src/screens/promptOutput.css",
+      "sha256": "4a27af216064d84f4e13eb8e95caa8bb21a08e0cc7d51ecdbe50efee952e95c7"
+    },
+    {
+      "path": "src/screens/PromptOutputScreen.tsx",
+      "sha256": "b71ac99c5c64c84195d1a560e0d8464198753b22b45d8cc03c1eac0d805c2577"
+    },
+    {
+      "path": "src/screens/SceneBuilderScreen.tsx",
+      "sha256": "c602222757986c2f254b4f16e30004f0d3cf87ec97f0026f5e11b527e5d7d549"
+    },
+    {
+      "path": "src/storage/backup.ts",
+      "sha256": "dc4191a93db3b86d1b1726fb90d7ef9300a7bd35dd3477292e945fa547e3c44a"
+    },
+    {
+      "path": "src/storage/db.ts",
+      "sha256": "4eb79317f5b22892d4ebb41f22dd6f03728f5cbb5347dd8e30ecc7e08ff16bcd"
+    },
+    {
+      "path": "src/storage/projects.ts",
+      "sha256": "f726c0e1f28d9e40ba0c598c2f7d99ff8f185c1d24ef64671762f0955c159a0d"
+    },
+    {
+      "path": "src/storage/sceneAuthoring.ts",
+      "sha256": "40997a2c5021e689cc44e250e129b375f5e551227db034a0cbcd1b78e736a9de"
+    },
+    {
+      "path": "src/types/domain.ts",
+      "sha256": "ccc919367b9b9e9d0a6d53dce02d6071609b98c73a1bec620ee36e689ba1e8eb"
+    },
+    {
+      "path": "src/types/sceneAuthoring.ts",
+      "sha256": "15e228b569794fabcff551441b5ad3b6ffa828d21a0d00ec39998be96cdbba22"
+    }
+  ],
+  "changedFiles": [
+    {
+      "status": "A",
+      "path": "docs/direct-prompt-contract.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/direct-prompt-qa.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/direct-prompt-results.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/editor-1366.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/editor-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/editor-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/editor-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/history-1366.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/history-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/history-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/history-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/output-1366.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/output-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/output-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/after/output-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/builder-1366.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/builder-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/builder-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/builder-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/output-1366.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/output-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/output-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/direct-prompts/before/output-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/plans/2026-10-30-direct-prompt-revisions.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/specs/2026-10-30-direct-prompt-revisions-design.md"
+    },
+    {
+      "status": "A",
+      "path": "e2e/direct-prompt-fixture.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/direct-prompt-screenshots.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/direct-prompt.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/fixtures/direct-prompt-baseline.json"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/directPrompt.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/directPromptBackup.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/directPromptExport.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/directPromptStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/directPromptWorkspace.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/promptOutputWorkspace.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/sceneRevisionHistory.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/sceneRevisionRegressions.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/sceneRevisions.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/App.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/directPrompt.css"
+    },
+    {
+      "status": "A",
+      "path": "src/components/DirectPromptWorkspace.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectTakeManager.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/SceneRevisionHistory.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/sceneRevisions.css"
+    },
+    {
+      "status": "M",
+      "path": "src/context/LibraryContext.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/directPrompt.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/directPromptDocument.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/directPromptReferences.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/exactPromptText.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/generationDocument.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/phase4Validation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectExport.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectRoutes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDocument.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDuplicates.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/scenePreflight.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/sceneRevisions.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/CollectionWorkspace.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/screens/DirectPromptScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/LibraryScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/promptOutput.css"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/PromptOutputScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/SceneBuilderScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/backup.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/db.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/projects.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/storage/sceneAuthoring.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/domain.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/types/sceneAuthoring.ts"
+    }
+  ],
+  "assumptions": [
+    "Browser storage remains local to the browser profile and origin. No AI service, bridge or external-write API is introduced.",
+    "Text exports preserve the stored string; external clipboard consumers can transform text. This report certifies the observed pinned Chromium payload only."
+  ],
+  "limitations": [
+    "Stage B change sets, Stage C MCP pairing and Stage D ChatGPT connectivity are design-only.",
+    "Project ZIP includes selected takes, not entire revision history; full-library backup retains history.",
+    "Small representative mixed backup tested; no additional ZIP64 capacity certification or PR #12 change.",
+    "200% equivalent reflow is tested by viewport size; native browser zoom and standalone screen-reader software were not exercised.",
+    "New direct/revision records need an updated app; older binaries are not promised forward compatibility.",
+    "GitHub Actions results are supplied on the exact PR commit separately from this pre-commit local report."
+  ]
+}

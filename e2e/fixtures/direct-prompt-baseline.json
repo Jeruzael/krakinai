@@ -1,0 +1,29 @@
+{
+  "base": "eb15dc1583f59cbee195eba9d356b0d35ef290fb",
+  "draft": {
+    "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+    "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+    "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+    "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+    "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+    "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+    "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+    "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+    "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+    "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+    "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+  },
+  "saved": {
+    "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+    "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+    "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+    "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+    "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+    "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+    "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+    "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+    "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+    "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+    "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+  }
+}

@@ -8,6 +8,8 @@ import { PromptDetailScreen } from './screens/PromptDetailScreen';
 import { EditorScreen } from './screens/EditorScreen';
 import { VariantsScreen } from './screens/VariantsScreen';
 import { SceneBuilderScreen } from './screens/SceneBuilderScreen';
+import {DirectPromptScreen} from './screens/DirectPromptScreen';
+import {isDirectPrompt} from './domain/directPrompt';
 import { PromptOutputScreen } from './screens/PromptOutputScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { TemplatesScreen } from './screens/TemplatesScreen';
@@ -16,7 +18,7 @@ import type { PromptCategory } from './types/domain';
 const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspace').then(module => ({default:module.CollectionWorkspace})));
 
 const RouteDispatcher: React.FC = () => {
-  const { hashPath, loading, navigate } = useLibrary();
+  const { hashPath, loading, navigate, snapshot } = useLibrary();
 
   if (loading) {
     return (
@@ -133,11 +135,16 @@ const RouteDispatcher: React.FC = () => {
   }
 
   // S06 Scene Builder
+  if(path==='/direct/new')return <DirectPromptScreen key="new-direct"/>;
   if (path === '/builder') {
+    const active=snapshot?.drafts.find(d=>d.id===snapshot.preferences.activeDraftId)??snapshot?.drafts[0];
+    if(active&&isDirectPrompt(active))return <DirectPromptScreen key={active.id} id={active.id}/>;
     return <SceneBuilderScreen />;
   }
   const builderDraftMatch = path.match(/^\/builder\/([^/]+)$/);
   if (builderDraftMatch) {
+    const draft=snapshot?.drafts.find(d=>d.id===builderDraftMatch[1]);
+    if(draft&&isDirectPrompt(draft))return <DirectPromptScreen key={draft.id} id={draft.id}/>;
     return <SceneBuilderScreen draftId={builderDraftMatch[1]} />;
   }
 

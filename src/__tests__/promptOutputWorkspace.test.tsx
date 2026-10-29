@@ -917,6 +917,7 @@ describe('Prompt Output studio workspace', () => {
       compact: compactPrompt,
     };
     const snapshot = await getAllSnapshot();
+    if (saved.authoringMode === 'direct_prompt') throw new Error('This fixture must remain a legacy recipe scene.');
     await replaceAllStoresTransactionally({
       ...snapshot,
       scenes: [{ ...saved, outputs }],

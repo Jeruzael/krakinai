@@ -136,6 +136,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     try {
       const saved = await saveSceneDraft({
         ...nextDraft,
+        ...(nextDraft.revisionIntent?{expectedInputRevision:nextDraft.inputRevision}:{}),
         bumpInputRevision: bumpRevision,
       });
       setDraft(saved);
@@ -521,6 +522,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           </p>
         </div>
         <div className="studio-inline">
+          <button type="button" className="btn btn-secondary btn-sm" onClick={()=>navigate(carryProjectTarget('/direct/new',hashPath))}>Import Full Prompt</button>
           <span
             className={`badge ${saveState === 'saved' ? 'badge-success' : saveState === 'error' ? 'badge-error' : 'badge-warning'}`}
             role="status"

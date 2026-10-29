@@ -1,6 +1,18 @@
 import type { Collection } from '../types/domain';
+import type {SavedScene} from '../types/domain';
+import type {SceneProjectTarget} from '../types/sceneAuthoring';
 import { createDraftFromSavedScene, getAllSnapshot, saveSceneDraft } from '../storage/db';
 import { initializeProject } from '../storage/projects';
+import {isDirectPrompt} from './directPrompt';
+
+export function getSavedSceneProjectTarget(path:string,scene:SavedScene,collections:Collection[]):{requested:boolean;target?:SceneProjectTarget;error?:string}{
+  const query=new URLSearchParams(path.split('?')[1]??'');
+  if(!query.has('collection')&&!query.has('shot'))return {requested:false};
+  const collection=collections.find(c=>c.id===query.get('collection'));
+  const shot=collection?.project?.shots.find(s=>s.id===query.get('shot')&&s.takeSceneIds.includes(scene.id));
+  if(!collection||!shot)return {requested:true,error:'This explicit project/shot target is unavailable or does not contain this scene. Return to the intended storyboard before creating a revision.'};
+  return {requested:true,target:{collectionId:collection.id,shotId:shot.id,expectedProjectRevision:collection.project!.revision}};
+}
 
 export function getProjectSaveTarget(path: string, collections: Collection[]): {
   requested: boolean; target?: {collectionId:string;shotId:string}; error?: string;
@@ -30,7 +42,8 @@ export async function startProjectShotDraft(collectionId: string, shotId: string
   const selectedId = shot.selectedSceneId ?? shot.takeSceneIds[0];
   if (selectedId && !snapshot.scenes.some(scene => scene.id === selectedId))
     throw new Error('Selected take is unavailable. Choose an existing take or a planned shot.');
-  const draft = selectedId ? await createDraftFromSavedScene(selectedId) : await saveSceneDraft({
+  const selected=selectedId?snapshot.scenes.find(scene=>scene.id===selectedId):undefined;
+  const draft = selected&&isDirectPrompt(selected)?await (await import('../storage/sceneAuthoring')).createSceneRevisionDraft(selected.id,{alternateTake:true,target:{collectionId,shotId,expectedProjectRevision:collection.project!.revision}}):selectedId ? await createDraftFromSavedScene(selectedId) : await saveSceneDraft({
     title:`${shot.code} — ${shot.title}`,slots:{},extraRequiredSlots:[],sceneInstructions:'',settings:{},manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed',
     ...(shot.plannedShotType ? {shotType:shot.plannedShotType} : {}),
   });

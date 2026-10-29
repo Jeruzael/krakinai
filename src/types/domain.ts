@@ -1,4 +1,5 @@
 import type {CameraComposition} from './cinematography';
+import type {DirectPromptContent, SceneAuthoringFields, SceneProjectTarget, SceneRevision, SceneRevisionIntent} from './sceneAuthoring';
 export const SCHEMA_VERSION = 1;
 
 export type PromptCategory =
@@ -220,7 +221,9 @@ export interface ManualOutputOverride {
   updatedAt: string;
 }
 
-export interface SceneDraft {
+export interface SceneDraft extends SceneAuthoringFields {
+  revisionIntent?: SceneRevisionIntent;
+  authoredProjectTarget?: SceneProjectTarget;
   inheritedAvoidPrefix?: string;
   shotType?: ShotType;
   sourceMediaLinks?: MediaLink[];
@@ -244,7 +247,9 @@ export interface SceneDraft {
   updatedAt: string;
 }
 
-export interface SavedScene {
+interface SavedSceneBase extends Omit<SceneAuthoringFields, 'authoringMode' | 'directPrompt'> {
+  sceneRevision?: SceneRevision;
+  authoredSaveFingerprint?: string;
   inheritedAvoidPrefix?: string;
   shotType?: ShotType;
   sourceMediaLinks?: MediaLink[];
@@ -265,7 +270,6 @@ export interface SavedScene {
   avoidText?: string;
   dialogue?: DialogueConfig;
   settings: SceneSettings;
-  outputs: Record<OutputMode, string>;
   manualOutputs: Partial<Record<OutputMode, ManualOutputOverride>>;
   references: MediaLink[];
   sourceSceneId?: string;
@@ -276,6 +280,11 @@ export interface SavedScene {
   createdAt: string;
   updatedAt: string;
 }
+
+export type SavedScene = SavedSceneBase & (
+  | {authoringMode?: 'recipe'; directPrompt?: never; outputs: Record<OutputMode, string>}
+  | {authoringMode: 'direct_prompt'; directPrompt: DirectPromptContent; outputs: {full: string; structured?: never; compact?: never}}
+);
 
 export type CollectionMemberType = 'asset' | 'variant' | 'scene';
 

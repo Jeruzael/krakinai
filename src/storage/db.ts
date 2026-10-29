@@ -2,6 +2,8 @@ import { captureMediaNames } from '../domain/mediaNaming';
 import { validatePerformanceDirection } from '../domain/dialoguePerformance';
 import { validatePhase4Record } from '../domain/phase4Validation';
 import { validateCameraCompositionSlots } from '../domain/cameraCompositionValidation';
+import { isDirectPrompt, validateSceneAuthoring } from '../domain/directPrompt';
+import {getDirectReferenceLinks} from '../domain/directPromptReferences';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getCapturedAvoidPrefix, getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
@@ -258,6 +260,7 @@ export function collectReferencedMediaIds(snap: {
     for (const l of v.mediaLinks) ids.add(l.mediaId);
   }
   for (const d of snap.drafts) {
+    for (const link of d.directReferences ?? []) ids.add(link.mediaId);
     for (const slot of ORDERED_BUILDER_SLOTS) {
       const s = d.slots[slot];
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
@@ -268,6 +271,7 @@ export function collectReferencedMediaIds(snap: {
     else for (const l of d.referencePack?.entries ?? []) if (l.sourceSlot === 'source') ids.add(l.mediaId);
   }
   for (const sc of snap.scenes) {
+    for (const link of sc.directReferences ?? []) ids.add(link.mediaId);
     for (const slot of ORDERED_BUILDER_SLOTS) {
       const s = sc.slots[slot];
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
@@ -664,7 +668,7 @@ export function checkCharacterReplacementInDraft(
 
 // Older saved copies may predate explicit negative provenance. Recover only
 // exact prefixes supported by their immutable ancestry; never tokenize prose.
-function savedAvoidPrefix(scene: SavedScene, scenes: SavedScene[]): string {
+export function savedAvoidPrefix(scene: SavedScene, scenes: SavedScene[]): string {
   const byId=new Map(scenes.map(value=>[value.id,value]));
   const seen=new Set<string>(),parts:string[]=[];
   let current:SavedScene|undefined=scene,remaining=scene.avoidText??'';
@@ -686,8 +690,11 @@ export async function saveSceneDraft(
     id?: string;
     inputRevision?: number;
     bumpInputRevision?: boolean;
+    expectedInputRevision?: number;
   }
 ): Promise<SceneDraft> {
+  const authoringError=validateSceneAuthoring(input);
+  if(authoringError)throw new Error(authoringError);
   const cameraError = validateCameraCompositionSlots(input.slots);
   if (cameraError) throw new Error(cameraError);
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
@@ -701,6 +708,7 @@ export async function saveSceneDraft(
   const pStore = tx.objectStore('preferences');
 
   const existing = input.id ? await getFromStore<SceneDraft>(dStore, input.id) : undefined;
+  if(input.expectedInputRevision!==undefined&&existing?.inputRevision!==input.expectedInputRevision){tx.abort();throw new Error('This draft changed in another tab. Your edits are preserved locally; refresh and compare before saving.');}
   let inheritedAvoidPrefix=input.inheritedAvoidPrefix??existing?.inheritedAvoidPrefix;
   if(inheritedAvoidPrefix===undefined&&needsInheritedPrefix) {
     const scenes=await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
@@ -709,7 +717,9 @@ export async function saveSceneDraft(
   }
   const now = new Date().toISOString();
   const nextRevision =
-    input.inputRevision !== undefined
+    existing&&(isDirectPrompt(input)||input.revisionIntent)
+      ? input.bumpInputRevision===false?existing.inputRevision:existing.inputRevision+1
+      : input.inputRevision !== undefined
       ? input.inputRevision
       : existing
       ? input.bumpInputRevision === false
@@ -720,6 +730,13 @@ export async function saveSceneDraft(
   const record: SceneDraft = {
     id: existing?.id || input.id || generateId('draft'),
     title: input.title,
+    ...(input.authoringMode!==undefined?{authoringMode:input.authoringMode}:{}),
+    ...(input.directPrompt!==undefined?{directPrompt:structuredClone(input.directPrompt)}:{}),
+    ...(input.directReferences!==undefined?{directReferences:structuredClone(input.directReferences)}:{}),
+    ...(input.pendingInputs!==undefined?{pendingInputs:structuredClone(input.pendingInputs)}:{}),
+    ...(input.claimNotes!==undefined?{claimNotes:input.claimNotes}:{}),
+    ...(input.revisionIntent!==undefined?{revisionIntent:structuredClone(input.revisionIntent)}:{}),
+    ...(input.authoredProjectTarget!==undefined?{authoredProjectTarget:structuredClone(input.authoredProjectTarget)}:{}),
     ...(inheritedAvoidPrefix!==undefined?{inheritedAvoidPrefix}:{}),
     ...(input.shotType !== undefined ? { shotType: input.shotType } : {}),
     ...(input.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(input.sourceMediaLinks) } : {}),
@@ -754,8 +771,16 @@ export async function saveSceneDraft(
   return record;
 }
 
-export interface SaveSceneOptions { duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; projectTarget?: {collectionId:string;shotId:string} }
+export interface SaveSceneOptions { duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; expectedInputRevision?:number; expectedProjectRevision?:number; projectTarget?: {collectionId:string;shotId:string} }
 export async function saveSceneFromDraft(draftId: string, options: SaveSceneOptions = {}): Promise<SavedScene> {
+  const current=(await getAllSnapshot()).drafts.find(record=>record.id===draftId);
+  if(current&&(isDirectPrompt(current)||current.revisionIntent)){
+    const {saveAuthoredScene}=await import('./sceneAuthoring');
+    if(options.expectedInputRevision===undefined)throw new Error('An expected draft input revision is required for authored scene saves. Refresh the reviewed draft before saving.');
+    const expectedProjectRevision=options.expectedProjectRevision??current.authoredProjectTarget?.expectedProjectRevision;
+    if(options.projectTarget&&expectedProjectRevision===undefined)throw new Error('An expected project revision is required for this authored save.');
+    return saveAuthoredScene(draftId,{requestId:options.requestId??generateId('save'),expectedInputRevision:options.expectedInputRevision,...(options.projectTarget?{target:{...options.projectTarget,expectedProjectRevision:expectedProjectRevision!}}:{})});
+  }
   const db = await openDatabase();
   const tx = db.transaction(['drafts', 'scenes', 'assets', 'media', 'collections'], 'readwrite');
   const completion = txDone(tx);
@@ -909,6 +934,9 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
   const snap = await getAllSnapshot();
   const scene = snap.scenes.find((s) => s.id === sceneId);
   if (!scene) throw new Error('Saved scene not found.');
+  if(isDirectPrompt(scene)){
+    return saveSceneDraft({title:`${scene.title.slice(0,93)} (Copy)`,authoringMode:'direct_prompt',directPrompt:structuredClone(scene.directPrompt),directReferences:getDirectReferenceLinks(scene),pendingInputs:structuredClone(scene.pendingInputs),claimNotes:scene.claimNotes,slots:structuredClone(scene.slots),extraRequiredSlots:[],sceneInstructions:'',settings:{...scene.settings},sourceSceneId:scene.id,shotType:scene.shotType,sourceMediaLinks:structuredClone(scene.sourceMediaLinks),referencePack:structuredClone(scene.referencePack),manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed'});
+  }
 
   return saveSceneDraft({
     title: `${scene.title} (Copy)`,

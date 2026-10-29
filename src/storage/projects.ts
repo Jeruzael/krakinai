@@ -70,8 +70,8 @@ export function removeProjectTake({collectionId,shotId,sceneId}:{collectionId:st
   const takeNotes=shot.takeNotes?Object.fromEntries(Object.entries(shot.takeNotes).filter(([id])=>id!==sceneId)):undefined;
   return changed(c,c.project!.shots.map(s=>s.id===shotId?{...shot,takeSceneIds,selectedSceneId,takeNotes,status:takeSceneIds.length===0?'planned':shot.status}:s));
 });}
-export function selectProjectTake({collectionId,shotId,sceneId}:{collectionId:string;shotId:string;sceneId:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
-  const c=established(raw,scenes);const shot=findShot(c,shotId);if(!shot.takeSceneIds.includes(sceneId)||!scenes.some(s=>s.id===sceneId))throw new Error('Selected take must be an existing shot take.');if(shot.selectedSceneId===sceneId)return raw;
+export function selectProjectTake({collectionId,shotId,sceneId,expectedRevision}:{collectionId:string;shotId:string;sceneId:string;expectedRevision?:number}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{
+  const c=established(raw,scenes);if(expectedRevision!==undefined&&c.project!.revision!==expectedRevision)throw new Error('Project revision changed. Refresh before selecting a preferred take.');const shot=findShot(c,shotId);if(!shot.takeSceneIds.includes(sceneId)||!scenes.some(s=>s.id===sceneId))throw new Error('Selected take must be an existing shot take.');if(shot.selectedSceneId===sceneId)return raw;
   return changed(c,c.project!.shots.map(s=>s.id===shotId?{...shot,selectedSceneId:sceneId}:s));
 });}
 export function updateProjectTakeNote({collectionId,shotId,sceneId,note}:{collectionId:string;shotId:string;sceneId:string;note:string}):Promise<Collection>{return mutate(collectionId,(raw,scenes)=>{

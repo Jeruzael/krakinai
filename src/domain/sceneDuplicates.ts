@@ -8,6 +8,7 @@ function stable(value: unknown): unknown {
 }
 /** Compare frozen saved content, removing only known generated presentation headers. */
 export function sceneDuplicateKey(scene: SavedScene): string {
+  if(scene.authoringMode==='direct_prompt')return JSON.stringify(stable({authoringMode:'direct_prompt',text:scene.directPrompt.text,shotType:scene.shotType,settings:scene.settings,references:scene.references,referencePack:scene.referencePack,sourceMediaLinks:scene.sourceMediaLinks,pendingInputs:scene.pendingInputs,claimNotes:scene.claimNotes}));
   const outputs = Object.fromEntries((['full','structured','compact'] as OutputMode[]).map(mode=>{
     let text=scene.outputs[mode];
     if (!scene.manualOutputs[mode]) {

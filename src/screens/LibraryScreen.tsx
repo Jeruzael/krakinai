@@ -201,10 +201,10 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
           <div>
             <h1 className="page-title">Saved Scenes</h1>
             <p className="muted-text" style={{ margin: '4px 0 0' }}>
-              {filteredScenes.length} saved scene snapshot(s) — assembled
-              outputs preserved with immutable component snapshots.
+              {filteredScenes.length} saved scene snapshot(s) — original prompts and assembled outputs preserved.
             </p>
           </div>
+          <button type="button" className="btn btn-secondary" onClick={()=>navigate('/direct/new')}>Import Full Prompt</button>
           <button
             type="button"
             className="btn btn-primary"

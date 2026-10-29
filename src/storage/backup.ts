@@ -24,6 +24,8 @@ import {
   VARIANT_TYPE_TO_SLOT,
 } from '../domain/validation';
 import { validatePhase4Record } from '../domain/phase4Validation';
+import {isDirectPrompt,validateDirectAttachments} from '../domain/directPrompt';
+import {validateSceneRevisionGraph} from '../domain/sceneRevisions';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
 import {
   collectReferencedMediaIds,
@@ -272,6 +274,8 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     if (scene.sourceDraftInputRevision !== undefined && (!Number.isSafeInteger(scene.sourceDraftInputRevision) || scene.sourceDraftInputRevision < 0)) return { valid: false, error: 'Invalid scene sourceDraftInputRevision.' };
     if (scene.saveDecision !== undefined && scene.saveDecision !== 'version' && scene.saveDecision !== 'take') return { valid: false, error: 'Invalid scene saveDecision.' };
   }
+  const revisionGraphError=validateSceneRevisionGraph(manifest.scenes);
+  if(revisionGraphError)return {valid:false,error:revisionGraphError};
 
   const seenIds = new Set<string>();
   const checkUniqueId = (id: string, label: string): string | null => {
@@ -429,6 +433,11 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
 
   const storedMedia = new Map(mediaRecords.map(media => [media.id, media]));
   for (const value of [...manifest.drafts, ...manifest.scenes]) {
+    if(isDirectPrompt(value)){
+      const errors=validateDirectAttachments(value,storedMedia);
+      if(errors.length)return {valid:false,error:errors.join(' ')};
+      continue;
+    }
     const links = [...(value.sourceMediaLinks ?? []), ...(value.referencePack?.entries.filter(entry => entry.sourceSlot === 'source') ?? [])];
     // Drafts can be incomplete. Existing associations must still resolve to valid original bytes.
     if (links?.length) {
