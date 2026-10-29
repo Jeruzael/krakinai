@@ -1,0 +1,882 @@
+{
+  "format": "krakinai.cinematography-qa.v1",
+  "generatedAt": "2026-10-28T19:55:57.981Z",
+  "branch": "codex/camera-cinematography",
+  "baseCommit": "a03bd5d62bf42f55142565147bd0c0b99d2899db",
+  "verificationStage": "Local working tree before configured SSH-signed commit. GitHub Actions verification is pending push.",
+  "workingTreeDirtyAtVerification": true,
+  "environment": {
+    "platform": "win32",
+    "node": "v22.23.3",
+    "playwright": "1.64.1",
+    "browser": "Chromium 156.0.8078.4 (Playwright revision 1248)"
+  },
+  "actualLibraryAudit": {
+    "capturedAt": "2026-10-28T18:24:42.583Z",
+    "cameraRecords": 72,
+    "transactionMode": "readonly",
+    "repeatedReadIdentical": true,
+    "indexedDBWrites": 0,
+    "counts": {
+      "Existing": 138,
+      "Partial": 49,
+      "Missing": 125,
+      "Ambiguous": 26
+    },
+    "privateEvidenceExcludedFromRepository": true,
+    "crossCategoryLightingAndStylesRecordsNotInspected": true
+  },
+  "commands": [
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T19:49:32.0694283Z"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:e2e",
+      "exitCode": 0,
+      "finishedAt": "2026-10-28T19:53:12.9591320Z"
+    }
+  ],
+  "unit": {
+    "tests": 521,
+    "failures": 0,
+    "skipped": 0,
+    "passed": 521
+  },
+  "browser": {
+    "tests": 94,
+    "passed": 94,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "durationMs": 268297.491,
+    "cases": [
+      {
+        "name": "cinematography after responsive screenshots 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "cinematography after responsive screenshots 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "cinematography after responsive screenshots 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "library-first composition previews the existing fallback source draft before updating it",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "dialogue and cover visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "dialogue and cover visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "dialogue and cover visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "media inspection visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "media inspection visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "media inspection visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "repeated image/video previews release URLs and pause detached players with heap observations",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "eleven-shot List/Grid layout stays bounded at 1440x900",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "eleven-shot List/Grid layout stays bounded at 768x1024",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "eleven-shot List/Grid layout stays bounded at 390x844",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "eleven-shot List/Grid layout stays bounded at 720x450",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "camera media has explicit touch Preview with no hover playback",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "output workspace after screenshots 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "output workspace after screenshots 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "output workspace after screenshots 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "reference and sample previews use the existing associations without reassigning media",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "complete long raw output and missing-media/empty states do not invent scene details",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "an associated decodable result video is labeled Result and opens the existing explicit player",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "Performance Studio after visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "Performance Studio after visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "Performance Studio after visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "canonical output copy, save, and small legacy backup roundtrip",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "duplicate save requires an explicit decision",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "storyboard order and collection return survive navigation",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "MIDORI responsive builder and output at 1440x900",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "MIDORI responsive builder and output at 768x1024",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "MIDORI responsive builder and output at 390x844",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "reduced motion disables hover and explicit Preview stays usable",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "continuity forms stack, footer and focus remain reachable at 1440x900",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "continuity forms stack, footer and focus remain reachable at 768x1024",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "continuity forms stack, footer and focus remain reachable at 390x844",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "continuity forms stack, footer and focus remain reachable at 720x450",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "uses visible Preview rather than hover and never navigates on playback",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "storyboard visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "storyboard visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "storyboard visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "long take names and IDs stay inside the dialog at 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "take preference, project note, comparison and removal keep immutable source scenes",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "polish visual evidence 1440",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "polish visual evidence 768",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      },
+      {
+        "name": "polish visual evidence 390",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null
+      }
+    ]
+  },
+  "qaLedger": {
+    "regressionTests": 6,
+    "failed": 0,
+    "countedHistoricalChecks": 207,
+    "historicalScreenshots": 45,
+    "distinctFromCurrentPlaywrightSuite": true
+  },
+  "additionalChecks": {
+    "beforeScreenshots": {
+      "tests": 3,
+      "passed": 3,
+      "baselineCommit": "a03bd5d62bf42f55142565147bd0c0b99d2899db"
+    },
+    "sourceWorkflowRepetitions": {
+      "tests": 3,
+      "passed": 3
+    },
+    "gitDiffCheck": {
+      "exitCode": 0
+    }
+  },
+  "warnings": {
+    "vitestActMediaThumbnail": 53,
+    "browserColorEnvironment": 1,
+    "build": "Vite main JS chunk 815.12 kB (203.10 kB gzip), exceeding the default 500 kB chunk warning threshold."
+  },
+  "outputIntegrity": {
+    "hashes": {
+      "full": "ce23c5bc48a3ce15a89d95a00418d75f2f2edff3b2ded5bbff4cf1d468ebddab",
+      "structured": "31eaec5fc75e597747f737fbfd5cd845702e2d7aae65ae199cb28a8d9dae8762",
+      "compact": "c44b46d727f5f590f769de65be4e4f235700c0d7e0e5d04039280bc5d3610354",
+      "json": "6b5c5ab8d2f66111930f526c53cbcd940a1a283d5018707b8e490120f6a7bff8",
+      "generation_json": "1a8c50dd21459a3054ba2f826a133e1efd055e511bf8b9016ddd63ccb01ceea4"
+    },
+    "backupBytes": 21413,
+    "restoredMetadata": {
+      "version": 1,
+      "techniqueIds": [
+        "composition.rule-of-thirds"
+      ],
+      "baselineOverrideText": "  Authored Camera baseline.\nKeep this spacing.  ",
+      "baselineOverrideCompactText": " Exact compact baseline. "
+    },
+    "restoredMediaHashes": [
+      {
+        "id": "media_output_reference",
+        "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+      }
+    ],
+    "legacySceneUnchanged": true
+  },
+  "review": {
+    "independentReadOnlyReview": true,
+    "initialImportantFindings": 4,
+    "initialMinorFindings": 2,
+    "allSixCoveredByFailingThenPassingRegressions": true,
+    "postFixFocusedTests": 46,
+    "independentReReview": false
+  },
+  "limitations": [
+    "Automated UI verification uses bundled Chromium on Windows; Firefox, WebKit and an actual screen reader were not tested.",
+    "Advice and equivalence matching are bounded heuristics, not exhaustive prose interpretation or provider capability certification.",
+    "No external generator or physical camera was exercised.",
+    "Large ZIP64 recovery certification and its separate draft PR are outside this change.",
+    "Technique favorites and recents are localStorage UI preferences, not backed-up library records.",
+    "The broader Production Workspace UI Refinement brief was not supplied."
+  ],
+  "safetyBoundary": {
+    "actualBrowserProfileUsedForFeatureTests": false,
+    "actualUserRecordsModified": false,
+    "automaticPresetInstall": false,
+    "databaseSchemaChanged": false,
+    "promptAssemblerChanged": false,
+    "packageOrLockfileChanged": false,
+    "projectExportLimitMiB": 128,
+    "privateInventoryProfilesZipsCredentialsTemporaryReportsExcluded": true
+  },
+  "screenshots": [
+    {
+      "path": "docs/screenshots/cinematography/before/builder-1440.png",
+      "bytes": 124742,
+      "sha256": "6706e888fd646ba114ab3668f5a0f112f77e3a1773bbb326fc211dbce2f0ef05"
+    },
+    {
+      "path": "docs/screenshots/cinematography/before/builder-390.png",
+      "bytes": 36576,
+      "sha256": "d24d3f72dc8895d7ec9a1ff3c3f21a07a20aee49e778f29c8f8ce5cd6b724def"
+    },
+    {
+      "path": "docs/screenshots/cinematography/before/builder-768.png",
+      "bytes": 86461,
+      "sha256": "45ed0a0632d9d5a7c4259ad22b3905a95a826f66caa703379b3cfbd26b6298e2"
+    },
+    {
+      "path": "docs/screenshots/cinematography/before/presets-1440.png",
+      "bytes": 97591,
+      "sha256": "6668e24a2e083eee17f09a88e21c15c4920d755122a2bc53acc4ff344c480f21"
+    },
+    {
+      "path": "docs/screenshots/cinematography/before/presets-390.png",
+      "bytes": 32408,
+      "sha256": "73300382c84ca7308db45601be3f5230f2745a183f4faf5bec6db285d7a438d9"
+    },
+    {
+      "path": "docs/screenshots/cinematography/before/presets-768.png",
+      "bytes": 89675,
+      "sha256": "8bf3ef6756d21fea057102ba6fab8466b50c717874e7447ee6ad363884baca83"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/builder-1440.png",
+      "bytes": 125152,
+      "sha256": "439bfc8df6e948c7999aa472dd4b0cb7049797106a46f12943202a144fd025eb"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/builder-390.png",
+      "bytes": 36576,
+      "sha256": "d24d3f72dc8895d7ec9a1ff3c3f21a07a20aee49e778f29c8f8ce5cd6b724def"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/builder-768.png",
+      "bytes": 87175,
+      "sha256": "93ec8cfe5482d7315c872b525ecb6e3e7b82ff88a6c2e67315f02fe1b1ce11bc"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/composer-1440.png",
+      "bytes": 149259,
+      "sha256": "8475f7b6d9eb6d6f45cd3710c534d32f3b8514ca0125a5d81f65660fbbd0c213"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/composer-390.png",
+      "bytes": 43888,
+      "sha256": "30866a80114d550b1e1536e23f2e68c02e7c488417656475d1cf8cc7e85cfb5a"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/composer-768.png",
+      "bytes": 104596,
+      "sha256": "9b9a7e9b8e17f617993383aa93f7bcf4c91237ff9acc2d91e84756c5cdbd7a5b"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/explorer-1440.png",
+      "bytes": 123918,
+      "sha256": "c2f7870bed789d4e47f117a4326c6a1d2ee6291a05b9e14ae87a20e04135237b"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/explorer-390.png",
+      "bytes": 44931,
+      "sha256": "b8b18bb44f163bc598c3c41567fd94d0ea4e8c0bf87e06333882786b867df382"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/explorer-768.png",
+      "bytes": 108545,
+      "sha256": "a4c176f2d3bb360e1f183c5621afc744f3ff4d5747d578a52c1ae9627f4d19f4"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/presets-1440.png",
+      "bytes": 105105,
+      "sha256": "b19396052e900483b9515a97fad394fda8402c3e4d0834977cb8a16738bc9f3e"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/presets-390.png",
+      "bytes": 34204,
+      "sha256": "a562fc5a63634f26341a3a888259073acb6fe858a7ed3b4429433e5cbe3af585"
+    },
+    {
+      "path": "docs/screenshots/cinematography/after/presets-768.png",
+      "bytes": 92553,
+      "sha256": "400f07dff39f93118a7039db8ad75250afacf1765f094a6f711f0f748e8b73ca"
+    }
+  ],
+  "changedFiles": [
+    "docs/camera-cinematography-design.md",
+    "docs/camera-cinematography-guide.md",
+    "docs/camera-cinematography-qa.md",
+    "docs/qa/cinematography-results.json",
+    "docs/screenshots/cinematography/after/builder-1440.png",
+    "docs/screenshots/cinematography/after/builder-390.png",
+    "docs/screenshots/cinematography/after/builder-768.png",
+    "docs/screenshots/cinematography/after/composer-1440.png",
+    "docs/screenshots/cinematography/after/composer-390.png",
+    "docs/screenshots/cinematography/after/composer-768.png",
+    "docs/screenshots/cinematography/after/explorer-1440.png",
+    "docs/screenshots/cinematography/after/explorer-390.png",
+    "docs/screenshots/cinematography/after/explorer-768.png",
+    "docs/screenshots/cinematography/after/presets-1440.png",
+    "docs/screenshots/cinematography/after/presets-390.png",
+    "docs/screenshots/cinematography/after/presets-768.png",
+    "docs/screenshots/cinematography/before/builder-1440.png",
+    "docs/screenshots/cinematography/before/builder-390.png",
+    "docs/screenshots/cinematography/before/builder-768.png",
+    "docs/screenshots/cinematography/before/presets-1440.png",
+    "docs/screenshots/cinematography/before/presets-390.png",
+    "docs/screenshots/cinematography/before/presets-768.png",
+    "docs/superpowers/plans/2026-10-29-camera-cinematography.md",
+    "e2e/cinematography-fixture.mjs",
+    "e2e/cinematography-screenshots.spec.mjs",
+    "e2e/cinematography.spec.mjs",
+    "e2e/media-inspection.spec.mjs",
+    "src/App.tsx",
+    "src/__tests__/cameraComposition.test.ts",
+    "src/__tests__/cameraCompositionCompatibility.test.ts",
+    "src/__tests__/cinematographyIntegration.test.tsx",
+    "src/__tests__/cinematographyPackDialog.test.tsx",
+    "src/__tests__/cinematographyPresets.test.ts",
+    "src/__tests__/cinematographyRegistry.test.ts",
+    "src/__tests__/cinematographyUI.test.tsx",
+    "src/__tests__/mediaInspection.test.tsx",
+    "src/components/AppShell.tsx",
+    "src/components/CameraComposer.tsx",
+    "src/components/CinematographyExplorer.tsx",
+    "src/components/CinematographyPackDialog.tsx",
+    "src/components/CinematographyTabs.tsx",
+    "src/components/SharedModals.tsx",
+    "src/components/cinematography.css",
+    "src/context/LibraryContext.tsx",
+    "src/domain/cameraComposition.ts",
+    "src/domain/cameraCompositionParameters.ts",
+    "src/domain/cameraCompositionValidation.ts",
+    "src/domain/cameraCompositionWarnings.ts",
+    "src/domain/cinematographyCatalog.ts",
+    "src/domain/cinematographyPresets.ts",
+    "src/domain/cinematographyRegistry.ts",
+    "src/domain/displayLabels.ts",
+    "src/domain/generationDocument.ts",
+    "src/domain/phase4Validation.ts",
+    "src/domain/sceneDocument.ts",
+    "src/domain/validation.ts",
+    "src/screens/CinematographyScreen.tsx",
+    "src/screens/EditorScreen.tsx",
+    "src/screens/HomeScreen.tsx",
+    "src/screens/PromptDetailScreen.tsx",
+    "src/screens/SceneBuilderScreen.tsx",
+    "src/screens/TemplatesScreen.tsx",
+    "src/screens/VariantsScreen.tsx",
+    "src/storage/cinematographyPresets.ts",
+    "src/storage/db.ts",
+    "src/types/cinematography.ts",
+    "src/types/domain.ts"
+  ],
+  "commitAttempt": {
+    "command": "git commit -S",
+    "exitCode": 1,
+    "cancelledAtLocalPassphrasePrompt": true,
+    "headUnchanged": true,
+    "signingConfigurationChanged": false
+  }
+}

@@ -38,7 +38,7 @@ export const CATEGORY_LABELS: Record<PromptCategory, string> = {
   wardrobe: 'Clothing & Accessories',
   actions: 'Actions & Emotions',
   environments: 'Environments',
-  camera: 'Camera & Movement',
+  camera: 'Camera & Cinematography',
   lighting: 'Lighting & Mood',
   styles: 'Art Styles',
 };

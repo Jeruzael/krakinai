@@ -57,7 +57,7 @@ test('camera and variant previews coordinate hover and explicit playback without
       .locator('.asset-picker-card video')
       .evaluateAll((videos) => videos.filter((v) => !v.paused).length)
   ).toBe(1);
-  await page.getByRole('textbox', { name: 'Search Camera & Movement' }).hover();
+  await page.getByRole('textbox', { name: 'Search Camera & Cinematography' }).hover();
   await expect(video).toHaveJSProperty('paused', true);
   await expect(video).toHaveJSProperty('currentTime', 0);
   await expect(second).toHaveJSProperty('paused', true);

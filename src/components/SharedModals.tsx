@@ -26,9 +26,9 @@ import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import {
   CATEGORY_LABELS,
   MAX_TOTAL_MEDIA_BYTES,
-  SLOT_LABELS,
   SLOT_TO_CATEGORY,
 } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import type {
   BuilderSlot,
   MediaAsset,

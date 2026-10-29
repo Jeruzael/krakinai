@@ -113,6 +113,7 @@ export function buildGenerationDocument(
     environment: effective("environment"),
     action: effective("action"),
     camera: effective("camera"),
+    ...(project.components.camera?.snapshot.cameraComposition?{cameraComposition:structuredClone(project.components.camera.snapshot.cameraComposition)}:{}),
     lighting: effective("lighting"),
     style: effective("style"),
     dialogue: project.dialogue

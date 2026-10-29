@@ -11,10 +11,10 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import {
   CATEGORY_LABELS,
-  SLOT_LABELS,
   VARIANT_TYPE_TO_SLOT,
   validateMediaCandidate,
 } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import type {
   MediaAsset,
   MediaLink,

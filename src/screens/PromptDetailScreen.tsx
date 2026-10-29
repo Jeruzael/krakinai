@@ -13,7 +13,8 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
-import { CATEGORY_LABELS, SLOT_LABELS } from '../domain/validation';
+import { CATEGORY_LABELS } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import type { MediaAsset } from '../types/domain';
 import { MediaPreviewDialog } from '../components/MediaPreviewDialog';
 import { MediaThumbnail } from '../components/MediaThumbnail';

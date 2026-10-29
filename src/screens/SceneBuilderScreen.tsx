@@ -18,7 +18,8 @@ import {
   Upload,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
-import { SLOT_LABELS, validateMediaCandidate } from '../domain/validation';
+import { validateMediaCandidate } from '../domain/validation';
+import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
 import {
   assembleScenePrompt,
   createSnapshotFromAsset,
@@ -55,6 +56,8 @@ import { PerformanceDirection } from '../components/PerformanceDirection';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, resolveShotType, validateShotSourceMedia, SHOT_TYPES, SHOT_TYPE_LABELS, SHOT_TYPE_DESCRIPTIONS } from '../domain/shotTypeRules';
 import { SourceMediaPicker } from '../components/SourceMediaPicker';
+import { CameraComposer } from '../components/CameraComposer';
+import { rebaseCameraComposition, clearCameraComposition } from '../domain/cameraComposition';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
@@ -83,6 +86,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [showReferencePack, setShowReferencePack] = useState(false);
   const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
   const [pickerSlot, setPickerSlot] = useState<BuilderSlot | null>(null);
+  const [showCameraComposer, setShowCameraComposer] = useState(false);
+  const cameraRowRef = useRef<HTMLButtonElement>(null);
+  const cameraComposerReturnRef = useRef<HTMLElement | null>(null);
   const [overrideTextBuf, setOverrideTextBuf] = useState('');
   const [overrideCompactBuf, setOverrideCompactBuf] = useState('');
 
@@ -245,7 +251,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
 
     const nextSlots = {
       ...draft.slots,
-      [pickerSlot]: createSnapshotFromAsset(asset),
+      [pickerSlot]: pickerSlot === 'camera'
+        ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromAsset(asset))
+        : createSnapshotFromAsset(asset),
     };
     setPickerSlot(null);
     await persistDraftImmediate({ ...draft, slots: nextSlots });
@@ -275,7 +283,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           if (parentAsset) {
             nextSlots.character = createSnapshotFromAsset(parentAsset);
           }
-          nextSlots[variant.targetSlot] = createSnapshotFromVariant(variant);
+          nextSlots[variant.targetSlot] = variant.targetSlot === 'camera'
+            ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromVariant(variant))
+            : createSnapshotFromVariant(variant);
           await persistDraftImmediate({ ...draft, slots: nextSlots });
           closeConfirmDialog();
         },
@@ -287,7 +297,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     if (!nextSlots.character && parentAsset) {
       nextSlots.character = createSnapshotFromAsset(parentAsset);
     }
-    nextSlots[variant.targetSlot] = createSnapshotFromVariant(variant);
+    nextSlots[variant.targetSlot] = variant.targetSlot === 'camera'
+      ? rebaseCameraComposition(draft.slots.camera, createSnapshotFromVariant(variant))
+      : createSnapshotFromVariant(variant);
     await persistDraftImmediate({ ...draft, slots: nextSlots });
   };
 
@@ -718,6 +730,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     <button
                       type="button"
                       className="recipe-row-main"
+                      ref={slot === 'camera' ? cameraRowRef : undefined}
                       disabled={inactive}
                       onClick={() => openDetails(slot)}
                       aria-label={`Open ${recipeLabels[slot]} details: ${selected?.sourceTitle || 'Not selected'}`}
@@ -757,6 +770,16 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               })}
             </div>
             <div className="recipe-options">
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={event => {
+                  cameraComposerReturnRef.current = event.currentTarget;
+                  setShowCameraComposer(true);
+                }}
+              >
+                Compose Camera directions
+              </button>
               {!shotRules.inapplicableSlots.includes('character') && <GenerationIdentityControl source={activeDraft} liveMaster={snapshot.assets.find(asset => asset.id === activeSlots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />}
               <details key={shotRules.instructionLabel} className="studio-disclosure" open={shotRules.requiresInstructions || undefined}>
                 <summary>
@@ -1086,6 +1109,26 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         if (!saved) throw new Error('Reference Pack could not be saved. Your selection remains available here.');
         setShowReferencePack(false);
       }} />}
+      {showCameraComposer && (
+        <CameraComposer
+          snapshot={draft.slots.camera}
+          assets={snapshot.assets}
+          shotType={draft.shotType}
+          durationSeconds={draft.settings.durationSeconds}
+          sceneInstructions={draft.sceneInstructions}
+          returnFocusRef={cameraComposerReturnRef}
+          onClose={() => setShowCameraComposer(false)}
+          onApply={async camera => {
+            const current = latestDraft.current ?? draft;
+            const slots = { ...current.slots };
+            if (camera) slots.camera = camera;
+            else delete slots.camera;
+            const saved = await persistDraftImmediate({ ...current, slots });
+            if (!saved) throw new Error('Camera directions could not be saved. Your controls remain here.');
+            setShowCameraComposer(false);
+          }}
+        />
+      )}
       {detailSlot && detailSnapshot && (
         <StudioDialog
           title={`${recipeLabels[detailSlot]} details`}
@@ -1118,6 +1161,19 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           }
         >
           <h3 style={{ marginTop: 0 }}>{detailSnapshot.sourceTitle}</h3>
+          {detailSlot === 'camera' && (
+            <button
+              className="btn btn-secondary btn-sm"
+              type="button"
+              onClick={() => {
+                cameraComposerReturnRef.current = cameraRowRef.current;
+                setDetailSlot(null);
+                setShowCameraComposer(true);
+              }}
+            >
+              Compose Camera directions
+            </button>
+          )}
           <div className="studio-inline">
             <span className="badge">
               {detailSnapshot.sourceType} · Rev {detailSnapshot.sourceRevision}
@@ -1184,7 +1240,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     const nextSlots = {
                       ...draft.slots,
                       [detailSlot]: {
-                        ...detailSnapshot,
+                        ...(detailSlot === 'camera' ? clearCameraComposition(detailSnapshot) : detailSnapshot),
                         overrideText: overrideTextBuf.trim() || undefined,
                         overrideCompactText:
                           overrideCompactBuf.trim() || undefined,
@@ -1204,7 +1260,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                       const nextSlots = {
                         ...draft.slots,
                         [detailSlot]: {
-                          ...detailSnapshot,
+                          ...(detailSlot === 'camera' ? clearCameraComposition(detailSnapshot) : detailSnapshot),
                           overrideText: undefined,
                           overrideCompactText: undefined,
                         },
