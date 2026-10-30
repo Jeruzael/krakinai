@@ -30,6 +30,7 @@ import {
 } from '../domain/promptAssembler';
 import { CATEGORY_TO_SLOT } from '../domain/validation';
 import { rebaseCameraComposition } from '../domain/cameraComposition';
+import {isDirectPrompt} from '../domain/directPrompt';
 
 export interface ToastMessage {
   id: string;
@@ -296,7 +297,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     const found = activeId
       ? snap.drafts.find((d) => d.id === activeId)
       : snap.drafts[0];
-    if (found) return found;
+    if (found&&!isDirectPrompt(found)) return found;
 
     const created = await saveSceneDraft({
       title: 'Untitled Scene Draft',

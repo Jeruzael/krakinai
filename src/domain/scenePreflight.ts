@@ -3,6 +3,7 @@ import { getEffectiveDialogueDelivery } from './dialoguePerformance';
 import { buildSceneDocument, SCENE_COMPONENT_ORDER, type SceneDocumentSource } from './sceneDocument';
 import { assembleScenePrompt } from './promptAssembler';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
+import {getDirectPromptReadiness,isDirectPrompt,validateSceneAuthoring,validateDirectAttachments} from './directPrompt';
 export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references';
 export interface PreflightFinding {
   id: string;
@@ -44,6 +45,13 @@ function speakerMatchesCharacter(speaker: string, title: string): boolean {
   return name === fullTitle || (identityName.length > 0 && name === identityName);
 }
 export function runScenePreflight(input: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>|ReadonlyMap<string,MediaAsset>): PreflightFinding[] {
+  if(isDirectPrompt(input)){
+    const error=validateSceneAuthoring({...input,outputs:{full:input.directPrompt.text}},true);
+    const mediaMap=availableMediaIds&&'get' in availableMediaIds?availableMediaIds:undefined;
+    const invalid=mediaMap?validateDirectAttachments(input as SceneDraft,mediaMap):[];
+    const pending=mediaMap?getDirectPromptReadiness(input,mediaMap):[];
+    return [...new Set([...(error?[error]:[]),...invalid,...pending])].map(message=>({id:JSON.stringify(['direct',message]),ruleId:error===message||invalid.includes(message)?'P000':'P008',severity:error===message||invalid.includes(message)?'blocking':'review',title:message,components:['references'],evidence:[{component:'references',text:message}],explanation:'Direct prompt saveability is separate from generation input readiness. No recipe components are required.',suggestedActions:['Review original text and References / Source Media. Missing future inputs can remain pending.']}));
+  }
   const source={...input,slots:getActiveSceneSlots(input),referencePack:getActiveReferencePack(input)};
   const findings: PreflightFinding[]=[];
   const add=(ruleId: PreflightFinding['ruleId'], severity: PreflightFinding['severity'], title: string, evidence: Evidence[], explanation: string, suggestedActions=['Review the source directions and edit if needed.']) => {

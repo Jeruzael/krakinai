@@ -40,6 +40,39 @@
   margin: 0;
   font-size: 13px;
 }
+.output-version-menu {
+  position: relative;
+}
+.output-version-menu > summary {
+  cursor: pointer;
+  list-style: none;
+}
+.output-version-popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: min(290px, calc(100vw - 48px));
+  padding: 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px #0f172a24;
+}
+.output-version-popover .scene-revision-actions {
+  flex-direction: column;
+  align-items: stretch;
+}
+@media (max-width: 767px) {
+  .output-version-menu[open] {
+    flex-basis: 100%;
+  }
+  .output-version-popover {
+    position: static;
+    margin-top: 8px;
+    max-width: 100%;
+  }
+}
 .output-settings {
   padding-bottom: 4px;
 }

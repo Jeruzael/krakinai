@@ -5,6 +5,8 @@ import {
   type SceneDocumentSource,
 } from "./sceneDocument";
 import { getActiveSceneSlots, getSceneLevelAvoidText, getSourceReferenceEntries, resolveShotType } from './shotTypeRules';
+import {isDirectPrompt} from './directPrompt';
+import {buildDirectPromptDocument} from './directPromptDocument';
 
 export interface GenerationReference {
   associationId?: string;
@@ -150,5 +152,6 @@ export function serializeGenerationJson(
   source: SceneDocumentSource,
   options?: GenerationExportOptions,
 ): string {
+  if(isDirectPrompt(source))return JSON.stringify(buildDirectPromptDocument(source,'generation'),null,2);
   return JSON.stringify(buildGenerationDocument(source, options), null, 2);
 }

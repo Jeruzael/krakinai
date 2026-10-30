@@ -1,0 +1,73 @@
+.scene-revision-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.scene-history-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+.scene-history-list > li {
+  border: 1px solid var(--border-color, #dce3ed);
+  border-radius: 12px;
+  padding: 14px;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+.scene-history-list small {
+  display: block;
+  color: var(--text-secondary, #64748b);
+  overflow-wrap: anywhere;
+  margin-top: 5px;
+}
+.scene-compare-controls,
+.scene-version-panes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.scene-compare-controls label {
+  display: grid;
+  gap: 6px;
+}
+.scene-version-panes pre,
+.scene-line-diff {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 340px;
+  overflow: auto;
+  background: var(--bg-color, #f7f9fc);
+  border: 1px solid var(--border-color, #dce3ed);
+  padding: 12px;
+  border-radius: 10px;
+  font:
+    13px/1.65 ui-monospace,
+    monospace;
+}
+.scene-diff-added {
+  background: #e5f7eb;
+  color: #14532d;
+}
+.scene-diff-removed {
+  background: #fff0ef;
+  color: #7f1d1d;
+}
+.scene-version-compare {
+  min-width: 0;
+}
+.scene-version-compare h4 {
+  margin-bottom: 8px;
+}
+@media (max-width: 700px) {
+  .scene-compare-controls,
+  .scene-version-panes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .scene-revision-actions .btn {
+    white-space: normal;
+  }
+}

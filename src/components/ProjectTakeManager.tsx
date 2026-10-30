@@ -16,6 +16,9 @@ import {
 import { MediaThumbnail } from './MediaThumbnail';
 import { MediaPreviewDialog } from './MediaPreviewDialog';
 import { StudioDialog } from './StudioDialog';
+import {isDirectPrompt} from '../domain/directPrompt';
+import {getRevisionLabel} from '../domain/sceneRevisions';
+import {SceneVersionComparison} from './SceneRevisionHistory';
 import './projectTakes.css';
 
 type Props = {
@@ -154,8 +157,8 @@ export const ProjectTakeManager: React.FC<Props> = ({
           </p>
         </section>
       );
-    const document = buildSceneDocument(scene);
-    const fields = [
+    const document = isDirectPrompt(scene)?null:buildSceneDocument(scene);
+    const fields = document ? [
       ['Camera', document.components.camera?.prompt],
       ['Action', document.components.action?.prompt],
       ['Dialogue', document.dialogue?.exactLine],
@@ -166,7 +169,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
       ['Review status', scene.reviewStatus],
       ['Review notes', scene.reviewNotes],
       ['Project take note', notes[sceneId]],
-    ] as const;
+    ] as const : [['Original Prompt',scene.outputs.full],['Aspect ratio',scene.settings.aspectRatio],['Duration seconds',scene.settings.durationSeconds],['Review notes',scene.reviewNotes]] as const;
     return (
       <section className="project-take-pane" role="region" aria-label={label}>
         <h3>{scene.title}</h3>
@@ -198,7 +201,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
           </dl>
           <h4>All component prompts and sources</h4>
           <dl>
-            {Object.entries(document.components).map(([slot, component]) => (
+            {Object.entries(document?.components??{}).map(([slot, component]) => (
               <React.Fragment key={slot}>
                 <dt>{slot}</dt>
                 <dd className="project-take-exact">
@@ -223,8 +226,8 @@ export const ProjectTakeManager: React.FC<Props> = ({
           <pre className="project-take-exact">
             {JSON.stringify(
               {
-                dialogue: document.dialogue,
-                settings: document.settings,
+                dialogue: document?.dialogue??null,
+                settings: document?.settings??scene.settings,
                 reviewStatus: scene.reviewStatus,
                 reviewNotes: scene.reviewNotes,
                 projectNote: notes[sceneId] ?? '',
@@ -365,6 +368,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
                           {' '}
                           · Revision {scene.revision} · Review:{' '}
                           {scene.reviewStatus}
+                          {' · '}{getRevisionLabel(scene)}{isDirectPrompt(scene)?' · Direct Prompt':''}
                         </>
                       )}
                     </p>
