@@ -8,6 +8,7 @@ const transitionTypes=new Set(['straight_cut','match_cut','dissolve','j_cut','l_
 const castFields=['name','storyRole','voiceNotes','personality','distinctiveFeatures','accessories','relationships','notes'] as const;
 export interface ProjectReferences {assets:PromptAsset[];variants:Variant[];media:Pick<MediaAsset,'id'|'mimeType'>[];allowMissingCastSources?:boolean}
 export function validateProject(collection:Collection, scenes:SavedScene[], checkMembers=true, references?:ProjectReferences):string|null {
+  if(collection.planningNotes!==undefined&&(typeof collection.planningNotes!=='string'||collection.planningNotes.length>10000))return 'Invalid project planning notes.';
   const project=collection.project;
   if (!project) return null;
   if (project.version!==1 || !Number.isSafeInteger(project.revision) || project.revision<0 || !Array.isArray(project.shots)) return 'Invalid project metadata or revision.';

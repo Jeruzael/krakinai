@@ -1,0 +1,1536 @@
+{
+  "schema": "krakinai.change-set-qa.v1",
+  "generatedAt": "2026-10-30T11:33:01.330Z",
+  "basis": {
+    "base": "bc57bd56495e004d13dc034e0fdc4d0fc46a494c",
+    "branch": "codex/ai-change-set-importer",
+    "localPreCommitEvidence": true,
+    "workingTreeDirty": true,
+    "hostedEvidence": "Exact signed commit and GitHub Actions run are reported on the PR and in the delivery response; this file records local verification before signing."
+  },
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "win32",
+    "playwright": "1.64.1"
+  },
+  "commands": [
+    {
+      "label": "git-status",
+      "command": "git status --short",
+      "startedAt": "2026-10-30T11:21:38.3367018Z",
+      "durationMs": 66,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-git-status.log"
+    },
+    {
+      "label": "git-name-status",
+      "command": "git diff --name-status",
+      "startedAt": "2026-10-30T11:21:38.4194446Z",
+      "durationMs": 74,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-git-name-status.log"
+    },
+    {
+      "label": "git-diff-check",
+      "command": "git diff --check",
+      "startedAt": "2026-10-30T11:21:38.4968739Z",
+      "durationMs": 80,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-git-diff-check.log"
+    },
+    {
+      "label": "unit",
+      "command": "npm test -- --maxWorkers=2 --minWorkers=1 --reporter=default --reporter=json --outputFile.json=qa-results/change-sets/full-unit.json --reporter=junit --outputFile.junit=qa-results/vitest.xml",
+      "startedAt": "2026-10-30T11:21:38.5803787Z",
+      "durationMs": 145340,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-unit.log"
+    },
+    {
+      "label": "typecheck",
+      "command": "npm run typecheck",
+      "startedAt": "2026-10-30T11:24:03.9234492Z",
+      "durationMs": 8715,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-typecheck.log"
+    },
+    {
+      "label": "build",
+      "command": "npm run build",
+      "startedAt": "2026-10-30T11:24:12.6420496Z",
+      "durationMs": 13476,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-build.log"
+    },
+    {
+      "label": "audit",
+      "command": "npm audit --omit=dev",
+      "startedAt": "2026-10-30T11:24:26.1218230Z",
+      "durationMs": 2088,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-audit.log"
+    },
+    {
+      "label": "qa-ledger",
+      "command": "npm run test:qa",
+      "startedAt": "2026-10-30T11:24:28.2130854Z",
+      "durationMs": 811,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-qa-ledger.log"
+    },
+    {
+      "label": "browser",
+      "command": "npm run test:e2e",
+      "startedAt": "2026-10-30T11:24:29.0274219Z",
+      "durationMs": 388576,
+      "exitCode": 0,
+      "log": "qa-results/change-sets/final-browser.log"
+    },
+    {
+      "label": "qa-ledger-followup",
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "log": "qa-results/change-sets/ci-cap-green.log"
+    },
+    {
+      "label": "ci-summary-followup",
+      "command": "node scripts/qa/ci-summary.mjs",
+      "exitCode": 0,
+      "log": "qa-results/change-sets/ci-summary-green.log"
+    }
+  ],
+  "unit": {
+    "files": 94,
+    "total": 662,
+    "passed": 662,
+    "failed": 0,
+    "skipped": 0,
+    "startTime": 1793359299799
+  },
+  "browser": {
+    "uniqueCases": 135,
+    "attempts": 135,
+    "passed": 135,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "durationMs": 387423.693,
+    "baseUrl": "http://127.0.0.1:4173",
+    "data": "fresh isolated synthetic browser contexts only",
+    "cases": [
+      {
+        "file": "change-set-candidate-review.spec.mjs",
+        "title": "deferred candidate review after reload exposes exact content before creating one unreviewed asset",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a shared scene revision changes only the explicitly chosen project and shot",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a pending original is linked later as a new immutable version without replacing its pending snapshot",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "200 percent desktop reflow retains readable controls at 720 CSS pixels and DPR 2",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "append to an existing project preserves every prior shot,scene,draft and unrelated project",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "revision,restore and alternate take keep old snapshots and require separate preference and status approval",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "mismatched project,shot and source scene blocks the complete batch",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a second tab write invalidates an approved preview without losing the foreign write",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a quota failure after queued writes rolls back the entire import",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a abort failure after queued writes rolls back the entire import",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "current media disappearance or MIME metadata mismatch blocks the batch without fabricated replacements",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "duplicate character and camera proposals need explicit reuse or separate-create acknowledgement",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a JSON file imports exact text and preserves it through clipboard,TXT and selected-take project ZIP",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "context export remains read-only and independently protects full prompts,identity,notes and filenames",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "maximum operation count and long exact prompt previews remain collapsed,scrollable and keyboard accessible",
+        "passed": true
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "full backup restores receipts,candidates,scenes and media hashes,and replays after a whole browser restart",
+        "passed": true
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 1440",
+        "passed": true
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 1366",
+        "passed": true
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 768",
+        "passed": true
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 390",
+        "passed": true
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "title": "canonical package preview and cancel do not write or install proposed assets",
+        "passed": true
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "title": "MIDORI creates exactly fifteen ordered shots,60seconds,types2/9/4 and pending4,then replays without duplication",
+        "passed": true
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 1440",
+        "passed": true
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 768",
+        "passed": true
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 390",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "library-first composition previews the existing fallback source draft before updating it",
+        "passed": true
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 1440",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 768",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 390",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "passed": true
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1440",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1366",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 768",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 390",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "a shared saved scene revises the explicit project being viewed, preserving its original project",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "managed recipe editor and reviewed output reject another tab changes without replacing its draft",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct prompt import saves without components and copies/downloads the exact complete original",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "storyboard revision comparison preserves original text, fifteen planned shots, and preferred take",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "restoring an earlier prompt creates version three and never silently selects it",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "saved direct scenes expose a distinct alternate take workflow",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "stale browser tab cannot overwrite a changed direct draft",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "quota and interrupted transactions roll back new scene and storyboard shot together",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "same-request saves are idempotent and cross-project revisions are rejected",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mixed library backup restores exact versions and original media into another isolated browser context",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "project destination creates a new planned shot atomically without selecting it",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mode changes and saved-draft reload preserve earlier recipe and direct data",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "legacy recipe output hashes remain identical to the captured master baseline",
+        "passed": true
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible",
+        "passed": true
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 1440",
+        "passed": true
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 768",
+        "passed": true
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 390",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "repeated image/video previews release URLs and pause detached players with heap observations",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 1440x900",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 768x1024",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 390x844",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 720x450",
+        "passed": true
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera media has explicit touch Preview with no hover playback",
+        "passed": true
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 1440",
+        "passed": true
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 768",
+        "passed": true
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 390",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "reference and sample previews use the existing associations without reassigning media",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "complete long raw output and missing-media/empty states do not invent scene details",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "an associated decodable result video is labeled Result and opens the existing explicit player",
+        "passed": true
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "passed": true
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 1440",
+        "passed": true
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 768",
+        "passed": true
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 390",
+        "passed": true
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "passed": true
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "passed": true
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "passed": true
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "canonical output copy, save, and small legacy backup roundtrip",
+        "passed": true
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "duplicate save requires an explicit decision",
+        "passed": true
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "storyboard order and collection return survive navigation",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 1440x900",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 768x1024",
+        "passed": true
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 390x844",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "reduced motion disables hover and explicit Preview stays usable",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 1440x900",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 768x1024",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 390x844",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 720x450",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "passed": true
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "uses visible Preview rather than hover and never navigates on playback",
+        "passed": true
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 1440",
+        "passed": true
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 768",
+        "passed": true
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 390",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 1440",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 768",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 390",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "take preference, project note, comparison and removal keep immutable source scenes",
+        "passed": true
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "passed": true
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 1440",
+        "passed": true
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 768",
+        "passed": true
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 390",
+        "passed": true
+      }
+    ]
+  },
+  "historicalQa": {
+    "scriptTests": 8,
+    "checks": 207,
+    "screenshots": 45,
+    "countedSeparately": true
+  },
+  "productionAudit": {
+    "vulnerabilities": 0
+  },
+  "warnings": {
+    "unitAct": {
+      "MediaThumbnail": 25
+    },
+    "browserColorNotices": 2,
+    "buildChunkOver500kB": true
+  },
+  "textIntegrity": {
+    "sourceSha256": "1fc5330118154416b60b2c8792e6917a503d2c5cc710b6cc72b69a009d7bc193",
+    "clipboardSha256": "1fc5330118154416b60b2c8792e6917a503d2c5cc710b6cc72b69a009d7bc193",
+    "txtSha256": "1fc5330118154416b60b2c8792e6917a503d2c5cc710b6cc72b69a009d7bc193",
+    "utf8Bytes": 70,
+    "projectZipSha256": "8662a119577f68ed870b2d0558926b8f86649ccf01ea8a777e0a382180b3abed",
+    "projectZipBytes": 4065,
+    "zipPaths": [
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/shots/0001-01-Exact-shot-73-68-6f-74-5f-63-34-38-64-65-37-65-65-35-39-36-36/prompt.txt",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/shots/0001-01-Exact-shot-73-68-6f-74-5f-63-34-38-64-65-37-65-65-35-39-36-36/scene.json",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/README.md",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/storyboard.md",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/dialogue-script.md",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/continuity.md",
+      "Synthetic-exact-export-63-6f-6c-6c-65-63-74-69-6f-6e-5f-31-35-63-33-63-37-63-35-63-30-32-31/manifest.json"
+    ],
+    "exactPromptFound": true
+  },
+  "backupIntegrity": {
+    "fixture": "synthetic mixed recipe/direct library and decodable canvas PNG",
+    "archiveBytes": 27161,
+    "archiveSha256": "6a75107438ca8b33e9e1302de1c1e169cfe36637f9baa0da66615c7fe5b39fdc",
+    "manifestBytes": 113782,
+    "counts": {
+      "assets": 11,
+      "variants": 1,
+      "scenes": 17,
+      "drafts": 3,
+      "collections": 3,
+      "templates": 4,
+      "media": 1
+    },
+    "receipts": 1,
+    "candidates": 2,
+    "sceneOutputHashes": [
+      {
+        "id": "scene_098dd0d85986",
+        "sha256": "477de460fd103784483422dae1ed0c7621cc7c42528f867362a4e2823a37d285"
+      },
+      {
+        "id": "scene_0ac4a595f4fe",
+        "sha256": "81da0cd2cc7408f86bcb844aeb6ecd40e30484c7ba38623ad10655b377856c0b"
+      },
+      {
+        "id": "scene_13fb3ce84552",
+        "sha256": "f22021098171912eb0190b545b1e9038946d876512ca3a7b57029b29d00ccc15"
+      },
+      {
+        "id": "scene_4ac0209c097f",
+        "sha256": "8a29f708874f588133b6dcf2ba116584cdf6ad1970c1022bce29027f9b5956da"
+      },
+      {
+        "id": "scene_5b1a0497f126",
+        "sha256": "869249c7aaa99518ee9761aa71828f78457322fc7ddd2cfce89fe3c4c360aa54"
+      },
+      {
+        "id": "scene_63168ca80d5e",
+        "sha256": "c585728c8a1e061c0c2d6eaba8fc04e2618f860cc671afae08d34795a3876387"
+      },
+      {
+        "id": "scene_6695f5457393",
+        "sha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913"
+      },
+      {
+        "id": "scene_7425edec7920",
+        "sha256": "dabad5f489f08355351a903c373425f3dac8a721b9df0210e13fdc4ba73c9866"
+      },
+      {
+        "id": "scene_8b4693f118a6",
+        "sha256": "7d806117ad04fdecd6628923820ea9384650fbcba466ca63b3b7e8c93462b529"
+      },
+      {
+        "id": "scene_8eac89743bc2",
+        "sha256": "11debbccd3a0dab85523ae219f30f6d1a729fc74ae833736d2259f25625ff82f"
+      },
+      {
+        "id": "scene_a9b52ff4df43",
+        "sha256": "82c8c05883301700218d2712e5f5c1d29ff5e423383882ccfef1fa588748bb37"
+      },
+      {
+        "id": "scene_d4f47eea8f9e",
+        "sha256": "af56b4ea4e800a3af9bd24de6edd8d57df6cedf7fa7ce19bfe57412be3860310"
+      },
+      {
+        "id": "scene_e65e05ea497c",
+        "sha256": "e62ac08be8f16357d224619866b4f4f281876c3b670e3a06ac19a2e50c15c565"
+      },
+      {
+        "id": "scene_e8993cd9a0c9",
+        "sha256": "cc825972e0a2cd047db2686248644148149f1296361fc6d9f6c144d7cca3ebda"
+      },
+      {
+        "id": "scene_ede26aea9a72",
+        "sha256": "e1e9069f776afd1b4a10394e0f8a335fc50cc96b4e7ff400a41332b58c1878ea"
+      },
+      {
+        "id": "scene_f49ffe6e0255",
+        "sha256": "c91f71ef1384bc87aafcac2dcbd6228dc591adeb084821595511daee2b8f1796"
+      },
+      {
+        "id": "scene_output_workspace_fixture",
+        "sha256": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467"
+      }
+    ],
+    "variantContextRestored": true,
+    "mediaHashes": [
+      {
+        "id": "media_output_reference",
+        "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+      }
+    ],
+    "allRecordsExactlyEqual": true,
+    "wholeBrowserRestartVerified": true,
+    "replayAfterRestoreNoWrites": true,
+    "retainedSyntheticProfile": "qa-results/change-sets/profiles/restart-1793359526836"
+  },
+  "legacyBaseline": {
+    "path": "e2e/fixtures/direct-prompt-baseline.json",
+    "sha256": "db4051534f02106c33d39c80a0b48e88970e8fe092b84a097cc7c0c78258adea",
+    "keys": [
+      "base",
+      "draft",
+      "saved"
+    ],
+    "hashCount": 22,
+    "hashes": {
+      "draft": {
+        "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+        "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+        "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+        "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+        "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+        "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+        "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+        "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+        "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+        "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+        "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+      },
+      "saved": {
+        "text.full": "32a7e2b1f9f9813c097659842f44459dfe9b838cb3ecbebb5aba7fc1e7c6e467",
+        "text.structured": "24f25cafde9e9220305a0e052487b08c94f69c63e0ae39106793dbf3b568c9c6",
+        "text.compact": "9dd007e26c5a8c27984eebc3a4b716bf48191c9460d56640a69278d5b8447fd8",
+        "text.json": "5fa3f4d486d504ebd026ef5bb63380c92d24de8cd332ce8f90d264f53a878566",
+        "text.generation_json": "9a779ab3b5ad2ff519b839d5b4b7fba74bc24080467b7b7f6b8aefda34d81153",
+        "text.generic_structured": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+        "text.gemini_omni_flash": "2b190b0c0011cf0a27c93c962f8ac95e96107eaf8f50026a581e8e9e4820aec5",
+        "text.custom": "b122d6a4b3640d01c33fc415eafbde6a9e31d5c2f9989063050eae14f6b7b12c",
+        "specifications.full": "0b90f67be6bcacc5cb6c91d309da2ad699cb026ffb832062b8e97a5cb6aabaa6",
+        "specifications.structured": "8bad7728d942ba579d5b0fae1efc145daf8affb41723da28b240df7353b5f9fc",
+        "specifications.compact": "37a8281902e855850fdab0a8cc3daf12d5dba5d75dd09b98fb2930d756c8e61d"
+      }
+    },
+    "unchanged": true
+  },
+  "review": {
+    "critical": 0,
+    "important": 3,
+    "allReproducedAndAddressed": true,
+    "reReviewPerformed": false,
+    "regressions": [
+      {
+        "title": "does not create a library asset from a deferred candidate",
+        "status": "passed",
+        "durationMs": 6.6262000000001535
+      },
+      {
+        "title": "binds the live recipe-restore master and exposes the exact generation decision in preview",
+        "status": "passed",
+        "durationMs": 24.625099999999975
+      },
+      {
+        "title": "rejects a recipe restore when its live character changes by update after preview",
+        "status": "passed",
+        "durationMs": 13.98720000000003
+      },
+      {
+        "title": "rejects a recipe restore when its live character changes by delete after preview",
+        "status": "passed",
+        "durationMs": 7.860900000000129
+      },
+      {
+        "title": "does not repeatedly traverse completed paths in a small converging dependency graph",
+        "status": "passed",
+        "durationMs": 5.312099999999873
+      },
+      {
+        "title": "validates the full 149-operation converging graph within a bounded time",
+        "status": "passed",
+        "durationMs": 25.973599999999806
+      },
+      {
+        "title": "stores deferred candidates and later creates only an explicitly approved unreviewed asset",
+        "status": "passed",
+        "durationMs": 33.92839999999978
+      },
+      {
+        "title": "shows the complete deferred candidate prompt and metadata before a later create approval",
+        "status": "passed",
+        "durationMs": 429.90149999999994
+      }
+    ]
+  },
+  "priorFailures": [
+    {
+      "case": "Final review",
+      "result": "Five regression assertions failed before fixes;39focused tests passed afterward, then full suite rerun."
+    },
+    {
+      "case": "Converging graph before memoization",
+      "prefixOperations": 57,
+      "observedMs": 501.811,
+      "budgetMs": 200
+    },
+    {
+      "case": "Typecheck after new regression selectors",
+      "exitCode": 2,
+      "reason": "Three unsupported Testing Library getByRole exact options; removed, typecheck and consolidated gates rerun."
+    },
+    {
+      "case": "Deferred candidate browser layout",
+      "reason": "Expanded pending list consumed fixed preview height; hidden while previewing; browser regression passed afterward."
+    },
+    {
+      "case": "Earlier browser development",
+      "reason": "Checkbox async state, initial focus timing and1366px action visibility corrected; test-only locator/wait/unique-code assumptions corrected. Raw red/green logs retained."
+    }
+  ],
+  "limits": {
+    "inputUtf8Bytes": 20971520,
+    "maxOperations": 250,
+    "maxTargetProjects": 10,
+    "maxNewShots": 250,
+    "maxSceneOperations": 100,
+    "maxCandidateOperations": 50,
+    "maxDependencyDepth": 16,
+    "maxDirectPromptUtf16Units": 100000,
+    "retainedManifestBytes": 20971520,
+    "projectExportMediaBytes": 134217728,
+    "noCapacityIncrease": true
+  },
+  "screenshots": [
+    {
+      "path": "docs/screenshots/change-sets/before/collections-1366.png",
+      "bytes": 74421,
+      "width": 1366,
+      "height": 768,
+      "sha256": "d2dad7646db576b188d970db4a6cdea949050e608ccc5037d055c157b3e62118"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/collections-1440.png",
+      "bytes": 79360,
+      "width": 1440,
+      "height": 900,
+      "sha256": "a062eae04d14041b2d145422be00c232c4b1f38723533915e1f16a66c3eae33a"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/collections-390.png",
+      "bytes": 30276,
+      "width": 390,
+      "height": 844,
+      "sha256": "2bd7e3ad2698311b9f905080857beb67d15303efce96f2a22a2edf5bddadd36b"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/collections-768.png",
+      "bytes": 76991,
+      "width": 768,
+      "height": 1024,
+      "sha256": "976cbe4b5064423955fcc495307656caf84e8d757e8f52c68cb1ccfdca5d474f"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/project-1366.png",
+      "bytes": 72615,
+      "width": 1366,
+      "height": 768,
+      "sha256": "450a34fab8dc653ce24badde28332ea7ab48e573e6a4aaa362b5d69edcda6403"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/project-1440.png",
+      "bytes": 83317,
+      "width": 1440,
+      "height": 900,
+      "sha256": "88019d8a7174b54432225837bd978397538fa2ffa88b5444dfc29de92e29c709"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/project-390.png",
+      "bytes": 30084,
+      "width": 390,
+      "height": 844,
+      "sha256": "143f1eaf441b5d4e7a1f9a39eed7b8fe7d8f736eb330904b9f0f227acbfa855a"
+    },
+    {
+      "path": "docs/screenshots/change-sets/before/project-768.png",
+      "bytes": 78001,
+      "width": 768,
+      "height": 1024,
+      "sha256": "d0194bbbf5f38f55bd2206501968bd9900b33aaee101eb9e42cdf6b9d776d3ce"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/collections-1366.png",
+      "bytes": 90171,
+      "width": 1366,
+      "height": 768,
+      "sha256": "27c33f1a98a62a0f4988b43adef705f9f0312f2981c38be35fceb688d8f1357a"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/collections-1440.png",
+      "bytes": 91984,
+      "width": 1440,
+      "height": 900,
+      "sha256": "444d43f200b589db0403a175b2446b977e9fc9899b13927d5f6e03d3b14fce78"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/collections-390.png",
+      "bytes": 34982,
+      "width": 390,
+      "height": 844,
+      "sha256": "4c424c96f1df1f4343d13f5d75f58ac54833707bb65f4e860bc3d04f8dbbd8d0"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/collections-768.png",
+      "bytes": 89160,
+      "width": 768,
+      "height": 1024,
+      "sha256": "f91813380afc3cf27667878cbc738642993c0f83e9e377e0899e2c601a754350"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/context-1366.png",
+      "bytes": 104647,
+      "width": 1366,
+      "height": 768,
+      "sha256": "1fae132239ebdf28dd52f7fbc76517cb48a3a7a09115fc17a260a06218544aaf"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/context-1440.png",
+      "bytes": 127978,
+      "width": 1440,
+      "height": 900,
+      "sha256": "6ba55e2803c053d63866a02f47ab4a951081b05b8b4c588ae9fd7b37de2c8fbb"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/context-390.png",
+      "bytes": 50067,
+      "width": 390,
+      "height": 844,
+      "sha256": "dba2bfc2b5d467f2bb1c04c3829b5115ff89c6582cf3c545d86c358c1b118017"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/context-768.png",
+      "bytes": 102699,
+      "width": 768,
+      "height": 1024,
+      "sha256": "5fba6cb6ae4ee7fa4317a61cfa3e115d884b94b96e83331b343869f227c011db"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/detail-1366.png",
+      "bytes": 87414,
+      "width": 1366,
+      "height": 768,
+      "sha256": "07260269028056a47dd09870b7611d828e0feee5844cb06284d2c92eb36c6a38"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/detail-1440.png",
+      "bytes": 105454,
+      "width": 1440,
+      "height": 900,
+      "sha256": "d4733eb1e80d7f4bb8416019cd54f5d5191ffb64f7d04019b637cd7a14f49ee2"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/detail-390.png",
+      "bytes": 42973,
+      "width": 390,
+      "height": 844,
+      "sha256": "9f48b4b29733bacace7d87bf954709e68310c8cec1a6f1be1ac3125776481ee9"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/detail-768.png",
+      "bytes": 83396,
+      "width": 768,
+      "height": 1024,
+      "sha256": "6443a239020c2c7154cba5dabc646bce4ef360bab5f59110617922a9eb5b6f72"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/preview-1366.png",
+      "bytes": 100731,
+      "width": 1366,
+      "height": 768,
+      "sha256": "f439041877b697b0b4a1b8402ae33fe3aa2cc0bba2f35ce34d009d9263bf2acf"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/preview-1440.png",
+      "bytes": 114559,
+      "width": 1440,
+      "height": 900,
+      "sha256": "f5da65108fe9f43a7fd1ecbeeba13534d90a47fe2e06d2611ce366dd2052423f"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/preview-200-percent.png",
+      "bytes": 195066,
+      "width": 1440,
+      "height": 2500,
+      "sha256": "5b749cc5d23b766b92470ac42b95a27ea27d3174c31d4c74941261f89ae95ce7"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/preview-390.png",
+      "bytes": 42175,
+      "width": 390,
+      "height": 844,
+      "sha256": "57ff2bc914fea60ddbdb309778fc16ebebd914338aee1e3357804938b11e627d"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/preview-768.png",
+      "bytes": 97554,
+      "width": 768,
+      "height": 1024,
+      "sha256": "681616877d1f79f1903cf415d2d1a601c4220035b39e1648aee9410fd0d42cad"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/project-1366.png",
+      "bytes": 80483,
+      "width": 1366,
+      "height": 768,
+      "sha256": "a5551ae37e46dae65ac0ed770b6ec07c914bc1bb7a26134549c8ad956e640d04"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/project-1440.png",
+      "bytes": 93879,
+      "width": 1440,
+      "height": 900,
+      "sha256": "011e2e1d87cb0b887ba108d4dce4e006edca47ff3fedca0512a7ff84582b5a09"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/project-390.png",
+      "bytes": 35036,
+      "width": 390,
+      "height": 844,
+      "sha256": "4365211669773c36048ad4f0cf6154148bcba3223949c8232846709684243fd6"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/project-768.png",
+      "bytes": 85374,
+      "width": 768,
+      "height": 1024,
+      "sha256": "acc1f628df2edee38e50b73a548680ee2f8c7e730b17657b7625dc0cef4af26e"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/receipt-1366.png",
+      "bytes": 81984,
+      "width": 1366,
+      "height": 768,
+      "sha256": "298899046ee3ee0b1ba49141bf9c84a58a2f85cd3627390496444d5e907522b6"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/receipt-1440.png",
+      "bytes": 90616,
+      "width": 1440,
+      "height": 900,
+      "sha256": "0881fb86126311fab84e97ca14b9001820fddb71331707769f77b4e80c00177e"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/receipt-390.png",
+      "bytes": 47343,
+      "width": 390,
+      "height": 844,
+      "sha256": "051e96669025918ed7bbe2382214a3105850ad0d3d436fa8ed903f3511e7ed4c"
+    },
+    {
+      "path": "docs/screenshots/change-sets/after/receipt-768.png",
+      "bytes": 89691,
+      "width": 768,
+      "height": 1024,
+      "sha256": "03d77e408147afcc570432fc3bf4e5d3a0a93f8537f2a85067cdace119d4b01e"
+    }
+  ],
+  "sourceHashes": {
+    "docs/change-set.schema.json": "1daa940b3c00dc8df420aa18435911b2a1776b64d0a193ed2215d8cbed7a046a",
+    "docs/examples/midori-change-set-v1.json": "1abb58b9f86e4e85563c3f2778ab92cab5fa9cd88eb9418185423188a6d1a366",
+    "e2e/change-set-candidate-review.spec.mjs": "7cccce239286608239eb88cab757b820d02f7b9a7572a58ce41f76c90cc8506f",
+    "e2e/change-set-fixture.mjs": "3ddf90019a34a2804d0898a7c62d10bff46890932a27d9c39d637e67e8b5c1e3",
+    "e2e/change-set-regressions.spec.mjs": "f90a5f64ab612eb2042856ddcea607f2d02c164f6dbc59465f14105f54851308",
+    "e2e/change-set-screenshots.spec.mjs": "c31b638c69bb4afb68ef02fb10a7394068c297e017f23e2c6d86d730c1f4b6d8",
+    "e2e/change-set.spec.mjs": "dee918d729b019034cc2400c9a4fac9359b7826e9d1ebc9df03770583e2875b6",
+    "scripts/export-change-set-examples.mjs": "1bb3efa3ed0a83be1896ea4502b8108dbdda0ca9636d9d41cfbee74b25a52faf",
+    "scripts/export-change-set-schema.mjs": "c3bff9e9ae4f76c23eec90828d14352a8e7b8a7996aae80d9019567dfcde0664",
+    "src/__tests__/aiContext.test.ts": "df70c3a67b22f1670fb73aa909985e6aa9676490a053a61c4112c41218f94df9",
+    "src/__tests__/aiContextWorkspace.test.tsx": "9f7bef255035bfc0bd8267c3d2cf2aa003d5bb838ab69e48865b4e87eefe9827",
+    "src/__tests__/changeSetBackup.test.ts": "c148e0efda898c1586d1c5da4621c9b05cb1cf7079a9ad355e97ed306954b2fc",
+    "src/__tests__/changeSetContract.test.ts": "e76128990a1fd1679b87d46364a96567722919e4e524449548734f296bf8dde3",
+    "src/__tests__/changeSetPlanner.test.ts": "260bcc55d4d3c6f1dcb8f586f037e5cf94b25517ce47dbd615d59121a803018f",
+    "src/__tests__/changeSetReferences.test.ts": "e26ed1699537b35169c512b611e460508fb235460d1eb8e297d64750f1a690d7",
+    "src/__tests__/changeSetReviewRegressions.test.ts": "f8f1eb1c9410823c4934aa13eb01cc250620ceaaddf1d405ae608e92ef03206f",
+    "src/__tests__/changeSetSafeguards.test.ts": "11e3e215e0b6086caa765ddba3e6112f4d096d36f9fddb547ab9befb11d92b62",
+    "src/__tests__/changeSetStorage.test.ts": "2f8bdd854321fc390f61634fb2acad1a69b69ff62b141f8c1ae32e69e65c31f0",
+    "src/__tests__/changeSetWorkspace.test.tsx": "11806ce569e6fbe3fb9fd91840a38965b68b99d08151deecd0a361884dfd5b30",
+    "src/__tests__/fixtures/changeSetFixture.ts": "7c99b762e4bbb1792f04e3e7854f1441b7c66cf6d210713241f8abf8a14e7691",
+    "src/__tests__/sceneAuthoringPlanning.test.ts": "26e635763fc876fa9f2ac9f493aaa155f8499ae97f5babcc3d054f92294c2bba",
+    "src/App.tsx": "dbe6c6e4e67983620d4a26660a7495ad1b63a0011ef0de977535ddda8b0e8dca",
+    "src/components/aiPlanningActions.css": "174a89d05c8a133b76d4437d334118aec585983add40ee70b86fa4910c58e8aa",
+    "src/components/AiPlanningActions.tsx": "211e9b4b7356e6e83a2b73f41a290071b1085444ccee4bdff963cb48f3d5884f",
+    "src/components/ChangeSetPreview.tsx": "7ae05f53320021210e5e9c9b85ccf4c6a8013de8bf1c213429299b9452325692",
+    "src/components/ImportReceipt.tsx": "e57170485e0c468ce29b7672ff08f0f9d9e883a6ce4cb42dafa46755fcec28b7",
+    "src/domain/aiContext.ts": "3a0c211f9acc1f0e26b903c19a5340346dd3efd552400b79a47c9982a0890454",
+    "src/domain/changeSetCandidates.ts": "04b81ab13e96e775775aebcaab11da1e45608acea5e017b109fc85e0e47d48db",
+    "src/domain/changeSetCanonical.ts": "d3bf4fe940d423f6cb9b85977620c857908e8996846661830ec64745cc153ae8",
+    "src/domain/changeSetCapacity.ts": "032d8a579978d44b7a027aea5d0e0963b3234cc327df9514dc79cfb4ce79d030",
+    "src/domain/changeSetLedger.ts": "95f460cd868ab493df547b3701b0c58edd8f72ae4010a4f9f0d3064b39791c53",
+    "src/domain/changeSetPlanner.ts": "ba20cd34b15c12eeb27ff3176817eeb17697f28805d6e8bbbaf651048ab13961",
+    "src/domain/changeSetReferences.ts": "fa2a3cd825696f97cf9a9c80013955d7378d669cec8f977facd2c95caf55cf6c",
+    "src/domain/changeSetSchema.ts": "cb4610613bb5b5950681005c9242eaf064fc9cd67075a2b1ba3783c06d3844b1",
+    "src/domain/changeSetState.ts": "3b09e5a085e9d6befb763a2bf421f2a22f91efb809a0af3777af4c6ea8832df2",
+    "src/domain/changeSetValidation.ts": "55d19b56fbc33501424204c07002fa15307ae431e547ff595512bbe060d2c9fe",
+    "src/domain/phase5ProjectValidation.ts": "260ac442d5da5e5640fe551a771c91b8fd50649d367c01faab9bfa125be16174",
+    "src/screens/AiContextScreen.tsx": "f9d06b5a9c15590bc2d8190ff1b7e17aa48f2da0de3f7de7b1ecf010ee99fa07",
+    "src/screens/ChangeSetImportScreen.tsx": "c694fa2fb9e186dac79b311ed5eddb308257cb6ace0c18e24cb32b1fb605d97e",
+    "src/screens/changeSets.css": "0730e331cc47cb70e6e18ad822f4e3c305726d6f71b51c9cc2bff5ab97375103",
+    "src/screens/CollectionsScreen.tsx": "17de2439a75cd348869913d769c615c2385aaa6d1adcde056328ca39d28dc7d2",
+    "src/screens/CollectionWorkspace.tsx": "9aa54a4153eeeb4ec53a53281095fbad7d166018d54f59ad29e635c378570af3",
+    "src/storage/backup.ts": "bcb76bfdb3d6b44577e94084ceecd1b9068c5a5c0f4fca7cc7754a1fe1ea0444",
+    "src/storage/changeSets.ts": "db34dc880ea964f79825744a97e699581e0e1c28b85e4f4c99ea24b50b55f528",
+    "src/storage/db.ts": "b84f4a9248022fdd77d09a58516b4eb7ecda6fd2f0b27f7215552ac3eb5f0775",
+    "src/storage/sceneAuthoring.ts": "82a56e40e0425933f909fe80ce76232d4a0fb259a0466b877e0250d5fdea6229",
+    "src/types/aiContext.ts": "80ead14fb888b4134e5dca2e00735ddb893e3e62a7f44b93673803d6f55a6061",
+    "src/types/changeSet.ts": "d7adbfb70df615c69dab7df9749d7273679ae55c3aa3d9780f3469fb02554ebf",
+    "src/types/domain.ts": "d9ba97fb71c5ec7c832c65e8b02cf7931a2c9df34faa8cb54fd98ef6072e3f9d",
+    "src/types/raw.d.ts": "5ec2ac3ff9c6b3854895a2d710e81b315921f6dab07ff740f0d2b8fedcc167c6",
+    "scripts/qa/ci-browser-summary.mjs": "0b5171c9b47027beda95928bda96e7c0580b727d00c852ad5a7e2ff5ab507233",
+    "scripts/qa/reconcile-results.test.mjs": "6a1c6824e5b4a44a89459c8f7dd14fd81ec45bf0aa7dfea954dc2364bf2f4149"
+  },
+  "protectedPaths": [
+    {
+      "path": "src/domain/validation.ts",
+      "sha256": "8d7022fe037bd0dafc55c1dd6786be53b62b4d3a0b32e073cb1aa79fa4978232",
+      "unchanged": true
+    },
+    {
+      "path": "src/domain/promptAssembler.ts",
+      "sha256": "c759420d399ba250bcef514df86ad756ac1bc2c13f192263a9c1751d0799c33d",
+      "unchanged": true
+    },
+    {
+      "path": "src/domain/projectExport.ts",
+      "sha256": "900515815ce3dc86706c9fc6cb490dbddf6b0ee08471ae68be4e96021bc69c8e",
+      "unchanged": true
+    },
+    {
+      "path": "src/domain/referencePack.ts",
+      "sha256": "bf68987f3b05f295f0621324b8dd9c329cb3971e29624ae27e9d022ee24ee9d8",
+      "unchanged": true
+    },
+    {
+      "path": "package.json",
+      "sha256": "975c9620034ef146d0d5b65a3aae481e74b2f6e5c3995ed4223fd93d22adb34e",
+      "unchanged": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "c4e5413b3d4535ee9a1cfacf7760b5344cf3d35a55e5390a3a32d35524e39d34",
+      "unchanged": true
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "0f3281547a0e6e6f011d0bb458dac29bb6c0eb9c541548b160d4f7c3a2f18494",
+      "unchanged": true
+    },
+    {
+      "path": "playwright.config.mjs",
+      "sha256": "33d458dbd4dcbad066bbf8a1a72d8559af9580186b16d237d1f32caec58b0b7e",
+      "unchanged": true
+    }
+  ],
+  "changedFiles": [
+    "docs/ai-context-export-guide.md",
+    "docs/change-set-contract.md",
+    "docs/change-set-qa.md",
+    "docs/change-set.schema.json",
+    "docs/examples/midori-change-set-v1.json",
+    "docs/qa/change-set-results.json",
+    "docs/screenshots/change-sets/after/collections-1366.png",
+    "docs/screenshots/change-sets/after/collections-1440.png",
+    "docs/screenshots/change-sets/after/collections-390.png",
+    "docs/screenshots/change-sets/after/collections-768.png",
+    "docs/screenshots/change-sets/after/context-1366.png",
+    "docs/screenshots/change-sets/after/context-1440.png",
+    "docs/screenshots/change-sets/after/context-390.png",
+    "docs/screenshots/change-sets/after/context-768.png",
+    "docs/screenshots/change-sets/after/detail-1366.png",
+    "docs/screenshots/change-sets/after/detail-1440.png",
+    "docs/screenshots/change-sets/after/detail-390.png",
+    "docs/screenshots/change-sets/after/detail-768.png",
+    "docs/screenshots/change-sets/after/preview-1366.png",
+    "docs/screenshots/change-sets/after/preview-1440.png",
+    "docs/screenshots/change-sets/after/preview-200-percent.png",
+    "docs/screenshots/change-sets/after/preview-390.png",
+    "docs/screenshots/change-sets/after/preview-768.png",
+    "docs/screenshots/change-sets/after/project-1366.png",
+    "docs/screenshots/change-sets/after/project-1440.png",
+    "docs/screenshots/change-sets/after/project-390.png",
+    "docs/screenshots/change-sets/after/project-768.png",
+    "docs/screenshots/change-sets/after/receipt-1366.png",
+    "docs/screenshots/change-sets/after/receipt-1440.png",
+    "docs/screenshots/change-sets/after/receipt-390.png",
+    "docs/screenshots/change-sets/after/receipt-768.png",
+    "docs/screenshots/change-sets/before/collections-1366.png",
+    "docs/screenshots/change-sets/before/collections-1440.png",
+    "docs/screenshots/change-sets/before/collections-390.png",
+    "docs/screenshots/change-sets/before/collections-768.png",
+    "docs/screenshots/change-sets/before/project-1366.png",
+    "docs/screenshots/change-sets/before/project-1440.png",
+    "docs/screenshots/change-sets/before/project-390.png",
+    "docs/screenshots/change-sets/before/project-768.png",
+    "docs/stage-c-integration-readiness.md",
+    "docs/superpowers/plans/2026-10-30-ai-change-set-importer.md",
+    "docs/superpowers/specs/2026-10-30-ai-change-set-design.md",
+    "e2e/change-set-candidate-review.spec.mjs",
+    "e2e/change-set-fixture.mjs",
+    "e2e/change-set-regressions.spec.mjs",
+    "e2e/change-set-screenshots.spec.mjs",
+    "e2e/change-set.spec.mjs",
+    "scripts/export-change-set-examples.mjs",
+    "scripts/export-change-set-schema.mjs",
+    "scripts/qa/ci-browser-summary.mjs",
+    "scripts/qa/reconcile-results.test.mjs",
+    "src/App.tsx",
+    "src/__tests__/aiContext.test.ts",
+    "src/__tests__/aiContextWorkspace.test.tsx",
+    "src/__tests__/changeSetBackup.test.ts",
+    "src/__tests__/changeSetContract.test.ts",
+    "src/__tests__/changeSetPlanner.test.ts",
+    "src/__tests__/changeSetReferences.test.ts",
+    "src/__tests__/changeSetReviewRegressions.test.ts",
+    "src/__tests__/changeSetSafeguards.test.ts",
+    "src/__tests__/changeSetStorage.test.ts",
+    "src/__tests__/changeSetWorkspace.test.tsx",
+    "src/__tests__/fixtures/changeSetFixture.ts",
+    "src/__tests__/sceneAuthoringPlanning.test.ts",
+    "src/components/AiPlanningActions.tsx",
+    "src/components/ChangeSetPreview.tsx",
+    "src/components/ImportReceipt.tsx",
+    "src/components/aiPlanningActions.css",
+    "src/domain/aiContext.ts",
+    "src/domain/changeSetCandidates.ts",
+    "src/domain/changeSetCanonical.ts",
+    "src/domain/changeSetCapacity.ts",
+    "src/domain/changeSetLedger.ts",
+    "src/domain/changeSetPlanner.ts",
+    "src/domain/changeSetReferences.ts",
+    "src/domain/changeSetSchema.ts",
+    "src/domain/changeSetState.ts",
+    "src/domain/changeSetValidation.ts",
+    "src/domain/phase5ProjectValidation.ts",
+    "src/screens/AiContextScreen.tsx",
+    "src/screens/ChangeSetImportScreen.tsx",
+    "src/screens/CollectionWorkspace.tsx",
+    "src/screens/CollectionsScreen.tsx",
+    "src/screens/changeSets.css",
+    "src/storage/backup.ts",
+    "src/storage/changeSets.ts",
+    "src/storage/db.ts",
+    "src/storage/sceneAuthoring.ts",
+    "src/types/aiContext.ts",
+    "src/types/changeSet.ts",
+    "src/types/domain.ts",
+    "src/types/raw.d.ts"
+  ],
+  "retainedQaProfiles": [
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793356878445",
+      "files": 344,
+      "logicalBytes": 19852194
+    },
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793357074730",
+      "files": 345,
+      "logicalBytes": 19856435
+    },
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793357573707",
+      "files": 345,
+      "logicalBytes": 19857793
+    },
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793357738509",
+      "files": 345,
+      "logicalBytes": 19858110
+    },
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793358827011",
+      "files": 345,
+      "logicalBytes": 19950688
+    },
+    {
+      "path": "qa-results/change-sets/profiles/restart-1793359526836",
+      "files": 345,
+      "logicalBytes": 19950764
+    }
+  ],
+  "assumptions": [
+    "Local digests bind content/state but do not authenticate AI origin or protect against arbitrary same-origin scripts/direct database tampering.",
+    "Blob bytes are immutable under supported APIs; current MIME/size/type metadata is revalidated.",
+    "Imported factual claims remain unverified; identity inference and automatic approval are absent."
+  ],
+  "remainingRisks": [
+    "Windows Chromium only; native zoom controls and standalone screen-reader software not certified.720CSSpixels/DPR2 is the tested200percent desktop reflow equivalent.",
+    "Quota/abort regressions inject browser transaction failures; physical disk exhaustion is not certified.",
+    "Input20MiB and backup-manifest20MiB are separate bounds; an otherwise valid package can exceed resulting backup metadata capacity and is blocked.",
+    "Existing independent reference-pack associations are retained; v1 has no implicit removal/filter operation.",
+    "PR12 ZIP64 remains separate, draft, unchanged and not integration-tested with new Stage B optional fields.",
+    "Future Stage C/D transport/authentication/approval broker are not implemented."
+  ],
+  "ciReportingFollowup": {
+    "parentCommit": "71ea6cb31a9802b5f0f72498741cae1687b0ccf4",
+    "failedRun": "https://github.com/Jeruzael/krakinai/actions/runs/41049430963",
+    "unitPassed": 662,
+    "browserPassed": 135,
+    "failedStep": "Summarize synthetic test evidence",
+    "reason": "Reporter case bound128 below actual135",
+    "newCaseBound": 512,
+    "artifactByteBound": 65536,
+    "verifiedLocalSummaryBytes": 28322,
+    "applicationSourceUnchanged": true,
+    "qaScriptTests": 8
+  }
+}

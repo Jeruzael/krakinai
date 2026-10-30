@@ -26,6 +26,7 @@ import {
 import { validatePhase4Record } from '../domain/phase4Validation';
 import {isDirectPrompt,validateDirectAttachments} from '../domain/directPrompt';
 import {validateSceneRevisionGraph} from '../domain/sceneRevisions';
+import {validateImportLedger} from '../domain/changeSetLedger';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
 import {
   collectReferencedMediaIds,
@@ -114,6 +115,15 @@ async function blobToUint8Array(blob: Blob): Promise<Uint8Array> {
   });
 }
 
+function backupMediaMetadata(m:MediaAsset,byteSize=m.blob.size,posterByteSize=m.posterBlob?.size):SerializedMediaManifestEntry {
+  return {id:m.id,filename:m.filename,safeFilename:m.safeFilename,displayName:m.displayName,exportFilename:m.exportFilename,mimeType:m.mimeType,byteSize,archivePath:`media/${m.id}.${extensionForMime(m.mimeType,m.safeFilename)}`,posterArchivePath:m.posterBlob?`posters/${m.id}.jpg`:undefined,posterByteSize,width:m.width,height:m.height,durationSeconds:m.durationSeconds,isBundledIllustration:m.isBundledIllustration,createdAt:m.createdAt};
+}
+
+/** Metadata only: never reads media bytes or compresses an archive. Shared with import capacity checks. */
+export function buildBackupManifest(snap:LibrarySnapshot,exportedAt=new Date().toISOString(),mediaEntries=snap.media.map(m=>backupMediaMetadata(m))):BackupManifest {
+  return {schemaVersion:SCHEMA_VERSION,appVersion:'1.0.0',appName:'KRAKINAI',exportedAt,assets:snap.assets,variants:snap.variants,drafts:snap.drafts,scenes:snap.scenes,collections:snap.collections,templates:snap.templates,preferences:snap.preferences,media:mediaEntries};
+}
+
 export async function exportFullBackupZip(): Promise<Uint8Array> {
   const snap = await getAllSnapshot();
   const files: Record<string, Uint8Array> = {};
@@ -127,49 +137,19 @@ export async function exportFullBackupZip(): Promise<Uint8Array> {
     files[archivePath] = bytes;
     totalUncompressed += bytes.byteLength;
 
-    let posterArchivePath: string | undefined;
     let posterByteSize: number | undefined;
     if (m.posterBlob) {
-      posterArchivePath = `posters/${m.id}.jpg`;
+      const posterArchivePath = `posters/${m.id}.jpg`;
       const pBytes = await blobToUint8Array(m.posterBlob);
       files[posterArchivePath] = pBytes;
       posterByteSize = pBytes.byteLength;
       totalUncompressed += pBytes.byteLength;
     }
 
-    mediaEntries.push({
-      id: m.id,
-      filename: m.filename,
-      safeFilename: m.safeFilename,
-      displayName: m.displayName,
-      exportFilename: m.exportFilename,
-      mimeType: m.mimeType,
-      byteSize: bytes.byteLength,
-      archivePath,
-      posterArchivePath,
-      posterByteSize,
-      width: m.width,
-      height: m.height,
-      durationSeconds: m.durationSeconds,
-      isBundledIllustration: m.isBundledIllustration,
-      createdAt: m.createdAt,
-    });
+    mediaEntries.push(backupMediaMetadata(m,bytes.byteLength,posterByteSize));
   }
 
-  const manifest: BackupManifest = {
-    schemaVersion: SCHEMA_VERSION,
-    appVersion: '1.0.0',
-    appName: 'KRAKINAI',
-    exportedAt: new Date().toISOString(),
-    assets: snap.assets,
-    variants: snap.variants,
-    drafts: snap.drafts,
-    scenes: snap.scenes,
-    collections: snap.collections,
-    templates: snap.templates,
-    preferences: snap.preferences,
-    media: mediaEntries,
-  };
+  const manifest=buildBackupManifest(snap,new Date().toISOString(),mediaEntries);
 
   const manifestBytes = strToU8(JSON.stringify(manifest, null, 2));
   totalUncompressed += manifestBytes.byteLength;
@@ -254,6 +234,9 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     return { valid: false, error: 'manifest.json is missing required entity arrays.' };
   }
 
+  if(manifest.preferences?.aiImports!==undefined){
+    try{validateImportLedger(manifest.preferences.aiImports);}catch(error){return {valid:false,error:`Invalid import ledger: ${(error as Error).message}`};}
+  }
   for (const record of [...manifest.assets, ...manifest.drafts, ...manifest.scenes, ...manifest.templates]) {
     const error = validatePhase4Record(record);
     if (error) return { valid: false, error };

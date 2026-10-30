@@ -186,7 +186,7 @@ export async function getAllSnapshot(): Promise<LibrarySnapshot> {
       getAllFromStore<Preferences>(tx.objectStore('preferences')),
     ]);
 
-  const preferences: Preferences = prefsList[0] || {
+  const preferences: Preferences = prefsList.find(pref=>pref.id==='app_preferences') || {
     id: 'app_preferences',
     schemaVersion: SCHEMA_VERSION,
     starterLoaded: false,
@@ -596,7 +596,7 @@ export async function deleteVariant(variantId: string): Promise<void> {
 
 export function checkVariantApplicationToDraft(
   draft: SceneDraft,
-  variant: Variant,
+  variant: Pick<Variant,'parentCharacterId'|'targetSlot'>,
   allAssets: PromptAsset[]
 ): {
   requiresConfirmation: boolean;

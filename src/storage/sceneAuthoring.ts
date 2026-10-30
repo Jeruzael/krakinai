@@ -15,6 +15,7 @@ import {
   openDatabase,
   saveSceneDraft,
   savedAvoidPrefix,
+  type LibrarySnapshot,
 } from "./db";
 import {
   getDirectReferenceLinks,
@@ -133,16 +134,8 @@ export async function createDirectPromptDraft(
     },
   });
 }
-export async function createSceneRevisionDraft(
-  sceneId: string,
-  options: {
-    asDirect?: boolean;
-    restoreFromSceneId?: string;
-    target?: SceneProjectTarget;
-    alternateTake?: boolean;
-  } = {},
-): Promise<SceneDraft> {
-  const snap = await getAllSnapshot();
+export interface RevisionDraftOptions {asDirect?:boolean;restoreFromSceneId?:string;target?:SceneProjectTarget;alternateTake?:boolean}
+export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'scenes'|'collections'>,options:RevisionDraftOptions={}):Omit<SceneDraft,'id'|'inputRevision'|'updatedAt'> {
   const parent = snap.scenes.find((s) => s.id === sceneId);
   if (!parent) throw new Error("Saved scene not found.");
   const root = revisionRoot(parent),
@@ -191,7 +184,7 @@ export async function createSceneRevisionDraft(
         ? ""
         : source.avoidText!.slice(prefix.length + 2)
       : source.avoidText;
-  return saveSceneDraft({
+  return {
     ...emptyDraft(),
     title: source.title,
     slots: clone(source.slots),
@@ -232,14 +225,15 @@ export async function createSceneRevisionDraft(
       ...(options.restoreFromSceneId ? { restoredFromSceneId: source.id } : {}),
     },
     ...(options.target ? { authoredProjectTarget: clone(options.target) } : {}),
-  });
+  };
 }
 
-/** Browser-owned atomic operation; no external client has direct DB-file access. */
-export async function saveAuthoredScene(
-  draftId: string,
-  options: AuthoredSaveOptions,
-): Promise<SavedScene> {
+
+export async function createSceneRevisionDraft(sceneId:string,options:RevisionDraftOptions={}):Promise<SceneDraft>{
+  return saveSceneDraft(buildRevisionDraft(sceneId,await getAllSnapshot(),options));
+}
+
+function validateAuthoredSaveOptions(options:AuthoredSaveOptions):void {
   if (
     typeof options.requestId !== "string" ||
     !options.requestId.trim() ||
@@ -251,18 +245,9 @@ export async function saveAuthoredScene(
     options.expectedInputRevision < 1
   )
     throw new Error("An expected draft input revision is required.");
-  const db = await openDatabase(),
-    tx = db.transaction(
-      ["drafts", "scenes", "assets", "media", "collections"],
-      "readwrite",
-    ),
-    completion = done(tx);
-  try {
-    const drafts = tx.objectStore("drafts"),
-      sceneStore = tx.objectStore("scenes"),
-      collections = tx.objectStore("collections");
-    const draft = await request<SceneDraft | undefined>(drafts.get(draftId));
-    if (!draft) throw new Error("Scene draft not found.");
+}
+function prepareAuthoredOperation(draft:SceneDraft,options:AuthoredSaveOptions){
+  validateAuthoredSaveOptions(options);
     const target = options.target ?? draft.authoredProjectTarget;
     if (target) {
       const error = validateSceneProjectTarget(target);
@@ -278,7 +263,7 @@ export async function saveAuthoredScene(
       );
     const fingerprint = JSON.stringify(
       stable({
-        draftId,
+        draftId:draft.id,
         draft,
         expectedInputRevision: options.expectedInputRevision,
         target,
@@ -286,16 +271,13 @@ export async function saveAuthoredScene(
         allowDuplicate: !!options.allowDuplicate,
       }),
     );
-    const scenes = await request<SavedScene[]>(sceneStore.getAll());
-    const retry = scenes.find((s) => s.saveRequestId === options.requestId);
-    if (retry) {
-      if (retry.authoredSaveFingerprint !== fingerprint)
-        throw new Error(
-          "Save request ID was already used for a different operation.",
-        );
-      await completion;
-      return retry;
-    }
+  return {target,fingerprint};
+}
+/** Synchronous shared planner; no persistence or asynchronous work. */
+export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,state:Pick<LibrarySnapshot,'scenes'|'collections'|'assets'|'media'>,identity:{id:string;now:string}):{scene:SavedScene;collection?:Collection}{
+  const {target,fingerprint}=prepareAuthoredOperation(draft,options);
+  const scenes=state.scenes;
+  let collectionUpdate:Collection|undefined;
     if (draft.inputRevision !== options.expectedInputRevision)
       throw new Error(
         "This draft changed in another tab. Refresh and compare before saving; the stored draft is preserved.",
@@ -304,11 +286,7 @@ export async function saveAuthoredScene(
     if (metadataError) throw new Error(metadataError);
     const cameraError = validateCameraCompositionSlots(draft.slots);
     if (cameraError) throw new Error(cameraError);
-    const mediaMap = new Map(
-      (await request<MediaAsset[]>(tx.objectStore("media").getAll())).map(
-        (m) => [m.id, m],
-      ),
-    );
+    const mediaMap = new Map(state.media.map(m=>[m.id,m]));
     const capture = <T extends import("../types/domain").MediaLink>(
       links: T[],
     ) =>
@@ -320,8 +298,7 @@ export async function saveAuthoredScene(
         })),
         mediaMap,
       );
-    const now = new Date().toISOString(),
-      id = generateId("scene");
+    const {now,id}=identity;
     const intent = draft.revisionIntent;
     let parent: SavedScene | undefined;
     if (intent) {
@@ -348,7 +325,7 @@ export async function saveAuthoredScene(
       )
         throw new Error("Restore source is outside this revision history.");
     }
-    const allCollections = await request<Collection[]>(collections.getAll());
+    const allCollections = state.collections;
     if (intent) {
       const contextScene = scenes.find(
         (scene) =>
@@ -496,11 +473,7 @@ export async function saveAuthoredScene(
       if (sourceErrors.length) throw new Error(sourceErrors.join(" "));
       const activeSlots = getActiveSceneSlots(draft),
         pack = getActiveReferencePack(draft);
-      const master = activeSlots.character
-        ? await request<PromptAsset | undefined>(
-            tx.objectStore("assets").get(activeSlots.character.sourceId),
-          )
-        : undefined;
+      const master = activeSlots.character ? state.assets.find(a=>a.id===activeSlots.character!.sourceId) : undefined;
       const assembled = assembleScenePrompt(draft);
       if (!assembled.valid) throw new Error(assembled.errors.join(" "));
       scene = {
@@ -588,22 +561,33 @@ export async function saveAuthoredScene(
       };
       const error = validateProject(updated, [...scenes, scene]);
       if (error) throw new Error(error);
-      collections.put(updated);
+      collectionUpdate=updated;
       scene.saveProjectTarget = {
         collectionId: collection.id,
         shotId: shot.id,
       };
     }
-    sceneStore.add(scene);
-    await completion;
-    return scene;
-  } catch (error) {
-    try {
-      tx.abort();
-    } catch {
-      /* already aborted */
-    }
-    await completion.catch(() => undefined);
-    throw error;
-  }
+  return {scene,collection:collectionUpdate};
+}
+
+/** Browser-owned atomic operation; no external client has direct DB-file access. */
+export async function saveAuthoredScene(draftId:string,options:AuthoredSaveOptions):Promise<SavedScene>{
+  validateAuthoredSaveOptions(options);
+  const db=await openDatabase(),tx=db.transaction(['drafts','scenes','assets','media','collections'],'readwrite'),completion=done(tx);
+  try{
+    const draft=await request<SceneDraft|undefined>(tx.objectStore('drafts').get(draftId));
+    if(!draft)throw new Error('Scene draft not found.');
+    const {fingerprint}=prepareAuthoredOperation(draft,options);
+    const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());
+    const retry=scenes.find(s=>s.saveRequestId===options.requestId);
+    if(retry){if(retry.authoredSaveFingerprint!==fingerprint)throw new Error('Save request ID was already used for a different operation.');await completion;return retry;}
+    const media=await request<MediaAsset[]>(tx.objectStore('media').getAll());
+    const collections=await request<Collection[]>(tx.objectStore('collections').getAll());
+    const masterId=!isDirectPrompt(draft)?getActiveSceneSlots(draft).character?.sourceId:undefined;
+    const master=masterId?await request<PromptAsset|undefined>(tx.objectStore('assets').get(masterId)):undefined;
+    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets:master?[master]:[]},{id:generateId('scene'),now:new Date().toISOString()});
+    if(result.collection)tx.objectStore('collections').put(result.collection);
+    tx.objectStore('scenes').add(result.scene);
+    await completion;return result.scene;
+  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }

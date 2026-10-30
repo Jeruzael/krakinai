@@ -1,0 +1,19 @@
+.cw-import-tools {
+  position: relative;
+}
+.cw-import-tools > summary {
+  cursor: pointer;
+  font-size: 12px;
+  padding: 10px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+}
+.cw-import-tools[open] {
+  flex-basis: 100%;
+}
+.ai-planning-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}

@@ -16,6 +16,8 @@ import { TemplatesScreen } from './screens/TemplatesScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
 const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspace').then(module => ({default:module.CollectionWorkspace})));
+const ChangeSetImportScreen=React.lazy(()=>import('./screens/ChangeSetImportScreen').then(m=>({default:m.ChangeSetImportScreen})));
+const AiContextScreen=React.lazy(()=>import('./screens/AiContextScreen').then(m=>({default:m.AiContextScreen})));
 
 const RouteDispatcher: React.FC = () => {
   const { hashPath, loading, navigate, snapshot } = useLibrary();
@@ -33,6 +35,8 @@ const RouteDispatcher: React.FC = () => {
   const searchParams = new URLSearchParams(queryStr);
 
   // S01 Home
+  if(path==='/imports/ai')return <React.Suspense fallback={<div role="status" className="card">Loading import workspace…</div>}><ChangeSetImportScreen/></React.Suspense>;
+  if(path==='/context/ai')return <React.Suspense fallback={<div role="status" className="card">Loading context export…</div>}><AiContextScreen key={hashPath}/></React.Suspense>;
   if (path === '/') {
     return <HomeScreen />;
   }
