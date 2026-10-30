@@ -78,6 +78,9 @@ jobs:
             echo "QA ledger is not present on this earlier stack branch."
           fi
 
+      - name: Test installed-CLI evidence validation
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs
+
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium
 

@@ -29,19 +29,38 @@ try {
   function Read-OwnedValue([string]$id) { return (Find-OwnedControl $id).GetCurrentPattern([Windows.Automation.ValuePattern]::Pattern).Current.Value }
   $driverStep = 'transcript'
   if ((Read-OwnedValue 'BridgePath') -ne $ExpectedBridge -or (Read-OwnedValue 'VerificationCode') -ne $ExpectedCode -or (Read-OwnedValue 'Origins').Replace("`r", '') -ne "$ExpectedOrigin`n$ExpectedRelay") { throw 'Verifier transcript mismatch' }
-  if ($Decision -eq 'Deny') {
-    $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, 'Deny')
-    $verificationWindow.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
-    [Console]::Out.WriteLine('{"denied":true,"verified":true}')
-    exit 0
-  }
   $driverStep = 'reveal'
   (Find-OwnedControl 'KrakinaiRevealKey').GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
   $driverSecret = Read-OwnedValue 'KrakinaiPairingKey'
   if ($driverSecret -notmatch '^[A-Za-z0-9_-]{43}$') { throw 'Invalid one-time key' }
+  if ($Decision -eq 'Deny') {
+    $verifierProcess = [Diagnostics.Process]::GetProcessById($verificationWindow.Current.ProcessId)
+    $condition = [Windows.Automation.PropertyCondition]::new([Windows.Automation.AutomationElement]::NameProperty, 'Deny')
+    $verificationWindow.FindFirst([Windows.Automation.TreeScope]::Descendants, $condition).GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+    if (-not $verifierProcess.WaitForExit(5000)) { throw 'Owned verifier did not exit after Deny' }
+    [Console]::Out.WriteLine((@{ secret = $driverSecret; denied = $true; verified = $true } | ConvertTo-Json -Compress))
+    $driverSecret = ''
+    exit 0
+  }
   $driverStep = 'consent'
-  (Find-OwnedControl 'KrakinaiComparedOrigin').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern).Toggle()
-  (Find-OwnedControl 'KrakinaiAllowPairing').GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $comparedToggle = (Find-OwnedControl 'KrakinaiComparedOrigin').GetCurrentPattern([Windows.Automation.TogglePattern]::Pattern)
+  $allowControl = Find-OwnedControl 'KrakinaiAllowPairing'
+  function Assert-OwnedAllowState([bool]$expected) {
+    $deadline = [DateTime]::UtcNow.AddSeconds(2)
+    while ($allowControl.Current.IsEnabled -ne $expected -and [DateTime]::UtcNow -lt $deadline) { Start-Sleep -Milliseconds 20 }
+    if ($allowControl.Current.IsEnabled -ne $expected) { throw 'Native checkbox state did not update Allow pairing' }
+  }
+  Assert-OwnedAllowState $false
+  $comparedToggle.Toggle()
+  Assert-OwnedAllowState $true
+  $comparedToggle.Toggle()
+  Assert-OwnedAllowState $false
+  $comparedToggle.Toggle()
+  Assert-OwnedAllowState $true
+  $verifierProcess = [Diagnostics.Process]::GetProcessById($verificationWindow.Current.ProcessId)
+  $allowControl.GetCurrentPattern([Windows.Automation.InvokePattern]::Pattern).Invoke()
+  $driverStep = 'native-decision'
+  if (-not $verifierProcess.WaitForExit(5000)) { throw 'Owned verifier did not exit after the decision' }
   [Console]::Out.WriteLine((@{ secret = $driverSecret; verified = $true; allowed = $true } | ConvertTo-Json -Compress))
   $driverSecret = ''
 } catch { [Console]::Error.WriteLine("SYNTHETIC_NATIVE_UI_CHECK_FAILED $driverStep $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.GetType().Name)"); exit 1 }

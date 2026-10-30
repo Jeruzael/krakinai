@@ -4,20 +4,17 @@
   "branch": "codex/local-codex-mcp",
   "baseCommit": "6530c0eda04809c603930a4b106b7f774bc1dd8d",
   "testedUncommittedWorkingTree": true,
-  "releaseDecision": "draft-native-certification-blocked",
+  "releaseDecision": "draft-native-tests-verified-awaiting-review",
   "checks": {
     "rootUnit": {
       "exitCode": 0,
       "passed": 706,
       "failed": 0,
       "files": 99,
-      "seconds": 93.53,
+      "seconds": 101.47,
       "workers": 4,
-      "plainNpmTest": {
-        "exitCode": 0,
-        "passed": 706,
-        "seconds": 52.31
-      }
+      "command": "npm test -- --maxWorkers=4 --minWorkers=4 --reporter=default --reporter=junit --outputFile.junit=qa-results/local-mcp/native-followup-unit.xml",
+      "raw": "qa-results/local-mcp/native-followup-unit.xml"
     },
     "bridgeUnit": {
       "exitCode": 0,
@@ -57,7 +54,8 @@
       "skipped": 1,
       "seconds": 471.903175,
       "raw": "qa-results/local-mcp/warmed-full-playwright.json",
-      "nativeSkip": "Explicit opt-in real Windows suite; known AllSigned blocker, not certified"
+      "nativeSkip": "Previous full run; native signatures unavailable then. Current local native follow-up separately passed3/3.",
+      "historicalAtCommit": "824bf6bfd52d0384ffd4f3a40baabfc6ae43d2f6"
     },
     "hostedCi": {
       "status": "Exact-head outcome recorded in pull request after signed push",
@@ -146,6 +144,33 @@
       "rootPackageAndLockUnchangedFromBase": true,
       "exploitabilityAssessed": false,
       "raw": "qa-results/local-mcp/audit-all-dependencies.json"
+    },
+    "previousRootUnit": {
+      "exitCode": 0,
+      "passed": 706,
+      "failed": 0,
+      "files": 99,
+      "seconds": 93.53,
+      "workers": 4,
+      "plainNpmTest": {
+        "exitCode": 0,
+        "passed": 706,
+        "seconds": 52.31
+      }
+    },
+    "currentCiSuite": {
+      "expectedTotal": 145,
+      "portableCases": 142,
+      "explicitWindowsNativeOptInCases": 3,
+      "nativeCiSkipIsNotPass": true,
+      "exactHeadOutcome": "PR Checks and matching runtime artifact after signed push"
+    },
+    "cliEvidenceRegressions": {
+      "exitCode": 0,
+      "passed": 7,
+      "failed": 0,
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs",
+      "raw": "qa-results/local-mcp/cli-evidence-green.log"
     }
   },
   "targetedBrowserEvidence": {
@@ -324,23 +349,85 @@
     }
   },
   "installedCli": {
+    "previousUnpairedProof": {
+      "version": "0.73.0",
+      "exitCode": 0,
+      "actualTool": "mcp__krakinai__krakinai_connection_status",
+      "connected": false,
+      "modelFixtureRequests": 2,
+      "modelProvider": "isolated loopback SSE fixture; no external AI provider",
+      "pairedReadsCertified": false,
+      "globalConfigOrActualCredentialsModified": false
+    },
     "version": "0.73.0",
     "exitCode": 0,
-    "actualTool": "mcp__krakinai__krakinai_connection_status",
-    "connected": false,
-    "modelFixtureRequests": 2,
-    "modelProvider": "isolated loopback SSE fixture; no external AI provider",
-    "pairedReadsCertified": false,
-    "globalConfigOrActualCredentialsModified": false
+    "connected": true,
+    "pairedReadsCertified": true,
+    "actualTools": [
+      "mcp__krakinai__krakinai_connection_status",
+      "mcp__krakinai__krakinai_list_projects",
+      "mcp__krakinai__krakinai_get_project"
+    ],
+    "modelFixtureRequests": 4,
+    "projectListMatches": true,
+    "projectReadMatches": true,
+    "foreignProjectAbsent": true,
+    "raw": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/result.json",
+    "toolMessages": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/tool-messages.json",
+    "globalConfigOrActualCredentialsModified": false,
+    "externalAiProviderUsed": false,
+    "actualBinaryVersionOutput": "codex-cli 0.73.0"
   },
   "nativeWindows": {
-    "status": "blocked",
-    "exitCode": 1,
-    "reason": "Windows PowerShell5.1 LocalMachine AllSigned rejects unsigned helper and QA driver before execution",
+    "previousBlockedAttempt": {
+      "status": "blocked",
+      "exitCode": 1,
+      "reason": "Windows PowerShell5.1 LocalMachine AllSigned rejects unsigned helper and QA driver before execution",
+      "policyChangedOrBypassed": false,
+      "certificateOrTrustStoreChangedByAgent": false,
+      "realAllowDenyAndPairedCli": "unverified",
+      "suite": "KRAKINAI_NATIVE_QA=1 npx playwright test e2e/local-mcp-native.spec.mjs"
+    },
+    "status": "verified-isolated-Windows-Chromium",
+    "exitCode": 0,
+    "passed": 3,
+    "failed": 0,
+    "skipped": 0,
+    "seconds": 63.78770099999999,
+    "raw": "qa-results/local-mcp/native-strict-final.json",
+    "executionPolicy": "Windows PowerShell5.1 LocalMachine AllSigned",
     "policyChangedOrBypassed": false,
-    "certificateOrTrustStoreChangedByAgent": false,
-    "realAllowDenyAndPairedCli": "unverified",
-    "suite": "KRAKINAI_NATIVE_QA=1 npx playwright test e2e/local-mcp-native.spec.mjs"
+    "certificateCreatedByUser": true,
+    "publicCertificateTrustImportedByAgentWithExplicitUserApproval": true,
+    "trustStores": [
+      "CurrentUser Root",
+      "CurrentUser TrustedPublisher"
+    ],
+    "machineTrustStoresChanged": false,
+    "privateKeyExported": false,
+    "signedCopiesAreIgnored": true,
+    "bothSignaturesVerifiedValid": true,
+    "realAllowDenyAndPairedCli": "verified",
+    "scope": "synthetic isolated profiles only; Playwright Chromium and actual installed Codex CLI0.73.0",
+    "failureHistory": [
+      {
+        "raw": "qa-results/local-mcp/native-signed-attempt-1.json",
+        "exitCode": 1
+      },
+      {
+        "raw": "qa-results/local-mcp/native-checkbox-red.json",
+        "exitCode": 1
+      },
+      {
+        "raw": "qa-results/local-mcp/native-checkbox-green.json",
+        "exitCode": 1
+      },
+      {
+        "raw": "qa-results/local-mcp/native-signed-attempt-3.json",
+        "exitCode": 1
+      }
+    ],
+    "fix": "Checked/Unchecked updates Allow for assistive UIA toggling; owned driver waits for verifier exit; production validates matching challenge and exit0"
   },
   "baselineObservation": {
     "rootUnitPassed": 661,
@@ -366,11 +453,11 @@
     "explicitQaProfilesDeleted": false
   },
   "unresolved": [
-    "Native Windows pairing and paired CLI acceptance require locally trusted Authenticode signatures",
-    "Real Chrome/Edge native pairing not certified",
-    "Earlier runner-managed error contexts cannot be claimed retained; unique output paths now preserve future runs"
+    "Real Chrome/Edge profiles and non-Windows native pairing remain unverified",
+    "Six baseline development/test package findings remain (3moderate,1high,2critical); production audits0; exploitability not assessed",
+    "Earlier runner-managed error contexts were not all retained; later unique outputs and all explicit profiles retained"
   ],
-  "observedAtUtc": "2026-10-30T16:44:57.250Z",
+  "observedAtUtc": "2026-10-30T17:58:39.611Z",
   "browserFailedAttempts": [
     {
       "exitCode": 1,
@@ -402,7 +489,14 @@
     "fix": "Authorize every disclosed receipt operation target including unmapped candidates and removed targets",
     "regressions": "Two tests RED then14/14 scoped suite GREEN;706/706 whole suite",
     "readOnlyCorrectionConfirmed": true,
-    "deferredMinor": "MCP preview is input intent only; validation findings remain in browser to prevent private-match oracles"
+    "deferredMinor": "MCP preview is input intent only; validation findings remain in browser to prevent private-match oracles",
+    "nativeFollowup": {
+      "importantFindings": 1,
+      "resolved": 1,
+      "fix": "Correlate each CLI response by call ID; reject list errors/empty/foreign results and failed final reads",
+      "regressionsPassed": 7,
+      "readOnlyCorrectionConfirmed": true
+    }
   },
   "retainedLocalArtifacts": {
     "directory": "qa-results/local-mcp",
@@ -456,6 +550,7 @@
     "playwright.config.mjs",
     "scripts/qa/mcp-before-screenshots.mjs",
     "scripts/qa/mcp-codex-cli.mjs",
+    "scripts/qa/mcp-codex-cli.test.mjs",
     "scripts/qa/mcp-native-window.ps1",
     "scripts/qa/mcp-prepare-signing.mjs",
     "scripts/qa/serve-smoke.mjs",
@@ -482,5 +577,5 @@
     "src/storage/changeSets.ts",
     "src/types/mcp.ts"
   ],
-  "postTestUpdate": "Report-only correction records full development dependency audit separately from passing production-only audits; runtime code unchanged."
+  "postTestUpdate": "Native Windows acceptance follow-up: all3local native cases and7CLI evidence regressions passed; root706/bridge18/typecheck/build/production audits/QA8 green. New exact-head hosted outcome recorded through PR Checks/runtime artifact."
 }

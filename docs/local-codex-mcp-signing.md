@@ -2,7 +2,7 @@
 
 Windows PowerShell 5.1 on the development machine requires `AllSigned`. Git's SSH signing key does not sign PowerShell files. Microsoft documents self-signed code-signing certificates for local testing: [about Signing](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_signing) and [Set-AuthenticodeSignature](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-authenticodesignature).
 
-These steps are **manual security decisions**, not actions performed by the application or agent. On a managed PC use the administrator's approved certificate process. Do not lower execution policy, unblock files to evade it, or send a private key/passphrase in chat.
+These steps require the local owner's **explicit security approval**. The application never performs them. An agent must not create trust or use the signing key without that approval. On a managed PC use the administrator's approved certificate process. Do not lower execution policy, unblock files to evade it, or send a private key/passphrase in chat.
 
 ## Create the local certificate
 
@@ -25,5 +25,7 @@ Build the bridge **before signing**. Run `node scripts/qa/mcp-prepare-signing.mj
 Review the source and the printed hashes first. The commands select the public thumbprint of your chosen certificate, add only its public certificate to your **current-user** Root and TrustedPublisher stores, and sign the compiled helper and ignored QA-driver copy. Trust applies to this publisher, not only those two files: protect its key and use it only for code you reviewed. The signature blocks/certificate are not committed to the repository.
 
 The generated instructions preserve `AllSigned` and verify both signatures. Run the opt-in native test with the printed QA-driver path. Rebuilding `bridge/` replaces its compiled helper and requires signing that helper again. Editing either signed file invalidates its signature.
+
+After first importing trust, an immediate verification in the same PowerShell process can still fail. Start a fresh Windows PowerShell process and verify both files again with `Get-AuthenticodeSignature`; continue only when both report `Valid`. Do not treat a signing attempt alone as successful verification. The development-machine follow-up explicitly obtained owner approval, verified both signed copies in a fresh process, and passed the three native tests without changing `AllSigned`.
 
 If either signature remains untrusted, policy prohibits current-user trust, or no certificate is available, retain the native certification blocker and the draft PR. Portable SDK/browser tests and the installed CLI's unpaired status proof do not substitute for native pairing or paired CLI reads.

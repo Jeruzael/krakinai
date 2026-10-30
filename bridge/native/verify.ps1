@@ -24,13 +24,15 @@ try {
   $pairingWindow.FindName('Origins').Text = ([string]$pairingRequest.origin + "`n" + [string]$pairingRequest.relay)
   $pairingWindow.FindName('VerificationCode').Text = [string]$pairingRequest.verificationCode
   $pairingWindow.FindName('Reveal').Add_Click({ $pairingWindow.FindName('PairingKey').Text = [string]$pairingRequest.secret })
-  $pairingWindow.FindName('Compared').Add_Click({ $pairingWindow.FindName('Allow').IsEnabled = $pairingWindow.FindName('Compared').IsChecked -eq $true })
+  $updatePairingConsent = { $pairingWindow.FindName('Allow').IsEnabled = $pairingWindow.FindName('Compared').IsChecked -eq $true }
+  $pairingWindow.FindName('Compared').Add_Checked($updatePairingConsent)
+  $pairingWindow.FindName('Compared').Add_Unchecked($updatePairingConsent)
   $script:pairingAllowed = $false
   $pairingWindow.FindName('Allow').Add_Click({ $script:pairingAllowed = $true; $pairingWindow.Close() })
   $pairingWindow.FindName('Deny').Add_Click({ $pairingWindow.Close() })
   $null = $pairingWindow.ShowDialog()
   [Console]::Out.WriteLine((@{ challengeId = [string]$pairingRequest.challengeId; allowed = [bool]$script:pairingAllowed } | ConvertTo-Json -Compress))
 } catch {
-  [Console]::Error.WriteLine('NATIVE_VERIFICATION_FAILED')
+  [Console]::Error.WriteLine("NATIVE_VERIFICATION_FAILED $($_.InvocationInfo.ScriptLineNumber) $($_.Exception.GetType().Name)")
   exit 1
 }

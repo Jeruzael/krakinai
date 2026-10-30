@@ -1,6 +1,6 @@
 # Stage C QA evidence
 
-Status: portable implementation verified; **native Windows pairing blocked, PR must remain draft**. Full-suite evidence and its failed attempts are distinguished below. This report does not infer safety from function-name searches.
+Status: portable implementation plus **three isolated signed Windows native/installed-CLI cases verified**. PR #28 remains draft and unmerged for review. Full-suite evidence and its failed attempts are distinguished below. This report does not infer safety from function-name searches.
 
 ## Directly inspected facts
 
@@ -11,7 +11,7 @@ Status: portable implementation verified; **native Windows pairing blocked, PR m
 
 ## Automated results
 
-- Fresh plain `npm test`: **706/706**, 99 files, exit **0**, 52.31 seconds. Final four-worker JUnit run: **706/706**, exit **0**, 93.53 seconds. Logs `qa-results/local-mcp/unit-final-default.log`, `unit-final-junit.log`; JUnit `qa-results/vitest.xml`.
+- Fresh follow-up root suite: **706/706**, 99 files, exit **0**, 101.47 seconds with four workers and JUnit (`qa-results/local-mcp/native-followup-unit.xml`). Earlier plain/JUnit runs are retained as historical evidence in the machine ledger.
 - Bridge tests: **18/18**, three files, exit **0**; real SDK initialization/list/call/EOF, strict HTTP/crypto/session tests and real HTTP browser-transport tests. Separate injected verifiers are identified as test dependencies.
 - Root/bridge typechecks and builds: exit **0**. Vite warns that `sceneAuthoring.ts` has both static and dynamic imports and that the main minified chunk is **963.50 kB**, above its 500 kB advisory threshold. These warnings are retained.
 - Production dependency audits: root and bridge each **0 vulnerabilities**, exit **0**.
@@ -42,9 +42,17 @@ The pairing instructions were corrected to transfer the key before Allow closes 
 
 ## Actual CLI and native Windows results
 
-The **installed npm Codex CLI 0.73.0** invoked `mcp__krakinai__krakinai_connection_status` through the production SDK stdio launcher. Exit **0**, two loopback model-fixture requests, `connected:false`, no unexpected external proxy requests. A dedicated child-only configuration/home was used; real auth/config was not copied or changed. This is an actual CLI call with a controlled local model fixture, not certification of a remote AI model or paired reads. Raw result: `qa-results/local-mcp/cli/5993a442-245d-4e20-93f2-ef9cec506089/result.json`.
+Follow-up: **3/3 passed**, zero skipped/failed, exit **0**, 63.788 seconds including cold server startup. Raw `qa-results/local-mcp/native-strict-final.json`. Fresh root/bridge typechecks, root and bridge builds, bridge18 tests, both production audits and QA8 checks passed. Seven new CLI-evidence regressions also passed and are required in CI. Previous full portable runs below are historical; the current CI suite has142portable cases plus3explicit native opt-in cases.
 
-The actual production WPF test failed with exit **1** because Windows PowerShell requires an Authenticode-signed script. An explicit read of that executable's policy showed `LocalMachine AllSigned`; pwsh7's different `RemoteSigned` setting is not applicable to the launcher. No policy change, file unblocking, certificate creation or trust-store import was performed. Real native Allow/Deny, paired CLI reads and real Chrome/Edge certification remain **unverified**. The opt-in native suite is separated from portable CI, not counted as passing.
+The **installed npm Codex CLI 0.73.0** invoked `mcp__krakinai__krakinai_connection_status` through the production SDK stdio launcher. Exit **0**, two loopback model-fixture requests, `connected:false`, no unexpected external proxy requests. A dedicated child-only configuration/home was used; real auth/config was not copied or changed. This was the initial unpaired proof; the strict paired follow-up is documented below. Neither proof certifies a remote AI model. Raw result: `qa-results/local-mcp/cli/5993a442-245d-4e20-93f2-ef9cec506089/result.json`.
+
+Initially the unsigned native scripts were rejected by Windows PowerShell5.1 AllSigned (exit1). The owner then created a local code-signing certificate and explicitly approved adding only its public certificate to CurrentUser Root/TrustedPublisher and signing the compiled helper and ignored QA driver. Both signatures verified Valid in a fresh Windows PowerShell process. No machine trust store, execution policy, private-key export, global Codex configuration or actual user browser data was changed. Signed copies/certificate identifiers are excluded from Git.
+
+Real testing exposed an accessibility defect: UIA Toggle raises Checked but not Click, so the original Click-only consent handler left Allow disabled. The actual Windows control probe returned Checked=true, ClickEvents=0, CheckedEvents=1. A failing native regression was observed before changing the helper to Checked/Unchecked handlers. The driver now verifies unchecked/checked/unchecked/checked button states and waits for the owned verifier process to exit before browser confirmation; the production Node verifier still requires exit0 and the matching challenge. Four post-signing failed attempts are retained in the machine ledger, including the misleadingly named native-checkbox-green.json whose actual exit was1.
+
+The final native suite verifies: Allow only after checked consent; Deny rejects even the correct captured one-time key, leaves reads blocked and preserves records; actual installed CLI0.73.0 performs connection_status/list_projects/get_project via the direct production launcher and signed native window. Each named response is correlated by call ID, must succeed, the listing must contain exactly the selected project, and the unrelated project ID must never appear. The library snapshot and media SHA256 hashes remain equal. Actual paired CLI evidence: qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/result.json. The SSE model fixture and proxy remain loopback-only; no external AI provider/auth files/global configuration are used.
+
+Independent review caught a QA acceptance gap: the first checker could accept a failed listing when the final project read succeeded. That condition is now rejected by seven focused regressions; the reviewer rechecked the correction and confirmed it resolved. The final real three-case native suite passed again with strict checking. Playwright Chromium is tested; actual Chrome/Edge profiles and non-Windows native verification remain unverified.
 
 ## Security assumptions and remaining risks
 
@@ -53,7 +61,7 @@ The baseline development/test dependency advisories above remain unresolved. Zer
 
 Scope/replay/epoch/MAC/expiry tests exercise the implemented boundaries; they do not prove absence of vulnerabilities. Local OS compromise, same-origin JavaScript compromise, malicious extensions and desktop automation are outside this bridge's protection. `isTrusted` is not physical-human attestation. Loopback authentication does not encrypt traffic. Selected context may enter Codex's configured model provider. Secrets are released from application references on disconnect but forensic memory erasure is not guaranteed.
 
-The draft must remain unmerged until mandatory native acceptance is resolved. No actual browser library/profile was used. Explicit persistent QA profiles remain retained. **Retention exception:** early reruns used Playwright's established default `test-results` output directory, which Playwright resets, so earlier runner error contexts were not all preserved. This was acknowledged and corrected: each subsequent run now uses a unique ignored `qa-results/playwright-runs/<time>-<UUID>` directory. No explicit profile cleanup or real record deletion occurred. Archived raw failures, signing copies and profiles are excluded from Git.
+Native acceptance is now verified for the isolated Windows setup; the PR remains draft and unmerged pending owner review. No actual browser library/profile was used. Explicit persistent QA profiles remain retained. **Retention exception:** early reruns used Playwright's established default `test-results` output directory, which Playwright resets, so earlier runner error contexts were not all preserved. This was acknowledged and corrected: each subsequent run now uses a unique ignored `qa-results/playwright-runs/<time>-<UUID>` directory. No explicit profile cleanup or real record deletion occurred. Archived raw failures, signing copies and profiles are excluded from Git.
 
 The checked-in machine-readable ledger is `docs/qa/local-mcp-results.json`. It records local evidence; exact hosted revisions are bound by GitHub's runtime summary and PR checks. The complete changed-file list and retained artifact measurements are provided with the final verification.
 
@@ -66,18 +74,18 @@ The checked-in machine-readable ledger is `docs/qa/local-mcp-results.json`. It r
 | Deny creation of a new standalone MCP scene without an authorized project | New records need an explicit authorization target | Manual import remains the standalone fallback |
 | Use asynchronous SHA-256 cursor stamps | Reuse existing canonical hashing rather than a weak cursor fingerprint | Paging includes a digest await and a session/scope recheck |
 | Pass fresh transaction state to the synchronous guard | Scope membership can change after preview | Small synchronous authorization work before the first write |
-| Keep real Windows tests opt-in and injected-native CI separate | `AllSigned` is an actual local blocker | Native pairing/paired CLI remain uncertified; draft PR |
+| Keep real Windows tests opt-in and injected-native CI separate | User-approved local signatures satisfy AllSigned without bypassing it | Linux CI skips3native cases; real Windows3/3 is a separate measured run |
 | Cap unparsed TCP connections at 32 | Per-body limits do not bound incomplete connections | New connections can be rejected during saturation |
 | Use unique runner output directories | Playwright's default reset replaced earlier error contexts | More retained disk usage; no retroactive recovery claim |
 | Wait for QA module warmup and do not reuse arbitrary servers | First cold navigation consumed the interaction test budget | Cold startup occurs before tests; an occupied QA port fails explicitly |
 | Capture the before UI from an exported exact Git base | Preserve all existing checkouts and browser profiles | Retain a baseline source archive and a separate synthetic profile |
-| Keep Stage C draft and unmerged | Mandatory native acceptance is not yet established | Portable green CI alone is not release certification |
+| Keep Stage C draft and unmerged | Owner review is still required; isolated Windows native3/3 now verified | Functional acceptance is not a general security certification |
 
 Deferred minor: the MCP preview tool reports requested intent; complete findings remain in browser review. This avoids a global duplicate-match oracle but gives the model no automatic apply-ready verdict.
 
-Final local totals:706root unit/component,18bridge tests,142browser passed/1native skipped,8QA reconciliation tests. Actual native opt-in remains failed/blocked. Retained local MCP artifacts: 15791files / 1098274543bytes (measurement excludes linked dependencies), 53explicit profiles plus the baseline profile.22screenshots exist with hashes in the machine ledger.
+Latest local totals:706root unit/component,18bridge tests,3native Windows cases,7CLI-evidence regressions and8QA reconciliation tests passed. The earlier full portable run was142passed/1native skipped; current Linux CI has142portable cases and3explicit native skips, with the exact outcome bound by its runtime artifact. Artifact figures below are the earlier local-QA snapshot, not a live disk inventory:15791files /1098274543bytes excluding linked dependencies,53explicit profiles plus the baseline profile.22local screenshots exist with hashes in the machine ledger.
 
-Complete intended changed-file list (56files; source/tests/docs/config only):
+Complete intended changed-file list (57files; source/tests/docs/config only):
 
 - `.github/workflows/ci.yml`
 - `bridge/build.mjs`
@@ -110,6 +118,7 @@ Complete intended changed-file list (56files; source/tests/docs/config only):
 - `playwright.config.mjs`
 - `scripts/qa/mcp-before-screenshots.mjs`
 - `scripts/qa/mcp-codex-cli.mjs`
+- `scripts/qa/mcp-codex-cli.test.mjs`
 - `scripts/qa/mcp-native-window.ps1`
 - `scripts/qa/mcp-prepare-signing.mjs`
 - `scripts/qa/serve-smoke.mjs`

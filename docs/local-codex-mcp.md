@@ -4,7 +4,7 @@ This feature adds scoped context reads and proposed change sets over a local std
 
 ## Current certification limit
 
-The isolated SDK/browser workflow and the installed Codex CLI's unpaired status call have been exercised. **Native Windows pairing is not certified on the development machine:** Windows PowerShell 5.1 has `LocalMachine: AllSigned` and rejects the unsigned helper. Keep the Stage C PR draft until native pairing and paired CLI acceptance succeed. Do not disable or bypass the policy. See [local signing instructions](local-codex-mcp-signing.md) and [QA evidence](local-codex-mcp-qa.md).
+The isolated SDK/browser workflow and **real signed Windows verification window** have passed Allow and Deny tests under Windows PowerShell 5.1 with `LocalMachine: AllSigned` unchanged. The installed Codex CLI **0.73.0** also paired through that window and successfully read status, the exact selected-project listing and the selected project. Its unrelated project remained undisclosed. These tests use fresh synthetic Chromium profiles and a loopback model fixture, not an external AI provider or real user data. Other native platforms and actual Chrome/Edge profiles remain unverified. The local owner explicitly approved current-user public-certificate trust and signing the two ignored test copies; no certificate/signature is bundled. Keep PR #28 draft and unmerged for review. See [local signing instructions](local-codex-mcp-signing.md) and [QA evidence](local-codex-mcp-qa.md).
 
 ## Build and configure deliberately
 
