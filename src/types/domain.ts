@@ -1,4 +1,5 @@
 import type {CameraComposition} from './cinematography';
+import type {ImportLedger} from './changeSet';
 import type {DirectPromptContent, SceneAuthoringFields, SceneProjectTarget, SceneRevision, SceneRevisionIntent} from './sceneAuthoring';
 export const SCHEMA_VERSION = 1;
 
@@ -339,6 +340,7 @@ export interface ProjectShot {
 }
 
 export interface Collection {
+  planningNotes?: string;
   project?: { version: 1; revision: number; shots: ProjectShot[]; cast?: CharacterBibleEntry[]; transitions?: ProjectTransition[] };
   id: string;
   name: string;
@@ -379,6 +381,7 @@ export interface Template {
 }
 
 export interface Preferences {
+  aiImports?: ImportLedger;
   id: 'app_preferences';
   schemaVersion: number;
   starterLoaded: boolean;

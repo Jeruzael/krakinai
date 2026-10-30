@@ -1,0 +1,712 @@
+{
+  "schema": "krakinai.change-set.v1",
+  "changeSetId": "synthetic-midori-60s-v1",
+  "source": {
+    "kind": "chatgpt",
+    "label": "Synthetic MIDORI planning"
+  },
+  "title": "Synthetic MIDORI — 15 shots / 60 seconds",
+  "operations": [
+    {
+      "operationId": "project",
+      "type": "project.create",
+      "clientRef": "midori",
+      "name": "Synthetic MIDORI — 60-second plan",
+      "description": "Fictional test planning only; no verified commercial claims.",
+      "planningNotes": "Review every property claim against approved source material."
+    },
+    {
+      "operationId": "shot-01",
+      "type": "shot.create",
+      "clientRef": "shot-01",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "01",
+      "title": "Synthetic shot 01",
+      "plannedShotType": "character_scene",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-01",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-01",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-01"
+      },
+      "title": "MIDORI 01",
+      "shotType": "character_scene",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 01: Presenter introduction; approved identity remains to be selected.",
+        "origin": "chatgpt"
+      },
+      "assetRefs": [
+        {
+          "asset": {
+            "id": "asset_synthetic_camera"
+          },
+          "slot": "camera",
+          "expectedRevision": 1
+        }
+      ],
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-02",
+      "type": "shot.create",
+      "clientRef": "shot-02",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "02",
+      "title": "Synthetic shot 02",
+      "plannedShotType": "character_scene",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-02",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-02",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-02"
+      },
+      "title": "MIDORI 02",
+      "shotType": "character_scene",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 02: Presenter introduction; approved identity remains to be selected.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-03",
+      "type": "shot.create",
+      "clientRef": "shot-03",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "03",
+      "title": "Synthetic shot 03",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-03",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-03",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-03"
+      },
+      "title": "MIDORI 03",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 03: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-04",
+      "type": "shot.create",
+      "clientRef": "shot-04",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "04",
+      "title": "Synthetic shot 04",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-04",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-04",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-04"
+      },
+      "title": "MIDORI 04",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 04: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-05",
+      "type": "shot.create",
+      "clientRef": "shot-05",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "05",
+      "title": "Synthetic shot 05",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-05",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-05",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-05"
+      },
+      "title": "MIDORI 05",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 05: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-06",
+      "type": "shot.create",
+      "clientRef": "shot-06",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "06",
+      "title": "Synthetic shot 06",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-06",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-06",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-06"
+      },
+      "title": "MIDORI 06",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 06: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-07",
+      "type": "shot.create",
+      "clientRef": "shot-07",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "07",
+      "title": "Synthetic shot 07",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-07",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-07",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-07"
+      },
+      "title": "MIDORI 07",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 07: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-08",
+      "type": "shot.create",
+      "clientRef": "shot-08",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "08",
+      "title": "Synthetic shot 08",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-08",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-08",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-08"
+      },
+      "title": "MIDORI 08",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 08: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-09",
+      "type": "shot.create",
+      "clientRef": "shot-09",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "09",
+      "title": "Synthetic shot 09",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-09",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-09",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-09"
+      },
+      "title": "MIDORI 09",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 09: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-10",
+      "type": "shot.create",
+      "clientRef": "shot-10",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "10",
+      "title": "Synthetic shot 10",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-10",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-10",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-10"
+      },
+      "title": "MIDORI 10",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 10: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-11",
+      "type": "shot.create",
+      "clientRef": "shot-11",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "11",
+      "title": "Synthetic shot 11",
+      "plannedShotType": "property_environment",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-11",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-11",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-11"
+      },
+      "title": "MIDORI 11",
+      "shotType": "property_environment",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 11: Show only the supplied property details.",
+        "origin": "chatgpt"
+      },
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-12",
+      "type": "shot.create",
+      "clientRef": "shot-12",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "12",
+      "title": "Synthetic shot 12",
+      "plannedShotType": "graphic_motion",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-12",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-12",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-12"
+      },
+      "title": "MIDORI 12",
+      "shotType": "graphic_motion",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 12: Animate the approved original graphic without changing its contents.",
+        "origin": "chatgpt"
+      },
+      "pendingInputs": [
+        {
+          "version": 1,
+          "id": "original-12",
+          "kind": "source_image",
+          "label": "Approved original graphic 12",
+          "notes": "Upload and associate manually before generation."
+        }
+      ],
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-13",
+      "type": "shot.create",
+      "clientRef": "shot-13",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "13",
+      "title": "Synthetic shot 13",
+      "plannedShotType": "graphic_motion",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-13",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-13",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-13"
+      },
+      "title": "MIDORI 13",
+      "shotType": "graphic_motion",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 13: Animate the approved original graphic without changing its contents.",
+        "origin": "chatgpt"
+      },
+      "pendingInputs": [
+        {
+          "version": 1,
+          "id": "original-13",
+          "kind": "source_image",
+          "label": "Approved original graphic 13",
+          "notes": "Upload and associate manually before generation."
+        }
+      ],
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-14",
+      "type": "shot.create",
+      "clientRef": "shot-14",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "14",
+      "title": "Synthetic shot 14",
+      "plannedShotType": "graphic_motion",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-14",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-14",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-14"
+      },
+      "title": "MIDORI 14",
+      "shotType": "graphic_motion",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 14: Animate the approved original graphic without changing its contents.",
+        "origin": "chatgpt"
+      },
+      "pendingInputs": [
+        {
+          "version": 1,
+          "id": "original-14",
+          "kind": "source_image",
+          "label": "Approved original graphic 14",
+          "notes": "Upload and associate manually before generation."
+        }
+      ],
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "shot-15",
+      "type": "shot.create",
+      "clientRef": "shot-15",
+      "project": {
+        "ref": "midori"
+      },
+      "code": "15",
+      "title": "Synthetic shot 15",
+      "plannedShotType": "graphic_motion",
+      "plannedDurationSeconds": 4,
+      "continuityNotes": "Planning metadata only. Verify source details before generation."
+    },
+    {
+      "operationId": "prompt-15",
+      "type": "scene.create_direct_prompt",
+      "clientRef": "scene-15",
+      "project": {
+        "ref": "midori"
+      },
+      "shot": {
+        "ref": "shot-15"
+      },
+      "title": "MIDORI 15",
+      "shotType": "graphic_motion",
+      "settings": {
+        "aspectRatio": "9:16",
+        "durationSeconds": 4
+      },
+      "prompt": {
+        "version": 1,
+        "text": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 15: Animate the approved original graphic without changing its contents.",
+        "origin": "chatgpt"
+      },
+      "pendingInputs": [
+        {
+          "version": 1,
+          "id": "original-15",
+          "kind": "source_image",
+          "label": "Approved original graphic 15",
+          "notes": "Upload and associate manually before generation."
+        }
+      ],
+      "claims": [
+        {
+          "kind": "property",
+          "text": "All property information is unverified until checked against approved source material.",
+          "verified": false
+        }
+      ]
+    },
+    {
+      "operationId": "camera-candidate",
+      "type": "asset.propose",
+      "clientRef": "camera-candidate",
+      "kind": "camera",
+      "title": "Synthetic gentle push-in",
+      "promptText": "A slow physical push-in along a clear path, preserving the supplied composition.",
+      "tags": ["synthetic", "push-in"]
+    },
+    {
+      "operationId": "character-candidate",
+      "type": "asset.propose",
+      "clientRef": "character-candidate",
+      "kind": "character",
+      "title": "Synthetic presenter proposal",
+      "promptText": "Unreviewed proposed presenter description. A human must supply and approve all identity details.",
+      "tags": ["synthetic", "proposal"]
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
+import {AiPlanningActions} from '../components/AiPlanningActions';
 import { StudioDialog } from '../components/StudioDialog';
 import { collectionSceneRoute, collectionRoute, collectionViewState, rememberCollectionScroll, getCollectionScroll } from '../domain/collectionNavigation';
 import React, { useMemo, useState, useEffect, useRef } from 'react';
@@ -422,6 +423,7 @@ export const CollectionsScreen: React.FC<{ collectionId?: string }> = ({
           </p>
         </div>
 
+        <AiPlanningActions/>
         <button
           type="button"
           className="btn btn-primary"
