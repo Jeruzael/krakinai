@@ -61,13 +61,91 @@
     },
     "hostedCi": {
       "status": "Exact-head outcome recorded in pull request after signed push",
-      "runtimeArtifact": "summary.json"
+      "runtimeArtifact": "summary.json",
+      "firstVerifiedRun": {
+        "id": 41093225622,
+        "testedCommit": "f996deee1886e8fe0da4a44e3a1b02e0b5aaf17d",
+        "conclusion": "success",
+        "workingTreeDirty": false,
+        "rootPassed": 706,
+        "bridgePassed": 18,
+        "browserPassed": 142,
+        "browserSkipped": 1,
+        "browserFailed": 0,
+        "qaPassed": 8
+      }
     },
     "qaReconciliation": {
       "exitCode": 0,
       "tests": 8,
       "historicalCanonicalChecks": 207,
       "historicalScreenshots": 45
+    },
+    "rootInstall": {
+      "exitCode": 0,
+      "warnings": [
+        "whatwg-encoding@3.1.1 is deprecated",
+        "npm ci reported six baseline development/test dependency advisories: three moderate,one high,two critical"
+      ]
+    },
+    "rootAllDependenciesAudit": {
+      "command": "npm audit --json",
+      "exitCode": 1,
+      "counts": {
+        "info": 0,
+        "low": 0,
+        "moderate": 3,
+        "high": 1,
+        "critical": 2,
+        "total": 6
+      },
+      "packages": [
+        {
+          "name": "@vitest/mocker",
+          "severity": "moderate",
+          "versions": [
+            "2.1.9"
+          ]
+        },
+        {
+          "name": "esbuild",
+          "severity": "moderate",
+          "versions": [
+            "0.21.5"
+          ]
+        },
+        {
+          "name": "tinypool",
+          "severity": "critical",
+          "versions": [
+            "1.1.1"
+          ]
+        },
+        {
+          "name": "vite",
+          "severity": "high",
+          "versions": [
+            "5.4.21"
+          ]
+        },
+        {
+          "name": "vite-node",
+          "severity": "moderate",
+          "versions": [
+            "2.1.9"
+          ]
+        },
+        {
+          "name": "vitest",
+          "severity": "critical",
+          "versions": [
+            "2.1.9"
+          ]
+        }
+      ],
+      "rootPackageAndLockUnchangedFromBase": true,
+      "exploitabilityAssessed": false,
+      "raw": "qa-results/local-mcp/audit-all-dependencies.json"
     }
   },
   "targetedBrowserEvidence": {
@@ -403,5 +481,6 @@
     "src/screens/aiConnections.css",
     "src/storage/changeSets.ts",
     "src/types/mcp.ts"
-  ]
+  ],
+  "postTestUpdate": "Report-only correction records full development dependency audit separately from passing production-only audits; runtime code unchanged."
 }
