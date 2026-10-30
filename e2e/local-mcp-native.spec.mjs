@@ -1,21 +1,8 @@
 import { test, expect } from '@playwright/test';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-import { resolve } from 'node:path';
-import { isolatedMcpBrowser, sdkBridge, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, sdkBridge, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes, ownedCliBridgePid } from './local-mcp-fixture.mjs';
 import { seedChangeSet, readChangeLibrary } from './change-set-fixture.mjs';
 import { certifyInstalledCli } from '../scripts/qa/mcp-codex-cli.mjs';
-const run = promisify(execFile);
 function requireNativeWindows() { test.skip(process.platform !== 'win32' || process.env.KRAKINAI_NATIVE_QA !== '1', 'Opt-in signed real Windows verifier and installed CLI; no substitute verifier.'); }
-
-async function ownedCliBridgePid(cliPid, port) {
-  if (!Number.isSafeInteger(cliPid) || !Number.isSafeInteger(port)) throw new Error('Invalid owned process identity');
-  const command = `Get-CimInstance Win32_Process -Filter 'ParentProcessId = ${cliPid}' | Where-Object { $_.Name -eq 'node.exe' -and $_.CommandLine -like '*krakinai-mcp.mjs*' -and $_.CommandLine -like '*--port*${port}*' } | Select-Object -ExpandProperty ProcessId`;
-  const { stdout } = await run(resolve(process.env.SystemRoot || 'C:/Windows', 'System32/WindowsPowerShell/v1.0/powershell.exe'), ['-NoProfile', '-NonInteractive', '-Command', command], { windowsHide: true, timeout: 10000 });
-  const pids = stdout.trim().split(/\s+/).filter(Boolean);
-  if (pids.length !== 1 || !/^\d+$/.test(pids[0])) throw new Error('Actual CLI did not own exactly one expected production bridge');
-  return Number(pids[0]);
-}
 test('Windows production launcher pairs only after the real owned WPF verification window allows it', async () => {
   test.skip(process.platform !== 'win32' || process.env.KRAKINAI_NATIVE_QA !== '1', 'Opt-in real WPF certification: KRAKINAI_NATIVE_QA=1 on Windows, with scripts trusted under the existing execution policy.'); test.setTimeout(90000);
   const { context, page } = await isolatedMcpBrowser(), bridge = await sdkBridge({ production: true });

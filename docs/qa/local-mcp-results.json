@@ -4,17 +4,17 @@
   "branch": "codex/local-codex-mcp",
   "baseCommit": "6530c0eda04809c603930a4b106b7f774bc1dd8d",
   "testedUncommittedWorkingTree": true,
-  "releaseDecision": "draft-native-tests-verified-awaiting-review",
+  "releaseDecision": "complete-local-cli-acceptance-verified-hosted-outcome-bound-by-exact-head-pr-checks-no-merge",
   "checks": {
     "rootUnit": {
       "exitCode": 0,
       "passed": 706,
       "failed": 0,
       "files": 99,
-      "seconds": 101.47,
+      "seconds": 100.25,
       "workers": 4,
-      "command": "npm test -- --maxWorkers=4 --minWorkers=4 --reporter=default --reporter=junit --outputFile.junit=qa-results/local-mcp/native-followup-unit.xml",
-      "raw": "qa-results/local-mcp/native-followup-unit.xml"
+      "command": "npm test -- --maxWorkers=4 --minWorkers=4 --reporter=default --reporter=junit --outputFile.junit=qa-results/local-mcp/acceptance-unit.xml",
+      "raw": "qa-results/local-mcp/acceptance-unit.xml"
     },
     "bridgeUnit": {
       "exitCode": 0,
@@ -48,14 +48,14 @@
     },
     "fullBrowserSuite": {
       "exitCode": 0,
-      "tests": 143,
-      "passed": 142,
+      "tests": 147,
+      "passed": 147,
       "failed": 0,
-      "skipped": 1,
-      "seconds": 471.903175,
-      "raw": "qa-results/local-mcp/warmed-full-playwright.json",
-      "nativeSkip": "Previous full run; native signatures unavailable then. Current local native follow-up separately passed3/3.",
-      "historicalAtCommit": "824bf6bfd52d0384ffd4f3a40baabfc6ae43d2f6"
+      "flaky": 0,
+      "skipped": 0,
+      "seconds": 485.444281,
+      "raw": "qa-results/local-mcp/acceptance-full-browser-final.json",
+      "nativeWindowsIncluded": 5
     },
     "hostedCi": {
       "status": "Exact-head outcome recorded in pull request after signed push",
@@ -70,6 +70,19 @@
         "browserPassed": 142,
         "browserSkipped": 1,
         "browserFailed": 0,
+        "qaPassed": 8
+      },
+      "previousVerifiedRun": {
+        "id": 41103296478,
+        "testedCommit": "c39ccd5ff4b9b78a2b1547bc01b663523028fca5",
+        "conclusion": "success",
+        "workingTreeDirty": false,
+        "rootPassed": 706,
+        "bridgePassed": 18,
+        "browserPassed": 142,
+        "browserSkipped": 3,
+        "browserFailed": 0,
+        "cliEvidencePassed": 7,
         "qaPassed": 8
       }
     },
@@ -150,32 +163,40 @@
       "passed": 706,
       "failed": 0,
       "files": 99,
-      "seconds": 93.53,
+      "seconds": 101.47,
       "workers": 4,
-      "plainNpmTest": {
-        "exitCode": 0,
-        "passed": 706,
-        "seconds": 52.31
-      }
+      "command": "npm test -- --maxWorkers=4 --minWorkers=4 --reporter=default --reporter=junit --outputFile.junit=qa-results/local-mcp/native-followup-unit.xml",
+      "raw": "qa-results/local-mcp/native-followup-unit.xml"
     },
     "currentCiSuite": {
-      "expectedTotal": 145,
+      "expectedTotal": 147,
       "portableCases": 142,
-      "explicitWindowsNativeOptInCases": 3,
+      "explicitWindowsNativeOptInCases": 5,
       "nativeCiSkipIsNotPass": true,
       "exactHeadOutcome": "PR Checks and matching runtime artifact after signed push"
     },
     "cliEvidenceRegressions": {
       "exitCode": 0,
-      "passed": 7,
+      "passed": 23,
       "failed": 0,
-      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs",
-      "raw": "qa-results/local-mcp/cli-evidence-green.log"
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs",
+      "raw": "qa-results/local-mcp/full-workflow-evidence-23.log"
+    },
+    "previousFullBrowserSuite": {
+      "exitCode": 0,
+      "tests": 143,
+      "passed": 142,
+      "failed": 0,
+      "skipped": 1,
+      "seconds": 471.903175,
+      "raw": "qa-results/local-mcp/warmed-full-playwright.json",
+      "nativeSkip": "Previous full run; native signatures unavailable then. Current local native follow-up separately passed3/3.",
+      "historicalAtCommit": "824bf6bfd52d0384ffd4f3a40baabfc6ae43d2f6"
     }
   },
   "targetedBrowserEvidence": {
     "syntheticProfilesOnly": true,
-    "verifier": "separate test-entry dependency injection; not native Windows certification",
+    "verifier": "Portable SDK cases use separate injected verifier; five Windows-only cases use actual signed production verifier, including complete installed-CLI workflows",
     "midori": {
       "shots": 15,
       "durationSeconds": 60,
@@ -204,7 +225,12 @@
       "seeded original media SHA256 equality",
       "human-selected camera candidate created with actual confirmedassetID",
       "Character candidate remains pending and canonical identities unchanged",
-      "new asset is not automatically granted to reads"
+      "new asset is not automatically granted to reads",
+      "actual installed CLI scene.revise, real browser Stage B approval, status and durable receipt",
+      "three no-write checkpoints before Apply",
+      "per-call correlated nine-response workflow with strict denial envelopes",
+      "retry returns same proposal and unchanged library",
+      "literal localhost origin and separate empty127.0.0.1 IndexedDB in same disposable profile"
     ],
     "screenshots": {
       "count": 22,
@@ -217,25 +243,25 @@
           "path": "qa-results/local-mcp/screenshots/applied-1366x768.png",
           "width": 1366,
           "height": 816,
-          "sha256": "3740b3d1c8e06e8f93e2a12c9280856d3e9e528e12a2035b4e8e1c5e54041f48"
+          "sha256": "70b5e223479a1fea420d6c6f92698fc6061a0b7c783597c4e22ac725ccfa6e93"
         },
         {
           "path": "qa-results/local-mcp/screenshots/applied-1440x900.png",
           "width": 1440,
           "height": 948,
-          "sha256": "eec87cacc809bba15fbbeda9f4ee65d2811a8cc568caabcf52e66473fdf78381"
+          "sha256": "c132b8048adf9cfec04cca1b6872a1af7351952431ea37027637548124b1a5eb"
         },
         {
           "path": "qa-results/local-mcp/screenshots/applied-390x844.png",
           "width": 390,
           "height": 2709,
-          "sha256": "4d6801dc22aff7acd27f712668688796da4cf68bbade0f7baf07864ae8c5ceb4"
+          "sha256": "f73c0699ff50986d273e39d85486f2e1aabf6e83d80359aceb400c7c93ed908a"
         },
         {
           "path": "qa-results/local-mcp/screenshots/applied-768x1024.png",
           "width": 768,
           "height": 2250,
-          "sha256": "32d3d238d004ad6d70f5718b7c888f36c8c5a1b7d2f611394ebe0ed71fe8c5aa"
+          "sha256": "d481d896a926d57e69782135f7ae9470ddfd1b661619a3eae1815826ee7c5b26"
         },
         {
           "path": "qa-results/local-mcp/screenshots/before-manual-import-1366x768.png",
@@ -271,79 +297,79 @@
           "path": "qa-results/local-mcp/screenshots/connected-1366x768.png",
           "width": 1366,
           "height": 816,
-          "sha256": "3e26546aacdfbae444d335b1b3eee62055ff369526cd8b650602bf7f30584804"
+          "sha256": "c9ae923274694b05155c4e23f15e925505b422f1b0a1e7104d59f848f4220b7e"
         },
         {
           "path": "qa-results/local-mcp/screenshots/connected-1440x900.png",
           "width": 1440,
           "height": 948,
-          "sha256": "49587f7bed29ba157f890a8f3461308900ad6e89c33e4811c46794d991e4afa2"
+          "sha256": "a3cad71e1a04e89ffa96320c946e937ff28d42ff80fb8f241813dcc3d11a1047"
         },
         {
           "path": "qa-results/local-mcp/screenshots/connected-390x844.png",
           "width": 390,
           "height": 2246,
-          "sha256": "ed3f90570ab3943ebb54c60a2a3da1d8fa99b2bb57532ff6d5e1fcf725c3b4ae"
+          "sha256": "bea4090d5d2ab299c3786813b4af6b567b31bbe840192b181987d100b78f51a7"
         },
         {
           "path": "qa-results/local-mcp/screenshots/connected-768x1024.png",
           "width": 768,
           "height": 1816,
-          "sha256": "9464712d59862d5b1c5ea9f61f40fa793c04d3d7bfd1b3e7f9fa21f6e0ebe2b8"
+          "sha256": "c895d3f817b7366c83f12637e1cf056661ed7f91c92287c8826ef77a82243b26"
         },
         {
           "path": "qa-results/local-mcp/screenshots/disconnected-1366x768.png",
           "width": 1366,
           "height": 816,
-          "sha256": "5e5ae3c605341ba26e8cc139934ef4af7126d4eeae214e240920f343cc069736"
+          "sha256": "072c2f458af4f430e6c6a8d59f575af1851d4023289e1ce4119b7a3ae56742f8"
         },
         {
           "path": "qa-results/local-mcp/screenshots/disconnected-1440x900.png",
           "width": 1440,
           "height": 948,
-          "sha256": "de16371b2823b64e740a4ec3198b7cddbaa21ad3916f8412a38cb30d87174b30"
+          "sha256": "a405a82ab52a20802660caab924d9e5d357845b567ca41553aada2d71f22e6a4"
         },
         {
           "path": "qa-results/local-mcp/screenshots/disconnected-390x844.png",
           "width": 390,
           "height": 1768,
-          "sha256": "f5e66f8cd79cbb474974bd607a89db6673543cc5218350a74dd67d565e36067a"
+          "sha256": "f570b5cc1a54d01b6f513da4e734ab95e55889ee6fc25bfd4714bfa32daefed3"
         },
         {
           "path": "qa-results/local-mcp/screenshots/disconnected-768x1024.png",
           "width": 768,
           "height": 1476,
-          "sha256": "fd0f090cb82b8a8e3558a4c17bc3c027f442a08c53cf9f62d7181ebe7e124d82"
+          "sha256": "105432e75c08c6d67f1145dfb617951e89b282f4ad25bf759c6c365c36de2ba0"
         },
         {
           "path": "qa-results/local-mcp/screenshots/reflow-720-dpr2.png",
           "width": 1440,
           "height": 3236,
-          "sha256": "a912f0f80860cc4a1575b011f180eda437ef0336cf3dd60dbe13baab0fc686bb"
+          "sha256": "41baf5d10526e7e16fa311ba5f0b619899f4c206e13afbe5a125e26ecbc3f260"
         },
         {
           "path": "qa-results/local-mcp/screenshots/review-1366x768.png",
           "width": 1366,
           "height": 1507,
-          "sha256": "ef55e66b2defe8798774d1096b52f59171668d13de2d731109bf58497c3da790"
+          "sha256": "72c5c60f775f2bc4bca08a293ed67aa92dcd45df79668284e851f6f218c901d1"
         },
         {
           "path": "qa-results/local-mcp/screenshots/review-1440x900.png",
           "width": 1440,
           "height": 1447,
-          "sha256": "f91a6b697ae37149e1d71a064359759a987ba532c5f627e21788c3035f51e0b4"
+          "sha256": "ba38643290e30aba1b1bba95fd61a0a3e864014ac86d7be5ab1836ca5a1ef554"
         },
         {
           "path": "qa-results/local-mcp/screenshots/review-390x844.png",
           "width": 390,
           "height": 3503,
-          "sha256": "d4faeaad4b07c100cd862dfd63769a538ca598bbb51934cf84aaa39fb0da8dc5"
+          "sha256": "2797f25228eba5746a736f770c1bef415a1f2c6b099dd9f65eb516507a74009a"
         },
         {
           "path": "qa-results/local-mcp/screenshots/review-768x1024.png",
           "width": 768,
           "height": 2942,
-          "sha256": "b37710a92c55fbb0b91b64370dfe3ae254251454c2c87be954f8531c96eb1ace"
+          "sha256": "e798a68e548dddb8ca554132b4dcd83570f44ea54819e04ba6c024ec6ba57538"
         }
       ]
     }
@@ -361,22 +387,276 @@
     },
     "version": "0.73.0",
     "exitCode": 0,
-    "connected": true,
     "pairedReadsCertified": true,
     "actualTools": [
       "mcp__krakinai__krakinai_connection_status",
-      "mcp__krakinai__krakinai_list_projects",
-      "mcp__krakinai__krakinai_get_project"
+      "mcp__krakinai__krakinai_submit_change_set",
+      "mcp__krakinai__krakinai_get_proposal_status",
+      "mcp__krakinai__krakinai_get_import_receipt",
+      "mcp__krakinai__krakinai_submit_change_set",
+      "mcp__krakinai__krakinai_connection_status",
+      "mcp__krakinai__krakinai_get_project",
+      "mcp__krakinai__krakinai_get_proposal_status",
+      "mcp__krakinai__krakinai_submit_change_set"
     ],
-    "modelFixtureRequests": 4,
+    "modelFixtureRequests": 10,
     "projectListMatches": true,
     "projectReadMatches": true,
     "foreignProjectAbsent": true,
-    "raw": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/result.json",
-    "toolMessages": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/tool-messages.json",
+    "raw": [
+      "qa-results/local-mcp/cli/d3838c1b-a937-4395-bb9c-65a19b49e632/result.json",
+      "qa-results/local-mcp/cli/85d5a75a-7293-4514-9f72-3bdaacae984b/result.json"
+    ],
+    "toolMessages": [
+      "qa-results/local-mcp/cli/d3838c1b-a937-4395-bb9c-65a19b49e632/tool-messages.json",
+      "qa-results/local-mcp/cli/85d5a75a-7293-4514-9f72-3bdaacae984b/tool-messages.json"
+    ],
     "globalConfigOrActualCredentialsModified": false,
     "externalAiProviderUsed": false,
-    "actualBinaryVersionOutput": "codex-cli 0.73.0"
+    "actualBinaryVersionOutput": "codex-cli 0.73.0",
+    "previousReadOnlyProof": {
+      "previousUnpairedProof": {
+        "version": "0.73.0",
+        "exitCode": 0,
+        "actualTool": "mcp__krakinai__krakinai_connection_status",
+        "connected": false,
+        "modelFixtureRequests": 2,
+        "modelProvider": "isolated loopback SSE fixture; no external AI provider",
+        "pairedReadsCertified": false,
+        "globalConfigOrActualCredentialsModified": false
+      },
+      "version": "0.73.0",
+      "exitCode": 0,
+      "connected": true,
+      "pairedReadsCertified": true,
+      "actualTools": [
+        "mcp__krakinai__krakinai_connection_status",
+        "mcp__krakinai__krakinai_list_projects",
+        "mcp__krakinai__krakinai_get_project"
+      ],
+      "modelFixtureRequests": 4,
+      "projectListMatches": true,
+      "projectReadMatches": true,
+      "foreignProjectAbsent": true,
+      "raw": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/result.json",
+      "toolMessages": "qa-results/local-mcp/cli/e20dc714-d8b5-49df-82e3-5637e630e84d/tool-messages.json",
+      "globalConfigOrActualCredentialsModified": false,
+      "externalAiProviderUsed": false,
+      "actualBinaryVersionOutput": "codex-cli 0.73.0"
+    },
+    "completeRevisionCertified": true,
+    "workflowOrigins": [
+      {
+        "applicationOrigin": "http://127.0.0.1:4173",
+        "changeSetId": "synthetic-cli-complete-ipv4",
+        "proposalId": "891b535d-6813-442f-a4bd-ffb57449e847",
+        "newSceneId": "scene_db5217a87f20",
+        "receiptSavedId": "scene_db5217a87f20",
+        "oldSceneId": "scene_d7967599dadc",
+        "oldSceneSha256Before": "6e907a1b5f0600eb6ade1580a7777fc8548241032d24e338392102ef66c7d4d4",
+        "oldSceneSha256After": "6e907a1b5f0600eb6ade1580a7777fc8548241032d24e338392102ef66c7d4d4",
+        "preferredTakeBefore": "scene_d7967599dadc",
+        "preferredTakeAfter": "scene_d7967599dadc",
+        "sceneCountBefore": 2,
+        "sceneCountAfter": 3,
+        "receiptCount": 1,
+        "noDatabaseWritesBeforeApprovalChecks": 3,
+        "mediaHashesBefore": [
+          {
+            "id": "media_output_reference",
+            "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+          }
+        ],
+        "mediaHashesAfter": [
+          {
+            "id": "media_output_reference",
+            "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+          }
+        ],
+        "retrySnapshotUnchanged": true,
+        "revocationAcknowledged": true,
+        "otherOriginEmpty": false,
+        "callAudit": [
+          {
+            "callId": "synthetic_cli_read_1",
+            "tool": "krakinai_connection_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "d4d1f5bbe6eea0dcb79075c2d1ddff4b7c6660a8a14c4999035d990a73f3bdc6"
+          },
+          {
+            "callId": "synthetic_cli_read_2",
+            "tool": "krakinai_submit_change_set",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "707a75e0083bc68d07d4566dbea84b344315b782cac51a58f6a5c22f85258887"
+          },
+          {
+            "callId": "synthetic_cli_read_3",
+            "tool": "krakinai_get_proposal_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "b0508783cde8b864b7011503d405fe43088550766f447a82b8cc16fc263950d8"
+          },
+          {
+            "callId": "synthetic_cli_read_4",
+            "tool": "krakinai_get_import_receipt",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "29e02c3d59469ab6340e1fb7433cc99f3f804bff1e0f68a385774823292092a6"
+          },
+          {
+            "callId": "synthetic_cli_read_5",
+            "tool": "krakinai_submit_change_set",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "e1237844045a62f897ec606179c5bffa8cb2ff211ada48584b3d8b5f28fd4ca3"
+          },
+          {
+            "callId": "synthetic_cli_read_6",
+            "tool": "krakinai_connection_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a"
+          },
+          {
+            "callId": "synthetic_cli_read_7",
+            "tool": "krakinai_get_project",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          },
+          {
+            "callId": "synthetic_cli_read_8",
+            "tool": "krakinai_get_proposal_status",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          },
+          {
+            "callId": "synthetic_cli_read_9",
+            "tool": "krakinai_submit_change_set",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          }
+        ],
+        "cliVersion": "0.73.0",
+        "exitCode": 0,
+        "modelFixtureRequests": 10,
+        "packageDigest": "8cd7d3b505be0d487d9ff462a59adeaad36dce1691f56f42ba3cb6370bfea913",
+        "approvedDigest": "1598f20a24e6adf8cf5ebda5fe850a271bff20b1ed59909b6d75d0cec72ca7f3",
+        "raw": "qa-results/local-mcp/workflow-browser-ipv4-8c35388e-b395-423e-9b5a-c135e71574d6.json",
+        "actualCliResult": "qa-results/local-mcp/cli/d3838c1b-a937-4395-bb9c-65a19b49e632/result.json",
+        "actualToolMessages": "qa-results/local-mcp/cli/d3838c1b-a937-4395-bb9c-65a19b49e632/tool-messages.json"
+      },
+      {
+        "applicationOrigin": "http://localhost:4173",
+        "changeSetId": "synthetic-cli-complete-localhost",
+        "proposalId": "fade0852-cfff-471a-a9b4-003c0d915d71",
+        "newSceneId": "scene_551630673dda",
+        "receiptSavedId": "scene_551630673dda",
+        "oldSceneId": "scene_0ab1a2acd2b6",
+        "oldSceneSha256Before": "e4acfcadd8fdaffbc6dcb3a9c2dba1a1ef1add57363fce512b090adeb2315b47",
+        "oldSceneSha256After": "e4acfcadd8fdaffbc6dcb3a9c2dba1a1ef1add57363fce512b090adeb2315b47",
+        "preferredTakeBefore": "scene_0ab1a2acd2b6",
+        "preferredTakeAfter": "scene_0ab1a2acd2b6",
+        "sceneCountBefore": 2,
+        "sceneCountAfter": 3,
+        "receiptCount": 1,
+        "noDatabaseWritesBeforeApprovalChecks": 3,
+        "mediaHashesBefore": [
+          {
+            "id": "media_output_reference",
+            "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+          }
+        ],
+        "mediaHashesAfter": [
+          {
+            "id": "media_output_reference",
+            "sha256": "6dd6e297af6966b50dcbc451ab51f3f5bb46fae8b15a6c58912cef31a3c6e4f6"
+          }
+        ],
+        "retrySnapshotUnchanged": true,
+        "revocationAcknowledged": true,
+        "otherOriginEmpty": true,
+        "callAudit": [
+          {
+            "callId": "synthetic_cli_read_1",
+            "tool": "krakinai_connection_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "bbea9322db1717f2d951bbbcbf3d4a8d684b5c18bc22a74a3d526935ce355aa0"
+          },
+          {
+            "callId": "synthetic_cli_read_2",
+            "tool": "krakinai_submit_change_set",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "5449b65f66f233fbca2d8d7ff3995de18e13018471b92c20c1529acec63503b4"
+          },
+          {
+            "callId": "synthetic_cli_read_3",
+            "tool": "krakinai_get_proposal_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "c8bb7495bc367248ac2ab53f735480147ecccbffe1353c238f7e16d4a2f5b794"
+          },
+          {
+            "callId": "synthetic_cli_read_4",
+            "tool": "krakinai_get_import_receipt",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "8d48f8feac6a698af2116914b8b5f5f474351e74d02e4d806b9d002f9f40fd22"
+          },
+          {
+            "callId": "synthetic_cli_read_5",
+            "tool": "krakinai_submit_change_set",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "2001cf0d4b0a006443c8fffc3fa684c6d8b48f30d7b8b7efc306d47fb8148cbf"
+          },
+          {
+            "callId": "synthetic_cli_read_6",
+            "tool": "krakinai_connection_status",
+            "ok": true,
+            "errorCode": null,
+            "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a"
+          },
+          {
+            "callId": "synthetic_cli_read_7",
+            "tool": "krakinai_get_project",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          },
+          {
+            "callId": "synthetic_cli_read_8",
+            "tool": "krakinai_get_proposal_status",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          },
+          {
+            "callId": "synthetic_cli_read_9",
+            "tool": "krakinai_submit_change_set",
+            "ok": false,
+            "errorCode": "PAIRING_REQUIRED",
+            "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26"
+          }
+        ],
+        "cliVersion": "0.73.0",
+        "exitCode": 0,
+        "modelFixtureRequests": 10,
+        "packageDigest": "0b6cc2e6a9d635b2b5fe081aec76691dec5e374255c041346293d9d7e6f302f8",
+        "approvedDigest": "3a2c9f9d20d8932922eb7e81fd231f719c59d70de9afbe280260f12f12dd6a8c",
+        "raw": "qa-results/local-mcp/workflow-browser-localhost-27d95e6c-a8cf-4533-8006-7a440deaec3a.json",
+        "actualCliResult": "qa-results/local-mcp/cli/85d5a75a-7293-4514-9f72-3bdaacae984b/result.json",
+        "actualToolMessages": "qa-results/local-mcp/cli/85d5a75a-7293-4514-9f72-3bdaacae984b/tool-messages.json"
+      }
+    ],
+    "connectedAtStart": true,
+    "connectedAtEnd": false
   },
   "nativeWindows": {
     "previousBlockedAttempt": {
@@ -390,11 +670,11 @@
     },
     "status": "verified-isolated-Windows-Chromium",
     "exitCode": 0,
-    "passed": 3,
+    "passed": 5,
     "failed": 0,
     "skipped": 0,
-    "seconds": 63.78770099999999,
-    "raw": "qa-results/local-mcp/native-strict-final.json",
+    "seconds": null,
+    "raw": "qa-results/local-mcp/acceptance-full-browser-final.json",
     "executionPolicy": "Windows PowerShell5.1 LocalMachine AllSigned",
     "policyChangedOrBypassed": false,
     "certificateCreatedByUser": true,
@@ -407,7 +687,7 @@
     "privateKeyExported": false,
     "signedCopiesAreIgnored": true,
     "bothSignaturesVerifiedValid": true,
-    "realAllowDenyAndPairedCli": "verified",
+    "realAllowDenyAndPairedCli": "Allow/Deny/read-only CLI and complete revision workflows at two actual application origins verified within complete suite",
     "scope": "synthetic isolated profiles only; Playwright Chromium and actual installed Codex CLI0.73.0",
     "failureHistory": [
       {
@@ -427,7 +707,13 @@
         "exitCode": 1
       }
     ],
-    "fix": "Checked/Unchecked updates Allow for assistive UIA toggling; owned driver waits for verifier exit; production validates matching challenge and exit0"
+    "fix": "Checked/Unchecked updates Allow for assistive UIA toggling; owned driver waits for verifier exit; production validates matching challenge and exit0",
+    "previousThreeCaseRun": {
+      "passed": 3,
+      "seconds": 63.78770099999999,
+      "raw": "qa-results/local-mcp/native-strict-final.json"
+    },
+    "secondsNote": "Five native cases are included in full-suite duration, not a separately timed five-case run"
   },
   "baselineObservation": {
     "rootUnitPassed": 661,
@@ -457,7 +743,7 @@
     "Six baseline development/test package findings remain (3moderate,1high,2critical); production audits0; exploitability not assessed",
     "Earlier runner-managed error contexts were not all retained; later unique outputs and all explicit profiles retained"
   ],
-  "observedAtUtc": "2026-10-30T17:58:39.611Z",
+  "observedAtUtc": "2026-10-30T19:33:44.175Z",
   "browserFailedAttempts": [
     {
       "exitCode": 1,
@@ -474,6 +760,14 @@
       "skipped": 1,
       "reason": "Same first test total30s reached at candidate dialog",
       "raw": "qa-results/local-mcp/sequential-full-playwright.json"
+    },
+    {
+      "exitCode": 1,
+      "passed": 145,
+      "failed": 2,
+      "skipped": 0,
+      "reason": "Ninth rapid fixture call reached unchanged production rate limit; checker rejected RATE_LIMITED as revocation evidence. QA fixture now paces emission at2100ms; final complete run passes.",
+      "raw": "qa-results/local-mcp/acceptance-full-browser.json"
     }
   ],
   "readinessCorrection": {
@@ -481,7 +775,21 @@
     "ordinaryDevelopmentConfigChanged": false,
     "qaOnlyModuleWarmup": true,
     "focusedCaseSecondsBefore": 28.6,
-    "focusedCaseSecondsAfter": 4.1
+    "focusedCaseSecondsAfter": 4.1,
+    "retainedQaEntries": {
+      "qaOnly": true,
+      "optimizeDepsEntries": [
+        "index.html"
+      ],
+      "watchIgnored": [
+        "**/qa-results/**"
+      ],
+      "diagnostic": "qa-results/local-mcp/readiness-scoped-diagnostic.log",
+      "scopedScanMilliseconds": 2491.06,
+      "originalTimeoutMilliseconds": 60000,
+      "timeoutsChanged": false,
+      "ordinaryViteConfigChanged": false
+    }
   },
   "independentReview": {
     "importantFindings": 1,
@@ -496,6 +804,13 @@
       "fix": "Correlate each CLI response by call ID; reject list errors/empty/foreign results and failed final reads",
       "regressionsPassed": 7,
       "readOnlyCorrectionConfirmed": true
+    },
+    "finalAcceptance": {
+      "importantFindings": 1,
+      "resolved": 1,
+      "fix": "Reject disconnected replies carrying data, unexpected fields or typed-field disclosure; every response checked by call ID before any next step",
+      "regressionsPassed": 23,
+      "readOnlyCorrectionConfirmed": true
     }
   },
   "retainedLocalArtifacts": {
@@ -503,7 +818,8 @@
     "count": 15791,
     "bytes": 1098274543,
     "explicitMcpProfiles": 53,
-    "baseline": "Separate source export/profile retained; node_modules junction not traversed"
+    "baseline": "Separate source export/profile retained; node_modules junction not traversed",
+    "inventoryStatus": "Historical earlier snapshot; additional final acceptance profiles/logs retained, no deletion"
   },
   "artifactRetentionException": {
     "earlierDefaultRunnerOutputReset": true,
@@ -541,14 +857,19 @@
     "docs/local-codex-mcp.md",
     "docs/qa/local-mcp-results.json",
     "docs/superpowers/plans/2026-10-30-local-codex-mcp.md",
+    "docs/superpowers/plans/2026-10-31-stage-c-final-acceptance.md",
     "docs/superpowers/specs/2026-10-30-local-codex-mcp-design.md",
     "e2e/local-mcp-failures.spec.mjs",
     "e2e/local-mcp-fixture.mjs",
     "e2e/local-mcp-native.spec.mjs",
     "e2e/local-mcp-screenshots.spec.mjs",
+    "e2e/local-mcp-workflow-native.spec.mjs",
     "e2e/local-mcp.spec.mjs",
     "playwright.config.mjs",
     "scripts/qa/mcp-before-screenshots.mjs",
+    "scripts/qa/mcp-cli-replies.mjs",
+    "scripts/qa/mcp-cli-workflow.mjs",
+    "scripts/qa/mcp-cli-workflow.test.mjs",
     "scripts/qa/mcp-codex-cli.mjs",
     "scripts/qa/mcp-codex-cli.test.mjs",
     "scripts/qa/mcp-native-window.ps1",
@@ -577,5 +898,59 @@
     "src/storage/changeSets.ts",
     "src/types/mcp.ts"
   ],
-  "postTestUpdate": "Native Windows acceptance follow-up: all3local native cases and7CLI evidence regressions passed; root706/bridge18/typecheck/build/production audits/QA8 green. New exact-head hosted outcome recorded through PR Checks/runtime artifact."
+  "postTestUpdate": "Local complete acceptance:706root,18bridge,23CLI evidence,147browser including5signed Windows native,QA8 passed; typechecks/builds/production audits exit0. Exact signed-head hosted result is bound by PR Checks/runtime summary; PR remains unmerged.",
+  "finalAcceptanceFailureHistory": [
+    {
+      "raw": "qa-results/local-mcp/full-workflow-red.json",
+      "exitCode": 1,
+      "reason": "Existing read-only CLI fixture did not perform required revision workflow"
+    },
+    {
+      "raw": "qa-results/local-mcp/full-workflow-first.json",
+      "exitCode": 1,
+      "reason": "New test used takes instead of actual takeSceneIds; QA assertion corrected without application change"
+    },
+    {
+      "raw": "qa-results/local-mcp/full-workflow-denial-red.log",
+      "exitCode": 1,
+      "reason": "Adversarial denied-response leakage tests failed before checker correction"
+    },
+    {
+      "raw": "qa-results/local-mcp/full-workflow-denial-types-red.log",
+      "exitCode": 1,
+      "reason": "Typed error-field disclosure regression failed before strict type/message validation"
+    },
+    {
+      "raw": "qa-results/local-mcp/full-workflow-paced.json",
+      "exitCode": 0,
+      "passed": 2,
+      "reason": "Focused nine-call workflows passed at both literal origins before final complete run"
+    },
+    {
+      "raw": "qa-results/local-mcp/acceptance-startup-timeout.json",
+      "exitCode": 1,
+      "testsRun": 0,
+      "reason": "QA server default dependency scan crawled retained QA HTML exports; exceeded existing60s readiness budget"
+    },
+    {
+      "raw": "qa-results/local-mcp/acceptance-owned-diagnostic-port-busy.json",
+      "exitCode": 1,
+      "testsRun": 0,
+      "reason": "Runner correctly refused to reuse owned diagnostic server; stopped only that owned server before final run"
+    }
+  ],
+  "finalAcceptanceScope": {
+    "productionApplicationChangedInThisFollowup": false,
+    "actualLocalhostOrigin": "http://localhost:4173",
+    "unrelated5173ServiceUnchanged": true,
+    "profile": "fresh synthetic Chromium profile per case",
+    "helperResignedAfterBridgeRebuild": true,
+    "authenticodeHelperAndDriver": "Valid",
+    "windowsPowerShell51": "AllSigned unchanged",
+    "externalProvider": false,
+    "globalCodexConfigOrCredentialsChanged": false,
+    "keysCertificatesProfilesOrRawQaInGit": false,
+    "qaFixtureToolPacingMilliseconds": 2100,
+    "productionRateLimitChanged": false
+  }
 }
