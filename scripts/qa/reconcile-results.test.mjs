@@ -55,10 +55,25 @@ test('CI summary retains every case in the expanded 72-case browser report', () 
   assert.equal(summary.cases[71].name, 'Synthetic browser case 72');
 });
 
-test('CI summary retains all cases at its finite 128-case bound', () => {
+test('CI summary retains all cases from the previous 128-case suite bound', () => {
   assert.equal(summarizeBrowserSmoke(browserReport(128)).cases.length, 128);
 });
 
+test('CI summary retains all 135 Stage B browser cases without losing outcome evidence', () => {
+  const summary = summarizeBrowserSmoke(browserReport(135));
+  assert.equal(summary.tests, 135);
+  assert.equal(summary.passed, 132);
+  assert.equal(summary.cases.length, 135);
+  assert.equal(summary.cases[134].name, 'Synthetic browser case 135');
+  assert.equal(summary.failed, 1);
+  assert.equal(summary.flaky, 1);
+  assert.equal(summary.skipped, 1);
+});
+
+test('CI summary retains all cases at its finite 512-case bound', () => {
+  assert.equal(summarizeBrowserSmoke(browserReport(512)).cases.length, 512);
+});
+
 test('CI summary rejects oversized case counts rather than silently truncating', () => {
-  assert.throws(() => summarizeBrowserSmoke(browserReport(129)), /128-case artifact bound/);
+  assert.throws(() => summarizeBrowserSmoke(browserReport(513)), /512-case artifact bound/);
 });

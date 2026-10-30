@@ -85,6 +85,18 @@
       "durationMs": 388576,
       "exitCode": 0,
       "log": "qa-results/change-sets/final-browser.log"
+    },
+    {
+      "label": "qa-ledger-followup",
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "log": "qa-results/change-sets/ci-cap-green.log"
+    },
+    {
+      "label": "ci-summary-followup",
+      "command": "node scripts/qa/ci-summary.mjs",
+      "exitCode": 0,
+      "log": "qa-results/change-sets/ci-summary-green.log"
     }
   ],
   "unit": {
@@ -784,7 +796,7 @@
     ]
   },
   "historicalQa": {
-    "scriptTests": 6,
+    "scriptTests": 8,
     "checks": 207,
     "screenshots": 45,
     "countedSeparately": true
@@ -1323,7 +1335,9 @@
     "src/types/aiContext.ts": "80ead14fb888b4134e5dca2e00735ddb893e3e62a7f44b93673803d6f55a6061",
     "src/types/changeSet.ts": "d7adbfb70df615c69dab7df9749d7273679ae55c3aa3d9780f3469fb02554ebf",
     "src/types/domain.ts": "d9ba97fb71c5ec7c832c65e8b02cf7931a2c9df34faa8cb54fd98ef6072e3f9d",
-    "src/types/raw.d.ts": "5ec2ac3ff9c6b3854895a2d710e81b315921f6dab07ff740f0d2b8fedcc167c6"
+    "src/types/raw.d.ts": "5ec2ac3ff9c6b3854895a2d710e81b315921f6dab07ff740f0d2b8fedcc167c6",
+    "scripts/qa/ci-browser-summary.mjs": "0b5171c9b47027beda95928bda96e7c0580b727d00c852ad5a7e2ff5ab507233",
+    "scripts/qa/reconcile-results.test.mjs": "6a1c6824e5b4a44a89459c8f7dd14fd81ec45bf0aa7dfea954dc2364bf2f4149"
   },
   "protectedPaths": [
     {
@@ -1417,6 +1431,8 @@
     "e2e/change-set.spec.mjs",
     "scripts/export-change-set-examples.mjs",
     "scripts/export-change-set-schema.mjs",
+    "scripts/qa/ci-browser-summary.mjs",
+    "scripts/qa/reconcile-results.test.mjs",
     "src/App.tsx",
     "src/__tests__/aiContext.test.ts",
     "src/__tests__/aiContextWorkspace.test.tsx",
@@ -1503,5 +1519,18 @@
     "Existing independent reference-pack associations are retained; v1 has no implicit removal/filter operation.",
     "PR12 ZIP64 remains separate, draft, unchanged and not integration-tested with new Stage B optional fields.",
     "Future Stage C/D transport/authentication/approval broker are not implemented."
-  ]
+  ],
+  "ciReportingFollowup": {
+    "parentCommit": "71ea6cb31a9802b5f0f72498741cae1687b0ccf4",
+    "failedRun": "https://github.com/Jeruzael/krakinai/actions/runs/41049430963",
+    "unitPassed": 662,
+    "browserPassed": 135,
+    "failedStep": "Summarize synthetic test evidence",
+    "reason": "Reporter case bound128 below actual135",
+    "newCaseBound": 512,
+    "artifactByteBound": 65536,
+    "verifiedLocalSummaryBytes": 28322,
+    "applicationSourceUnchanged": true,
+    "qaScriptTests": 8
+  }
 }

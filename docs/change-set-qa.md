@@ -26,7 +26,7 @@ All final commands below exited **0**. Exact timings and raw-log paths are in th
 | `npm run typecheck` | Passed |
 | `npm run build` | Passed; chunk-size warning retained |
 | `npm audit --omit=dev` | 0 production vulnerabilities |
-| `npm run test:qa` | 6 script tests; historical 207 checks /45 screenshots, counted separately |
+| `npm run test:qa` | 8 script tests; historical 207 checks /45 screenshots, counted separately |
 | `npm run test:e2e` | 135 unique cases /135 attempts; zero failures/skips/flaky cases/retries |
 
 The unit total includes 581 existing tests and 81 new tests. Browser total includes 113 existing cases and 22 new cases. All 22 frozen legacy output hashes remain equal, and their complete expected hash map is included in the machine evidence. Tested source hashes were captured before the consolidated run and checked afterward.
@@ -82,3 +82,7 @@ Current media MIME/size/type metadata is revalidated. Arbitrary replacement of B
 PR #12's large-library ZIP64 work is separate and not integration-tested with these new optional fields. The existing backup metadata bound can block a large import. No capacity gate was raised, and no large ZIP recovery completion is claimed. Stages C/D, cloud/AI API calls, pairing, credentials, servers/listeners and automatic identity inference are absent.
 
 Only feature source, tests, canonical examples, curated synthetic screenshots and documentation are intended for this PR. No user-library data, browser profiles, ZIP/XLSX/CSV files, credentials, dependency caches or temporary QA artifacts are staged. Retained synthetic QA profiles/files are inventoried in the machine report; none were deleted. This PR remains unmerged pending human approval.
+
+## Hosted reporting follow-up
+
+[Initial hosted run](https://github.com/Jeruzael/krakinai/actions/runs/41049430963) passed all 662 unit tests and 135 browser cases, typecheck/build/audit, then failed at the report writer because its case bound was 128. The reporter now accepts up to 512 cases while the complete artifact remains bounded to 64 KiB. Regression tests cover 135, the previous 128, the new 512, and rejection at 513 without truncating failure/flaky/skip evidence. All 8 QA script tests pass, and the actual local 662/135 report serializes to 28,322 bytes. Application source and workflow are unchanged by this follow-up; a full exact-head hosted rerun verifies the signed update. The combined PR inventory is 92 files.

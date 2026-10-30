@@ -12,7 +12,7 @@ export function summarizeBrowserSmoke(result) {
   for (const suite of result.suites ?? []) walk(suite);
   // Allow the expanded UI suite while retaining a finite count bound. The
   // caller also enforces the unchanged 64 KiB limit on the complete artifact.
-  if (cases.length > 128) throw new Error('Browser smoke report exceeded its 128-case artifact bound.');
+  if (cases.length > 512) throw new Error('Browser smoke report exceeded its 512-case artifact bound.');
   return {
     tests: result.stats?.expected + result.stats?.unexpected + result.stats?.flaky + result.stats?.skipped,
     passed: result.stats?.expected,
