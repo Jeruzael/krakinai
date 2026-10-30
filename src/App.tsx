@@ -15,9 +15,11 @@ import { CollectionsScreen } from './screens/CollectionsScreen';
 import { TemplatesScreen } from './screens/TemplatesScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
+import { AiConnectionProvider } from './connections/AiConnectionContext';
 const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspace').then(module => ({default:module.CollectionWorkspace})));
 const ChangeSetImportScreen=React.lazy(()=>import('./screens/ChangeSetImportScreen').then(m=>({default:m.ChangeSetImportScreen})));
 const AiContextScreen=React.lazy(()=>import('./screens/AiContextScreen').then(m=>({default:m.AiContextScreen})));
+const AiConnectionsScreen=React.lazy(()=>import('./screens/AiConnectionsScreen').then(m=>({default:m.AiConnectionsScreen})));
 
 const RouteDispatcher: React.FC = () => {
   const { hashPath, loading, navigate, snapshot } = useLibrary();
@@ -35,6 +37,7 @@ const RouteDispatcher: React.FC = () => {
   const searchParams = new URLSearchParams(queryStr);
 
   // S01 Home
+  if(path==='/connections/ai')return <React.Suspense fallback={<div role="status" className="card">Loading AI connections…</div>}><AiConnectionsScreen/></React.Suspense>;
   if(path==='/imports/ai')return <React.Suspense fallback={<div role="status" className="card">Loading import workspace…</div>}><ChangeSetImportScreen/></React.Suspense>;
   if(path==='/context/ai')return <React.Suspense fallback={<div role="status" className="card">Loading context export…</div>}><AiContextScreen key={hashPath}/></React.Suspense>;
   if (path === '/') {
@@ -196,9 +199,9 @@ const RouteDispatcher: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <LibraryProvider>
-      <AppShell>
+      <AiConnectionProvider><AppShell>
         <RouteDispatcher />
-      </AppShell>
+      </AppShell></AiConnectionProvider>
     </LibraryProvider>
   );
 };

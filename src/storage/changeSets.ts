@@ -197,9 +197,17 @@ async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
     preferences: pref,
   };
 }
+function checkSynchronousAuthorization(state: ChangeSetState, authorize?: (currentState: ChangeSetState) => unknown): void {
+  const result = authorize?.(state);
+  if (result && typeof (result as { then?: unknown }).then === 'function') {
+    void Promise.resolve(result).catch(() => undefined);
+    throw Error('Browser authorization must be synchronous inside the transaction.');
+  }
+}
 export async function applyApprovedChangeSet(
   preview: ChangeSetPreview,
   approvedDigest: string,
+  authorize?: (currentState: ChangeSetState) => unknown,
 ): Promise<ChangeSetReceipt> {
   const prepared = structuredClone(preview),
     changeSet = parseChangeSet(prepared.changeSet);
@@ -265,6 +273,7 @@ export async function applyApprovedChangeSet(
         throw Error(
           "Change-set ID was already used with different content or approvals.",
         );
+      checkSynchronousAuthorization(state, authorize);
       await completion;
       return structuredClone(previous);
     }
@@ -299,6 +308,9 @@ export async function applyApprovedChangeSet(
     };
     const nextLedger = appendImportReceipt(ledger, plan, receipt);
     validateChangeSetBackupCapacity(state, plan, nextLedger, appliedAt);
+    // MCP consent is browser-owned and must still be live at the atomic write boundary.
+    // Manual imports retain their existing path when no guard is supplied.
+    checkSynchronousAuthorization(state, authorize);
     // All planning above is synchronous after IDB reads. Only this transaction owns writes.
     for (const c of plan.collections) {
       const store = tx.objectStore("collections");

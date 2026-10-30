@@ -1,0 +1,407 @@
+{
+  "schema": "krakinai.local-mcp-qa.v1",
+  "date": "2026-10-31",
+  "branch": "codex/local-codex-mcp",
+  "baseCommit": "6530c0eda04809c603930a4b106b7f774bc1dd8d",
+  "testedUncommittedWorkingTree": true,
+  "releaseDecision": "draft-native-certification-blocked",
+  "checks": {
+    "rootUnit": {
+      "exitCode": 0,
+      "passed": 706,
+      "failed": 0,
+      "files": 99,
+      "seconds": 93.53,
+      "workers": 4,
+      "plainNpmTest": {
+        "exitCode": 0,
+        "passed": 706,
+        "seconds": 52.31
+      }
+    },
+    "bridgeUnit": {
+      "exitCode": 0,
+      "passed": 18,
+      "failed": 0,
+      "files": 3
+    },
+    "rootTypecheck": {
+      "exitCode": 0
+    },
+    "bridgeTypecheck": {
+      "exitCode": 0
+    },
+    "rootBuild": {
+      "exitCode": 0,
+      "warnings": [
+        "sceneAuthoring.ts is imported both statically and dynamically",
+        "Main minified chunk963.50kB exceeds500kB advisory threshold"
+      ]
+    },
+    "bridgeBuild": {
+      "exitCode": 0
+    },
+    "rootProductionAudit": {
+      "exitCode": 0,
+      "vulnerabilities": 0
+    },
+    "bridgeProductionAudit": {
+      "exitCode": 0,
+      "vulnerabilities": 0
+    },
+    "fullBrowserSuite": {
+      "exitCode": 0,
+      "tests": 143,
+      "passed": 142,
+      "failed": 0,
+      "skipped": 1,
+      "seconds": 471.903175,
+      "raw": "qa-results/local-mcp/warmed-full-playwright.json",
+      "nativeSkip": "Explicit opt-in real Windows suite; known AllSigned blocker, not certified"
+    },
+    "hostedCi": {
+      "status": "Exact-head outcome recorded in pull request after signed push",
+      "runtimeArtifact": "summary.json"
+    },
+    "qaReconciliation": {
+      "exitCode": 0,
+      "tests": 8,
+      "historicalCanonicalChecks": 207,
+      "historicalScreenshots": 45
+    }
+  },
+  "targetedBrowserEvidence": {
+    "syntheticProfilesOnly": true,
+    "verifier": "separate test-entry dependency injection; not native Windows certification",
+    "midori": {
+      "shots": 15,
+      "durationSeconds": 60,
+      "character": 2,
+      "property": 9,
+      "graphic": 4,
+      "pendingInputs": 4
+    },
+    "verified": [
+      "trusted browser review/apply",
+      "synthetic DOM approval rejected",
+      "no writes before approval",
+      "duplicate proposal submission deduplicated",
+      "no implicit new-project read scope",
+      "exact Full prompt opt-in",
+      "immutable Shot05 revision and unchanged preferred take",
+      "foreign-project rejection",
+      "lost receipt acknowledgement and receipt-only recovery",
+      "permission revocation during paused digest",
+      "injected quota rollback",
+      "background draft and focus preservation",
+      "disconnect dialog focus restoration",
+      "four viewport layouts",
+      "720 CSS/DPR2 reflow",
+      "exact existing/proposed text dialog and focus restore",
+      "seeded original media SHA256 equality",
+      "human-selected camera candidate created with actual confirmedassetID",
+      "Character candidate remains pending and canonical identities unchanged",
+      "new asset is not automatically granted to reads"
+    ],
+    "screenshots": {
+      "count": 22,
+      "before": 5,
+      "after": 17,
+      "existenceVerified": true,
+      "visualInspection": "Representative1440/1366/768/390/720DPR2 images inspected; automated overflow checks all viewports",
+      "files": [
+        {
+          "path": "qa-results/local-mcp/screenshots/applied-1366x768.png",
+          "width": 1366,
+          "height": 816,
+          "sha256": "3740b3d1c8e06e8f93e2a12c9280856d3e9e528e12a2035b4e8e1c5e54041f48"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/applied-1440x900.png",
+          "width": 1440,
+          "height": 948,
+          "sha256": "eec87cacc809bba15fbbeda9f4ee65d2811a8cc568caabcf52e66473fdf78381"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/applied-390x844.png",
+          "width": 390,
+          "height": 2709,
+          "sha256": "4d6801dc22aff7acd27f712668688796da4cf68bbade0f7baf07864ae8c5ceb4"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/applied-768x1024.png",
+          "width": 768,
+          "height": 2250,
+          "sha256": "32d3d238d004ad6d70f5718b7c888f36c8c5a1b7d2f611394ebe0ed71fe8c5aa"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/before-manual-import-1366x768.png",
+          "width": 1366,
+          "height": 768,
+          "sha256": "41c6241b33e4e820c370b373379062b4b166061b334756897c0724a85de422a9"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/before-manual-import-1440x900.png",
+          "width": 1440,
+          "height": 900,
+          "sha256": "649e21e18279cb4b321f2aa4f454be5052227cf2204fa6ba4e3502be90a4c011"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/before-manual-import-390x844.png",
+          "width": 390,
+          "height": 844,
+          "sha256": "3964bc849cc90b0df8d4eb691642084ae2eb9b3db90e5b1bddc225f6016ed675"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/before-manual-import-720x450.png",
+          "width": 720,
+          "height": 746,
+          "sha256": "9ecc8dab390d49da529692b18b0b30542d25f8cfbc2e4a544e2530c52ee97d70"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/before-manual-import-768x1024.png",
+          "width": 768,
+          "height": 1024,
+          "sha256": "195605b4e66599c3f978d4849224df5b493218ca9abfa92125568ac56dca2b8a"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/connected-1366x768.png",
+          "width": 1366,
+          "height": 816,
+          "sha256": "3e26546aacdfbae444d335b1b3eee62055ff369526cd8b650602bf7f30584804"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/connected-1440x900.png",
+          "width": 1440,
+          "height": 948,
+          "sha256": "49587f7bed29ba157f890a8f3461308900ad6e89c33e4811c46794d991e4afa2"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/connected-390x844.png",
+          "width": 390,
+          "height": 2246,
+          "sha256": "ed3f90570ab3943ebb54c60a2a3da1d8fa99b2bb57532ff6d5e1fcf725c3b4ae"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/connected-768x1024.png",
+          "width": 768,
+          "height": 1816,
+          "sha256": "9464712d59862d5b1c5ea9f61f40fa793c04d3d7bfd1b3e7f9fa21f6e0ebe2b8"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/disconnected-1366x768.png",
+          "width": 1366,
+          "height": 816,
+          "sha256": "5e5ae3c605341ba26e8cc139934ef4af7126d4eeae214e240920f343cc069736"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/disconnected-1440x900.png",
+          "width": 1440,
+          "height": 948,
+          "sha256": "de16371b2823b64e740a4ec3198b7cddbaa21ad3916f8412a38cb30d87174b30"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/disconnected-390x844.png",
+          "width": 390,
+          "height": 1768,
+          "sha256": "f5e66f8cd79cbb474974bd607a89db6673543cc5218350a74dd67d565e36067a"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/disconnected-768x1024.png",
+          "width": 768,
+          "height": 1476,
+          "sha256": "fd0f090cb82b8a8e3558a4c17bc3c027f442a08c53cf9f62d7181ebe7e124d82"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/reflow-720-dpr2.png",
+          "width": 1440,
+          "height": 3236,
+          "sha256": "a912f0f80860cc4a1575b011f180eda437ef0336cf3dd60dbe13baab0fc686bb"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/review-1366x768.png",
+          "width": 1366,
+          "height": 1507,
+          "sha256": "ef55e66b2defe8798774d1096b52f59171668d13de2d731109bf58497c3da790"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/review-1440x900.png",
+          "width": 1440,
+          "height": 1447,
+          "sha256": "f91a6b697ae37149e1d71a064359759a987ba532c5f627e21788c3035f51e0b4"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/review-390x844.png",
+          "width": 390,
+          "height": 3503,
+          "sha256": "d4faeaad4b07c100cd862dfd63769a538ca598bbb51934cf84aaa39fb0da8dc5"
+        },
+        {
+          "path": "qa-results/local-mcp/screenshots/review-768x1024.png",
+          "width": 768,
+          "height": 2942,
+          "sha256": "b37710a92c55fbb0b91b64370dfe3ae254251454c2c87be954f8531c96eb1ace"
+        }
+      ]
+    }
+  },
+  "installedCli": {
+    "version": "0.73.0",
+    "exitCode": 0,
+    "actualTool": "mcp__krakinai__krakinai_connection_status",
+    "connected": false,
+    "modelFixtureRequests": 2,
+    "modelProvider": "isolated loopback SSE fixture; no external AI provider",
+    "pairedReadsCertified": false,
+    "globalConfigOrActualCredentialsModified": false
+  },
+  "nativeWindows": {
+    "status": "blocked",
+    "exitCode": 1,
+    "reason": "Windows PowerShell5.1 LocalMachine AllSigned rejects unsigned helper and QA driver before execution",
+    "policyChangedOrBypassed": false,
+    "certificateOrTrustStoreChangedByAgent": false,
+    "realAllowDenyAndPairedCli": "unverified",
+    "suite": "KRAKINAI_NATIVE_QA=1 npx playwright test e2e/local-mcp-native.spec.mjs"
+  },
+  "baselineObservation": {
+    "rootUnitPassed": 661,
+    "rootUnitFailed": 1,
+    "failure": "dialogueCompatibility.test.tsx multiline/save/ZIP test exceeded existing5000ms timeout",
+    "focusedRerunPassed": 3,
+    "testTimeoutOrDialogueCodeChanged": false
+  },
+  "assumptions": [
+    "trusted local OS account and application origin",
+    "no malicious browser extension or same-origin script compromise",
+    "isTrusted is not physical-human attestation against desktop automation",
+    "authenticated loopback transport is not TLS encryption",
+    "selected context may enter Codex model-provider requests",
+    "memory release is not forensic erasure"
+  ],
+  "preservation": {
+    "actualBrowserDataUsed": false,
+    "validationTsChanged": false,
+    "schemaOrBackupLimitsChanged": false,
+    "assemblerChanged": false,
+    "pr12Changed": false,
+    "explicitQaProfilesDeleted": false
+  },
+  "unresolved": [
+    "Native Windows pairing and paired CLI acceptance require locally trusted Authenticode signatures",
+    "Real Chrome/Edge native pairing not certified",
+    "Earlier runner-managed error contexts cannot be claimed retained; unique output paths now preserve future runs"
+  ],
+  "observedAtUtc": "2026-10-30T16:44:57.250Z",
+  "browserFailedAttempts": [
+    {
+      "exitCode": 1,
+      "passed": 141,
+      "failed": 1,
+      "skipped": 1,
+      "reason": "First cold navigation consumed30s test budget",
+      "raw": "qa-results/local-mcp/final-full-playwright.json"
+    },
+    {
+      "exitCode": 1,
+      "passed": 141,
+      "failed": 1,
+      "skipped": 1,
+      "reason": "Same first test total30s reached at candidate dialog",
+      "raw": "qa-results/local-mcp/sequential-full-playwright.json"
+    }
+  ],
+  "readinessCorrection": {
+    "testTimeoutSeconds": 30,
+    "ordinaryDevelopmentConfigChanged": false,
+    "qaOnlyModuleWarmup": true,
+    "focusedCaseSecondsBefore": 28.6,
+    "focusedCaseSecondsAfter": 4.1
+  },
+  "independentReview": {
+    "importantFindings": 1,
+    "resolved": 1,
+    "fix": "Authorize every disclosed receipt operation target including unmapped candidates and removed targets",
+    "regressions": "Two tests RED then14/14 scoped suite GREEN;706/706 whole suite",
+    "readOnlyCorrectionConfirmed": true,
+    "deferredMinor": "MCP preview is input intent only; validation findings remain in browser to prevent private-match oracles"
+  },
+  "retainedLocalArtifacts": {
+    "directory": "qa-results/local-mcp",
+    "count": 15791,
+    "bytes": 1098274543,
+    "explicitMcpProfiles": 53,
+    "baseline": "Separate source export/profile retained; node_modules junction not traversed"
+  },
+  "artifactRetentionException": {
+    "earlierDefaultRunnerOutputReset": true,
+    "earlierErrorContextsNotAllRetained": true,
+    "explicitProfilesDeleted": false,
+    "correction": "Unique qa-results/playwright-runs/<time>-<UUID> output per subsequent run; no manual cleanup"
+  },
+  "protectedPr12": {
+    "state": "open",
+    "draft": true,
+    "merged": false,
+    "head": "daf5afa0fb7bfeefcb4626854e2dad7db6aa3ec8",
+    "modifiedByThisWork": false
+  },
+  "changedFiles": [
+    ".github/workflows/ci.yml",
+    "bridge/build.mjs",
+    "bridge/native/verify.ps1",
+    "bridge/package-lock.json",
+    "bridge/package.json",
+    "bridge/src/admission.ts",
+    "bridge/src/nativeVerifier.ts",
+    "bridge/src/relay.ts",
+    "bridge/src/runtime.ts",
+    "bridge/src/server.ts",
+    "bridge/test/browser-server.ts",
+    "bridge/test/browserTransport.test.ts",
+    "bridge/test/build.mjs",
+    "bridge/test/relay.test.ts",
+    "bridge/test/stdio.test.ts",
+    "bridge/tsconfig.json",
+    "bridge/vitest.config.ts",
+    "docs/local-codex-mcp-qa.md",
+    "docs/local-codex-mcp-signing.md",
+    "docs/local-codex-mcp.md",
+    "docs/qa/local-mcp-results.json",
+    "docs/superpowers/plans/2026-10-30-local-codex-mcp.md",
+    "docs/superpowers/specs/2026-10-30-local-codex-mcp-design.md",
+    "e2e/local-mcp-failures.spec.mjs",
+    "e2e/local-mcp-fixture.mjs",
+    "e2e/local-mcp-native.spec.mjs",
+    "e2e/local-mcp-screenshots.spec.mjs",
+    "e2e/local-mcp.spec.mjs",
+    "playwright.config.mjs",
+    "scripts/qa/mcp-before-screenshots.mjs",
+    "scripts/qa/mcp-codex-cli.mjs",
+    "scripts/qa/mcp-native-window.ps1",
+    "scripts/qa/mcp-prepare-signing.mjs",
+    "scripts/qa/serve-smoke.mjs",
+    "src/App.tsx",
+    "src/__tests__/aiConnections.test.tsx",
+    "src/__tests__/mcpBroker.test.ts",
+    "src/__tests__/mcpProtocol.test.ts",
+    "src/__tests__/mcpScope.test.ts",
+    "src/__tests__/mcpTransactionGuard.test.ts",
+    "src/components/AiPlanningActions.tsx",
+    "src/components/AppShell.tsx",
+    "src/components/ImportReceipt.tsx",
+    "src/components/McpProposalReview.tsx",
+    "src/connections/AiConnectionContext.tsx",
+    "src/connections/browserTransport.ts",
+    "src/connections/proposalBroker.ts",
+    "src/domain/aiContext.ts",
+    "src/domain/mcpCrypto.ts",
+    "src/domain/mcpProtocol.ts",
+    "src/domain/mcpReads.ts",
+    "src/domain/mcpScope.ts",
+    "src/screens/AiConnectionsScreen.tsx",
+    "src/screens/aiConnections.css",
+    "src/storage/changeSets.ts",
+    "src/types/mcp.ts"
+  ]
+}

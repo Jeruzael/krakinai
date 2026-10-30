@@ -25,6 +25,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
+import { useAiConnectionOptional } from '../connections/AiConnectionContext';
 import type { PromptCategory } from '../types/domain';
 import {
   ClipboardFallbackModal,
@@ -80,6 +81,8 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
     storageError,
   } = useLibrary();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const aiConnection = useAiConnectionOptional();
+  const pendingProposals = aiConnection?.view.proposals.filter(p => ['received', 'review_required', 'conflict'].includes(p.status)).length ?? 0;
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [mobile, setMobile] = useState(
     () => window.matchMedia?.('(max-width: 767px)').matches ?? false
@@ -250,6 +253,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
         <div className="nav-section">
           <div className="nav-section-label">Workspace</div>
+          <button type="button" className={`nav-link ${cleanPath === '/connections/ai' ? 'active' : ''}`} onClick={() => handleNav('/connections/ai')} aria-label="AI Connections" title="AI Connections"><Sparkles size={18}/><span>AI Connections</span>{pendingProposals > 0 && <span className="nav-link-count" aria-label={`${pendingProposals} pending proposals`}>{pendingProposals}</span>}</button>
           <button
             type="button"
             className={`nav-link ${
