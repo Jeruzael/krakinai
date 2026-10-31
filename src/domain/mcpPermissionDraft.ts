@@ -37,7 +37,7 @@ export function buildPermissionInventory(state: ChangeSetState, scope = emptyMcp
     variantIds: (state.variants ?? []).map(v => ({ id: v.id, label: v.title, category: v.type })),
     templateIds: state.templates.map(t => ({ id: t.id, label: t.name, category: t.category })),
     mediaIds: state.media.map(m => ({ id: m.id, label: m.displayName ?? m.filename })),
-    candidateIds: (state.preferences.aiImports?.candidates ?? []).filter(c => c.status === 'pending' || scope.candidateIds.includes(c.id)).map(c => ({ id: c.id, label: c.title, category: c.kind })),
+    candidateIds: [...(state.preferences.aiImports?.candidates ?? []).filter(c => c.status === 'pending' || scope.candidateIds.includes(c.id)).map(c => ({ id: c.id, label: c.title, category: c.kind })),...(state.preferences.aiImports?.variantCandidates??[]).filter(c=>c.status==='pending'||scope.candidateIds.includes(c.id)).map(c=>({id:c.id,label:c.title,category:'Outfit'}))],
     fullPromptSceneIds: state.scenes.filter(s => authorized.has(s.id)).map(s => ({ id: s.id, label: s.title })),
     receiptGrants: (state.preferences.aiImports?.receipts ?? []).map(r => ({ id: receiptKey(r), label: r.title ?? r.changeSetId })),
   };
@@ -113,7 +113,7 @@ export function permissionFingerprint(scope: McpScope): string {
   return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field])]);
 }
 export function permissionInventoryStamp(state: ChangeSetState): string {
-  return JSON.stringify([state.collections.map(p => [p.id, p.project?.revision]), state.scenes.map(s => [s.id, s.revision]), state.assets.map(a => [a.id, a.revision]), (state.variants ?? []).map(v => [v.id, v.revision]), state.templates.map(t => [t.id, t.revision]), state.media.map(m => m.id), (state.preferences.aiImports?.candidates ?? []).map(c => [c.id, c.status]), (state.preferences.aiImports?.receipts ?? []).map(receiptKey)]);
+  return JSON.stringify([state.collections.map(p => [p.id, p.project?.revision]), state.scenes.map(s => [s.id, s.revision]), state.assets.map(a => [a.id, a.revision]), (state.variants ?? []).map(v => [v.id, v.revision]), state.templates.map(t => [t.id, t.revision]), state.media.map(m => m.id), (state.preferences.aiImports?.candidates ?? []).map(c => [c.id, c.status]), ...((state.preferences.aiImports?.variantCandidates?.length??0)?[(state.preferences.aiImports!.variantCandidates!).map(c=>[c.id,c.status,c.revision])]:[]), (state.preferences.aiImports?.receipts ?? []).map(receiptKey)]);
 }
 export function projectPermissionContext(projectId: string, state: ChangeSetState) {
   const project = state.collections.find(p => p.id === projectId);

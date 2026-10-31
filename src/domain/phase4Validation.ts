@@ -6,6 +6,7 @@ import {validateCameraComposition,validateCameraCompositionSlots} from './camera
 import {validateSceneAuthoring} from './directPrompt';
 import{validateSceneEnsemble}from'./ensembleValidation';
 import{validateEnsembleTemplateDefault}from'./ensembleTemplates';
+import{ENSEMBLE_LOCAL_ID_PATTERN}from'../types/ensemble';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -74,10 +75,9 @@ export function validatePhase4Record(value: unknown): string | undefined {
     const orders = new Set<number>();
     for (const entry of pack.entries) {
       if(record(entry)&&entry.participantId!==undefined){
-        const e=value.ensemble;
-        const participant=record(e)&&Array.isArray(e.participants)?e.participants.find(p=>record(p)&&p.id===entry.participantId):undefined;
-        const snapshot=record(participant)&&['character','wardrobe'].includes(String(entry.sourceSlot))?participant[String(entry.sourceSlot)]:undefined;
-        if(!text(entry.participantId,64,true)||!record(snapshot)||snapshot.sourceId!==entry.sourceId)return'Invalid participant reference association.';
+        // A retained selection keeps its captured source even after that person
+        // or component changes. It must never be silently reassigned or dropped.
+        if(typeof entry.participantId!=='string'||!text(entry.participantId,64,true)||!new RegExp(ENSEMBLE_LOCAL_ID_PATTERN).test(entry.participantId)||!['character','wardrobe'].includes(String(entry.sourceSlot)))return'Invalid participant reference association.';
       }
       if (!record(entry) || !text(entry.associationId, 10000, true) || !text(entry.mediaId, 1000, true) || !text(entry.sourceId, 1000, true) || !text(entry.sourceTitle, 10000) || !text(entry.altText, 10000)) return 'Invalid reference pack association metadata.';
       if (![...ORDERED_BUILDER_SLOTS, 'result', 'legacy', 'source'].includes(entry.sourceSlot as never) || !['reference', 'sample', 'result'].includes(entry.role as string) || !['identity', 'outfit', 'environment', 'motion', 'general'].includes(entry.purpose as string)) return 'Invalid reference pack enum value.';

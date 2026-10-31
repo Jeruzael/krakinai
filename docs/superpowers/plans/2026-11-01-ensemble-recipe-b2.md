@@ -65,10 +65,10 @@
 
 **Files:** new domain/changeSetEnsemble.ts, changeSetVariants.ts; changeSetPlanner.ts, changeSetRecipe.ts, changeSetRecipeContent.ts, changeSetState.ts, changeSetCandidates.ts; storage/changeSets.ts; mcpScope.ts,mcpReads.ts and actual permission DTO helpers; new ensembleChangeSetPlanning.test.ts, ensembleChangeSetStorage.test.ts, ensembleMcp.test.ts.
 **Interfaces:** applyRecipeEnsemblePatch(draft,patch,state,resolveBinding):SceneDraft clones existing or explicit legacy seed and preserves omitted fields. planOutfitCandidate uses pure existing Variant construction/validation and returns candidate/result/approvedVariant only. ChangeSetPlan gains variants write list; transaction writes approved variants with existing other stores/receipt. AssetId and variantId mappings never interchange.
-- [ ] Write RED tests for existing/same-batch actors/Outfits, third-person addition, independent primary replacement, exact-parent create/reuse/defer/review, deferred dependent batch0writes, explicit local reuse without permanent grants and old-client rejection on new scenes.
-- [ ] Extend deterministic content and relevant-state proofs to all envelope/template/candidate/variant/anchor/media reads. Test altered visible preview/outputs, stale source/head/project/media/variant/parent/permissions and exact replay across restart/backup.
-- [ ] Inject late variant/scene/receipt put quota/abort and assert exact whole-library rollback; add metadata-only response checks with private identity/cue/note/filename sentinels. No approval/apply MCP tool or actual-library access.
-- [ ] Run `npm test -- --run src/__tests__/ensembleChangeSet src/__tests__/ensembleMcp.test.ts src/__tests__/changeSet src/__tests__/recipeChangeSet src/__tests__/mcp --maxWorkers=1 --minWorkers=1`; expected all pass, typecheck/build0. Signed scoped commit.
+- [x] Write RED tests for existing/same-batch actors/Outfits, third-person addition, independent primary replacement, exact-parent create/reuse/defer/review, deferred dependent batch0writes, explicit local reuse without permanent grants and old-client rejection on new scenes.
+- [x] Extend deterministic content and relevant-state proofs to all envelope/template/candidate/variant/anchor/media reads. Test altered visible preview/outputs, stale source/head/project/media/variant/parent/permissions and exact replay across restart/backup.
+- [x] Inject late variant/scene/receipt put quota/abort and assert exact whole-library rollback; add metadata-only response checks with private identity/cue/note/filename sentinels. No approval/apply MCP tool or actual-library access.
+- [x] Run `npm test -- --run src/__tests__/ensembleChangeSet src/__tests__/ensembleMcp.test.ts src/__tests__/changeSet src/__tests__/recipeChangeSet src/__tests__/mcp --maxWorkers=1 --minWorkers=1`; expected all pass, typecheck/build0. Signed scoped commit.
 
 ## Task 6: Builder, cue, template and reviewed preview UI
 

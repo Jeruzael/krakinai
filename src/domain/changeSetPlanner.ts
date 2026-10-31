@@ -7,7 +7,8 @@ import {
   finishRecipeScene,
   recipeAdvisories,
 } from "./changeSetRecipe";
-import { recipeReviewedProjection } from "./changeSetRecipeContent";
+import { recipeReviewedProjection,ensembleReviewedProjection } from "./changeSetRecipeContent";
+import{planOutfitCandidate}from'./changeSetVariants';
 import { canonicalStringify } from "./changeSetCanonical";
 import { validatePhase4Record } from "./phase4Validation";
 import { applyImportedContexts } from "./changeSetReferences";
@@ -26,6 +27,7 @@ import type {
   ChangeSetPlan,
   ChangeSetState,
   ImportCandidate,
+  ImportVariantCandidate,
   ImportMapping,
   ProjectTarget,
   RecordTarget,
@@ -71,19 +73,21 @@ export function planChangeSet(
     collections: copy(initial.collections),
     scenes: [...initial.scenes],
     assets: [...initial.assets],
+    variants:[...(initial.variants??[])],
     templates: [...initial.templates],
   };
   const mappings: Record<string, ImportMapping> = {},
     dirtyProjects = new Set<string>(),
     newSceneIds = new Set<string>(),
     newAssetIds = new Set<string>(),
-    newTemplateIds = new Set<string>();
+    newTemplateIds = new Set<string>(),newVariantIds=new Set<string>();
   const initialRevisions = new Map(
     initial.collections.map((c) => [c.id, c.project?.revision ?? 0]),
   );
   const candidates = copy(initial.preferences.aiImports?.candidates ?? []),
     changedCandidates = new Set<string>(),
     duplicateScenes = new Set<string>();
+  const variantCandidates=copy(initial.preferences.aiImports?.variantCandidates??[]),changedVariantCandidates=new Set<string>();
   const plan: ChangeSetPlan = {
     findings: [],
     operations: [],
@@ -188,6 +192,7 @@ export function planChangeSet(
     };
     plan.operations.push(row);
     try {
+      if('sceneId'in op&&input.schema!=='krakinai.change-set.v3'&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 to reconstruct it; the old scene is unchanged.');
       if (requiresStoryboardApproval(op) && !approval.storyboard)
         finding(
           op.operationId,
@@ -515,6 +520,17 @@ export function planChangeSet(
               ? "asset_created"
               : "asset_reused",
         );
+      } else if(op.type==='variant.propose'||op.type==='variant.review_candidate'){
+        const outcome=planOutfitCandidate(op,input,approval,state,initial.assets,allocation,variantCandidates,target=>resolve(target,'scene'));
+        const index=variantCandidates.findIndex(c=>c.id===outcome.candidate.id);if(index<0)variantCandidates.push(outcome.candidate);else variantCandidates[index]=outcome.candidate;
+        changedVariantCandidates.add(outcome.candidate.id);
+        if(outcome.variant){state.variants!.push(outcome.variant);newVariantIds.add(outcome.variant.id)}
+        if(op.type==='variant.propose')plan.summary.candidates++;
+        row.summary=`Outfit candidate: ${outcome.candidate.title}`;row.matches=outcome.matches;row.proposedPrompt=outcome.candidate.promptText;
+        row.resolved={variantCandidate:outcome.proposed,decision:outcome.decision,outcome:{status:outcome.candidate.status,variantId:outcome.variantId,record:outcome.variantId?copy(state.variants!.find(v=>v.id===outcome.variantId)):undefined}};
+        if(outcome.matches.length)finding(op.operationId,'CANDIDATE_MATCH',`${outcome.matches.length} possible same-parent Outfit match(es); review before creating.`,'advisory');
+        if(op.clientRef)mappings[op.clientRef]={kind:'variant_candidate',id:outcome.candidate.id,...(outcome.variantId?{variantId:outcome.variantId}:{})};
+        record(op,outcome.candidate.id,outcome.status);
       } else if (isRecipeOperation(op)) {
         const c = project(op.project),
           s = shot(c, op.shot),
@@ -546,6 +562,7 @@ export function planChangeSet(
               );
             return mapped.assetId;
           },
+          target=>{if('id'in target)return target.id;const mapped=mappings[target.ref];if(mapped?.kind!=='variant_candidate'||!mapped.variantId)fail('DEPENDENCY_BLOCKED','A recipe depends on a deferred Outfit candidate. Approve creation/reuse or remove that binding. Download this package to complete it later.');return mapped.variantId;},
         );
         const resolved = recipeDraftPreview(draft, parent);
         row.resolved = { recipe: resolved };
@@ -579,7 +596,8 @@ export function planChangeSet(
         if (state.scenes.some((s) => s.id === result.scene.id))
           fail("ID_COLLISION", "Allocated scene ID already exists.");
         const warnings = recipeWarnings(draft);
-        if (result.scene.generation?.fallbackReason)
+        if(result.scene.ensemble){for(const p of result.scene.ensemble.participants)if(p.generation?.fallbackReason)finding(op.operationId,'GENERATION_IDENTITY_REVIEW',`${p.character.sourceTitle}: ${p.generation.fallbackReason}`,'advisory');}
+        else if (result.scene.generation?.fallbackReason)
           finding(
             op.operationId,
             "GENERATION_IDENTITY_REVIEW",
@@ -893,11 +911,14 @@ export function planChangeSet(
   plan.scenes = state.scenes.filter((s) => newSceneIds.has(s.id));
   plan.assets = state.assets.filter((a) => newAssetIds.has(a.id));
   plan.templates = state.templates.filter((t) => newTemplateIds.has(t.id));
+  if(newVariantIds.size)plan.variants=state.variants!.filter(v=>newVariantIds.has(v.id));
+  if(changedVariantCandidates.size)plan.variantCandidates=variantCandidates.filter(c=>changedVariantCandidates.has(c.id));
   plan.candidates = candidates.filter((c) => changedCandidates.has(c.id));
   plan.stateSignature = changeSetStateSignature(input, approval, initial, [
     ...duplicateScenes,
   ]);
-  if (
+  if(input.schema==='krakinai.change-set.v3')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v3Review:ensembleReviewedProjection(plan)});
+  else if (
     input.schema === "krakinai.change-set.v2" &&
     input.operations.some(isRecipeOperation)
   )

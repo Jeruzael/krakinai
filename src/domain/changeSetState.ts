@@ -3,6 +3,7 @@ import type {
   ChangeSetApproval,
   ChangeSetState,
   ImportCandidate,
+  ImportVariantCandidate,
 } from "../types/changeSet";
 import type { MediaLink, SavedScene } from "../types/domain";
 import { canonicalStringify } from "./changeSetCanonical";
@@ -11,6 +12,8 @@ import { revisionRoot } from "./sceneRevisions";
 import { isDirectPrompt } from "./directPrompt";
 import { getActiveSceneSlots } from "./shotTypeRules";
 import { isRecipeOperation } from "../types/changeSet";
+import{getSceneSnapshotEntries}from'./ensembleReferences';
+import{findOutfitCandidateMatches}from'./changeSetVariants';
 /** Relevant current data only; no hashing or other async work in the transaction. */
 export function changeSetStateSignature(
   input: ChangeSet,
@@ -45,6 +48,10 @@ export function changeSetStateSignature(
         ] ?? [])
           mediaIds.add(link.mediaId);
     if (op.type === "asset.review_candidate") candidateIds.add(op.candidateId);
+    if(op.type==='variant.propose')assetIds.add(op.parentCharacterId);
+    if(op.type==='variant.review_candidate'){candidateIds.add(op.candidateId);const candidate=state.preferences.aiImports?.variantCandidates?.find(c=>c.id===op.candidateId);if(candidate)assetIds.add(candidate.parentCharacterId)}
+    if(isRecipeOperation(op))for(const p of op.ensemble?.participantUpserts??[]){if(p.character&&'id'in p.character.asset)assetIds.add(p.character.asset.id);if(p.wardrobe){if('asset'in p.wardrobe){if('id'in p.wardrobe.asset)assetIds.add(p.wardrobe.asset.id)}else if('id'in p.wardrobe.variant)variantIds.add(p.wardrobe.variant.id)}}
+    const variantDecision=approval.variantDecisions?.[op.operationId];if(variantDecision?.variantId)variantIds.add(variantDecision.variantId);
     const decision = approval.assetDecisions[op.operationId];
     if (decision?.assetId) assetIds.add(decision.assetId);
   }
@@ -55,6 +62,7 @@ export function changeSetStateSignature(
       const parent = state.scenes.find((s) => s.id === op.sceneId),
         masterId = parent && getActiveSceneSlots(parent).character?.sourceId;
       if (masterId) assetIds.add(masterId);
+      if(parent?.ensemble)for(const {snapshot}of getSceneSnapshotEntries(parent)){if(snapshot.sourceType==='asset'||snapshot.sourceType==='template')assetIds.add(snapshot.sourceId);if(snapshot.sourceType==='variant')variantIds.add(snapshot.sourceId)}
     }
   for (const op of input.operations)
     if (op.type === "scene.restore") {
@@ -62,8 +70,10 @@ export function changeSetStateSignature(
       if (restored && !isDirectPrompt(restored)) {
         const masterId = getActiveSceneSlots(restored).character?.sourceId;
         if (masterId) assetIds.add(masterId);
+        if(restored.ensemble)for(const {snapshot}of getSceneSnapshotEntries(restored)){if(snapshot.sourceType==='asset'||snapshot.sourceType==='template')assetIds.add(snapshot.sourceId);if(snapshot.sourceType==='variant')variantIds.add(snapshot.sourceId)}
       }
     }
+  for(const variant of state.variants??[])if(variantIds.has(variant.id))assetIds.add(variant.parentCharacterId);
   const scenes = state.scenes.filter((s) => sceneIds.has(s.id)),
     assets = state.assets.filter((a) => assetIds.has(a.id)),
     templates = state.templates.filter((t) => assetIds.has(t.id));
@@ -73,7 +83,7 @@ export function changeSetStateSignature(
     ...(s.directReferences ?? []),
     ...(s.sourceMediaLinks ?? []),
     ...(s.referencePack?.entries ?? []),
-    ...Object.values(s.slots).flatMap((slot) => slot?.mediaLinks ?? []),
+    ...getSceneSnapshotEntries(s).flatMap(e=>e.snapshot.mediaLinks),
   ];
   for (const s of scenes)
     for (const link of links(s)) mediaIds.add(link.mediaId);
@@ -102,6 +112,9 @@ export function changeSetStateSignature(
     title: c.title,
     matches: findCandidateMatches(c, state),
   }));
+  const variantCandidates=state.preferences.aiImports?.variantCandidates?.filter(c=>candidateIds.has(c.id))??[];
+  const variantProposals=input.operations.flatMap<Pick<ImportVariantCandidate,'title'|'promptText'|'tags'|'parentCharacterId'>>(op=>op.type==='variant.propose'?[op]:op.type==='variant.review_candidate'?variantCandidates.filter(c=>c.id===op.candidateId):[]);
+  const variantMatches=variantProposals.map(c=>({title:c.title,parentCharacterId:c.parentCharacterId,matches:findOutfitCandidateMatches(c,state)}));
   return canonicalStringify({
     projects: state.collections.filter((c) => projectIds.has(c.id)),
     scenes,
@@ -109,6 +122,7 @@ export function changeSetStateSignature(
     variants,
     templates,
     candidates,
+    ...(input.schema==='krakinai.change-set.v3'?{variantCandidates,variantMatches}:{}),
     heads: state.scenes
       .filter((s) => roots.has(revisionRoot(s)))
       .map((s) => ({

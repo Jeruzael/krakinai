@@ -31,7 +31,6 @@ import { getRevisionHead } from "./sceneRevisions";
 import { isDirectPrompt } from "./directPrompt";
 import {
   getShotTypeRules,
-  getActiveSceneSlots,
   getActiveSourceMediaLinks,
 } from "./shotTypeRules";
 import { collectReferenceCandidates } from "./referencePack";
@@ -39,6 +38,9 @@ import { captureMediaNames } from "./mediaNaming";
 import { runScenePreflight } from "./scenePreflight";
 import { getCameraCompositionWarnings } from "./cameraCompositionWarnings";
 import type { ImportFinding } from "../types/changeSet";
+import{applyRecipeEnsemblePatch}from'./changeSetEnsemble';
+import{prepareEnsembleSource}from'./ensemblePersistence';
+import{getSceneSnapshotEntries}from'./ensembleReferences';
 const clone = <T>(value: T): T => structuredClone(value);
 
 /** A transient authoring draft, never an assertion that a stored draft exists. */
@@ -48,6 +50,7 @@ export function buildRecipeChangeDraft(
   allocation: ChangeSetAllocation,
   target: SceneProjectTarget,
   resolveAsset: (target: RecordTarget) => string,
+  resolveVariant?: (target:RecordTarget)=>string,
 ): SceneDraft {
   let draft: SceneDraft;
   const identity = {
@@ -88,6 +91,7 @@ export function buildRecipeChangeDraft(
       draft.revisionIntent.reason = operation.reason;
   }
   draft.authoringMode = "recipe";
+  if(draft.ensemble&&(Object.hasOwn(operation,'dialogue')||Object.hasOwn(operation,'identitySource')||operation.assetRefs?.some(r=>['character','wardrobe'].includes(r.slot))||operation.variantRefs?.some(r=>['character','wardrobe'].includes(r.slot))||operation.clearSlots?.some(s=>['character','wardrobe'].includes(s))||['character','wardrobe'].some(s=>Object.hasOwn(operation.overrides??{},s))))throw Error('Use a v3 ensemble participant patch for Character, wardrobe, identity source or dialogue changes.');
   delete draft.directPrompt;
   delete draft.directReferences;
   // Browser-owned consent is checked in the planner; every new output is assembled.
@@ -137,6 +141,7 @@ export function buildRecipeChangeDraft(
       snapshot.slot === "camera"
         ? rebaseCameraComposition(draft.slots.camera, snapshot)
         : snapshot;
+  if(operation.ensemble)draft=applyRecipeEnsemblePatch(draft,operation.ensemble,state,(kind,target)=>{if(kind==='asset')return resolveAsset(target);if('id'in target)return target.id;if(!resolveVariant)throw Error('An Outfit candidate requires an approved typed variant result.');return resolveVariant(target)});
   validateImportedVariantOwnership(draft, state);
   if (operation.cameraComposition === null && draft.slots.camera)
     draft.slots.camera = resetCameraComposition(draft.slots.camera);
@@ -193,7 +198,8 @@ export function buildRecipeChangeDraft(
               : {}),
           };
   }
-  draft.generation = resolveGenerationIdentity(
+  if(draft.ensemble)draft=prepareEnsembleSource(draft,state.assets);
+  else draft.generation = resolveGenerationIdentity(
     draft,
     state.assets.find((a) => a.id === draft.slots.character?.sourceId),
   ).generation;
@@ -201,9 +207,7 @@ export function buildRecipeChangeDraft(
     const mediaMap = new Map(state.media.map((m) => [m.id, m]));
     const activeIds = new Set(
       [
-        ...Object.values(getActiveSceneSlots(draft)).flatMap(
-          (s) => s?.mediaLinks ?? [],
-        ),
+        ...getSceneSnapshotEntries(draft,{activeOnly:true}).flatMap(e=>e.snapshot.mediaLinks),
         ...getActiveSourceMediaLinks(draft),
       ].map((l) => l.mediaId),
     );
@@ -248,6 +252,7 @@ export function recipeDraftPreview(draft: SceneDraft, parent?: SavedScene) {
   return {
     readiness: "blocked" as "blocked" | "assembled_pending" | "ready",
     components: clone(draft.slots),
+    ...(draft.ensemble?{ensemble:clone(draft.ensemble)}:{}),
     settings: clone(draft.settings),
     shotType: draft.shotType,
     sceneInstructions: draft.sceneInstructions,
@@ -313,7 +318,7 @@ export function finishRecipeScene(scene: SavedScene, input: ChangeSet): void {
   scene.authoringMode = "recipe";
   for (const entry of scene.referencePack?.entries ?? [])
     if (
-      entry.associationId.startsWith("change-set:reference:") &&
+      (scene.ensemble||entry.associationId.startsWith("change-set:reference:")) &&
       !scene.references.some(
         (l) =>
           l.mediaId === entry.mediaId &&

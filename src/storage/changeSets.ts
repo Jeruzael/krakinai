@@ -1,6 +1,6 @@
 import { validateChangeSetBackupCapacity } from "../domain/changeSetCapacity";
 import { isRecipeOperation } from "../types/changeSet";
-import { recipeReviewedProjection } from "../domain/changeSetRecipeContent";
+import { recipeReviewedProjection,ensembleReviewedProjection } from "../domain/changeSetRecipeContent";
 import type {
   ChangeSet,
   ChangeSetAllocation,
@@ -44,6 +44,7 @@ const signedContent = (
   approval: input.approval,
   allocation: input.allocation,
   stateSignature: input.plan.stateSignature,
+  ...(input.changeSet.schema==='krakinai.change-set.v3'?{v3Review:ensembleReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema === "krakinai.change-set.v2" &&
   input.changeSet.operations.some(isRecipeOperation)
     ? { recipeReview: recipeReviewedProjection(input.plan) }
@@ -330,6 +331,7 @@ export async function applyApprovedChangeSet(
     }
     for (const scene of plan.scenes) tx.objectStore("scenes").add(scene);
     for (const asset of plan.assets) tx.objectStore("assets").add(asset);
+    for(const variant of plan.variants??[])tx.objectStore('variants').add(variant);
     for (const template of plan.templates)
       tx.objectStore("templates").add(template);
     tx.objectStore("preferences").put({

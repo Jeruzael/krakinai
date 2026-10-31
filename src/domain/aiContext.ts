@@ -7,6 +7,7 @@ import type { ChangeSetState } from "../types/changeSet";
 import type { Collection, ProjectShot, MediaAsset, IdentityAnchor, MediaLink } from "../types/domain";
 import { getProjectShots } from "./projectStoryboard";
 import { getRevisionHead, revisionRoot } from "./sceneRevisions";
+import{projectEnsembleContext}from'./ensembleAiContext';
 export const MAX_AI_CONTEXT_BYTES = 5 * 1024 * 1024;
 /** Shared disclosure policy for manual context exports and scoped MCP metadata. */
 export function projectAiContextLink(l: MediaLink, mediaMap: ReadonlyMap<string, MediaAsset>, notes: boolean, filenames: boolean) {
@@ -150,6 +151,7 @@ export function buildAiContext(
         rootSceneId: revisionRoot(s),
         expectedHeadId: getRevisionHead(s, state.scenes).id,
         sequence: s.sceneRevision?.sequence ?? 1,
+        ...(s.ensemble?{ensemble:projectEnsembleContext(s,state,{notes,fullPrompt:promptIds.has(id)},link)}:{}),
         componentContext: Object.fromEntries(
           Object.entries(s.slots).map(([slot, snapshot]) => {
             const current =
@@ -259,6 +261,7 @@ export function buildAiContext(
         id: t.id,
         name: t.name,
         category: t.category,
+        ...(t.ensembleDefault?{ensembleDefault:{version:1,ensemble:projectEnsembleContext({ensemble:t.ensembleDefault.ensemble},state,{notes,fullPrompt:assetText,identityText:identities,assetText},link,anchor),...(t.ensembleDefault.referencePack?{referencePack:{version:1,entries:t.ensembleDefault.referencePack.entries.map(l=>({...link(l),associationId:l.associationId,participantId:l.participantId,sourceSlot:l.sourceSlot,sourceId:l.sourceId,purpose:l.purpose}))}}:{})}}:{}),
         expectedRevision: t.revision,
         ...(notes ? { description: t.description } : {}),
         ...(assetText

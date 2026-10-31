@@ -1,4 +1,5 @@
 import { captureMediaNames } from '../domain/mediaNaming';
+import{buildVariantRecord}from'../domain/variantRecord';
 import { validatePerformanceDirection } from '../domain/dialoguePerformance';
 import { validatePhase4Record } from '../domain/phase4Validation';
 import { validateCameraCompositionSlots } from '../domain/cameraCompositionValidation';
@@ -44,7 +45,6 @@ import {
 import { buildStarterLibraryBundle, getStarterTemplates } from '../domain/starterData';
 import {
   MAX_TOTAL_MEDIA_BYTES,
-  VARIANT_TYPE_TO_SLOT,
   validateCollectionInput,
   validatePromptAssetInput,
   validateVariantInput,
@@ -470,46 +470,7 @@ export async function saveVariant(input: {
   }
 
   const existing = input.id ? await getFromStore<Variant>(vStore, input.id) : undefined;
-  if (
-    existing &&
-    (existing.parentCharacterId !== input.parentCharacterId || existing.type !== input.type)
-  ) {
-    throw new Error(
-      'Variant parent character and type are fixed after first save. Duplicate to change them.'
-    );
-  }
-
-  const now = new Date().toISOString();
-  const mediaLinks = (input.mediaLinks ?? existing?.mediaLinks ?? []).map((l, idx) => ({
-    ...l,
-    order: idx,
-  }));
-  const coverMediaId =
-    input.coverMediaId && mediaLinks.some((m) => m.mediaId === input.coverMediaId)
-      ? input.coverMediaId
-      : mediaLinks[0]?.mediaId;
-
-  const record: Variant = {
-    id: existing?.id || input.id || generateId('variant'),
-    parentCharacterId: existing ? existing.parentCharacterId : input.parentCharacterId,
-    type: existing ? existing.type : input.type,
-    targetSlot: VARIANT_TYPE_TO_SLOT[existing ? existing.type : input.type],
-    title: input.title.trim(),
-    description: (input.description ?? '').trim(),
-    promptText: input.promptText.trim(),
-    compactText: input.compactText?.trim() || undefined,
-    avoidText: input.avoidText?.trim() || undefined,
-    tags: input.tags.map((t) => t.trim()).filter(Boolean),
-    mediaLinks,
-    coverMediaId,
-    favorite: input.favorite ?? existing?.favorite ?? false,
-    reviewStatus: input.reviewStatus ?? existing?.reviewStatus ?? 'unreviewed',
-    notes: (input.notes ?? existing?.notes ?? '').trim(),
-    isStarter: existing?.isStarter ?? false,
-    revision: existing ? existing.revision + 1 : 1,
-    createdAt: existing?.createdAt || now,
-    updatedAt: now,
-  };
+  const record = buildVariantRecord(input, parent, existing, {id:existing?.id||input.id||generateId('variant'),now:new Date().toISOString()});
 
   vStore.put(record);
   await txDone(tx);
