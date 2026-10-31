@@ -1,6 +1,7 @@
 import type { ComponentSnapshot, SceneDraft } from "../../types/domain";
 import { createSnapshotFromAsset } from "../../domain/promptAssembler";
 import { recipeState, recipeTime } from "./recipeChangeSetFixture";
+import { enableSceneEnsemble } from "../../domain/ensemble";
 export function actor(id = "character", name = "Aya"): ComponentSnapshot {
   const base = recipeState().assets.find((a) => a.category === "characters")!;
   return createSnapshotFromAsset({
@@ -50,4 +51,41 @@ export function ensembleLegacyDraft(): SceneDraft {
     reviewStatus: "unreviewed",
     updatedAt: recipeTime,
   };
+}
+export function ensembleDraft(): SceneDraft {
+  const s = enableSceneEnsemble(ensembleLegacyDraft());
+  s.ensemble!.participants.push({
+    id: "lucas",
+    character: actor("lucas", "Lucas"),
+    wardrobe: {
+      slot: "wardrobe",
+      sourceType: "variant",
+      sourceId: "lucas-suit",
+      sourceRevision: 1,
+      sourceTitle: "Lucas suit",
+      parentCharacterId: "lucas",
+      promptText: "A charcoal groom suit.",
+      compactText: "Charcoal suit.",
+      mediaLinks: [],
+    },
+    presence: "on_camera",
+    performanceNotes: "Speak with quiet determination.",
+  });
+  s.ensemble!.dialogueCues = [
+    {
+      id: "officiant",
+      speaker: "Officiant",
+      mode: "off_screen",
+      line: "Lucas, do you take Aya as your wife?",
+    },
+    {
+      id: "lucas-reply",
+      speaker: "Lucas",
+      participantId: "lucas",
+      mode: "on_camera",
+      line: "  I do.\r\n😊  ",
+      performanceDirection: { version: 1, styles: ["calm"] },
+    },
+  ];
+  return s;
 }

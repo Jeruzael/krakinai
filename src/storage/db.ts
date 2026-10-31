@@ -4,6 +4,9 @@ import { validatePhase4Record } from '../domain/phase4Validation';
 import { validateCameraCompositionSlots } from '../domain/cameraCompositionValidation';
 import { isDirectPrompt, validateSceneAuthoring } from '../domain/directPrompt';
 import {getDirectReferenceLinks} from '../domain/directPromptReferences';
+import{getSceneSnapshotEntries}from'../domain/ensembleReferences';
+import{prepareEnsembleSource}from'../domain/ensemblePersistence';
+import{createEnsembleTemplateDefault,applyEnsembleTemplateDefault}from'../domain/ensembleTemplates';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getCapturedAvoidPrefix, getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../domain/sceneDuplicates';
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
@@ -261,28 +264,28 @@ export function collectReferencedMediaIds(snap: {
   }
   for (const d of snap.drafts) {
     for (const link of d.directReferences ?? []) ids.add(link.mediaId);
-    for (const slot of ORDERED_BUILDER_SLOTS) {
-      const s = d.slots[slot];
+    for (const {snapshot:s} of getSceneSnapshotEntries(d)) {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
     for (const l of d.resultMediaLinks ?? []) ids.add(l.mediaId);
     for (const l of d.sourceMediaLinks ?? []) ids.add(l.mediaId);
     if (options.includeOptionalMetadata !== false) for (const l of d.referencePack?.entries ?? []) ids.add(l.mediaId);
-    else for (const l of d.referencePack?.entries ?? []) if (l.sourceSlot === 'source') ids.add(l.mediaId);
+    else for (const l of d.referencePack?.entries ?? []) if (l.sourceSlot === 'source'||l.participantId) ids.add(l.mediaId);
   }
   for (const sc of snap.scenes) {
     for (const link of sc.directReferences ?? []) ids.add(link.mediaId);
-    for (const slot of ORDERED_BUILDER_SLOTS) {
-      const s = sc.slots[slot];
+    for (const {snapshot:s} of getSceneSnapshotEntries(sc)) {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
     }
     if (options.includeOptionalMetadata !== false) for (const l of sc.referencePack?.entries ?? []) ids.add(l.mediaId);
-    else for (const l of sc.referencePack?.entries ?? []) if (l.sourceSlot === 'source') ids.add(l.mediaId);
+    else for (const l of sc.referencePack?.entries ?? []) if (l.sourceSlot === 'source'||l.participantId) ids.add(l.mediaId);
     for (const l of sc.references ?? []) ids.add(l.mediaId);
     for (const l of sc.resultMediaLinks ?? []) ids.add(l.mediaId);
     for (const l of sc.sourceMediaLinks ?? []) ids.add(l.mediaId);
   }
   for (const t of snap.templates) {
+    for(const {snapshot}of getSceneSnapshotEntries({slots:{},ensemble:t.ensembleDefault?.ensemble}))for(const l of snapshot.mediaLinks)ids.add(l.mediaId);
+    for(const l of t.ensembleDefault?.referencePack?.entries??[])ids.add(l.mediaId);
     for (const l of t.includedCharacterSnapshot?.mediaLinks ?? []) {
       ids.add(l.mediaId);
     }
@@ -529,6 +532,7 @@ export async function toggleVariantFavorite(id: string): Promise<Variant> {
 }
 
 export interface DeletionDependencies {
+  usedInTemplates?:Template[];
   blockedByVariants: Variant[];
   affectedCollections: Collection[];
   usedInSavedScenes: SavedScene[];
@@ -542,17 +546,18 @@ export async function getAssetDeletionDependencies(assetId: string): Promise<Del
     c.members.some((m) => m.type === 'asset' && m.id === assetId)
   );
   const usedInSavedScenes = snap.scenes.filter((s) =>
-    ORDERED_BUILDER_SLOTS.some(
-      (slot) => s.slots[slot]?.sourceType === 'asset' && s.slots[slot]?.sourceId === assetId
+    getSceneSnapshotEntries(s).some(
+      ({snapshot}) => snapshot.sourceType === 'asset' && snapshot.sourceId === assetId
     )
   );
   const usedInDrafts = snap.drafts.filter((d) =>
-    ORDERED_BUILDER_SLOTS.some(
-      (slot) => d.slots[slot]?.sourceType === 'asset' && d.slots[slot]?.sourceId === assetId
+    getSceneSnapshotEntries(d).some(
+      ({snapshot}) => snapshot.sourceType === 'asset' && snapshot.sourceId === assetId
     )
   );
+  const usedInTemplates=snap.templates.filter(t=>getSceneSnapshotEntries({slots:{},ensemble:t.ensembleDefault?.ensemble}).some(e=>e.snapshot.sourceType==='asset'&&e.snapshot.sourceId===assetId));
   return {
-    blockedByVariants,
+    ...(usedInTemplates.length?{usedInTemplates}:{}),blockedByVariants,
     affectedCollections,
     usedInSavedScenes,
     usedInDrafts,
@@ -674,7 +679,7 @@ export function savedAvoidPrefix(scene: SavedScene, scenes: SavedScene[]): strin
   let current:SavedScene|undefined=scene,remaining=scene.avoidText??'';
   while(current&&!seen.has(current.id)) {
     seen.add(current.id);
-    const prefix=current.inheritedAvoidPrefix??ORDERED_BUILDER_SLOTS.map(slot=>current!.slots[slot]?.avoidText).filter(value=>value?.trim()).join(', ');
+    const prefix=current.inheritedAvoidPrefix??(current.ensemble?getCapturedAvoidPrefix(current):ORDERED_BUILDER_SLOTS.map(slot=>current!.slots[slot]?.avoidText).filter(value=>value?.trim()).join(', '));
     if(prefix) {
       if(remaining!==prefix&&!remaining.startsWith(`${prefix}, `))break;
       parts.push(prefix);remaining=remaining===prefix?'':remaining.slice(prefix.length+2);
@@ -699,7 +704,7 @@ export async function saveSceneDraft(
   if (cameraError) throw new Error(cameraError);
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
   if(performanceError)throw new Error(performanceError);
-  const metadataError=validatePhase4Record({ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
+  const metadataError=validatePhase4Record(input.ensemble!==undefined?input:{ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
   if(metadataError)throw new Error(metadataError);
   const db = await openDatabase();
   const needsInheritedPrefix=input.inheritedAvoidPrefix===undefined&&input.shotType!==undefined&&input.shotType!=='character_scene'&&Boolean(input.sourceSceneId);
@@ -708,6 +713,7 @@ export async function saveSceneDraft(
   const pStore = tx.objectStore('preferences');
 
   const existing = input.id ? await getFromStore<SceneDraft>(dStore, input.id) : undefined;
+  if(existing?.ensemble&&input.ensemble===undefined){tx.abort();throw new Error('This stored draft has an ensemble. Open the current workspace before saving; the existing draft is preserved.');}
   if(input.expectedInputRevision!==undefined&&existing?.inputRevision!==input.expectedInputRevision){tx.abort();throw new Error('This draft changed in another tab. Your edits are preserved locally; refresh and compare before saving.');}
   let inheritedAvoidPrefix=input.inheritedAvoidPrefix??existing?.inheritedAvoidPrefix;
   if(inheritedAvoidPrefix===undefined&&needsInheritedPrefix) {
@@ -728,6 +734,7 @@ export async function saveSceneDraft(
       : 1;
 
   const record: SceneDraft = {
+    ...(input.ensemble!==undefined?{ensemble:structuredClone(input.ensemble)}:{}),
     id: existing?.id || input.id || generateId('draft'),
     title: input.title,
     ...(input.authoringMode!==undefined?{authoringMode:input.authoringMode}:{}),
@@ -812,7 +819,8 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     compact: draft.manualOutputs.compact?.text ?? assembled.outputs.compact,
   };
 
-  const scene: SavedScene = {
+  let scene: SavedScene = {
+    ...(draft.ensemble?{ensemble:structuredClone(draft.ensemble)}:{}),
     id: generateId('scene'),
     title: draft.title.trim(),
     ...(draft.inheritedAvoidPrefix!==undefined?{inheritedAvoidPrefix:getCapturedAvoidPrefix(draft)}:{}),
@@ -838,6 +846,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     updatedAt: now,
   };
 
+  if(scene.ensemble){scene=prepareEnsembleSource(scene,await getAllFromStore<PromptAsset>(tx.objectStore('assets')),mediaMap);const error=validatePhase4Record(scene);if(error)throw Error(error);}
   for (const slot of Object.values(scene.slots)) if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
   scene.references = captureMediaNames(scene.references, mediaMap);
   scene.resultMediaLinks = captureMediaNames(scene.resultMediaLinks, mediaMap);
@@ -940,6 +949,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
 
   return saveSceneDraft({
     title: `${scene.title} (Copy)`,
+    ...(scene.ensemble?{ensemble:structuredClone(scene.ensemble)}:{}),
     inheritedAvoidPrefix:savedAvoidPrefix(scene,snap.scenes),
     ...(scene.shotType !== undefined ? { shotType: scene.shotType } : {}),
     ...(scene.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(scene.sourceMediaLinks) } : {}),
@@ -976,7 +986,7 @@ export async function createDraftFromTemplate(templateId: string): Promise<Scene
     }
   }
 
-  return saveSceneDraft({
+  const next:Omit<SceneDraft,'id'|'inputRevision'|'updatedAt'>={
     title: `${tpl.name} Draft`,
     ...(tpl.shotType !== undefined ? { shotType: tpl.shotType } : {}),
     slots,
@@ -987,8 +997,9 @@ export async function createDraftFromTemplate(templateId: string): Promise<Scene
     manualOutputs: {},
     resultMediaLinks: [],
     reviewNotes: '',
-    reviewStatus: 'unreviewed',
-  });
+    reviewStatus: 'unreviewed' as const,
+  };
+  return saveSceneDraft(prepareEnsembleSource(applyEnsembleTemplateDefault(tpl,next),snap.assets));
 }
 
 export async function saveDraftAsTemplate(params: {
@@ -996,7 +1007,13 @@ export async function saveDraftAsTemplate(params: {
   name: string;
   description: string;
   includeCharacterIdentity: boolean;
+  ensembleMode?:'full'|'shared_only';
+  confirmEnsembleOmissions?:boolean;
 }): Promise<Template> {
+  const ensemble=Boolean(params.draft.ensemble);
+  if(ensemble&&!['full','shared_only'].includes(params.ensembleMode??''))throw Error('Choose an explicit ensemble template choice: full ensemble or shared components only.');
+  if(ensemble&&params.ensembleMode==='shared_only'&&!params.confirmEnsembleOmissions)throw Error('Confirm omission of all participants, per-person wardrobe and dialogue cues.');
+  if(ensemble){const error=validatePhase4Record(params.draft);if(error)throw Error(error);}
   const name = params.name.trim();
   if (!name || name.length > 100) {
     throw new Error('Template name must be between 1 and 100 characters.');
@@ -1005,7 +1022,7 @@ export async function saveDraftAsTemplate(params: {
   const defaults: Template['defaults'] = {};
   const activeSlots = getActiveSceneSlots(params.draft);
   for (const slot of ORDERED_BUILDER_SLOTS) {
-    if (slot === 'character') continue;
+    if (slot === 'character'||ensemble&&slot==='wardrobe') continue;
     const snap = activeSlots[slot];
     if (snap) {
       defaults[slot] = {
@@ -1019,12 +1036,13 @@ export async function saveDraftAsTemplate(params: {
   }
 
   const requiredSlots = new Set<BuilderSlot>(getShotTypeRules(params.draft).requiredSlots);
-  if (params.includeCharacterIdentity && activeSlots.character) {
+  if (!ensemble&&params.includeCharacterIdentity && activeSlots.character) {
     requiredSlots.add('character');
   }
 
   const now = new Date().toISOString();
   const tpl: Template = {
+    ...(ensemble&&params.ensembleMode==='full'?{ensembleDefault:createEnsembleTemplateDefault(params.draft,true)}:{}),
     id: generateId('template'),
     name,
     ...(params.draft.shotType !== undefined ? { shotType: params.draft.shotType } : {}),
@@ -1035,7 +1053,7 @@ export async function saveDraftAsTemplate(params: {
     sceneInstructionsDefault: params.draft.sceneInstructions,
     settingsDefault: { ...params.draft.settings },
     includedCharacterSnapshot:
-      params.includeCharacterIdentity && activeSlots.character
+      !ensemble&&params.includeCharacterIdentity && activeSlots.character
         ? structuredClone(activeSlots.character)
         : undefined,
     isStarter: false,

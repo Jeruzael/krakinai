@@ -4,14 +4,38 @@ import {
   getGenerationPackReferences,
 } from "../domain/referencePack";
 import { buildSceneDocument } from "../domain/sceneDocument";
+import { assembleScenePrompt } from "../domain/promptAssembler";
+import { buildGenerationDocument } from "../domain/generationDocument";
 import { enableSceneEnsemble, syncEnsemblePrimary } from "../domain/ensemble";
 import { actor, ensembleLegacyDraft } from "./fixtures/ensembleFixture";
+import { getActiveReferencePack } from "../domain/shotTypeRules";
 const link = {
   mediaId: "shared-guide",
   role: "reference" as const,
   altText: "Same file, distinct identity relationships.",
   order: 0,
 };
+it("does not auto-export a formerly visible participant file from an old saved checklist after that person moves off camera", () => {
+  const s = source();
+  s.ensemble!.participants[1].character.mediaLinks[0].mediaId =
+    "secondary-guide";
+  const saved = { ...s, references: assembleScenePrompt(s).references };
+  saved.ensemble!.participants[1].presence = "off_camera";
+  expect(
+    buildSceneDocument(saved).referenceFiles.some(
+      (r) => r.mediaId === "secondary-guide",
+    ),
+  ).toBe(false);
+});
+it("retains selected secondary participant references for Property / Environment scenes", () => {
+  const s = source();
+  s.shotType = "property_environment";
+  s.ensemble!.participants[1].character.mediaLinks[0].mediaId =
+    "secondary-guide";
+  const refs = collectReferenceCandidates(s, new Map());
+  s.referencePack = { version: 1, entries: refs };
+  expect(getActiveReferencePack(s)?.entries).toEqual(refs);
+});
 function source() {
   const s = enableSceneEnsemble(ensembleLegacyDraft());
   s.ensemble!.participants[0].character.mediaLinks = [{ ...link }];
@@ -66,6 +90,23 @@ it("does not automatically select an off-camera visual attachment", () => {
   const refs = collectReferenceCandidates(s, new Map());
   expect(refs).toHaveLength(1);
   expect((refs[0] as any).participantId).toBe("primary");
+});
+it("preserves an explicitly selected pack file and its ownership without injecting an off-camera identity", () => {
+  const s = source();
+  s.ensemble!.participants[1].character.mediaLinks[0].mediaId =
+    "secondary-guide";
+  const refs = collectReferenceCandidates(s, new Map());
+  s.referencePack = { version: 1, entries: [{ ...refs[1], order: 0 }] };
+  s.ensemble!.participants[1].presence = "off_camera";
+  const before = structuredClone(s),
+    doc = buildGenerationDocument(s, {
+      references: getGenerationPackReferences(s.referencePack),
+    });
+  expect(doc.references).toMatchObject([
+    { mediaId: "secondary-guide", participantId: "lucas" },
+  ]);
+  expect(doc.participants?.find((p) => p.id === "lucas")?.identity).toBeNull();
+  expect(s).toEqual(before);
 });
 it("preserves exact legacy association IDs when no ensemble exists", () => {
   const s = ensembleLegacyDraft();

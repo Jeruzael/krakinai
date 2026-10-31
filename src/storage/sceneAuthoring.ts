@@ -37,6 +37,7 @@ import {
   validateShotSourceMedia,
 } from "../domain/shotTypeRules";
 import { resolveGenerationIdentity } from "../domain/identityAnchors";
+import {prepareEnsembleSource}from'../domain/ensemblePersistence';
 import { captureMediaNames } from "../domain/mediaNaming";
 import { validatePhase4Record } from "../domain/phase4Validation";
 import {
@@ -175,6 +176,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
       "This scene belongs to multiple projects. Choose an explicit project and shot before revising.",
     );
   const direct = options.asDirect || isDirectPrompt(source);
+  if(options.asDirect&&source.ensemble)throw Error('Ensemble Direct Prompt conversion belongs to B3. Keep this recipe and its participants unchanged.');
   const prefix = savedAvoidPrefix(source, snap.scenes);
   const editableAvoid =
     !direct &&
@@ -188,6 +190,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     ...emptyDraft(),
     title: source.title,
     slots: clone(source.slots),
+    ...(source.ensemble?{ensemble:clone(source.ensemble)}:{}),
     extraRequiredSlots: clone(source.extraRequiredSlots),
     sceneInstructions: source.sceneInstructions,
     dialogue: clone(source.dialogue),
@@ -378,6 +381,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         : {}),
     };
     const base = {
+      ...(draft.ensemble?{ensemble:clone(draft.ensemble)}:{}),
       id,
       title: draft.title.trim(),
       slots: clone(draft.slots),
@@ -503,6 +507,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         references: captureMediaNames(assembled.references, mediaMap),
       };
     }
+    if(scene.ensemble){scene=prepareEnsembleSource(scene,state.assets,mediaMap);const error=validatePhase4Record(scene);if(error)throw Error(error);}
     for (const slot of Object.values(scene.slots))
       if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
     scene.resultMediaLinks = captureMediaNames(

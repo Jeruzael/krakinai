@@ -4,6 +4,8 @@ import { isShotType } from './shotTypeRules';
 import { MAX_FILES_PER_RECORD, MAX_MANIFEST_BYTES } from './validation';
 import {validateCameraComposition,validateCameraCompositionSlots} from './cameraCompositionValidation';
 import {validateSceneAuthoring} from './directPrompt';
+import{validateSceneEnsemble}from'./ensembleValidation';
+import{validateEnsembleTemplateDefault}from'./ensembleTemplates';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -23,6 +25,8 @@ function identityError(value: Record<string, unknown>): string | undefined {
 /** Validate optional Stage B metadata without resolving historical source or media IDs. */
 export function validatePhase4Record(value: unknown): string | undefined {
   if (!record(value)) return 'Invalid record.';
+  const ensembleError=validateSceneEnsemble(value,{forAssembly:value.outputs!==undefined})[0]??validateEnsembleTemplateDefault(value);
+  if(ensembleError)return ensembleError;
   const authoringError=validateSceneAuthoring(value, value.outputs!==undefined);
   if(authoringError)return authoringError;
   const cameraError=validateCameraCompositionSlots(value.slots)??validateCameraComposition(value.cameraComposition,typeof value.slot==='string'?value.slot:'');
@@ -69,6 +73,12 @@ export function validatePhase4Record(value: unknown): string | undefined {
     const associations = new Set<string>();
     const orders = new Set<number>();
     for (const entry of pack.entries) {
+      if(record(entry)&&entry.participantId!==undefined){
+        const e=value.ensemble;
+        const participant=record(e)&&Array.isArray(e.participants)?e.participants.find(p=>record(p)&&p.id===entry.participantId):undefined;
+        const snapshot=record(participant)&&['character','wardrobe'].includes(String(entry.sourceSlot))?participant[String(entry.sourceSlot)]:undefined;
+        if(!text(entry.participantId,64,true)||!record(snapshot)||snapshot.sourceId!==entry.sourceId)return'Invalid participant reference association.';
+      }
       if (!record(entry) || !text(entry.associationId, 10000, true) || !text(entry.mediaId, 1000, true) || !text(entry.sourceId, 1000, true) || !text(entry.sourceTitle, 10000) || !text(entry.altText, 10000)) return 'Invalid reference pack association metadata.';
       if (![...ORDERED_BUILDER_SLOTS, 'result', 'legacy', 'source'].includes(entry.sourceSlot as never) || !['reference', 'sample', 'result'].includes(entry.role as string) || !['identity', 'outfit', 'environment', 'motion', 'general'].includes(entry.purpose as string)) return 'Invalid reference pack enum value.';
       if (entry.sourceSlot === 'source' && entry.role !== 'reference') return 'Invalid source reference pack role.';

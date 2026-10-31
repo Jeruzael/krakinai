@@ -44,6 +44,11 @@ export function buildEnsembleDocument(
 ): SceneDocument {
   const e = source.ensemble!;
   const snapshots = getSceneSnapshotEntries(source, { activeOnly: true });
+  const knownComponentMedia = new Set(
+    getSceneSnapshotEntries(source)
+      .flatMap((e) => e.snapshot.mediaLinks)
+      .map((l) => l.mediaId),
+  );
   const refs = snapshots.flatMap(({ slot, snapshot, participantId }) => {
     const occurrences = new Map<string, number>();
     return [...snapshot.mediaLinks]
@@ -110,10 +115,7 @@ export function buildEnsembleDocument(
       .join(", "),
     referenceFiles: [
       ...base.referenceFiles.filter(
-        (r) =>
-          !snapshots.some((e) =>
-            e.snapshot.mediaLinks.some((l) => l.mediaId === r.mediaId),
-          ),
+        (r) => !knownComponentMedia.has(r.mediaId ?? ""),
       ),
       ...refs.map((l) => ({
         mediaId: safe(l.mediaId),

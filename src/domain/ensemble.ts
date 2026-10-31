@@ -7,7 +7,9 @@ import type {
   ShotType,
 } from "../types/domain";
 import type { SceneEnsembleV1, SceneParticipant } from "../types/ensemble";
+import{getReferenceAssociationId,getReferenceLinkIdentity}from'./ensembleReferences';
 export interface EnsembleSource {
+  referencePack?:import('../types/domain').ReferencePack;
   ensemble?: SceneEnsembleV1;
   slots: Partial<Record<BuilderSlot, ComponentSnapshot>>;
   dialogue?: DialogueConfig;
@@ -62,6 +64,11 @@ export function enableSceneEnsemble<T extends EnsembleSource>(source: T): T {
       : [],
   };
   delete next.dialogue;
+  if(character&&next.referencePack){
+    const mappings=new Map<string,string>();
+    for(const slot of ['character','wardrobe']as const){const snapshot=next.slots[slot];if(!snapshot)continue;const occurrences=new Map<string,number>();for(const link of [...snapshot.mediaLinks].sort((a,b)=>a.order-b.order)){const key=getReferenceLinkIdentity(link),n=occurrences.get(key)??0;occurrences.set(key,n+1);mappings.set(getReferenceAssociationId(slot,snapshot.sourceId,key,n),getReferenceAssociationId(slot,snapshot.sourceId,key,n,'primary'))}}
+    next.referencePack.entries=next.referencePack.entries.map(e=>mappings.has(e.associationId)?{...e,participantId:'primary',associationId:mappings.get(e.associationId)!}:e);
+  }
   return syncEnsemblePrimary(next);
 }
 export function syncEnsemblePrimary<T extends EnsembleSource>(source: T): T {
