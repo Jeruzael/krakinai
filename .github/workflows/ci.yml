@@ -45,6 +45,19 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install locked local bridge dependencies
+        working-directory: bridge
+        run: npm ci --ignore-scripts
+
+      - name: Verify production MCP runtime and isolated test runtime
+        working-directory: bridge
+        run: |
+          npm run build
+          npm run build:test
+          npm run typecheck
+          npm test
+          npm audit --omit=dev
+
       - name: Run unit and component tests
         run: npm test -- --reporter=default --reporter=junit --outputFile.junit=qa-results/vitest.xml
 
@@ -65,6 +78,9 @@ jobs:
             echo "QA ledger is not present on this earlier stack branch."
           fi
 
+      - name: Test installed-CLI evidence validation
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs
+
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium
 
@@ -82,5 +98,15 @@ jobs:
         with:
           name: synthetic-test-results-${{ github.run_id }}
           path: qa-results/summary.json
+          if-no-files-found: ignore
+          retention-days: 7
+
+      - name: Upload isolated MCP UI screenshots
+        if: always()
+        # Synthetic UI only: no profiles, imports, original media or native key window.
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: local-mcp-ui-synthetic-${{ github.run_id }}
+          path: qa-results/local-mcp/screenshots/*.png
           if-no-files-found: ignore
           retention-days: 7

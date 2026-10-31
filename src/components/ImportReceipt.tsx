@@ -5,10 +5,12 @@ export function ImportReceipt({
   receipt,
   replay,
   onNew,
+  newLabel = 'Import another package',
 }: {
   receipt: ChangeSetReceipt;
   replay: boolean;
   onNew: () => void;
+  newLabel?: string;
 }) {
   const { snapshot, navigate } = useLibrary();
   return (
@@ -44,7 +46,7 @@ export function ImportReceipt({
           </button>
         ))}
         <button type="button" className="btn btn-primary" onClick={onNew}>
-          Import another package
+          {newLabel}
         </button>
       </div>
       <details className="import-group">

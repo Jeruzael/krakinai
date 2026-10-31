@@ -4,10 +4,25 @@ import type {
   AiContextScene,
 } from "../types/aiContext";
 import type { ChangeSetState } from "../types/changeSet";
-import type { IdentityAnchor, MediaLink } from "../types/domain";
+import type { Collection, ProjectShot, MediaAsset, IdentityAnchor, MediaLink } from "../types/domain";
 import { getProjectShots } from "./projectStoryboard";
 import { getRevisionHead, revisionRoot } from "./sceneRevisions";
 export const MAX_AI_CONTEXT_BYTES = 5 * 1024 * 1024;
+/** Shared disclosure policy for manual context exports and scoped MCP metadata. */
+export function projectAiContextLink(l: MediaLink, mediaMap: ReadonlyMap<string, MediaAsset>, notes: boolean, filenames: boolean) {
+  return { mediaId: l.mediaId, role: l.role, order: l.order,
+    ...(notes ? { altText: l.altText } : {}),
+    ...(filenames ? { filename: l.filename ?? mediaMap.get(l.mediaId)?.filename } : {}),
+    available: mediaMap.has(l.mediaId) };
+}
+export function projectAiContextProject(c: Collection, shots: ProjectShot[], notes: boolean): Record<string, unknown> {
+  return { id: c.id, name: c.name, expectedRevision: c.project?.revision ?? 0,
+    ...(notes ? { description: c.description, planningNotes: c.planningNotes } : {}),
+    shots: shots.map(s => ({ id: s.id, order: s.order, code: s.code, title: s.title, status: s.status,
+      takeSceneIds: [...s.takeSceneIds], selectedSceneId: s.selectedSceneId ?? null,
+      plannedShotType: s.plannedShotType, plannedDurationSeconds: s.plannedDurationSeconds,
+      ...(notes ? { continuityNotes: s.continuityNotes } : {}) })) };
+}
 function withinSize(text: string) {
   if (new TextEncoder().encode(text).length > MAX_AI_CONTEXT_BYTES)
     throw Error(
@@ -92,16 +107,7 @@ export function buildAiContext(
     if (!sceneIds.includes(id))
       throw Error("Full-prompt target is outside the selected scene scope.");
   const mediaMap = new Map(state.media.map((m) => [m.id, m]));
-  const link = (l: MediaLink) => ({
-    mediaId: l.mediaId,
-    role: l.role,
-    order: l.order,
-    ...(notes ? { altText: l.altText } : {}),
-    ...(filenames
-      ? { filename: l.filename ?? mediaMap.get(l.mediaId)?.filename }
-      : {}),
-    available: mediaMap.has(l.mediaId),
-  });
+  const link = (l: MediaLink) => projectAiContextLink(l, mediaMap, notes, filenames);
   const anchor = (a: IdentityAnchor | undefined) =>
     a
       ? {
@@ -128,26 +134,7 @@ export function buildAiContext(
       notes,
       mediaFilenames: filenames,
     },
-    projects: projects.map((c, i) => ({
-      id: c.id,
-      name: c.name,
-      expectedRevision: c.project?.revision ?? 0,
-      ...(notes
-        ? { description: c.description, planningNotes: c.planningNotes }
-        : {}),
-      shots: shots[i].map((s) => ({
-        id: s.id,
-        order: s.order,
-        code: s.code,
-        title: s.title,
-        status: s.status,
-        takeSceneIds: [...s.takeSceneIds],
-        selectedSceneId: s.selectedSceneId ?? null,
-        plannedShotType: s.plannedShotType,
-        plannedDurationSeconds: s.plannedDurationSeconds,
-        ...(notes ? { continuityNotes: s.continuityNotes } : {}),
-      })),
-    })),
+    projects: projects.map((c, i) => projectAiContextProject(c, shots[i], notes)),
     scenes: sceneIds.map((id): AiContextScene => {
       const s = state.scenes.find((s) => s.id === id);
       if (!s) {
