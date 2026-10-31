@@ -107,6 +107,8 @@ jobs:
         uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
         with:
           name: local-mcp-ui-synthetic-${{ github.run_id }}
-          path: qa-results/local-mcp/screenshots/*.png
+          path: |
+            qa-results/local-mcp/screenshots/*.png
+            qa-results/ai-connections/screenshots/*.png
           if-no-files-found: ignore
           retention-days: 7

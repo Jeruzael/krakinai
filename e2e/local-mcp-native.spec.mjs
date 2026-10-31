@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { isolatedMcpBrowser, sdkBridge, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes, ownedCliBridgePid } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, sdkBridge, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes, ownedCliBridgePid, setMcpFlag, showMcpProposals, openMcpPermissions, selectMcpReceipt } from './local-mcp-fixture.mjs';
 import { seedChangeSet, readChangeLibrary } from './change-set-fixture.mjs';
 import { certifyInstalledCli } from '../scripts/qa/mcp-codex-cli.mjs';
 function requireNativeWindows() { test.skip(process.platform !== 'win32' || process.env.KRAKINAI_NATIVE_QA !== '1', 'Opt-in signed real Windows verifier and installed CLI; no substitute verifier.'); }

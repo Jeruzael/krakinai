@@ -1,14 +1,14 @@
 import { test, expect } from '@playwright/test';
-import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord, setMcpFlag, showMcpProposals, openMcpPermissions, selectMcpReceipt } from './local-mcp-fixture.mjs';
 import { seedChangeSet, changeSetSample, readChangeLibrary } from './change-set-fixture.mjs';
 async function prepared(page, bridge) {
   await seedChangeSet(page); await page.goto('/#/connections/ai');
-  await page.getByLabel('Allow change-set proposals', { exact: true }).check(); await page.getByLabel('Allow new project creation', { exact: true }).check();
+  await setMcpFlag(page, 'Allow change-set proposals', true); await setMcpFlag(page, 'Allow new project creation', true);
   await selectMcpRecord(page, 'Reusable assets', 'Synthetic Studio Camera · camera'); await pairSynthetic(page, bridge);
 }
 async function reviewed(page, bridge) {
   expect((await bridge.call('krakinai_submit_change_set', { changeSet: await changeSetSample() })).ok).toBe(true);
-  await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
+  await showMcpProposals(page); await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
   for (const label of ['Approve storyboard changes','Approve new immutable scenes']) { await page.getByLabel(label, { exact: true }).check(); await expect(page.getByLabel(label, { exact: true })).toBeChecked(); }
   await page.getByLabel('I reviewed this exact proposal', { exact: true }).check();
 }
@@ -19,7 +19,7 @@ test('revoking permissions while the apply digest is paused prevents every write
     await page.evaluate(() => { const original = crypto.subtle.digest.bind(crypto.subtle); crypto.subtle.digest = async (...args) => { const result = await original(...args); if (new TextDecoder().decode(args[1]).includes('krakinai.change-set.v1')) { crypto.subtle.digest = original; return new Promise(resolve => { window.syntheticDigestWaiting = true; window.releaseSyntheticDigest = () => resolve(result); }); } return result; }; });
     await page.getByRole('button', { name: 'Apply reviewed batch', exact: true }).click();
     await expect.poll(() => page.evaluate(() => !!window.syntheticDigestWaiting)).toBe(true);
-    await page.getByLabel('Allow change-set proposals', { exact: true }).uncheck();
+    await setMcpFlag(page, 'Allow change-set proposals', false);
     await page.evaluate(() => window.releaseSyntheticDigest());
     await expect(page.locator('.ai-proposal-review')).toContainText('Nothing was applied');
     expect(await readChangeLibrary(page)).toEqual(before);

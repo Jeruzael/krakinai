@@ -12,7 +12,7 @@ import type { McpProposalView, McpScope, ReceiptGrant } from '../types/mcp';
 interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void> }
 interface Consent { digest: string; packageDigest: string; sessionId: string; scopeEpoch: number; expiresAt: number; used: boolean }
 interface ScopeContext { sessionId?: string; epoch: number }
-export interface BrokerView { connected: boolean; sessionId?: string; scope: McpScope; proposals: McpProposalView[] }
+export interface BrokerView { connected: boolean; sessionId?: string; scope: McpScope; proposals: McpProposalView[]; approvedReceiptGrants: ReceiptGrant[] }
 const pendingStates = new Set(['received', 'review_required', 'approved', 'conflict']);
 
 /** Application authority; no serialized command can mint or redeem human consent. */
@@ -21,11 +21,11 @@ export class ProposalBroker {
   #proposals = new Map<string, McpProposalView>(); #reviewed = new Map<string, string>();
   #consents = new Map<string, Consent>(); #reuse = new Map<string, Set<string>>(); #receiptGrants = new Map<string, ReceiptGrant>();
   #versions = new Map<string, number>(); #listeners = new Set<() => void>();
-  #view: BrokerView = { connected: false, scope: emptyMcpScope(), proposals: [] };
+  #view: BrokerView = { connected: false, scope: emptyMcpScope(), proposals: [], approvedReceiptGrants: [] };
   constructor(dependencies: Partial<Dependencies> = {}) { this.#deps = { readState: getAllSnapshot, preview: previewChangeSet, apply: applyApprovedChangeSet, now: Date.now, isSessionLive: () => true, onApplied: async () => {}, ...dependencies }; }
   subscribe = (listener: () => void) => { this.#listeners.add(listener); return () => { this.#listeners.delete(listener); }; };
   getState = (): BrokerView => this.#view;
-  #emit() { this.#view = { connected: !!this.#session, sessionId: this.#session, scope: structuredClone(this.#scope), proposals: [...this.#proposals.values()].map(p => structuredClone(p)) }; for (const listener of this.#listeners) listener(); }
+  #emit() { this.#view = { connected: !!this.#session, sessionId: this.#session, scope: structuredClone(this.#scope), proposals: [...this.#proposals.values()].map(p => structuredClone(p)), approvedReceiptGrants: structuredClone([...this.#receiptGrants.values()]) }; for (const listener of this.#listeners) listener(); }
   #current(): ScopeContext { return { sessionId: this.#session, epoch: this.#scope.epoch }; }
   #assert(current: ScopeContext) { // The private state is never supplied by MCP.
     if (!current.sessionId || current.sessionId !== this.#session || !this.#deps.isSessionLive(current.sessionId) || this.#deps.now() >= this.#deadline || this.#deps.now() - this.#activity >= MCP_LIMITS.idleMs) throw new McpError('DISCONNECTED', 'The browser session is no longer authorized. Pair again.');

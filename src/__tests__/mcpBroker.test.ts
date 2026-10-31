@@ -9,6 +9,15 @@ import { allContentApproval } from './fixtures/changeSetFixture';
 beforeEach(async () => { await clearAllStoresForTesting(); await initializeDatabase(); const db = await openDatabase(); await new Promise<void>(resolve => { const tx = db.transaction('assets', 'readwrite'); tx.objectStore('assets').put(syntheticCamera()); tx.oncomplete = () => resolve(); }); });
 const allowed = () => ({ ...emptyMcpScope(), assetIds: ['asset_synthetic_camera'], allowNewProjects: true, allowProposals: true });
 const submit = (): McpCommand => ({ requestId: 'request_1', tool: 'krakinai_submit_change_set', args: { changeSet: midoriChangeSet() } });
+it('keeps explicit receipt recovery separate from temporary browser-approved receipt authority', () => {
+  const broker = new ProposalBroker();
+  broker.connect('session_1', { ...allowed(), receiptGrants: [{ changeSetId: 'synthetic_receipt', packageDigest: 'a'.repeat(64) }] });
+  expect(broker.getState().approvedReceiptGrants).toEqual([]);
+  expect(broker.getState().scope.receiptGrants).toHaveLength(1);
+  broker.disconnect();
+  expect(broker.getState().approvedReceiptGrants).toEqual([]);
+  expect(broker.getState().scope.receiptGrants).toEqual([]);
+});
 it('registers and previews the native package without saving any application records', async () => {
   const broker = new ProposalBroker(); broker.connect('session_1', allowed()); const before = await getAllSnapshot();
   const result = await broker.handle(submit(), 'session_1');

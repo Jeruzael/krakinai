@@ -1,0 +1,346 @@
+{
+  "schema": "krakinai-ai-connections-workspace-qa/v1",
+  "measuredAt": "2026-10-31T10:54:53.311Z",
+  "branch": "codex/ai-connections-workspace",
+  "baseCommit": "3e5d352531007f99e72f711396676423bbde6fe5",
+  "testedWorkingTree": {
+    "head": "3e5d352531007f99e72f711396676423bbde6fe5",
+    "dirty": true,
+    "sourceSha256": "f61eaecfe00e494580bd67d05a478f51b3a9bb191dfc0cd671590f0ac9586162",
+    "sourceFiles": [
+      ".github/workflows/ci.yml",
+      "e2e/ai-connections-fixture.mjs",
+      "e2e/ai-connections-workspace.spec.mjs",
+      "e2e/local-mcp-failures.spec.mjs",
+      "e2e/local-mcp-fixture.mjs",
+      "e2e/local-mcp-native.spec.mjs",
+      "e2e/local-mcp-screenshots.spec.mjs",
+      "e2e/local-mcp-workflow-native.spec.mjs",
+      "e2e/local-mcp.spec.mjs",
+      "src/__tests__/aiConnections.test.tsx",
+      "src/__tests__/aiPermissions.test.tsx",
+      "src/__tests__/mcpBroker.test.ts",
+      "src/__tests__/mcpPermissionDraft.test.ts",
+      "src/components/aiConnections/ConnectionPanel.tsx",
+      "src/components/aiConnections/IncomingProposals.tsx",
+      "src/components/aiConnections/PermissionRecordPicker.tsx",
+      "src/components/aiConnections/PermissionReview.tsx",
+      "src/components/aiConnections/PermissionsWorkspace.tsx",
+      "src/connections/AiConnectionContext.tsx",
+      "src/connections/proposalBroker.ts",
+      "src/domain/mcpPermissionDraft.ts",
+      "src/domain/mcpScope.ts",
+      "src/screens/AiConnectionsScreen.tsx",
+      "src/screens/aiConnections.css"
+    ]
+  },
+  "runtime": {
+    "node": "v22.23.3",
+    "npm": "10.9.9",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4"
+  },
+  "checks": [
+    {
+      "command": "npm test -- --maxWorkers=1 --minWorkers=1 --reporter=default --reporter=junit --outputFile.junit=qa-results/vitest.xml",
+      "exitCode": 0,
+      "tests": 742,
+      "failures": 0,
+      "skipped": 0,
+      "files": 101,
+      "passed": 742,
+      "durationSeconds": 377.84
+    },
+    {
+      "command": "npm test -- src/__tests__/aiConnections.test.tsx --maxWorkers=1 --minWorkers=1",
+      "exitCode": 0,
+      "passed": 7,
+      "note": "Rerun after a fixture-only type narrowing correction"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "mainChunkKB": 964.08
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exitCode": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "command": "npm run build; npm run typecheck; npm test; npm audit --omit=dev --json (bridge directory, sequential)",
+      "exitCodes": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "passed": 18,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      }
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "passed": 8,
+      "historicalLedgerChecks": 207,
+      "historicalLedgerScreenshots": 45
+    },
+    {
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs",
+      "exitCode": 0,
+      "passed": 23,
+      "installedCliRerun": false
+    },
+    {
+      "command": "KRAKINAI_NATIVE_QA=0 npm run test:e2e (environment set in PowerShell)",
+      "exitCode": 0,
+      "tests": 153,
+      "passed": 148,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 5,
+      "durationMilliseconds": 535891.335,
+      "newWorkspaceCases": 6
+    }
+  ],
+  "verificationHistory": [
+    {
+      "run": "initial unbounded baseline unit run",
+      "exitCode": 1,
+      "passed": 702,
+      "failed": 4,
+      "total": 706,
+      "details": "Three timeouts and one subsequent missing control across three existing UI files; isolated files passed 36/36."
+    },
+    {
+      "run": "two-worker full unit run concurrent with other QA work",
+      "exitCode": 1,
+      "passed": 738,
+      "failed": 1,
+      "total": 739,
+      "details": "Pairing transition did not observe Connected in its DOM wait; isolated six-test file passed. No timeout/assertion relaxed."
+    },
+    {
+      "run": "first full browser run",
+      "exitCode": 1,
+      "passed": 146,
+      "failed": 1,
+      "skipped": 5,
+      "total": 152,
+      "details": "Existing camera-candidate approval test exceeded 60 seconds; isolated rerun passed in 9.1 seconds."
+    },
+    {
+      "run": "review regressions before fixes",
+      "exitCode": 1,
+      "passed": 36,
+      "failed": 3,
+      "details": "Delayed startup lock, vanished category, and variant-parent/media association tests reproduced all three findings."
+    },
+    {
+      "run": "review regressions after fixes",
+      "exitCode": 0,
+      "passed": 39,
+      "failed": 0
+    },
+    {
+      "run": "intermediate typecheck",
+      "exitCode": 2,
+      "details": "New test-fixture typing errors corrected; final typecheck exits 0."
+    }
+  ],
+  "warnings": [
+    "Existing Vite main chunk exceeds 500 kB (964.08 kB reported by Vite).",
+    "React MediaThumbnail act() warnings in unit tests.",
+    "Playwright NO_COLOR/FORCE_COLOR environment warning.",
+    "npm ci: deprecated whatwg-encoding; unchanged development-inclusive advisories: 3 moderate,1 high,2 critical. Both production audits: zero."
+  ],
+  "review": {
+    "independentReview": "One fresh read-only whole-branch review",
+    "findings": 3,
+    "addressedWithRedGreenTests": 3,
+    "deferredMinors": [],
+    "finalPatchRereviewed": false,
+    "note": "One implementer fix pass plus complete regression suites; no second reviewer."
+  },
+  "screenshots": [
+    {
+      "path": "docs/qa/ai-connections-workspace/after-1366x768.png",
+      "bytes": 234688,
+      "width": 1366,
+      "height": 2475,
+      "sha256": "c84456962312d60da878b67e89774a615e61f06fbd06e539eec93300d1fd9125"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-1440x900-viewport.png",
+      "bytes": 114922,
+      "width": 1440,
+      "height": 900,
+      "sha256": "7377eb3a7f5b998da66fd95c5b653f9a5cefd91e12484d23a1bed5f5847a558c"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-1440x900.png",
+      "bytes": 239547,
+      "width": 1440,
+      "height": 2457,
+      "sha256": "aff9d9e177150e9fd4dd7f0be77bd7000903829020689dadbe8344f12bd1a1e3"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-390x844.png",
+      "bytes": 192078,
+      "width": 390,
+      "height": 3566,
+      "sha256": "16b1cb47eb7836a3f0cf69dbc344896c2714e9eeff25c836efa54a05368de26c"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-720x450.png",
+      "bytes": 192455,
+      "width": 720,
+      "height": 2942,
+      "sha256": "761992d234789d5e825739f8b7081bc87cc8987b067aec75e829ae3fc74a0a7a"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-768x1024.png",
+      "bytes": 249109,
+      "width": 768,
+      "height": 3195,
+      "sha256": "a3c5be927c6886e60866db67c4346dab55b301094b338447a183a911ab5d0b26"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/after-reflow-720-dpr2.png",
+      "bytes": 673016,
+      "width": 1440,
+      "height": 7798,
+      "sha256": "6152eb876b70f08eeeaef2856b294c86607e3b71647809267970bef68798a7e2"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/before-1366x768.png",
+      "bytes": 91654,
+      "width": 1366,
+      "height": 816,
+      "sha256": "88a8a3f227cf345752117ed717c95e11459f3ac770e995d4b4312e206ea25f10"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/before-1440x900.png",
+      "bytes": 104259,
+      "width": 1440,
+      "height": 948,
+      "sha256": "e772cca74e6d5cbb33a97a6c7c8a8c421440af32e81d3473fbb4dcbd3cfeea36"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/before-390x844.png",
+      "bytes": 107438,
+      "width": 390,
+      "height": 2148,
+      "sha256": "2b70f09d9101382caeac65d4450bd22ebef6a7785494d5dd85b0506147226d51"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/before-720x450.png",
+      "bytes": 113034,
+      "width": 720,
+      "height": 1999,
+      "sha256": "f29e543f24a38558d49fc190c22a0876dde9662be0534f3c22306eba80d77304"
+    },
+    {
+      "path": "docs/qa/ai-connections-workspace/before-768x1024.png",
+      "bytes": 156540,
+      "width": 768,
+      "height": 1816,
+      "sha256": "7e80e2aed696931c3a847449973cc4767aad1dbb8d57565d0262cfea94e04ffc"
+    }
+  ],
+  "protectedPathsChanged": [],
+  "changedFiles": [
+    ".github/workflows/ci.yml",
+    "docs/ai-connections-workspace-qa.md",
+    "docs/qa/ai-connections-workspace-results.json",
+    "docs/qa/ai-connections-workspace/after-1366x768.png",
+    "docs/qa/ai-connections-workspace/after-1440x900-viewport.png",
+    "docs/qa/ai-connections-workspace/after-1440x900.png",
+    "docs/qa/ai-connections-workspace/after-390x844.png",
+    "docs/qa/ai-connections-workspace/after-720x450.png",
+    "docs/qa/ai-connections-workspace/after-768x1024.png",
+    "docs/qa/ai-connections-workspace/after-reflow-720-dpr2.png",
+    "docs/qa/ai-connections-workspace/before-1366x768.png",
+    "docs/qa/ai-connections-workspace/before-1440x900.png",
+    "docs/qa/ai-connections-workspace/before-390x844.png",
+    "docs/qa/ai-connections-workspace/before-720x450.png",
+    "docs/qa/ai-connections-workspace/before-768x1024.png",
+    "docs/superpowers/plans/2026-10-31-ai-connections-workspace.md",
+    "docs/superpowers/specs/2026-10-31-ai-connections-workspace-design.md",
+    "e2e/ai-connections-fixture.mjs",
+    "e2e/ai-connections-workspace.spec.mjs",
+    "e2e/local-mcp-failures.spec.mjs",
+    "e2e/local-mcp-fixture.mjs",
+    "e2e/local-mcp-native.spec.mjs",
+    "e2e/local-mcp-screenshots.spec.mjs",
+    "e2e/local-mcp-workflow-native.spec.mjs",
+    "e2e/local-mcp.spec.mjs",
+    "src/__tests__/aiConnections.test.tsx",
+    "src/__tests__/aiPermissions.test.tsx",
+    "src/__tests__/mcpBroker.test.ts",
+    "src/__tests__/mcpPermissionDraft.test.ts",
+    "src/components/aiConnections/ConnectionPanel.tsx",
+    "src/components/aiConnections/IncomingProposals.tsx",
+    "src/components/aiConnections/PermissionRecordPicker.tsx",
+    "src/components/aiConnections/PermissionReview.tsx",
+    "src/components/aiConnections/PermissionsWorkspace.tsx",
+    "src/connections/AiConnectionContext.tsx",
+    "src/connections/proposalBroker.ts",
+    "src/domain/mcpPermissionDraft.ts",
+    "src/domain/mcpScope.ts",
+    "src/screens/AiConnectionsScreen.tsx",
+    "src/screens/aiConnections.css"
+  ],
+  "nativeVerification": {
+    "executed": false,
+    "skippedCases": 5,
+    "compiledHelperSignature": "NotSigned",
+    "nativeWindowsPowerShellPolicy": "AllSigned",
+    "powerShellCoreQaPolicy": "RemoteSigned",
+    "policyChanged": false
+  },
+  "dataAccess": {
+    "realBrowserLibraryAccessed": false,
+    "syntheticOrigin": "http://127.0.0.1:4173",
+    "productionOriginNotAccessed": "http://localhost:5173",
+    "profilesDeleted": false
+  },
+  "retainedIgnoredArtifacts": [
+    "qa-results/",
+    "test-results/",
+    ".superpowers/sdd/2026-10-31-ai-connections-workspace/"
+  ],
+  "remainingManualChecks": [
+    "Real signed Windows pairing and installed Codex CLI recertification",
+    "Actual browser/OS zoom and screen-reader output",
+    "Other supported browsers"
+  ],
+  "hostedCi": {
+    "status": "Not run at local measurement time; exact final signed SHA and workflow URL are reported separately in the PR."
+  },
+  "delivery": {
+    "workstream": "A only",
+    "workstreamBAwaitsAReview": true,
+    "workstreamCAwaitsBReview": true,
+    "automaticMerge": false,
+    "pr12Touched": false
+  }
+}
