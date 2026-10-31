@@ -4,16 +4,18 @@ import { getProjectShots } from './projectStoryboard';
 import { readImportLedger } from './changeSetLedger';
 import { McpError, record, exactKeys } from './mcpProtocol';
 
+export const MCP_SCOPE_ID_LIMITS = Object.freeze({ projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250 });
+export const MCP_SCOPE_LIMITS = Object.freeze({ ...MCP_SCOPE_ID_LIMITS, reusableRecords: 500, receiptGrants: 1000 });
 export function emptyMcpScope(): McpScope { return { version: 1, epoch: 0, projectIds: [], sceneIds: [], assetIds: [], variantIds: [], templateIds: [], fullPromptSceneIds: [], mediaIds: [], candidateIds: [], receiptGrants: [], includeAssetText: false, includeCharacterIdentity: false, includeNotes: false, includeMediaFilenames: false, allowNewProjects: false, allowProposals: false }; }
 export function validateMcpScope(scope: McpScope): McpScope {
   record(scope); exactKeys(scope, Object.keys(emptyMcpScope()), Object.keys(emptyMcpScope()));
   const invalid = () => { throw new McpError('INVALID_SCOPE', 'Select at most 10 projects, 250 explicit scenes and 500 reusable records, using unique native record IDs.'); };
   if (scope.version !== 1 || !Number.isSafeInteger(scope.epoch) || scope.epoch < 0) invalid();
-  const fields = { projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250 } as const;
+  const fields = MCP_SCOPE_ID_LIMITS;
   for (const [field, maximum] of Object.entries(fields)) { const values = scope[field as keyof typeof fields]; if (!Array.isArray(values) || values.length > maximum || new Set(values).size !== values.length || values.some(id => typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(id))) invalid(); }
-  if (scope.assetIds.length + scope.variantIds.length + scope.templateIds.length > 500) invalid();
+  if (scope.assetIds.length + scope.variantIds.length + scope.templateIds.length > MCP_SCOPE_LIMITS.reusableRecords) invalid();
   for (const field of ['includeAssetText', 'includeCharacterIdentity', 'includeNotes', 'includeMediaFilenames', 'allowNewProjects', 'allowProposals'] as const) if (typeof scope[field] !== 'boolean') invalid();
-  if (!Array.isArray(scope.receiptGrants) || scope.receiptGrants.length > 1000 || new Set(scope.receiptGrants.map(g => `${g.changeSetId}:${g.packageDigest}`)).size !== scope.receiptGrants.length) invalid();
+  if (!Array.isArray(scope.receiptGrants) || scope.receiptGrants.length > MCP_SCOPE_LIMITS.receiptGrants || new Set(scope.receiptGrants.map(g => `${g.changeSetId}:${g.packageDigest}`)).size !== scope.receiptGrants.length) invalid();
   for (const grant of scope.receiptGrants) if (!grant || Object.keys(grant).length !== 2 || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(grant.changeSetId) || !/^[a-f0-9]{64}$/.test(grant.packageDigest)) invalid();
   return structuredClone(scope);
 }

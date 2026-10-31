@@ -75,6 +75,8 @@ export async function sdkBridge({ production = false } = {}) {
 }
 
 export async function pairSynthetic(page, bridge) {
+  await applyMcpPermissions(page);
+  await page.getByRole('tab', { name: 'Connection', exact: true }).click();
   await page.getByLabel('Local bridge address', { exact: true }).fill(`http://127.0.0.1:${bridge.port}`);
   await page.getByRole('button', { name: 'Connect Codex', exact: true }).click();
   const verification = await bridge.nativeVerification();
@@ -88,11 +90,36 @@ export async function pairSynthetic(page, bridge) {
 }
 
 export async function selectMcpRecord(page, group, title) {
-  const details = page.locator('details').filter({ has: page.locator(':scope > summary', { hasText: new RegExp(`^${group} \\(`) }) });
-  await details.locator('summary').click();
+  await openMcpPermissions(page);
+  await page.getByRole('button', { name: new RegExp('^' + group + ' category,') }).click();
+  await page.getByRole('textbox', { name: 'Search ' + group, exact: true }).fill(title.split(' · ')[0]);
   await page.getByRole('checkbox', { name: `Allow ${group}: ${title}`, exact: true }).check();
+  await applyMcpPermissions(page);
+  await page.getByRole('tab', { name: 'Connection', exact: true }).click();
+}
+export async function openMcpPermissions(page) { await page.getByRole('tab', { name: 'Permissions', exact: true }).click(); }
+export async function applyMcpPermissions(page) {
+  await openMcpPermissions(page);
+  const apply = page.getByRole('button', { name: 'Apply Permissions', exact: true });
+  if (await apply.isEnabled()) await apply.click();
+}
+export async function setMcpFlag(page, label, enabled = true) {
+  await openMcpPermissions(page);
+  await page.getByLabel(label, { exact: true }).setChecked(enabled);
+  await applyMcpPermissions(page);
+  await page.getByRole('tab', { name: 'Connection', exact: true }).click();
+}
+export async function showMcpProposals(page) { await page.getByRole('tab', { name: 'Incoming Proposals', exact: true }).click(); }
+export async function selectMcpReceipt(page, receipt) {
+  await openMcpPermissions(page);
+  await page.getByRole('button', { name: /^Receipt recovery category,/ }).click();
+  await page.getByRole('textbox', { name: 'Search Receipt recovery', exact: true }).fill(receipt.changeSetId);
+  await page.locator('.ai-record-row').filter({ hasText: receipt.changeSetId + ':' + receipt.packageDigest }).getByRole('checkbox').check();
+  await applyMcpPermissions(page);
+  await page.getByRole('tab', { name: 'Connection', exact: true }).click();
 }
 export async function approveMcpContent(page, { beforeApply } = {}) {
+  await showMcpProposals(page);
   for (const label of ['Approve storyboard changes', 'Approve new immutable scenes']) { const check = page.getByLabel(label, { exact: true }); if (await check.count()) { await check.check(); await expect(check).toBeChecked(); } }
   await page.getByLabel('I reviewed this exact proposal', { exact: true }).check();
   if (beforeApply) await beforeApply();

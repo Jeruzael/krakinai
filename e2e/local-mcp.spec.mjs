@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord, approveMcpContent, syntheticMediaHashes } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord, approveMcpContent, syntheticMediaHashes, setMcpFlag, showMcpProposals, openMcpPermissions, selectMcpReceipt } from './local-mcp-fixture.mjs';
 import { seedChangeSet, changeSetSample, readChangeLibrary } from './change-set-fixture.mjs';
 
 test('SDK proposal requires trusted browser review and creates exact MIDORI records without widening scope', async () => {
@@ -8,15 +8,15 @@ test('SDK proposal requires trusted browser review and creates exact MIDORI reco
   try {
     await seedChangeSet(page); const before = await readChangeLibrary(page), input = await changeSetSample(), originalMediaHashes = await syntheticMediaHashes(page);
     await page.goto('/#/connections/ai');
-    await page.getByLabel('Allow change-set proposals', { exact: true }).check();
-    await page.getByLabel('Allow new project creation', { exact: true }).check();
+    await setMcpFlag(page, 'Allow change-set proposals', true);
+    await setMcpFlag(page, 'Allow new project creation', true);
     await selectMcpRecord(page, 'Reusable assets', 'Synthetic Studio Camera · camera');
     await pairSynthetic(page, bridge);
     const submitted = await bridge.call('krakinai_submit_change_set', { changeSet: input });
     expect(submitted).toMatchObject({ ok: true, data: { status: 'review_required' } });
     expect((await bridge.call('krakinai_submit_change_set', { changeSet: input })).data.proposalId).toBe(submitted.data.proposalId);
     expect(await readChangeLibrary(page)).toEqual(before);
-    await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
+    await showMcpProposals(page); await page.getByRole('button', { name: 'Review proposal', exact: true }).click();
     const confirmed = page.getByLabel('I reviewed this exact proposal', { exact: true });
     await confirmed.evaluate(element => element.click());
     await expect(page.getByRole('alert')).toContainText('actual review controls');
@@ -38,7 +38,7 @@ test('SDK proposal requires trusted browser review and creates exact MIDORI reco
     await selectMcpRecord(page, 'Projects', project.name);
     const original = after.scenes.find(s => s.id === receipt.idMappings['scene-05'].id), shot = shots.find(s => s.code === '05');
     expect((await bridge.call('krakinai_get_generation_prompt', { sceneId: original.id })).ok).toBe(false);
-    await page.getByText('Text and privacy permissions', { exact: true }).click();
+    await openMcpPermissions(page);
     await selectMcpRecord(page, 'Complete scene prompts', original.title);
     expect((await bridge.call('krakinai_get_generation_prompt', { sceneId: original.id })).data.text).toBe(original.outputs.full);
     await page.evaluate(async target => { await (await import('/src/storage/projects.ts')).selectProjectTake(target); }, { collectionId: project.id, shotId: shot.id, sceneId: original.id });
@@ -49,7 +49,7 @@ test('SDK proposal requires trusted browser review and creates exact MIDORI reco
     expect((await bridge.call('krakinai_submit_change_set', { changeSet: foreign })).ok).toBe(false);
     expect(await readChangeLibrary(page)).toEqual(selectedState);
     const revisionReply = await bridge.call('krakinai_submit_change_set', { changeSet: revision }); expect(revisionReply.ok).toBe(true);
-    await page.getByRole('button', { name: 'Review proposal', exact: true }).last().click();
+    await showMcpProposals(page); await page.getByRole('button', { name: 'Review proposal', exact: true }).last().click();
     await page.locator('.import-operations summary').filter({hasText:/^Scenes /}).click();
     await page.getByRole('button',{name:'Review revise05',exact:true}).click();
     await expect(page.getByRole('textbox',{name:'Existing prompt revise05',exact:true})).toHaveValue(original.outputs.full.replace(/\r\n/g,'\n'));
@@ -68,8 +68,7 @@ test('SDK proposal requires trusted browser review and creates exact MIDORI reco
     await bridge.close(); await page.reload();
     await expect(page.getByRole('status').filter({ hasText: /^Disconnected$/ })).toBeVisible();
     expect(await readChangeLibrary(page)).toEqual(revised);
-    await page.getByText('Receipt recovery permissions (0)', { exact: true }).click();
-    await page.getByLabel(`Share receipt ${revisionReceipt.changeSetId}`, { exact: true }).check();
+    await selectMcpReceipt(page, revisionReceipt);
     bridge = await sdkBridge(); await pairSynthetic(page, bridge);
     const confirmedIds = await bridge.call('krakinai_get_import_receipt', { changeSetId: revisionReceipt.changeSetId, packageDigest: revisionReceipt.packageDigest });
     expect(confirmedIds.ok).toBe(true); expect(confirmedIds.data.idMappings.v05.id).toBe(version.id);
@@ -82,10 +81,10 @@ test('only the human-selected camera candidate is created and confirmed; Charact
   test.setTimeout(60000); const {context,page}=await isolatedMcpBrowser(),bridge=await sdkBridge();
   try {
     await seedChangeSet(page);const before=await readChangeLibrary(page);await page.goto('/#/connections/ai');
-    await page.getByLabel('Allow change-set proposals',{exact:true}).check();await pairSynthetic(page,bridge);
+    await setMcpFlag(page, 'Allow change-set proposals', true);await pairSynthetic(page,bridge);
     const sample=await changeSetSample(),input={...sample,changeSetId:'synthetic-mcp-candidate-approval',operations:sample.operations.filter(o=>o.type==='asset.propose')};
     const submitted=await bridge.call('krakinai_submit_change_set',{changeSet:input});expect(submitted.ok).toBe(true);expect(await readChangeLibrary(page)).toEqual(before);
-    await page.getByRole('button',{name:'Review proposal',exact:true}).click();await page.getByText('Reusable asset decisions (2)',{exact:true}).click();
+    await showMcpProposals(page); await page.getByRole('button',{name:'Review proposal',exact:true}).click();await page.getByText('Reusable asset decisions (2)',{exact:true}).click();
     await page.getByRole('combobox',{name:'Decision for camera-candidate',exact:true}).selectOption('create');
     const duplicate=page.getByLabel('Create separate asset despite matches (camera-candidate)',{exact:true});if(await duplicate.count())await duplicate.check();
     await approveMcpContent(page);

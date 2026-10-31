@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { writeFile } from 'node:fs/promises';
 import { createHash, randomUUID } from 'node:crypto';
-import { isolatedMcpBrowser, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes, ownedCliBridgePid, approveMcpContent } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, nativeWindowDecision, enterPairingKey, selectMcpRecord, syntheticMediaHashes, ownedCliBridgePid, approveMcpContent, setMcpFlag, showMcpProposals, openMcpPermissions, selectMcpReceipt } from './local-mcp-fixture.mjs';
 import { seedChangeSet, readChangeLibrary, changeSetSample } from './change-set-fixture.mjs';
 import { certifyInstalledCli } from '../scripts/qa/mcp-codex-cli.mjs';
 
@@ -18,7 +18,7 @@ for (const appOrigin of ['http://127.0.0.1:4173','http://localhost:4173']) {
       const changeSet={schema:sample.schema,changeSetId:`synthetic-cli-complete-${appOrigin.includes('localhost')?'localhost':'ipv4'}`,source:sample.source,operations:[{operationId:'revise05',type:'scene.revise',clientRef:'revision',sceneId:original.id,expectedHeadId:original.id,project:{id:project.id,expectedRevision:project.project.revision},shot:{id:ids.shotId},prompt:{version:1,text,origin:'chatgpt'}}]};
       let approved,receipt,relayPort,submitted=false,readReceipt=false,retried=false,disconnected=false,noWriteChecks=0,otherOriginEmpty=false;
       await page.goto('/#/connections/ai');expect(await page.evaluate(()=>location.origin)).toBe(appOrigin);
-      await selectMcpRecord(page,'Projects','MIDORI');await page.getByLabel('Allow change-set proposals',{exact:true}).check();
+      await selectMcpRecord(page,'Projects','MIDORI');await setMcpFlag(page, 'Allow change-set proposals', true);
       const result=await certifyInstalledCli({projectId:project.id,projectName:project.name,excludedProjectId:ids.dramaId,appOrigin,
         onReady:async({cliPid,port,entry})=>{
           relayPort=port;const pid=await ownedCliBridgePid(cliPid,port);
@@ -30,9 +30,9 @@ for (const appOrigin of ['http://127.0.0.1:4173','http://localhost:4173']) {
         },
         workflow:{changeSet,onReply:async({step,reply})=>{
           if(step==='submitted'){
-            await expect(page.getByRole('button',{name:'Review proposal',exact:true})).toBeVisible();
+            await showMcpProposals(page); await expect(page.getByRole('button',{name:'Review proposal',exact:true})).toBeVisible();
             expect(await readChangeLibrary(page)).toEqual(before);expect(await syntheticMediaHashes(page)).toEqual(hashes);noWriteChecks++;submitted=true;
-            await page.getByRole('button',{name:'Review proposal',exact:true}).click();
+            await showMcpProposals(page); await page.getByRole('button',{name:'Review proposal',exact:true}).click();
             await expect(page.getByRole('heading',{name:'Change-set preview',exact:true})).toBeVisible();
             expect(await readChangeLibrary(page)).toEqual(before);noWriteChecks++;
             await approveMcpContent(page,{beforeApply:async()=>{expect(await readChangeLibrary(page)).toEqual(before);noWriteChecks++;}});

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord, approveMcpContent } from './local-mcp-fixture.mjs';
+import { isolatedMcpBrowser, sdkBridge, pairSynthetic, selectMcpRecord, approveMcpContent, setMcpFlag, showMcpProposals, openMcpPermissions, selectMcpReceipt } from './local-mcp-fixture.mjs';
 import { seedChangeSet, changeSetSample } from './change-set-fixture.mjs';
 test('AI Connections retains readable controls at four viewports in disconnected, connected, review and applied states', async () => {
   test.setTimeout(120000); const { context, page } = await isolatedMcpBrowser(), bridge = await sdkBridge();
@@ -10,10 +10,10 @@ test('AI Connections retains readable controls at four viewports in disconnected
   try {
     await seedChangeSet(page); await page.goto('/#/connections/ai'); await capture('disconnected');
     await page.setViewportSize({width:1440,height:900});
-    await page.getByLabel('Allow change-set proposals',{exact:true}).check(); await page.getByLabel('Allow new project creation',{exact:true}).check(); await selectMcpRecord(page,'Reusable assets','Synthetic Studio Camera · camera');
+    await setMcpFlag(page, 'Allow change-set proposals', true); await setMcpFlag(page, 'Allow new project creation', true); await selectMcpRecord(page,'Reusable assets','Synthetic Studio Camera · camera');
     await pairSynthetic(page,bridge); await capture('connected');
     expect((await bridge.call('krakinai_submit_change_set',{changeSet:await changeSetSample()})).ok).toBe(true);
-    await page.getByRole('button',{name:'Review proposal',exact:true}).click(); await capture('review');
+    await showMcpProposals(page); await page.getByRole('button',{name:'Review proposal',exact:true}).click(); await capture('review');
     await approveMcpContent(page); await capture('applied');
   } finally { await bridge.close(); await context.close(); }
 });
