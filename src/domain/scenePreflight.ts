@@ -4,8 +4,11 @@ import { buildSceneDocument, SCENE_COMPONENT_ORDER, type SceneDocumentSource } f
 import { assembleScenePrompt } from './promptAssembler';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
 import {getDirectPromptReadiness,isDirectPrompt,validateSceneAuthoring,validateDirectAttachments} from './directPrompt';
+import{validateSceneEnsemble}from './ensembleValidation';
 export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references';
 export interface PreflightFinding {
+  participantId?:string;
+  cueId?:string;
   id: string;
   ruleId: 'P000'|'P001'|'P002'|'P003'|'P004'|'P005'|'P006'|'P007'|'P008';
   severity: 'blocking'|'review'|'information';
@@ -45,6 +48,7 @@ function speakerMatchesCharacter(speaker: string, title: string): boolean {
   return name === fullTitle || (identityName.length > 0 && name === identityName);
 }
 export function runScenePreflight(input: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>|ReadonlyMap<string,MediaAsset>): PreflightFinding[] {
+  if(input.ensemble)return runEnsemblePreflight(input,availableMediaIds);
   if(isDirectPrompt(input)){
     const error=validateSceneAuthoring({...input,outputs:{full:input.directPrompt.text}},true);
     const mediaMap=availableMediaIds&&'get' in availableMediaIds?availableMediaIds:undefined;
@@ -101,5 +105,26 @@ export function runScenePreflight(input: SceneDocumentSource & {extraRequiredSlo
     if(visible.length&&composition.length) add('P007','review','Visible speech may be obscured',[...visible,...composition],'Visible speech or lens interaction may not be visible in this composition.');
   }
   checkMissingReferences();
+  return findings;
+}
+
+function runEnsemblePreflight(input:Parameters<typeof runScenePreflight>[0],media?:Parameters<typeof runScenePreflight>[1]):PreflightFinding[]{
+  const legacy={...input,ensemble:undefined,dialogue:undefined};
+  const shared=runScenePreflight(legacy,media).filter(f=>!['P004','P005'].includes(f.ruleId));
+  const sharedIds=new Set(shared.map(f=>f.id));
+  const findings=[...shared];
+  for(const error of validateSceneEnsemble(input,{forAssembly:true}))findings.push({id:JSON.stringify(['P000','ensemble',error]),ruleId:'P000',severity:'blocking',title:error,components:[/cue|dialogue|speaker/i.test(error)?'dialogue':'character'],evidence:[],explanation:'An ensemble relationship or required field is invalid.',suggestedActions:['Review Participants and Dialogue Cues; keep each outfit and cue linked to its intended participant.']});
+  const add=(finding:PreflightFinding,participantId?:string,cueId?:string)=>{const id=JSON.stringify([finding.id,participantId??null,cueId??null]);if(!findings.some(f=>f.id===id))findings.push({...finding,id,...(participantId?{participantId}:{}),...(cueId?{cueId}:{})})};
+  for(const p of input.ensemble!.participants){
+    if(p.presence!=='on_camera')continue;
+    const projected={...legacy,slots:{...legacy.slots,character:p.character,wardrobe:p.wardrobe},sceneInstructions:p.performanceNotes?[legacy.sceneInstructions,p.performanceNotes].filter(Boolean).join('\n'):legacy.sceneInstructions};
+    for(const f of runScenePreflight(projected,media))if(f.ruleId==='P004'||!sharedIds.has(f.id)&&['P001','P002','P003','P008'].includes(f.ruleId))add(f,p.id);
+  }
+  for(const cue of input.ensemble!.dialogueCues){
+    const p=input.ensemble!.participants.find(p=>p.id===cue.participantId);
+    if(!p)continue;
+    const projected={...legacy,dialogue:cue,slots:{...legacy.slots,character:p.character,wardrobe:p.wardrobe},sceneInstructions:p.performanceNotes?[legacy.sceneInstructions,p.performanceNotes].filter(Boolean).join('\n'):legacy.sceneInstructions};
+    for(const f of runScenePreflight(projected,media))if(['P005','P007'].includes(f.ruleId))add(f,p.id,cue.id);
+  }
   return findings;
 }

@@ -92,6 +92,7 @@ export interface SceneGenerationChoice {
 }
 
 export interface ReferencePackEntry {
+  participantId?: string;
   displayName?: string;
   exportFilename?: string;
   namesCaptured?: true;

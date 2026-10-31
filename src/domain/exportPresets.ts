@@ -104,6 +104,11 @@ export function formatGenerationText(
   section("SCENE OVERVIEW", overview.join("\n"));
   if(doc.sourceMedia?.length)section('ORIGINAL SOURCE MEDIA',`${doc.sourceMedia.map(l=>`${l.filename??l.mediaId} | ID: ${l.mediaId} | ${l.mimeType}`).join('\n')}\n${doc.scene.sourceFidelity??''}`);
   section("CHARACTER IDENTITY", doc.character?.description ?? null);
+  for(const p of doc.participants??[])section(`PARTICIPANT: ${p.name} [${p.id}]`,[
+    `Presence: ${p.presence==='on_camera'?'On camera':'Off camera'}${p.id===doc.primaryParticipantId?' (primary)':''}`,
+    ...(p.role?[`Role: ${p.role}`]:[]),...(p.identity?[`Character Identity:\n${p.identity.description}`]:[]),
+    ...(p.wardrobe?[`Wardrobe & Accessories:\n${p.wardrobe}`]:[]),...(p.performanceNotes?[`Performance Notes: ${p.performanceNotes}`]:[]),
+  ].join('\n\n'));
   for (const [title, content] of [
     ["WARDROBE & ACCESSORIES", doc.wardrobe],
     ["ENVIRONMENT / LOCATION", doc.environment],
@@ -113,9 +118,10 @@ export function formatGenerationText(
     ["VISUAL STYLE", doc.style],
   ])
     section(title!, content ?? null);
-  const dialogue = doc.dialogue;
-  if (dialogue) {
+  const dialogues:(NonNullable<typeof doc.dialogue>&{id?:string;participantId?:string;timing?:{startSeconds:number;endSeconds:number}})[]=doc.dialogue?[doc.dialogue]:(doc.dialogueCues??[]);
+  for (const [index,dialogue]of dialogues.entries()) {
     const lines = [
+      ...(dialogue.id!==undefined?[`Cue ${index+1} [${dialogue.id}]${dialogue.participantId?` — Participant: ${dialogue.participantId}`:''}${dialogue.timing?` | ${dialogue.timing.startSeconds}–${dialogue.timing.endSeconds}s`:''}`]:[]),
       `Speaker: ${dialogue.speaker}`,
       `Dialogue Mode: ${DIALOGUE_MODE_LABELS[dialogue.mode]}`,
     ];
@@ -154,7 +160,7 @@ export function formatGenerationText(
       ? doc.references
           .map(
             (ref) =>
-              `${ref.order + 1}. ${ref.filename ?? ref.mediaId} | ${ref.role}${ref.sourceSlot ? ` | ${ref.sourceSlot}` : ""}${ref.purpose ? ` | ${ref.purpose}` : ""}${ref.altText ? ` | ${ref.altText}` : ""}`,
+              `${ref.order + 1}. ${ref.filename ?? ref.mediaId} | ${ref.role}${ref.participantId?` | Participant: ${ref.participantId}`:''}${ref.sourceSlot ? ` | ${ref.sourceSlot}` : ""}${ref.purpose ? ` | ${ref.purpose}` : ""}${ref.altText ? ` | ${ref.altText}` : ""}`,
           )
           .join("\n")
       : null,

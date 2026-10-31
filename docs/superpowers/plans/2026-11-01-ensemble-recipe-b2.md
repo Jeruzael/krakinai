@@ -1,6 +1,6 @@
 # Ensemble Recipe B2 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Deliver reviewed multi-participant recipes with owned wardrobe, ordered cues, immutable snapshots and complete existing-workflow compatibility.
 **Architecture:** Optional ensemble envelopes retain checked legacy primary mirrors. Existing canonical assembly and atomic save remain authoritative; v3 change sets add explicit patches and Outfit candidates without rewriting v1/v2 or stored legacy records.
@@ -32,17 +32,17 @@
 
 **Files:** new types/ensemble.ts; domain/ensemble.ts, ensembleValidation.ts; types/domain.ts; new __tests__/ensembleModel.test.ts and fixture.
 **Interfaces:** SceneParticipant, DialogueCue, SceneEnsembleV1, EnsembleTemplateDefaultV1; EnsembleSource structural source; enableSceneEnsemble<T extends EnsembleSource>(source:T):T; syncEnsemblePrimary<T extends EnsembleSource>(source:T):T; validateSceneEnsemble(source:unknown,options?:{forAssembly?:boolean}):string[]. Pure cloning/helpers only, no persistence. Helpers expose getVisualParticipants and stable primary selection.
-- [ ] Write tests for legacy byte-equal no-op, idempotent seeding of primary/legacy-dialogue, template sources,8/9 and32/33 boundaries, exact cue fields/order/timing, duplicate IDs/Characters, wrong-parent Outfit, primary mirrors and Shot Type/presence/mode rules. Run RED with missing helpers.
-- [ ] Implement optional types and strict structural/semantic validation using existing performance/identity/Shot Type rules; reject raw identity overrides and dual legacy dialogue. New mutable primary changes synchronize only through shared helper; validation never repairs persisted mismatches.
-- [ ] Run `npm test -- --run src/__tests__/ensembleModel.test.ts src/__tests__/assemblyAndValidation.test.ts --maxWorkers=1 --minWorkers=1`; expected all pass. Run typecheck; expected0. Commit scoped tested task with configured SSH signing.
+- [x] Write tests for legacy byte-equal no-op, idempotent seeding of primary/legacy-dialogue, template sources,8/9 and32/33 boundaries, exact cue fields/order/timing, duplicate IDs/Characters, wrong-parent Outfit, primary mirrors and Shot Type/presence/mode rules. Run RED with missing helpers.
+- [x] Implement optional types and strict structural/semantic validation using existing performance/identity/Shot Type rules; reject raw identity overrides and dual legacy dialogue. New mutable primary changes synchronize only through shared helper; validation never repairs persisted mismatches.
+- [x] Run `npm test -- --run src/__tests__/ensembleModel.test.ts src/__tests__/assemblyAndValidation.test.ts --maxWorkers=1 --minWorkers=1`; expected all pass. Run typecheck; expected0. Commit scoped tested task with configured SSH signing.
 
 ## Task 2: Canonical outputs, references and Preflight
 
 **Files:** new domain/ensembleDocument.ts, ensembleReferences.ts; sceneDocument.ts, promptAssembler.ts, generationDocument.ts, exportPresets.ts, shotTypeRules.ts, scenePreflight.ts; new ensembleAssembly.test.ts and ensembleReferences.test.ts.
 **Interfaces:** buildEnsembleDocument(source,baseLegacyDocument) produces SceneDocumentV2; existing buildSceneDocument/formatSceneDocumentText dispatch canonical v1/v2. getSceneSnapshotEntries(source) returns {slot,snapshot,participantId?}[] without duplicate primary mirrors; participant generation resolves through existing identity resolver. Existing assembler API unchanged.
-- [ ] Write RED tests for two/three separate identities/outfits, independent performances, off-screen officiant then Lucas `I do.`, all3 outputs, JSON v2, old JSON/text exact, off-camera visual exclusion, source Shot Types, current originals, once-only negative prefixes and shared-file distinct reference roles.
-- [ ] Extend one canonical document/formatter route, generic/provider exports and Preflight for ensemble records only. Add participant-aware stable reference IDs without rewriting legacy IDs, ordered cue exports and identity-source-aware generation output.
-- [ ] Run `npm test -- --run src/__tests__/ensembleAssembly.test.ts src/__tests__/ensembleReferences.test.ts src/__tests__/sceneDocument.test.ts src/__tests__/generationDocument.test.ts src/__tests__/scenePreflight --maxWorkers=1 --minWorkers=1`; expected all pass and original golden assertions unchanged. Typecheck0; signed scoped commit.
+- [x] Write RED tests for two/three separate identities/outfits, independent performances, off-screen officiant then Lucas `I do.`, all3 outputs, JSON v2, old JSON/text exact, off-camera visual exclusion, source Shot Types, current originals, once-only negative prefixes and shared-file distinct reference roles.
+- [x] Extend one canonical document/formatter route, generic/provider exports and Preflight for ensemble records only. Add participant-aware stable reference IDs without rewriting legacy IDs, ordered cue exports and identity-source-aware generation output.
+- [x] Run `npm test -- --run src/__tests__/ensembleAssembly.test.ts src/__tests__/ensembleReferences.test.ts src/__tests__/sceneDocument.test.ts src/__tests__/generationDocument.test.ts src/__tests__/scenePreflight --maxWorkers=1 --minWorkers=1`; expected all pass and original golden assertions unchanged. Typecheck0; signed scoped commit.
 
 ## Task 3: Save/revision/template/media and production round trips
 

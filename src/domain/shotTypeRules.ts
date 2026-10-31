@@ -1,6 +1,7 @@
 import type { BuilderSlot, ComponentSnapshot, DialogueConfig, MediaAsset, MediaLink, ReferencePack, ReferencePackEntry, ShotType } from '../types/domain';
 import { ALLOWED_IMAGE_MIMES, ALLOWED_VIDEO_MIMES, MAX_FILES_PER_RECORD, validateMediaCandidate } from './validation';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
+import {getEnsembleAvoidParts} from './ensembleReferences';
 
 export const SHOT_TYPES: ShotType[] = ['character_scene','property_environment','graphic_motion','existing_footage'];
 export const SHOT_TYPE_LABELS: Record<ShotType,string> = {
@@ -15,6 +16,7 @@ export const SHOT_TYPE_DESCRIPTIONS: Record<ShotType,string> = {
 };
 const slots: BuilderSlot[] = ['character','wardrobe','environment','action','camera','lighting','style'];
 export interface ShotRuleSource {
+  ensemble?: import('../types/ensemble').SceneEnsembleV1;
   id?: string;
   title?: string;
   shotType?: ShotType;
@@ -63,6 +65,12 @@ export function getActiveSourceMediaLinks(source: ShotRuleSource): MediaLink[] {
 /** Remove only a known inherited aggregate; authored punctuation/text stays exact. */
 export function getSceneLevelAvoidText(source: ShotRuleSource): string {
   let text=source.avoidText??'';
+  if(source.ensemble){
+    if(source.inheritedAvoidPrefix===undefined&&!source.sourceSceneId&&source.references===undefined)return text;
+    const prefix=source.inheritedAvoidPrefix??getEnsembleAvoidParts(source).join(', ');
+    if(prefix)while(text===prefix||text.startsWith(`${prefix}, `))text=text===prefix?'':text.slice(prefix.length+2);
+    return text;
+  }
   if(resolveShotType(source)==='character_scene')return text;
   if(source.inheritedAvoidPrefix===undefined&&!source.sourceSceneId&&source.references===undefined)return text;
   const prefix=source.inheritedAvoidPrefix??slots.map(slot=>source.slots?.[slot]?.avoidText).filter(v=>v?.trim()).join(', ');
@@ -73,6 +81,7 @@ export function getSceneLevelAvoidText(source: ShotRuleSource): string {
 }
 /** Capture exact component provenance without changing legacy aggregate text. */
 export function getCapturedAvoidPrefix(source: ShotRuleSource): string {
+  if(source.ensemble)return getEnsembleAvoidParts(source).join(', ');
   const active=getActiveSceneSlots(source);
   const parts=slots.map(slot=>active[slot]?.avoidText).filter(value=>value?.trim());
   if(resolveShotType(source)==='character_scene'&&source.inheritedAvoidPrefix) {
