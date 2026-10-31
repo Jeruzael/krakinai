@@ -12,15 +12,12 @@ import { checkVariantApplicationToDraft } from "../storage/db";
 const key = (link: MediaLink) =>
   JSON.stringify([link.mediaId, link.role, link.altText, link.viewLabel ?? ""]);
 /** Explicit bindings retain their actual associations even when the Shot Type does not assemble that component. */
-export function applyImportedContexts(
-  draft: SceneDraft,
+export function resolveImportedBindings(
   operation: ImportedSceneFields,
   state: ChangeSetState,
   resolveAsset: (target: RecordTarget) => string,
-): void {
-  const bindings: ComponentSnapshot[] = [],
-    previous = structuredClone(draft.slots),
-    mediaMap = new Map(state.media.map((m) => [m.id, m]));
+): ComponentSnapshot[] {
+  const bindings: ComponentSnapshot[] = [];
   for (const link of operation.assetRefs ?? []) {
     const id = resolveAsset(link.asset),
       asset = state.assets.find((a) => a.id === id);
@@ -47,7 +44,12 @@ export function applyImportedContexts(
       );
     bindings.push(snapshot);
   }
-  for (const snapshot of bindings) draft.slots[snapshot.slot] = snapshot;
+  return bindings;
+}
+export function validateImportedVariantOwnership(
+  draft: SceneDraft,
+  state: ChangeSetState,
+): void {
   for (const snapshot of Object.values(draft.slots))
     if (snapshot?.sourceType === "variant" && snapshot.parentCharacterId) {
       if (
@@ -64,6 +66,18 @@ export function applyImportedContexts(
           "Variant context belongs to another character. Choose a compatible variant or character explicitly; no identity was switched.",
         );
     }
+}
+export function applyImportedContexts(
+  draft: SceneDraft,
+  operation: ImportedSceneFields,
+  state: ChangeSetState,
+  resolveAsset: (target: RecordTarget) => string,
+): void {
+  const bindings = resolveImportedBindings(operation, state, resolveAsset),
+    previous = structuredClone(draft.slots),
+    mediaMap = new Map(state.media.map((m) => [m.id, m]));
+  for (const snapshot of bindings) draft.slots[snapshot.slot] = snapshot;
+  validateImportedVariantOwnership(draft, state);
   for (const snapshot of bindings) {
     let refs = [...(draft.directReferences ?? [])];
     const prior = previous[snapshot.slot];

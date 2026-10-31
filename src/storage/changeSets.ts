@@ -1,4 +1,6 @@
 import { validateChangeSetBackupCapacity } from "../domain/changeSetCapacity";
+import { isRecipeOperation } from "../types/changeSet";
+import { recipeReviewedProjection } from "../domain/changeSetRecipeContent";
 import type {
   ChangeSet,
   ChangeSetAllocation,
@@ -42,6 +44,10 @@ const signedContent = (
   approval: input.approval,
   allocation: input.allocation,
   stateSignature: input.plan.stateSignature,
+  ...(input.changeSet.schema === "krakinai.change-set.v2" &&
+  input.changeSet.operations.some(isRecipeOperation)
+    ? { recipeReview: recipeReviewedProjection(input.plan) }
+    : {}),
 });
 function allocate(input: ChangeSet): ChangeSetAllocation {
   return {
@@ -197,11 +203,16 @@ async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
     preferences: pref,
   };
 }
-function checkSynchronousAuthorization(state: ChangeSetState, authorize?: (currentState: ChangeSetState) => unknown): void {
+function checkSynchronousAuthorization(
+  state: ChangeSetState,
+  authorize?: (currentState: ChangeSetState) => unknown,
+): void {
   const result = authorize?.(state);
-  if (result && typeof (result as { then?: unknown }).then === 'function') {
+  if (result && typeof (result as { then?: unknown }).then === "function") {
     void Promise.resolve(result).catch(() => undefined);
-    throw Error('Browser authorization must be synchronous inside the transaction.');
+    throw Error(
+      "Browser authorization must be synchronous inside the transaction.",
+    );
   }
 }
 export async function applyApprovedChangeSet(

@@ -1,4 +1,15 @@
 import { requiresStoryboardApproval } from "./changeSetLedger";
+import { isRecipeOperation } from "../types/changeSet";
+import {
+  buildRecipeChangeDraft,
+  recipeDraftPreview,
+  recipeWarnings,
+  finishRecipeScene,
+  recipeAdvisories,
+} from "./changeSetRecipe";
+import { recipeReviewedProjection } from "./changeSetRecipeContent";
+import { canonicalStringify } from "./changeSetCanonical";
+import { validatePhase4Record } from "./phase4Validation";
 import { applyImportedContexts } from "./changeSetReferences";
 import type {
   Collection,
@@ -376,8 +387,11 @@ export function planChangeSet(
           };
         row.matches = matches;
         row.proposedPrompt = candidate.promptText;
-        const proposedCandidate=copy(candidate);
-        row.resolved = { candidate: proposedCandidate, decision: copy(decision) };
+        const proposedCandidate = copy(candidate);
+        row.resolved = {
+          candidate: proposedCandidate,
+          decision: copy(decision),
+        };
         row.summary = `${candidate.kind} candidate: ${candidate.title}`;
         if (matches.length)
           finding(
@@ -501,6 +515,108 @@ export function planChangeSet(
               ? "asset_created"
               : "asset_reused",
         );
+      } else if (isRecipeOperation(op)) {
+        const c = project(op.project),
+          s = shot(c, op.shot),
+          parent =
+            "sceneId" in op
+              ? state.scenes.find((scene) => scene.id === op.sceneId)
+              : undefined;
+        const target = {
+          collectionId: c.id,
+          shotId: s.id,
+          expectedProjectRevision: c.project!.revision,
+        };
+        row.projectId = c.id;
+        row.shotId = s.id;
+        row.currentPrompt = parent?.outputs.full;
+        row.summary = `${op.type === "scene.create_recipe" ? "New recipe" : op.type === "scene.revise_recipe" ? "New recipe revision" : "Alternate recipe take"}: ${op.title ?? parent?.title ?? op.clientRef}`;
+        const draft = buildRecipeChangeDraft(
+          op,
+          state,
+          allocation,
+          target,
+          (target) => {
+            if ("id" in target) return target.id;
+            const mapped = mappings[target.ref];
+            if (!mapped?.assetId)
+              fail(
+                "DEPENDENCY_BLOCKED",
+                "A recipe depends on a deferred asset candidate. Approve creation/reuse or remove that binding. Download this package to complete it later.",
+              );
+            return mapped.assetId;
+          },
+        );
+        const resolved = recipeDraftPreview(draft, parent);
+        row.resolved = { recipe: resolved };
+        const advice = recipeAdvisories(op.operationId, draft, state);
+        plan.findings.push(...advice);
+        const manualConsent =
+          resolved.manualOutputsDiscarded &&
+          !approval.discardManualOutputOperations?.includes(op.operationId);
+        if (manualConsent)
+          finding(
+            op.operationId,
+            "RECIPE_MANUAL_OUTPUTS",
+            "The parent has manual output overrides. Explicitly acknowledge discarding them and reassembling all three outputs before applying.",
+          );
+        const result = planAuthoredScene(
+          draft,
+          {
+            requestId: `import:${input.changeSetId}:${op.operationId}`,
+            expectedInputRevision: 1,
+            target,
+            allowDuplicate: approval.allowDuplicateSceneOperations.includes(
+              op.operationId,
+            ),
+          },
+          state,
+          { id: allocation.ids[op.operationId], now: allocation.preparedAt },
+        );
+        finishRecipeScene(result.scene, input);
+        const error = validatePhase4Record(result.scene);
+        if (error) throw Error(error);
+        if (state.scenes.some((s) => s.id === result.scene.id))
+          fail("ID_COLLISION", "Allocated scene ID already exists.");
+        const warnings = recipeWarnings(draft);
+        if (result.scene.generation?.fallbackReason)
+          finding(
+            op.operationId,
+            "GENERATION_IDENTITY_REVIEW",
+            result.scene.generation.fallbackReason,
+            "advisory",
+          );
+        for (const message of warnings)
+          finding(
+            op.operationId,
+            "RECIPE_GENERATION_PENDING",
+            message,
+            "advisory",
+          );
+        Object.assign(resolved, {
+          readiness: manualConsent
+            ? "blocked"
+            : warnings.length ||
+                advice.some((f) => f.code === "RECIPE_PREFLIGHT_P008")
+              ? "assembled_pending"
+              : "ready",
+          outputs: copy(result.scene.outputs),
+          generation: copy(result.scene.generation),
+          referencePack: copy(result.scene.referencePack),
+        });
+        row.proposedPrompt = result.scene.outputs.full;
+        state.scenes.push(result.scene);
+        newSceneIds.add(result.scene.id);
+        bind(op, "scene", result.scene.id);
+        record(op, result.scene.id, "created");
+        if (result.collection) {
+          state.collections[
+            state.collections.findIndex((c) => c.id === result.collection!.id)
+          ] = result.collection;
+          mutation(result.collection);
+        }
+        plan.summary.scenes++;
+        plan.summary.pendingInputs += result.scene.pendingInputs?.length ?? 0;
       } else if (op.type.startsWith("scene.")) {
         const operation = op as Extract<
           ChangeOperation,
@@ -781,5 +897,13 @@ export function planChangeSet(
   plan.stateSignature = changeSetStateSignature(input, approval, initial, [
     ...duplicateScenes,
   ]);
+  if (
+    input.schema === "krakinai.change-set.v2" &&
+    input.operations.some(isRecipeOperation)
+  )
+    plan.stateSignature = canonicalStringify({
+      state: plan.stateSignature,
+      recipes: recipeReviewedProjection(plan),
+    });
   return plan;
 }

@@ -5,6 +5,94 @@
   min-width: 0;
   color: var(--text-primary);
 }
+.import-package-download {
+  flex-basis: 100%;
+  min-width: 0;
+}
+.import-recipe-preview {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+.import-recipe-components {
+  overflow: auto;
+  min-width: 0;
+}
+.import-recipe-components table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  table-layout: fixed;
+}
+.import-recipe-components th,
+.import-recipe-components td {
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border-color);
+  overflow-wrap: anywhere;
+}
+.import-recipe-components th:first-child {
+  width: 25%;
+}
+.import-recipe-components th:last-child {
+  width: 23%;
+}
+.import-recipe-components code,
+.import-recipe-components small {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+.import-recipe-components details {
+  margin-top: 8px;
+}
+.import-recipe-components summary {
+  cursor: pointer;
+}
+.import-recipe-preview textarea {
+  max-height: 36vh;
+  min-height: 85px;
+}
+.import-recipe-outputs .cinema-tabs {
+  display: flex;
+  gap: 6px;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+}
+.import-recipe-outputs [role="tab"] {
+  padding: 10px 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+.import-recipe-outputs [role="tab"][aria-selected="true"] {
+  border-bottom-color: var(--primary);
+  color: var(--primary);
+  font-weight: 700;
+}
+.import-recipe-outputs [role="tab"]:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+.import-recipe-outputs [role="tabpanel"] {
+  min-width: 0;
+}
+@media (max-width: 600px) {
+  .import-recipe-components th,
+  .import-recipe-components td {
+    padding: 9px 5px;
+    font-size: 11px;
+  }
+  .import-recipe-outputs [role="tab"] {
+    padding: 10px;
+  }
+  .import-recipe-preview textarea {
+    font-size: 12px;
+  }
+}
 .change-set-workspace h1 {
   font-size: 28px;
   margin: 4px 0 8px;

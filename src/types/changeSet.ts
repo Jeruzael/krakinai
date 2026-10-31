@@ -1,5 +1,6 @@
 import type {
   BuilderSlot,
+  DialogueConfig,
   Collection,
   MediaAsset,
   Preferences,
@@ -17,10 +18,10 @@ import type {
   PendingSceneInput,
   PromptOrigin,
 } from "./sceneAuthoring";
+import type { CameraCompositionChoice } from "./cinematography";
 export type RecordTarget = { id: string } | { ref: string };
 export type ProjectTarget =
-  | { id: string; expectedRevision: number }
-  | { ref: string };
+  { id: string; expectedRevision: number } | { ref: string };
 export type CandidateKind =
   | "character"
   | "wardrobe"
@@ -55,12 +56,7 @@ export interface ImportedAssetLink {
 }
 export interface ImportedClaim {
   kind:
-    | "property"
-    | "financial"
-    | "payment"
-    | "travel_time"
-    | "location"
-    | "other";
+    "property" | "financial" | "payment" | "travel_time" | "location" | "other";
   text: string;
   verified: false;
 }
@@ -170,6 +166,50 @@ type Review = OperationBase & {
   candidateId: string;
   expectedRevision: number;
 };
+export interface RecipeSceneFields extends Omit<ImportedSceneFields, "prompt"> {
+  sceneInstructions?: string;
+  avoidText?: string;
+  clearSlots?: BuilderSlot[];
+  overrides?: Partial<
+    Record<
+      Exclude<BuilderSlot, "character">,
+      {
+        overrideText?: string | null;
+        overrideCompactText?: string | null;
+      }
+    >
+  >;
+  dialogue?: DialogueConfig | null;
+  cameraComposition?: CameraCompositionChoice | null;
+  identitySource?: "master" | "approved_anchor";
+}
+export type RecipeSceneOperation = OperationBase &
+  RecipeSceneFields & {
+    clientRef: string;
+    project: ProjectTarget;
+    shot: RecordTarget;
+  } & (
+    | {
+        type: "scene.create_recipe";
+        title: string;
+        shotType: ShotType;
+        settings: SceneSettings;
+      }
+    | {
+        type: "scene.revise_recipe" | "scene.create_recipe_take";
+        sceneId: string;
+        expectedHeadId: string;
+      }
+  );
+export function isRecipeOperation(
+  op: Pick<OperationBase, "type">,
+): op is RecipeSceneOperation {
+  return [
+    "scene.create_recipe",
+    "scene.revise_recipe",
+    "scene.create_recipe_take",
+  ].includes(op.type);
+}
 export type ChangeOperation =
   | ProjectCreate
   | ProjectUpdate
@@ -182,9 +222,10 @@ export type ChangeOperation =
   | Select
   | Status
   | Propose
-  | Review;
+  | Review
+  | RecipeSceneOperation;
 export interface ChangeSet {
-  schema: "krakinai.change-set.v1";
+  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2";
   changeSetId: string;
   source: { kind: PromptOrigin; label?: string };
   title?: string;
@@ -204,6 +245,8 @@ export interface ChangeSetApproval {
   statuses: boolean;
   assetDecisions: Record<string, CandidateDecision>;
   allowDuplicateSceneOperations: string[];
+  /** Browser-owned consent; never a caller-supplied operation flag. */
+  discardManualOutputOperations?: string[];
 }
 export const emptyChangeSetApproval = (): ChangeSetApproval => ({
   storyboard: false,

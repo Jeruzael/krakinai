@@ -1,5 +1,5 @@
 import { parseChangeSet } from './changeSetValidation';
-import { CHANGE_SET_SCHEMA } from './changeSetSchema';
+import { SUPPORTED_CHANGE_SET_SCHEMA } from './changeSetSchema';
 
 export const MCP_API_VERSION = 'krakinai.mcp.v1' as const;
 export const BRIDGE_VERSION = 'krakinai.bridge.v1' as const;
@@ -39,8 +39,8 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   krakinai_get_scene_history: schema({ sceneId: idSchema, ...pageFields }, ['sceneId']),
   krakinai_search_assets: schema({ query: { type: 'string', maxLength: 200 }, category: { type: 'string', enum: ['characters', 'wardrobe', 'actions', 'environments', 'camera', 'lighting', 'styles'] }, kind: { type: 'string', enum: ['asset', 'variant', 'template'] }, ...pageFields }),
   krakinai_get_shot_types: schema({}),
-  krakinai_preview_change_set: schema({ changeSet: CHANGE_SET_SCHEMA }, ['changeSet']),
-  krakinai_submit_change_set: schema({ changeSet: CHANGE_SET_SCHEMA }, ['changeSet']),
+  krakinai_preview_change_set: schema({ changeSet: SUPPORTED_CHANGE_SET_SCHEMA }, ['changeSet']),
+  krakinai_submit_change_set: schema({ changeSet: SUPPORTED_CHANGE_SET_SCHEMA }, ['changeSet']),
   krakinai_get_proposal_status: schema({ proposalId: idSchema }, ['proposalId']),
   krakinai_get_import_receipt: schema({ changeSetId: idSchema, packageDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }, ['changeSetId', 'packageDigest']),
   krakinai_get_generation_prompt: schema({ sceneId: idSchema }, ['sceneId']),

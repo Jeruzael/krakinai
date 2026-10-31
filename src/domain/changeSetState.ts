@@ -10,6 +10,7 @@ import { findCandidateMatches } from "./changeSetCandidates";
 import { revisionRoot } from "./sceneRevisions";
 import { isDirectPrompt } from "./directPrompt";
 import { getActiveSceneSlots } from "./shotTypeRules";
+import { isRecipeOperation } from "../types/changeSet";
 /** Relevant current data only; no hashing or other async work in the transaction. */
 export function changeSetStateSignature(
   input: ChangeSet,
@@ -49,6 +50,12 @@ export function changeSetStateSignature(
   }
   // Recipe restoration consults the live character to validate an approved anchor.
   // Bind that read (including disappearance), while retaining the frozen source scene.
+  for (const op of input.operations)
+    if (isRecipeOperation(op) && "sceneId" in op) {
+      const parent = state.scenes.find((s) => s.id === op.sceneId),
+        masterId = parent && getActiveSceneSlots(parent).character?.sourceId;
+      if (masterId) assetIds.add(masterId);
+    }
   for (const op of input.operations)
     if (op.type === "scene.restore") {
       const restored = state.scenes.find((s) => s.id === op.restoreFromSceneId);

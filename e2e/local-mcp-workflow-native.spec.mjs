@@ -57,6 +57,7 @@ for (const appOrigin of ['http://127.0.0.1:4173','http://localhost:4173']) {
           }
           if(step==='retried'){
             expect(await readChangeLibrary(page)).toEqual(approved);expect(await syntheticMediaHashes(page)).toEqual(hashes);retried=true;
+            await page.getByRole('tab',{name:'Connection',exact:true}).click();
             await page.getByRole('button',{name:'Disconnect Codex',exact:true}).click();
             const revoke=page.waitForResponse(r=>r.url()===`http://127.0.0.1:${relayPort}/v1/session/revoke`&&r.status()===200);
             await page.getByRole('dialog',{name:'Disconnect Codex?',exact:true}).getByRole('button',{name:'Disconnect now',exact:true}).click();await revoke;

@@ -8,6 +8,9 @@ import type {
 import type { LibrarySnapshot } from "../storage/db";
 import { CANDIDATE_CATEGORY } from "../domain/changeSetCandidates";
 import { StudioDialog } from "./StudioDialog";
+import { isRecipeOperation } from "../types/changeSet";
+import { RecipeOperationPreview } from "./RecipeOperationPreview";
+import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 export function ChangeSetPreview({
   preview,
   snapshot,
@@ -22,6 +25,7 @@ export function ChangeSetPreview({
   headingRef?: React.RefObject<HTMLHeadingElement>;
 }) {
   const [detail, setDetail] = useState<string>();
+  const [downloadStatus, setDownloadStatus] = useState("");
   const { plan, approval, changeSet } = preview;
   const conflicts = plan.findings.filter(
     (f) => f.severity === "blocking" && !f.code.startsWith("APPROVAL_"),
@@ -57,6 +61,23 @@ export function ChangeSetPreview({
     ],
   ] as const;
   const selected = plan.operations.find((o) => o.operationId === detail);
+  const downloadPackage = () => {
+    try {
+      downloadBlobAsFile(
+        new Blob([JSON.stringify(changeSet, null, 2) + "\n"], {
+          type: "application/json",
+        }),
+        `krakinai-recipe-${changeSet.changeSetId.replace(/[^a-zA-Z0-9._-]/g, "_")}.json`,
+      );
+      setDownloadStatus(
+        "Recipe package download requested. It contains the complete versioned inputs and candidate proposals.",
+      );
+    } catch {
+      setDownloadStatus(
+        "Could not start the download. Your package remains in this preview; copy its JSON from the operation details or original editor.",
+      );
+    }
+  };
   return (
     <>
       <section
@@ -101,6 +122,24 @@ export function ChangeSetPreview({
             : "No blocking data conflicts."}{" "}
           Importing JSON does not approve it.
         </p>
+        {changeSet.operations.some(isRecipeOperation) && (
+          <div className="import-package-download">
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={disabled}
+              onClick={downloadPackage}
+            >
+              Download recipe package (JSON)
+            </button>
+            <p className="muted-text">
+              A blocked package stays reviewable here. Download and re-import it
+              after resolving missing inputs; no partial project, draft or scene
+              is saved.
+            </p>
+            <p role="status">{downloadStatus}</p>
+          </div>
+        )}
       </section>
       <div className="import-preview-grid">
         <section
@@ -354,7 +393,9 @@ export function ChangeSetPreview({
           {changeSet.operations
             .filter(
               (o) =>
-                o.type === "scene.create_direct_prompt" &&
+                ["scene.create_direct_prompt", "scene.create_recipe"].includes(
+                  o.type,
+                ) &&
                 (plan.findings.some(
                   (f) =>
                     f.operationId === o.operationId &&
@@ -387,6 +428,49 @@ export function ChangeSetPreview({
                   }
                 />
                 Allow separate identical scene ({o.operationId})
+              </label>
+            ))}
+          {plan.operations
+            .filter(
+              (row) =>
+                isRecipeOperation(row) &&
+                ((
+                  row.resolved as
+                    | { recipe?: { manualOutputsDiscarded?: boolean } }
+                    | undefined
+                )?.recipe?.manualOutputsDiscarded ||
+                  plan.findings.some(
+                    (f) =>
+                      f.operationId === row.operationId &&
+                      f.code === "RECIPE_MANUAL_OUTPUTS",
+                  )),
+            )
+            .map((row) => (
+              <label className="import-check" key={`manual-${row.operationId}`}>
+                <input
+                  type="checkbox"
+                  disabled={disabled}
+                  checked={
+                    approval.discardManualOutputOperations?.includes(
+                      row.operationId,
+                    ) ?? false
+                  }
+                  onChange={(event) =>
+                    onApproval({
+                      ...approval,
+                      discardManualOutputOperations: event.target.checked
+                        ? [
+                            ...(approval.discardManualOutputOperations ?? []),
+                            row.operationId,
+                          ]
+                        : (approval.discardManualOutputOperations ?? []).filter(
+                            (id) => id !== row.operationId,
+                          ),
+                    })
+                  }
+                />
+                Discard manual output overrides and reassemble (
+                {row.operationId})
               </label>
             ))}
         </section>
@@ -425,11 +509,24 @@ export function ChangeSetPreview({
                 <textarea readOnly rows={7} value={selected.currentPrompt} />
               </label>
             )}
-            {selected.proposedPrompt !== undefined && (
-              <label>
-                Proposed prompt {selected.operationId}
-                <textarea readOnly rows={7} value={selected.proposedPrompt} />
-              </label>
+            {isRecipeOperation(selected) ? (
+              <RecipeOperationPreview
+                row={selected}
+                changeSet={changeSet}
+                approval={approval}
+                findings={plan.findings.filter(
+                  (f) =>
+                    f.operationId === selected.operationId &&
+                    !f.code.startsWith("APPROVAL_"),
+                )}
+              />
+            ) : (
+              selected.proposedPrompt !== undefined && (
+                <label>
+                  Proposed prompt {selected.operationId}
+                  <textarea readOnly rows={7} value={selected.proposedPrompt} />
+                </label>
+              )
             )}
             {selected.resolved !== undefined && (
               <details>
