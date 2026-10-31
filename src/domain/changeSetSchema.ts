@@ -1,3 +1,4 @@
+import { RECIPE_SCENE_FIELDS } from "./recipeChangeSetSchema";
 export interface JsonRule {
   type?: string | string[];
   const?: unknown;
@@ -317,4 +318,56 @@ export const CHANGE_SET_SCHEMA: JsonRule = {
     },
     ["schema", "changeSetId", "source", "operations"],
   ),
+};
+
+// Do not append to `ops`: the distributed v1 contract remains byte-identical.
+const { prompt: _directPrompt, ...recipeContextFields } = sceneFields;
+const recipeOps = [
+  "scene.create_recipe",
+  "scene.revise_recipe",
+  "scene.create_recipe_take",
+].map((type) =>
+  obj(
+    {
+      operationId: id,
+      type: { const: type },
+      clientRef: id,
+      project,
+      shot: RECORD_TARGET_SCHEMA,
+      ...recipeContextFields,
+      ...RECIPE_SCENE_FIELDS,
+      ...(type === "scene.create_recipe"
+        ? {
+            settings: {
+              ...settings,
+              required: ["aspectRatio", "durationSeconds"],
+            },
+          }
+        : { sceneId: id, expectedHeadId: id }),
+    },
+    [
+      "operationId",
+      "type",
+      "clientRef",
+      "project",
+      "shot",
+      ...(type === "scene.create_recipe"
+        ? ["title", "shotType", "settings"]
+        : ["sceneId", "expectedHeadId"]),
+    ],
+  ),
+);
+export const CHANGE_SET_V2_SCHEMA: JsonRule = {
+  ...CHANGE_SET_SCHEMA,
+  $id: "https://krakinai.local/schemas/change-set-v2.json",
+  title: "KRAKINAI Change Set v2",
+  properties: {
+    ...CHANGE_SET_SCHEMA.properties,
+    schema: { const: "krakinai.change-set.v2" },
+    operations: arr({ oneOf: [...ops, ...recipeOps] }, 250, 1),
+  },
+};
+export const SUPPORTED_CHANGE_SET_SCHEMA: JsonRule = {
+  type: "object",
+  oneOf: [CHANGE_SET_SCHEMA, CHANGE_SET_V2_SCHEMA],
 };

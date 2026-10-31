@@ -14,7 +14,12 @@ describe('actual compiled SDK stdio process', () => {
     try {
       await client.connect(transport);
       const tools = await client.listTools(); expect(tools.tools).toHaveLength(13);
-      expect((tools.tools.find(t => t.name === 'krakinai_submit_change_set')!.inputSchema.properties!.changeSet as any).properties?.operations?.maxItems).toBe(250);
+      const versions=(tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema.properties!.changeSet as any).oneOf;
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2']);
+      for(const version of versions)expect(version.properties.operations.maxItems).toBe(250);
+      const operationTypes=versions.map((v:any)=>v.properties.operations.items.oneOf.map((o:any)=>o.properties.type.const));
+      expect(operationTypes[0]).not.toContain('scene.create_recipe');
+      expect(operationTypes[1]).toEqual(expect.arrayContaining(['scene.create_recipe','scene.revise_recipe','scene.create_recipe_take']));
       expect(tools.tools.some(tool => /approve|apply|filesystem|shell/.test(tool.name))).toBe(false);
       const status = await client.callTool({ name: 'krakinai_connection_status', arguments: {} });
       expect(JSON.parse((status.content![0] as { text: string }).text)).toMatchObject({ ok: true, data: { connected: false } });

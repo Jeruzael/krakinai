@@ -9,6 +9,7 @@ import type {
 import type { Preferences } from "../types/domain";
 import {
   CHANGE_SET_SCHEMA,
+  CHANGE_SET_V2_SCHEMA,
   CHANGE_SET_ID_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
@@ -37,7 +38,7 @@ const enumRule = (...values: string[]): JsonRule => ({
   type: "string",
   enum: values,
 });
-const types = CHANGE_SET_SCHEMA.properties!.operations.items!.oneOf!.map(
+const types = CHANGE_SET_V2_SCHEMA.properties!.operations.items!.oneOf!.map(
   (r) => r.properties!.type.const,
 );
 const decisionRule = obj(
@@ -54,18 +55,33 @@ export function validateChangeSetApproval(
   operations: Pick<ChangeSet["operations"][number], "operationId" | "type">[],
 ): asserts value is ChangeSetApproval {
   validateJsonRule(
-    obj({
-      storyboard: { type: "boolean" },
-      scenes: { type: "boolean" },
-      preferred: { type: "boolean" },
-      statuses: { type: "boolean" },
-      assetDecisions: { type: "object" },
-      allowDuplicateSceneOperations: {
-        type: "array",
-        items: id,
-        maxItems: 100,
+    obj(
+      {
+        storyboard: { type: "boolean" },
+        scenes: { type: "boolean" },
+        preferred: { type: "boolean" },
+        statuses: { type: "boolean" },
+        assetDecisions: { type: "object" },
+        allowDuplicateSceneOperations: {
+          type: "array",
+          items: id,
+          maxItems: 100,
+        },
+        discardManualOutputOperations: {
+          type: "array",
+          items: id,
+          maxItems: 100,
+        },
       },
-    }),
+      [
+        "storyboard",
+        "scenes",
+        "preferred",
+        "statuses",
+        "assetDecisions",
+        "allowDuplicateSceneOperations",
+      ],
+    ),
     value,
     "approval",
   );
@@ -97,11 +113,29 @@ export function validateChangeSetApproval(
     new Set(approval.allowDuplicateSceneOperations).size !==
       approval.allowDuplicateSceneOperations.length ||
     approval.allowDuplicateSceneOperations.some(
-      (id) => known.get(id) !== "scene.create_direct_prompt",
+      (id) =>
+        !["scene.create_direct_prompt", "scene.create_recipe"].includes(
+          known.get(id) ?? "",
+        ),
     )
   )
     throw Error(
       "Duplicate-scene acknowledgement targets an unknown creation operation.",
+    );
+  const manual = approval.discardManualOutputOperations ?? [];
+  if (
+    new Set(manual).size !== manual.length ||
+    manual.some(
+      (id) =>
+        ![
+          "scene.create_recipe",
+          "scene.revise_recipe",
+          "scene.create_recipe_take",
+        ].includes(known.get(id) ?? ""),
+    )
+  )
+    throw Error(
+      "Manual-output acknowledgement targets an unknown recipe operation.",
     );
 }
 export function validateImportLedger(

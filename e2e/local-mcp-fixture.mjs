@@ -5,7 +5,7 @@ import { createServer } from 'node:net';
 import { createInterface } from 'node:readline';
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
 import { chromium, expect } from '@playwright/test';
 const bridgeRequire = createRequire(new URL('../bridge/package.json', import.meta.url));
 const { Client } = bridgeRequire('@modelcontextprotocol/client');
@@ -45,10 +45,10 @@ export async function ownedCliBridgePid(cliPid, port) {
   return Number(pids[0]);
 }
 
-export async function sdkBridge({ production = false } = {}) {
-  const port = await unusedPort(), native = [], waiters = [];
+export async function sdkBridge({ production = false, origin = mcpOrigin } = {}) {
+  const port = await unusedPort(), native = [], waiters = [], evidence=[];
   const entry = resolve(production ? 'bridge/dist/krakinai-mcp.mjs' : 'bridge/qa-results/synthetic-runtime/browser-server.mjs');
-  const args = production ? [entry, '--app-origin', mcpOrigin, '--port', String(port)] : [entry, mcpOrigin, String(port)];
+  const args = production ? [entry, '--app-origin', origin, '--port', String(port)] : [entry, origin, String(port)];
   const child = spawn(process.execPath, args, { stdio: production ? ['pipe', 'pipe', 'pipe'] : ['pipe', 'pipe', 'pipe', 'pipe'], windowsHide: true, env: { SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR, PATH: process.env.PATH, TEMP: process.env.TEMP, TMP: process.env.TMP } });
   let diagnostics = '', lastCall = 0, dropReply = false;
   child.stderr.on('data', part => { diagnostics = (diagnostics + part).slice(-4096); });
@@ -60,12 +60,13 @@ export async function sdkBridge({ production = false } = {}) {
   // SDK owns MCP negotiation, tool schemas and calls. This test-only transport
   // supplies an extra anonymous pipe; the production SDK transport is unchanged.
   const transport = {
-    async start() { const lines = createInterface({ input: child.stdout }); lines.on('line', line => { if (line.length > 1310720) return this.onerror?.(new Error('Oversized SDK reply')); try { const message = JSON.parse(line); if (dropReply && message.result) { dropReply = false; child.kill(); return; } this.onmessage?.(message); } catch { this.onerror?.(new Error('Invalid SDK reply')); } }); child.once('exit', () => this.onclose?.()); child.on('error', error => this.onerror?.(error)); },
-    async send(message) { await new Promise((resolve, reject) => child.stdin.write(`${JSON.stringify(message)}\n`, error => error ? reject(error) : resolve())); },
+    async start() { const lines = createInterface({ input: child.stdout }); lines.on('line', line => { if (line.length > 1310720) return this.onerror?.(new Error('Oversized SDK reply')); try { const message = JSON.parse(line); if (dropReply && message.result) { dropReply = false; child.kill(); return; } const sent=evidence.find(call=>call.id===message.id);if(sent){const body=message.result?.content?.[0]?.text;let parsed;try{parsed=body?JSON.parse(body):undefined;}catch{}Object.assign(sent,{received:true,responseSha256:createHash('sha256').update(line).digest('hex'),ok:parsed?.ok??false,...(parsed?.error?.code?{errorCode:parsed.error.code}:{})});} this.onmessage?.(message); } catch { this.onerror?.(new Error('Invalid SDK reply')); } }); child.once('exit', () => this.onclose?.()); child.on('error', error => this.onerror?.(error)); },
+    async send(message) { if(message.method==='tools/call')evidence.push({id:message.id,tool:message.params.name,received:false});await new Promise((resolve, reject) => child.stdin.write(`${JSON.stringify(message)}\n`, error => error ? reject(error) : resolve())); },
     async close() { child.stdin.end(); if (child.exitCode === null) await Promise.race([new Promise(r => child.once('exit', r)), delay(3000)]); if (child.exitCode === null) child.kill(); },
   };
   const client = new Client({ name: 'krakinai-isolated-browser-sdk', version: '1.0.0' }); await client.connect(transport);
   return { child, port, client, entry,
+    get callEvidence(){return structuredClone(evidence);},
     async nativeVerification() { if (native.length) return native.shift(); return Promise.race([new Promise(r => waiters.push(r)), delay(15000).then(() => { throw new Error('Synthetic native verification did not arrive'); })]); },
     async call(name, args = {}) { const remaining = 2050 - (Date.now() - lastCall); if (remaining > 0) await delay(remaining); lastCall = Date.now(); const result = await client.callTool({ name, arguments: args }); return JSON.parse(result.content[0].text); },
     diagnosticsContain(value) { return diagnostics.includes(value); },

@@ -1,5 +1,12 @@
 import type { ChangeSet, ChangeOperation } from "../types/changeSet";
-import { CHANGE_SET_SCHEMA, type JsonRule } from "./changeSetSchema";
+import {
+  CHANGE_SET_SCHEMA,
+  CHANGE_SET_V2_SCHEMA,
+  type JsonRule,
+} from "./changeSetSchema";
+import { isRecipeOperation } from "../types/changeSet";
+import { validatePerformanceDirection } from "./dialoguePerformance";
+import { validateCameraComposition } from "./cameraCompositionValidation";
 export const MAX_CHANGE_SET_BYTES = 20 * 1024 * 1024;
 export function validateJsonRule(
   rule: JsonRule,
@@ -143,7 +150,15 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     throw Error("Change-set must contain valid JSON.");
   }
   inspect(value);
-  validateJsonRule(CHANGE_SET_SCHEMA, value);
+  validateJsonRule(
+    value &&
+      typeof value === "object" &&
+      "schema" in value &&
+      value.schema === "krakinai.change-set.v2"
+      ? CHANGE_SET_V2_SCHEMA
+      : CHANGE_SET_SCHEMA,
+    value,
+  );
   const data = value as ChangeSet,
     ids = new Set<string>(),
     refs = new Map<string, { kind: string; index: number }>();
@@ -204,6 +219,68 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     edges[index].push(reference.index);
   };
   data.operations.forEach((o, i) => {
+    if (isRecipeOperation(o)) {
+      const cleared = o.clearSlots ?? [],
+        bound = [...(o.assetRefs ?? []), ...(o.variantRefs ?? [])].map(
+          (r) => r.slot,
+        );
+      if (
+        new Set(cleared).size !== cleared.length ||
+        cleared.some(
+          (slot) =>
+            bound.includes(slot) ||
+            slot in (o.overrides ?? {}) ||
+            (slot === "camera" &&
+              o.cameraComposition !== undefined &&
+              o.cameraComposition !== null),
+        )
+      )
+        throw Error(
+          "Conflicting or duplicate recipe clear/replace instructions.",
+        );
+      if (
+        o.overrides &&
+        (!Object.keys(o.overrides).length ||
+          Object.values(o.overrides).some((v) => !v || !Object.keys(v).length))
+      )
+        throw Error("Empty recipe component override.");
+      const error =
+        validatePerformanceDirection(o.dialogue?.performanceDirection) ??
+        (o.cameraComposition === null
+          ? undefined
+          : validateCameraComposition(o.cameraComposition));
+      if (error) throw Error(error);
+      if (
+        o.type === "scene.revise_recipe" &&
+        ![
+          "title",
+          "shotType",
+          "settings",
+          "references",
+          "sourceMedia",
+          "assetRefs",
+          "variantRefs",
+          "pendingInputs",
+          "claimNotes",
+          "claims",
+          "sceneInstructions",
+          "avoidText",
+          "clearSlots",
+          "overrides",
+          "dialogue",
+          "cameraComposition",
+          "identitySource",
+        ].some(
+          (k) =>
+            k in o &&
+            (["assetRefs", "variantRefs", "clearSlots", "settings"].includes(k)
+              ? Object.keys((o as unknown as Record<string, object>)[k])
+                  .length > 0
+              : true),
+        )
+      )
+        throw Error("Recipe revision patch is empty.");
+    }
     if ("project" in o) use(o.project, "project", i);
     if ("shot" in o) use(o.shot, "shot", i);
     if ("shots" in o) o.shots.forEach((s) => use(s, "shot", i));
