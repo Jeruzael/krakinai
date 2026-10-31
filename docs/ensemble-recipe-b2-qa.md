@@ -16,7 +16,7 @@ Final local verification passed after the independent review corrections. This c
 
 | Actual command | Result | Exit |
 | --- | --- | --- |
-| `npm test -- --maxWorkers=1 --minWorkers=1` | 1,024 passed / 119 files; 286.96 s | 0 |
+| `npm test -- --maxWorkers=1 --minWorkers=1` | 1,024 passed / 119 files; 292.59 s | 0 |
 | `npm run typecheck` | Passed | 0 |
 | `npm run build` | Passed; warnings below | 0 |
 | In `bridge/`: `npm run build`, `npm run build:test`, `npm run typecheck` | Passed | 0 each |
@@ -25,11 +25,11 @@ Final local verification passed after the independent review corrections. This c
 | `npm run test:qa` | 8 passed; historical ledger 207 checks / 45 screenshots | 0 |
 | `node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs` | 23 passed | 0 |
 | `node scripts/export-change-set-schema.mjs --check` | Passed; frozen v1/v2 hashes unchanged | 0 |
-| `npx playwright test` with native QA explicitly enabled | **178 passed, 0 failed, 0 skipped, 0 retries**; about 12 minutes | 0 |
+| `npx playwright test` with native QA explicitly enabled | **179 passed, 0 failed, 0 skipped, 0 retries**; about 11.5 minutes | 0 |
 | `python scripts/qa/verify-ensemble-archives.py` | 3 archives CRC/SHA passed; 5 full-library source hashes / 3 project binaries matched | 0 |
 | `git diff --check` | No whitespace errors | 0 |
 
-These are separate suites. The archived 207-check ledger is not the current 178-case Playwright suite. Linux hosted native skips are reported separately by Actions; they are not counted as native passes. The final local run's complete original JSON is retained in this plan's ignored evidence directory.
+These are separate suites. The archived 207-check ledger is not the current 179-case Playwright suite. Linux hosted native skips are reported separately by Actions; they are not counted as native passes. The final local run's complete original JSON is retained as `playwright-final-179.json` in this plan's ignored evidence directory.
 
 The new B2 browser cases use actual IndexedDB/Blob state, DOM controls and SDK wire responses. They verify immutable parent/preferred preservation; create/reuse/defer; missing-original blocking/replacement; stale writes and scope rejection; same-file reference roles; exact copy arguments; Cast/Script; full template and mixed-version backup/restart/project-export round trips. Each MCP response is matched to its actual wire call ID and response hash, including expected denials; a later success cannot substitute for an earlier failed call.
 
@@ -38,6 +38,8 @@ Application clipboard arguments are checked against exact assembler strings. Win
 One fresh whole-branch review found four material issues, all reproduced before correction: primary-slot filtering lost secondary/historical wardrobe associations; full ensemble templates dropped retained guides after participant removal; take comparison omitted participants/cues; continuity labels used the primary outfit for secondary rows. Six focused regressions passed after the corrections (41 tests across the four affected suites), followed by an actual browser production-save/export/template/continuity/comparison regression. The review did not establish another concrete security defect; it was source/probe review, not penetration testing. The minor primary-centric version metadata summary remains deferred; complete participant/cue comparisons are now available. Per-person freeform wardrobe override editing remains a UI limitation; existing frozen overrides survive and stored Clothing/owned Outfits can be explicitly selected.
 
 The first complete browser attempt returned **exit 1: 176 passed, 1 failed out of 177**, with no retries. The existing Direct Prompt mixed-library backup test failed at its persistent-browser reopen UI assertion (builder visible instead of the original-text region). It passed unchanged in isolation and in the final full run. A separate read-only diagnostic reopened the retained failed profile and found the byte-exact original prompt, rendered its original-text region and confirmed records stayed unchanged during that diagnostic. No application router/storage repair is attributed to these passes; the original failure is retained and its root cause remains unestablished. The original attempt's global reporter JSON was overwritten by the focused run; its command output and error context remain, and the final complete JSON was explicitly retained.
+
+The first [hosted run](https://github.com/Jeruzael/krakinai/actions/runs/41251350874), on signed head `25da776`, passed 1,024 unit/component and 18 bridge tests plus the other non-browser gates, then returned **168 browser passes, 1 failure and 9 expected native skips**. At 1440×900, an ensemble toolbar button ended at y=779.953125 while the recipe pane ended at y=771.5. The desktop content budget depended on platform-dependent native line boxes. The correction gives compact row text an explicit line height and reduces desktop ensemble-control margins; mobile spacing, workflow gates and the original rectangle assertion remain unchanged. Five focused layout checks and the full **179-case Windows/native rerun** passed afterward; typecheck/build and all 1,024 unit/component tests also passed again. An additional alternate-font browser case provides robustness coverage (it also passed before this correction; the actual hosted rectangle failure is the RED evidence). All 18 curated screenshots were refreshed. The final signed-head hosted result is reported in PR Checks/Actions.
 
 Independent archive readback is reproducible after the browser suite with `python scripts/qa/verify-ensemble-archives.py`. It reads the generated reports and ZIPs without extraction or deletion, checks archive/entry hashes and CRCs, and writes `qa-results/ensemble-b2/python-readback.json`. It is limited to small synthetic fixtures (8 MiB compressed, 16 MiB declared uncompressed, 32 entries), not production backup capacity.
 

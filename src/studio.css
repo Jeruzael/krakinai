@@ -490,7 +490,8 @@
   .recipe-scroll .recipe-rows { gap: 4px; margin: 4px 0; }
   .recipe-scroll .recipe-row { padding: 4px; }
   .recipe-scroll .recipe-row-main { min-height: 34px; padding: 1px; }
-  .recipe-scroll .recipe-row-copy { gap: 2px; }
+  .recipe-scroll .recipe-row-copy { gap: 2px; line-height: 1.25; }
+  .recipe-scroll .ensemble-controls { margin: 8px 0; }
   .recipe-scroll .recipe-row-icon { width: 28px; height: 28px; }
   .recipe-scroll .recipe-row-change { min-height: 32px; padding: 4px 8px; }
   .recipe-workspace {

@@ -152,7 +152,10 @@ test("secondary wardrobe guides and historical templates survive production save
     .filter({ hasText: `cue ${prepared.cueId}` })
     .click();
   await expect(
-    pane.getByRole('textbox', { name: `Exact line ${prepared.cueId}`, exact: true }),
+    pane.getByRole("textbox", {
+      name: `Exact line ${prepared.cueId}`,
+      exact: true,
+    }),
   ).toHaveValue(prepared.line.replace(/\r\n/g, "\n"));
   await record("review-reference-production", prepared);
 });
@@ -831,6 +834,32 @@ test("ensemble recipe copies complete outputs and commits a new immutable revisi
     preferredPreserved: true,
   });
 });
+test("all recipe rows and ensemble controls fit with alternate native button font metrics", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  const ids = await seedEnsembleBrowser(page);
+  await page.goto(`/#/builder/${ids.draftId}`);
+  await expect(page.getByTestId("recipe-row")).toHaveCount(7);
+  await page.addStyleTag({
+    content: ".recipe-row-main { font-family: Verdana, sans-serif; }",
+  });
+  await assertRecipeControlsFit(page);
+});
+async function assertRecipeControlsFit(page) {
+  const pane = await page.locator(".recipe-scroll").boundingBox();
+  for (const row of await page.getByTestId("recipe-row").all()) {
+    const bounds = await row.boundingBox();
+    expect(bounds.y).toBeGreaterThanOrEqual(pane.y);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(pane.y + pane.height);
+  }
+  for (const name of ["Participants (2)", "Dialogue cues (2)"]) {
+    const bounds = await page
+      .getByRole("button", { name, exact: true })
+      .boundingBox();
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(pane.y + pane.height);
+  }
+}
 for (const width of [1440, 768, 390, 720])
   test(`ensemble workspace reflows, locks identities and keeps focus at ${width}px`, async ({
     page,

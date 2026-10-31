@@ -1,6 +1,6 @@
 {
   "schema": "krakinai.qa.ensemble-b2.v1",
-  "recordedAt": "2026-10-31T23:08:31.134Z",
+  "recordedAt": "2026-10-31T23:43:00.110Z",
   "base": "7ce149200bdd09b5d7c8f2f4d74a00801b0fd9c3",
   "headNote": "Final signed publication head and hosted results are authoritative in PR/Actions. Documentation does not encode its own future commit SHA.",
   "status": "locally_verified_pending_hosted_ci",
@@ -22,7 +22,7 @@
       "exitCode": 0,
       "passed": 1024,
       "files": 119,
-      "durationSeconds": 286.96,
+      "durationSeconds": 292.59,
       "evidence": "Final post-review full suite; raw log retained locally"
     },
     {
@@ -126,9 +126,9 @@
     "command": "npx playwright test",
     "exitCode": 0,
     "stats": {
-      "startTime": "2026-10-31T22:53:57.268Z",
-      "duration": 722618.389,
-      "expected": 178,
+      "startTime": "2026-10-31T23:30:57.627Z",
+      "duration": 692916.606,
+      "expected": 179,
       "skipped": 0,
       "unexpected": 0,
       "flaky": 0
@@ -141,7 +141,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4795,
+            "durationMs": 2816,
             "retry": 0
           }
         ]
@@ -153,7 +153,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 6278,
+            "durationMs": 1761,
             "retry": 0
           }
         ]
@@ -165,7 +165,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 16320,
+            "durationMs": 15789,
             "retry": 0
           }
         ]
@@ -177,7 +177,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8228,
+            "durationMs": 7943,
             "retry": 0
           }
         ]
@@ -189,7 +189,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2048,
+            "durationMs": 2061,
             "retry": 0
           }
         ]
@@ -201,7 +201,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4264,
+            "durationMs": 3742,
             "retry": 0
           }
         ]
@@ -213,7 +213,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3423,
+            "durationMs": 2737,
             "retry": 0
           }
         ]
@@ -225,7 +225,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1596,
+            "durationMs": 1414,
             "retry": 0
           }
         ]
@@ -237,7 +237,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2320,
+            "durationMs": 2333,
             "retry": 0
           }
         ]
@@ -249,7 +249,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1892,
+            "durationMs": 1817,
             "retry": 0
           }
         ]
@@ -261,7 +261,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1363,
+            "durationMs": 1342,
             "retry": 0
           }
         ]
@@ -273,7 +273,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2502,
+            "durationMs": 2462,
             "retry": 0
           }
         ]
@@ -285,7 +285,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1107,
+            "durationMs": 1135,
             "retry": 0
           }
         ]
@@ -297,7 +297,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1633,
+            "durationMs": 1564,
             "retry": 0
           }
         ]
@@ -309,7 +309,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1966,
+            "durationMs": 1959,
             "retry": 0
           }
         ]
@@ -321,7 +321,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1954,
+            "durationMs": 1907,
             "retry": 0
           }
         ]
@@ -333,7 +333,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1778,
+            "durationMs": 1747,
             "retry": 0
           }
         ]
@@ -345,7 +345,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1368,
+            "durationMs": 1323,
             "retry": 0
           }
         ]
@@ -357,7 +357,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1729,
+            "durationMs": 1675,
             "retry": 0
           }
         ]
@@ -369,7 +369,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1636,
+            "durationMs": 1674,
             "retry": 0
           }
         ]
@@ -381,7 +381,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8280,
+            "durationMs": 8114,
             "retry": 0
           }
         ]
@@ -393,7 +393,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4170,
+            "durationMs": 4167,
             "retry": 0
           }
         ]
@@ -405,7 +405,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3266,
+            "durationMs": 2824,
             "retry": 0
           }
         ]
@@ -417,7 +417,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3060,
+            "durationMs": 2630,
             "retry": 0
           }
         ]
@@ -429,7 +429,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2419,
+            "durationMs": 2437,
             "retry": 0
           }
         ]
@@ -441,7 +441,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2295,
+            "durationMs": 2344,
             "retry": 0
           }
         ]
@@ -453,7 +453,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1847,
+            "durationMs": 1773,
             "retry": 0
           }
         ]
@@ -465,7 +465,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2187,
+            "durationMs": 2204,
             "retry": 0
           }
         ]
@@ -477,7 +477,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1352,
+            "durationMs": 1304,
             "retry": 0
           }
         ]
@@ -489,7 +489,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1383,
+            "durationMs": 1163,
             "retry": 0
           }
         ]
@@ -501,7 +501,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1421,
+            "durationMs": 1070,
             "retry": 0
           }
         ]
@@ -513,7 +513,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1812,
+            "durationMs": 1563,
             "retry": 0
           }
         ]
@@ -525,7 +525,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1614,
+            "durationMs": 1630,
             "retry": 0
           }
         ]
@@ -537,7 +537,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 983,
+            "durationMs": 1154,
             "retry": 0
           }
         ]
@@ -549,7 +549,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1134,
+            "durationMs": 1312,
             "retry": 0
           }
         ]
@@ -561,7 +561,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 6916,
+            "durationMs": 7164,
             "retry": 0
           }
         ]
@@ -573,7 +573,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1160,
+            "durationMs": 1147,
             "retry": 0
           }
         ]
@@ -585,7 +585,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1080,
+            "durationMs": 1056,
             "retry": 0
           }
         ]
@@ -597,7 +597,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1074,
+            "durationMs": 1095,
             "retry": 0
           }
         ]
@@ -609,7 +609,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1674,
+            "durationMs": 1713,
             "retry": 0
           }
         ]
@@ -621,7 +621,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1548,
+            "durationMs": 1564,
             "retry": 0
           }
         ]
@@ -633,7 +633,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1527,
+            "durationMs": 1495,
             "retry": 0
           }
         ]
@@ -645,7 +645,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 6746,
+            "durationMs": 6772,
             "retry": 0
           }
         ]
@@ -657,7 +657,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1253,
+            "durationMs": 1244,
             "retry": 0
           }
         ]
@@ -669,7 +669,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1779,
+            "durationMs": 1833,
             "retry": 0
           }
         ]
@@ -681,7 +681,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1276,
+            "durationMs": 1257,
             "retry": 0
           }
         ]
@@ -693,7 +693,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1371,
+            "durationMs": 1287,
             "retry": 0
           }
         ]
@@ -705,7 +705,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1086,
+            "durationMs": 1092,
             "retry": 0
           }
         ]
@@ -717,7 +717,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1113,
+            "durationMs": 1081,
             "retry": 0
           }
         ]
@@ -729,7 +729,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1012,
+            "durationMs": 970,
             "retry": 0
           }
         ]
@@ -741,7 +741,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 913,
+            "durationMs": 908,
             "retry": 0
           }
         ]
@@ -753,7 +753,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1322,
+            "durationMs": 1240,
             "retry": 0
           }
         ]
@@ -765,7 +765,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1395,
+            "durationMs": 1362,
             "retry": 0
           }
         ]
@@ -777,7 +777,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5356,
+            "durationMs": 5363,
             "retry": 0
           }
         ]
@@ -789,7 +789,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1460,
+            "durationMs": 1427,
             "retry": 0
           }
         ]
@@ -801,7 +801,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1379,
+            "durationMs": 1362,
             "retry": 0
           }
         ]
@@ -813,7 +813,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1042,
+            "durationMs": 1049,
             "retry": 0
           }
         ]
@@ -825,7 +825,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1348,
+            "durationMs": 1364,
             "retry": 0
           }
         ]
@@ -837,7 +837,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1305,
+            "durationMs": 1386,
             "retry": 0
           }
         ]
@@ -849,7 +849,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 847,
+            "durationMs": 852,
             "retry": 0
           }
         ]
@@ -861,7 +861,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 858,
+            "durationMs": 849,
             "retry": 0
           }
         ]
@@ -873,7 +873,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3435,
+            "durationMs": 3347,
             "retry": 0
           }
         ]
@@ -885,7 +885,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1245,
+            "durationMs": 1149,
             "retry": 0
           }
         ]
@@ -897,7 +897,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1666,
+            "durationMs": 1377,
             "retry": 0
           }
         ]
@@ -909,7 +909,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 706,
+            "durationMs": 677,
             "retry": 0
           }
         ]
@@ -921,7 +921,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1242,
+            "durationMs": 1007,
             "retry": 0
           }
         ]
@@ -933,7 +933,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 23414,
+            "durationMs": 22806,
             "retry": 0
           }
         ]
@@ -945,7 +945,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 24519,
+            "durationMs": 24173,
             "retry": 0
           }
         ]
@@ -957,7 +957,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 24788,
+            "durationMs": 24179,
             "retry": 0
           }
         ]
@@ -969,7 +969,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2393,
+            "durationMs": 2373,
             "retry": 0
           }
         ]
@@ -981,7 +981,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2383,
+            "durationMs": 2356,
             "retry": 0
           }
         ]
@@ -993,7 +993,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2624,
+            "durationMs": 2318,
             "retry": 0
           }
         ]
@@ -1005,7 +1005,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2605,
+            "durationMs": 2296,
             "retry": 0
           }
         ]
@@ -1017,7 +1017,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5647,
+            "durationMs": 5345,
             "retry": 0
           }
         ]
@@ -1029,7 +1029,19 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3210,
+            "durationMs": 3030,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "all recipe rows and ensemble controls fit with alternate native button font metrics",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1860,
             "retry": 0
           }
         ]
@@ -1041,7 +1053,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2539,
+            "durationMs": 2609,
             "retry": 0
           }
         ]
@@ -1053,7 +1065,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4185,
+            "durationMs": 2594,
             "retry": 0
           }
         ]
@@ -1065,7 +1077,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5819,
+            "durationMs": 2372,
             "retry": 0
           }
         ]
@@ -1077,7 +1089,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2631,
+            "durationMs": 2498,
             "retry": 0
           }
         ]
@@ -1089,7 +1101,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 6081,
+            "durationMs": 5404,
             "retry": 0
           }
         ]
@@ -1101,7 +1113,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5905,
+            "durationMs": 5241,
             "retry": 0
           }
         ]
@@ -1113,7 +1125,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 6880,
+            "durationMs": 6660,
             "retry": 0
           }
         ]
@@ -1125,7 +1137,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5027,
+            "durationMs": 4347,
             "retry": 0
           }
         ]
@@ -1137,7 +1149,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8360,
+            "durationMs": 7518,
             "retry": 0
           }
         ]
@@ -1149,7 +1161,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 7515,
+            "durationMs": 7384,
             "retry": 0
           }
         ]
@@ -1161,7 +1173,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8422,
+            "durationMs": 9492,
             "retry": 0
           }
         ]
@@ -1173,7 +1185,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1228,
+            "durationMs": 1274,
             "retry": 0
           }
         ]
@@ -1185,7 +1197,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 24332,
+            "durationMs": 23468,
             "retry": 0
           }
         ]
@@ -1197,7 +1209,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 24867,
+            "durationMs": 24418,
             "retry": 0
           }
         ]
@@ -1209,7 +1221,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 26542,
+            "durationMs": 25730,
             "retry": 0
           }
         ]
@@ -1221,7 +1233,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8753,
+            "durationMs": 8288,
             "retry": 0
           }
         ]
@@ -1233,7 +1245,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2943,
+            "durationMs": 2781,
             "retry": 0
           }
         ]
@@ -1245,7 +1257,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2707,
+            "durationMs": 2727,
             "retry": 0
           }
         ]
@@ -1257,7 +1269,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2566,
+            "durationMs": 2565,
             "retry": 0
           }
         ]
@@ -1269,7 +1281,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3069,
+            "durationMs": 2916,
             "retry": 0
           }
         ]
@@ -1281,7 +1293,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2976,
+            "durationMs": 3300,
             "retry": 0
           }
         ]
@@ -1293,7 +1305,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3029,
+            "durationMs": 2555,
             "retry": 0
           }
         ]
@@ -1305,7 +1317,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3459,
+            "durationMs": 3353,
             "retry": 0
           }
         ]
@@ -1317,7 +1329,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2405,
+            "durationMs": 2391,
             "retry": 0
           }
         ]
@@ -1329,7 +1341,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2396,
+            "durationMs": 2381,
             "retry": 0
           }
         ]
@@ -1341,7 +1353,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2383,
+            "durationMs": 2345,
             "retry": 0
           }
         ]
@@ -1353,7 +1365,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2375,
+            "durationMs": 2359,
             "retry": 0
           }
         ]
@@ -1365,7 +1377,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2192,
+            "durationMs": 2162,
             "retry": 0
           }
         ]
@@ -1377,7 +1389,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2228,
+            "durationMs": 2222,
             "retry": 0
           }
         ]
@@ -1389,7 +1401,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2072,
+            "durationMs": 2123,
             "retry": 0
           }
         ]
@@ -1401,7 +1413,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1923,
+            "durationMs": 1891,
             "retry": 0
           }
         ]
@@ -1413,7 +1425,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1029,
+            "durationMs": 1052,
             "retry": 0
           }
         ]
@@ -1425,7 +1437,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 7957,
+            "durationMs": 8003,
             "retry": 0
           }
         ]
@@ -1437,7 +1449,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 27475,
+            "durationMs": 27538,
             "retry": 0
           }
         ]
@@ -1449,7 +1461,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 7867,
+            "durationMs": 7857,
             "retry": 0
           }
         ]
@@ -1461,7 +1473,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 32390,
+            "durationMs": 32477,
             "retry": 0
           }
         ]
@@ -1473,7 +1485,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 854,
+            "durationMs": 889,
             "retry": 0
           }
         ]
@@ -1485,7 +1497,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 743,
+            "durationMs": 824,
             "retry": 0
           }
         ]
@@ -1497,7 +1509,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 933,
+            "durationMs": 977,
             "retry": 0
           }
         ]
@@ -1509,7 +1521,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 836,
+            "durationMs": 831,
             "retry": 0
           }
         ]
@@ -1521,7 +1533,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1263,
+            "durationMs": 1267,
             "retry": 0
           }
         ]
@@ -1533,7 +1545,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1009,
+            "durationMs": 1042,
             "retry": 0
           }
         ]
@@ -1545,7 +1557,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 665,
+            "durationMs": 651,
             "retry": 0
           }
         ]
@@ -1557,7 +1569,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2038,
+            "durationMs": 2033,
             "retry": 0
           }
         ]
@@ -1569,7 +1581,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1504,
+            "durationMs": 1503,
             "retry": 0
           }
         ]
@@ -1581,7 +1593,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1489,
+            "durationMs": 1475,
             "retry": 0
           }
         ]
@@ -1593,7 +1605,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2873,
+            "durationMs": 2826,
             "retry": 0
           }
         ]
@@ -1605,7 +1617,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1293,
+            "durationMs": 1294,
             "retry": 0
           }
         ]
@@ -1617,7 +1629,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1308,
+            "durationMs": 1290,
             "retry": 0
           }
         ]
@@ -1629,7 +1641,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2113,
+            "durationMs": 2130,
             "retry": 0
           }
         ]
@@ -1641,7 +1653,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1965,
+            "durationMs": 1887,
             "retry": 0
           }
         ]
@@ -1653,7 +1665,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2709,
+            "durationMs": 2574,
             "retry": 0
           }
         ]
@@ -1665,7 +1677,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2428,
+            "durationMs": 2093,
             "retry": 0
           }
         ]
@@ -1677,7 +1689,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1932,
+            "durationMs": 1891,
             "retry": 0
           }
         ]
@@ -1689,7 +1701,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3853,
+            "durationMs": 1868,
             "retry": 0
           }
         ]
@@ -1701,7 +1713,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 5113,
+            "durationMs": 1793,
             "retry": 0
           }
         ]
@@ -1713,7 +1725,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3031,
+            "durationMs": 2032,
             "retry": 0
           }
         ]
@@ -1725,7 +1737,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 20324,
+            "durationMs": 20036,
             "retry": 0
           }
         ]
@@ -1737,7 +1749,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 22043,
+            "durationMs": 21395,
             "retry": 0
           }
         ]
@@ -1749,7 +1761,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 21907,
+            "durationMs": 21499,
             "retry": 0
           }
         ]
@@ -1761,7 +1773,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 10649,
+            "durationMs": 11880,
             "retry": 0
           }
         ]
@@ -1773,7 +1785,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4871,
+            "durationMs": 4858,
             "retry": 0
           }
         ]
@@ -1785,7 +1797,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 683,
+            "durationMs": 695,
             "retry": 0
           }
         ]
@@ -1797,7 +1809,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 851,
+            "durationMs": 766,
             "retry": 0
           }
         ]
@@ -1809,7 +1821,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 8635,
+            "durationMs": 8672,
             "retry": 0
           }
         ]
@@ -1821,7 +1833,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 4848,
+            "durationMs": 4818,
             "retry": 0
           }
         ]
@@ -1833,7 +1845,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1289,
+            "durationMs": 1262,
             "retry": 0
           }
         ]
@@ -1845,7 +1857,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1344,
+            "durationMs": 1347,
             "retry": 0
           }
         ]
@@ -1857,7 +1869,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1220,
+            "durationMs": 1153,
             "retry": 0
           }
         ]
@@ -1869,7 +1881,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1156,
+            "durationMs": 1174,
             "retry": 0
           }
         ]
@@ -1881,7 +1893,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1176,
+            "durationMs": 1124,
             "retry": 0
           }
         ]
@@ -1893,7 +1905,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 943,
+            "durationMs": 928,
             "retry": 0
           }
         ]
@@ -1905,7 +1917,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1233,
+            "durationMs": 1201,
             "retry": 0
           }
         ]
@@ -1917,7 +1929,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1268,
+            "durationMs": 1265,
             "retry": 0
           }
         ]
@@ -1929,7 +1941,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1161,
+            "durationMs": 1178,
             "retry": 0
           }
         ]
@@ -1941,7 +1953,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 3459,
+            "durationMs": 3518,
             "retry": 0
           }
         ]
@@ -1953,7 +1965,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1992,
+            "durationMs": 1964,
             "retry": 0
           }
         ]
@@ -1965,7 +1977,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2504,
+            "durationMs": 2537,
             "retry": 0
           }
         ]
@@ -1989,7 +2001,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2403,
+            "durationMs": 2372,
             "retry": 0
           }
         ]
@@ -2001,7 +2013,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2389,
+            "durationMs": 2374,
             "retry": 0
           }
         ]
@@ -2013,7 +2025,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2359,
+            "durationMs": 2780,
             "retry": 0
           }
         ]
@@ -2025,7 +2037,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2400,
+            "durationMs": 2740,
             "retry": 0
           }
         ]
@@ -2037,7 +2049,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2021,
+            "durationMs": 2101,
             "retry": 0
           }
         ]
@@ -2049,7 +2061,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2095,
+            "durationMs": 2031,
             "retry": 0
           }
         ]
@@ -2061,7 +2073,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2498,
+            "durationMs": 2526,
             "retry": 0
           }
         ]
@@ -2073,7 +2085,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1968,
+            "durationMs": 1939,
             "retry": 0
           }
         ]
@@ -2085,7 +2097,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2529,
+            "durationMs": 2569,
             "retry": 0
           }
         ]
@@ -2097,7 +2109,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2489,
+            "durationMs": 2443,
             "retry": 0
           }
         ]
@@ -2109,7 +2121,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2412,
+            "durationMs": 2376,
             "retry": 0
           }
         ]
@@ -2121,7 +2133,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 889,
+            "durationMs": 861,
             "retry": 0
           }
         ]
@@ -2133,7 +2145,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 856,
+            "durationMs": 822,
             "retry": 0
           }
         ]
@@ -2145,7 +2157,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 823,
+            "durationMs": 826,
             "retry": 0
           }
         ]
@@ -2157,7 +2169,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 2016,
+            "durationMs": 1997,
             "retry": 0
           }
         ]
@@ -2169,7 +2181,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 970,
+            "durationMs": 963,
             "retry": 0
           }
         ]
@@ -2181,7 +2193,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 831,
+            "durationMs": 830,
             "retry": 0
           }
         ]
@@ -2193,7 +2205,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 830,
+            "durationMs": 803,
             "retry": 0
           }
         ]
@@ -2205,7 +2217,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1041,
+            "durationMs": 1042,
             "retry": 0
           }
         ]
@@ -2217,7 +2229,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 988,
+            "durationMs": 998,
             "retry": 0
           }
         ]
@@ -2229,7 +2241,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1148,
+            "durationMs": 1189,
             "retry": 0
           }
         ]
@@ -2241,7 +2253,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1744,
+            "durationMs": 1736,
             "retry": 0
           }
         ]
@@ -2253,7 +2265,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1578,
+            "durationMs": 1612,
             "retry": 0
           }
         ]
@@ -2265,7 +2277,7 @@
         "results": [
           {
             "status": "passed",
-            "durationMs": 1479,
+            "durationMs": 1476,
             "retry": 0
           }
         ]
@@ -2282,7 +2294,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "be2263fa9f0d944559a87a1dc493c2d1efd62f4154c5100059ba4145050a34f8",
+          "responseSha256": "65ec3e43eece001112ba8a75346ddacb394b02f826bf00f4bb647ab4298d71e8",
           "ok": true,
           "expectedOk": true
         },
@@ -2290,7 +2302,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "20bd1a19d2e3b4ac4bb2d170b0d07ac5bdb127d774d651a69df85739e17ae7d6",
+          "responseSha256": "bd2c9ea09e0209e2c2b5408d6f1b10f8a28ea8ad09fc85b61542ea8ea9700feb",
           "ok": true,
           "expectedOk": true
         },
@@ -2298,7 +2310,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "dfa57c9c3e85b86c41041a5ab6285764120499c6cfb61cc59ed6d4f5c150aa1c",
+          "responseSha256": "7da9b5e8aa5d49283259396c408c2c91ccc655fe99218c355cecdda16eeb9b3a",
           "ok": true,
           "expectedOk": true
         },
@@ -2306,7 +2318,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "2b914859c6aa11db59115a5d776b115d4746be138a4d5d122cfb2c2706355978",
+          "responseSha256": "907adc36ee2e258428a3c0c8d0f384e918b6fd5c7f5607af0f4d1b55cc6ad835",
           "ok": true,
           "expectedOk": true
         },
@@ -2314,7 +2326,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "1642305a6b6219b97927f2c7e5aa21f3005e521eae1ab78c93275e26c4af22a6",
+          "responseSha256": "39c0c5021fd5543a4a940dce39ed6000780549c4d322f09fabf5cefbcab26f46",
           "ok": true,
           "expectedOk": true
         },
@@ -2322,7 +2334,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "5a12c4d9b77d1b5230574d5e56f3c011f5eee782cc3db4415434f35b11ac63d4",
+          "responseSha256": "8397a9023dde360ab77b8f21ce79dec803b0e4f56a8c00337d95ccf53dcad9ee",
           "ok": true,
           "expectedOk": true
         },
@@ -2358,15 +2370,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-sdk-synthetic",
-        "packageDigest": "875e37777f273ea4988b5713d8c2c2d1f6908cf6fb28899aaa920409824f3ebb",
-        "approvedDigest": "25c94cce6e3b0b0591bcf2c73c65c60f1e4b5c7f2b15c5b16e1fd701a21b4282",
+        "packageDigest": "f7b79c589930ce9f5b9d523577cbe7acd4c2601192938cd850c108136d3fcb8f",
+        "approvedDigest": "cee336f1f6d6fb1cf3b6c3a6e9720585bd28b2d1dc419cceda3927e223ec564b",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T22:56:56.900Z",
-        "appliedAt": "2026-10-31T22:56:56.989Z",
+        "preparedAt": "2026-10-31T23:33:44.561Z",
+        "appliedAt": "2026-10-31T23:33:44.651Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2383,25 +2395,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_7603c525c948",
-            "variantId": "variant_candidate_7603c525c948"
+            "id": "candidate_dc2b0a342a8b",
+            "variantId": "variant_candidate_dc2b0a342a8b"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_d323664e4917"
+            "id": "scene_77dba161c05d"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_7603c525c948",
+            "recordId": "candidate_dc2b0a342a8b",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_d323664e4917",
+            "recordId": "scene_77dba161c05d",
             "status": "created"
           }
         ],
@@ -2414,66 +2426,29 @@
       },
       "mediaHashes": [
         {
-          "id": "media_031bf0b957be",
-          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
-        },
-        {
-          "id": "media_13b5892634a1",
+          "id": "media_06ada303c492",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_3c27b9ecbe4b",
+          "id": "media_1cbe3b1ccff3",
           "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         },
         {
-          "id": "media_58d5a2fe549b",
+          "id": "media_1d74d8873e39",
+          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+        },
+        {
+          "id": "media_74c780ffd3aa",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_d2e5a7a4dab7",
+          "id": "media_aecb774a76dc",
           "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
         }
       ],
       "scenes": [
         {
-          "id": "scene_1f88d5df62d7",
-          "outputHashes": {
-            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
-          }
-        },
-        {
-          "id": "scene_d323664e4917",
-          "participants": [
-            {
-              "id": "primary",
-              "sourceId": "character",
-              "wardrobeId": "aya-outfit"
-            },
-            {
-              "id": "lucas",
-              "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_7603c525c948"
-            }
-          ],
-          "cues": [
-            {
-              "id": "officiant",
-              "mode": "off_screen"
-            },
-            {
-              "id": "lucas-reply",
-              "participantId": "lucas",
-              "mode": "on_camera"
-            }
-          ],
-          "outputHashes": {
-            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
-            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
-            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
-          }
-        },
-        {
-          "id": "scene_e1bb2897fd5b",
+          "id": "scene_53b62b69a415",
           "participants": [
             {
               "id": "primary",
@@ -2502,35 +2477,72 @@
             "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
             "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
           }
+        },
+        {
+          "id": "scene_77dba161c05d",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_dc2b0a342a8b"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
+        },
+        {
+          "id": "scene_e3045f22d186",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
         }
       ],
       "imageDecoding": [
         {
-          "id": "media_031bf0b957be",
+          "id": "media_06ada303c492",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_1cbe3b1ccff3",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_13b5892634a1",
-          "decodable": false,
-          "fixtureClass": "inherited_opaque_png_labelled_bytes"
-        },
-        {
-          "id": "media_3c27b9ecbe4b",
+          "id": "media_1d74d8873e39",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_58d5a2fe549b",
+          "id": "media_74c780ffd3aa",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_d2e5a7a4dab7",
+          "id": "media_aecb774a76dc",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
@@ -2538,10 +2550,10 @@
         }
       ],
       "quota": {
-        "quota": 10737625617,
-        "usage": 207377,
+        "quota": 10737625578,
+        "usage": 207338,
         "usageDetails": {
-          "indexedDB": 207377
+          "indexedDB": 207338
         }
       },
       "counts": {
@@ -2552,7 +2564,7 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_1f88d5df62d7"
+      "preferredTake": "scene_e3045f22d186"
     },
     {
       "source": "mcp-signed-native-ipv4.json",
@@ -2563,7 +2575,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "3e81f554fa30b85941886d38980e5187f6518bec53276b4678bb76d64aa45bed",
+          "responseSha256": "6ec08cb19bd379dd5332cd9218431b6e8366510cc16c3ac5759ea81accafb070",
           "ok": true,
           "expectedOk": true
         },
@@ -2571,7 +2583,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "815f4212a90ecd5a13aaf02c3127d671f369d18194a8faf4cb86321c09ed1e7f",
+          "responseSha256": "608e04e9b48c5f5f56332ed306b5485cdbe19eda2000e3796858732c90f18448",
           "ok": true,
           "expectedOk": true
         },
@@ -2579,7 +2591,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "910c9ecde1d1dacad783d87134563375f0696baf01fdef62b5d3b7ce71c0e784",
+          "responseSha256": "8415d68d401aa9aa3b65d13df6f3aeca12fd2bfe6b42533c7971a467ce6ea413",
           "ok": true,
           "expectedOk": true
         },
@@ -2587,7 +2599,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "90664e5f48decbfdcf014309358c8169fcf8e84ed9fa31a829f4ecaec280266f",
+          "responseSha256": "4eda0bbeb2712e3280e3962236e3c7045112a1a9aa13d09b6bc00df2710c474d",
           "ok": true,
           "expectedOk": true
         },
@@ -2595,7 +2607,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "62711c02c620ae84389b0d677dfc400bb27d0099d733f4b7df3015e5cc5fae69",
+          "responseSha256": "c9c01ce81b367686d702f3603e69eba66fb7697a82ea8b37fd2c98e10e096173",
           "ok": true,
           "expectedOk": true
         },
@@ -2603,7 +2615,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "63ae3964b690ddcd2132ada3b1ef5df1f6475b6b9614fbf61da2c227d5bbcac2",
+          "responseSha256": "f177ef8d93003f4ce2df98e5b4357f33282135e25c3ae40cea5b59e2010cc6af",
           "ok": true,
           "expectedOk": true
         },
@@ -2639,15 +2651,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-signed-native-ipv4",
-        "packageDigest": "e229eb3c237f151096e9ed898e63dc669e955042712340bba2cfcdfb81654990",
-        "approvedDigest": "e83a8272ec846fec640c3e1fbf61c933642bdb4c057a584b9fac6862aa75395f",
+        "packageDigest": "e63d3afd783ffa210a50ecb16e1aff4a6d1a87d96b2b0f6da5a23f8ab3464422",
+        "approvedDigest": "03a28e565db7f80d9dc59d123a2a7631d3c6bb408905e4dd70ab04ded48f5db1",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T22:57:21.466Z",
-        "appliedAt": "2026-10-31T22:57:21.547Z",
+        "preparedAt": "2026-10-31T23:34:08.711Z",
+        "appliedAt": "2026-10-31T23:34:08.793Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2664,25 +2676,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_97940255eae0",
-            "variantId": "variant_candidate_97940255eae0"
+            "id": "candidate_21a073b94fb5",
+            "variantId": "variant_candidate_21a073b94fb5"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_7f796093846a"
+            "id": "scene_dc0b79c25b93"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_97940255eae0",
+            "recordId": "candidate_21a073b94fb5",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_7f796093846a",
+            "recordId": "scene_dc0b79c25b93",
             "status": "created"
           }
         ],
@@ -2695,29 +2707,35 @@
       },
       "mediaHashes": [
         {
-          "id": "media_0ae3b3d44904",
+          "id": "media_30355eb45a71",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_3bb0a03ca8f4",
+          "id": "media_5904c9a7f14f",
           "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         },
         {
-          "id": "media_43dd54d438bc",
-          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
-        },
-        {
-          "id": "media_9cf7e1ec758b",
+          "id": "media_88b490937d3b",
           "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
         },
         {
-          "id": "media_e428cd8888f5",
+          "id": "media_8b3c662f3d49",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_b728549327d5",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
         }
       ],
       "scenes": [
         {
-          "id": "scene_2823028ac42c",
+          "id": "scene_69db730c90d7",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_c8451242b32b",
           "participants": [
             {
               "id": "primary",
@@ -2748,13 +2766,7 @@
           }
         },
         {
-          "id": "scene_7a16e39e6222",
-          "outputHashes": {
-            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
-          }
-        },
-        {
-          "id": "scene_7f796093846a",
+          "id": "scene_dc0b79c25b93",
           "participants": [
             {
               "id": "primary",
@@ -2764,7 +2776,7 @@
             {
               "id": "lucas",
               "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_97940255eae0"
+              "wardrobeId": "variant_candidate_21a073b94fb5"
             }
           ],
           "cues": [
@@ -2787,35 +2799,35 @@
       ],
       "imageDecoding": [
         {
-          "id": "media_0ae3b3d44904",
+          "id": "media_30355eb45a71",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_3bb0a03ca8f4",
+          "id": "media_5904c9a7f14f",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_43dd54d438bc",
+          "id": "media_88b490937d3b",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_9cf7e1ec758b",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_e428cd8888f5",
+          "id": "media_8b3c662f3d49",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_b728549327d5",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
         }
       ],
       "quota": {
@@ -2833,7 +2845,7 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_7a16e39e6222"
+      "preferredTake": "scene_69db730c90d7"
     },
     {
       "source": "mcp-signed-native-localhost.json",
@@ -2844,7 +2856,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "8cf048ddf80cd30f05553d1869f5d2cfaa85de28ef7bee75d16fb09c9fb0d999",
+          "responseSha256": "2a2b69fe206ce928e0bb5e67e21a504cebf05b6184751c81dd4f2c0efcdc4432",
           "ok": true,
           "expectedOk": true
         },
@@ -2852,7 +2864,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "07d16a530b23baf457dc5bab6c800549f57283ace68c1f2ec4c6fee5949e3f79",
+          "responseSha256": "ed48354f7f618c5e0e08aa60aa4d9e1d974563a4ed7af563e8aa76eacf366544",
           "ok": true,
           "expectedOk": true
         },
@@ -2860,7 +2872,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "3b09aae8122d4467218eb0608fdf6fdf5eb160ca85067dc16aff3b027fc96ed9",
+          "responseSha256": "aa7306f35183b5b28790055e1c1c9f4f736483094672d6403993b02a5fbd5e8d",
           "ok": true,
           "expectedOk": true
         },
@@ -2868,7 +2880,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "a9902cbb1b45c1b3eb6c63563a13f14a9653effe3450c0efec68ff0acf064937",
+          "responseSha256": "5c4ff71712454cb825bafac0430255256a3f0c82f1af3631868adaf0b044c715",
           "ok": true,
           "expectedOk": true
         },
@@ -2876,7 +2888,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "c30f7c3a36b7b68faeb4a338a5b6431c92946fc506be231a0dcce8d7d390b942",
+          "responseSha256": "db06e9e19e5030c5776df2bfbde3d0cc5412d333515e80cbbace8ee7ef8721e0",
           "ok": true,
           "expectedOk": true
         },
@@ -2884,7 +2896,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "db1aaa21a96a1fbb1106e3324ef55261658add86ba77e279723acb89afb72959",
+          "responseSha256": "39d68ea687cc12f2b80a9d5abfab82faee890ccbfdd2e003f81fd2080100e790",
           "ok": true,
           "expectedOk": true
         },
@@ -2920,15 +2932,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-signed-native-localhost",
-        "packageDigest": "19083a68c540052df95ba9f98dbc1a3098e8c386af7161ff7476707f0c558dd5",
-        "approvedDigest": "ef438186e78d97206be572b273416b4a95b0228df25b4693aa59e774c04b13f8",
+        "packageDigest": "93dda208063a015432edcb518b3d470e93e5e43b74bc13026925d4abb179ac40",
+        "approvedDigest": "53d2a616ef2804ea7242335598fcc8a2ee0a9b5ef5eefdf51e405dd3d115352d",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T22:57:46.234Z",
-        "appliedAt": "2026-10-31T22:57:46.330Z",
+        "preparedAt": "2026-10-31T23:34:32.910Z",
+        "appliedAt": "2026-10-31T23:34:32.992Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2945,25 +2957,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_875955355bc6",
-            "variantId": "variant_candidate_875955355bc6"
+            "id": "candidate_a4bdacbe3224",
+            "variantId": "variant_candidate_a4bdacbe3224"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_824a61c7c0ba"
+            "id": "scene_350b4ed8aa38"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_875955355bc6",
+            "recordId": "candidate_a4bdacbe3224",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_824a61c7c0ba",
+            "recordId": "scene_350b4ed8aa38",
             "status": "created"
           }
         ],
@@ -2976,35 +2988,29 @@
       },
       "mediaHashes": [
         {
-          "id": "media_3c5b90fd6c96",
+          "id": "media_1230a2abd30e",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_513d12793da8",
-          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+          "id": "media_1f589b2c1929",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_77c38109e95a",
-          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
-        },
-        {
-          "id": "media_9a9cf942c242",
+          "id": "media_5c1a380b7093",
           "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         },
         {
-          "id": "media_eba5c5249c38",
-          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+          "id": "media_9add09a18eaf",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+        },
+        {
+          "id": "media_e8227387e28e",
+          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
         }
       ],
       "scenes": [
         {
-          "id": "scene_6a48dbb3f002",
-          "outputHashes": {
-            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
-          }
-        },
-        {
-          "id": "scene_824a61c7c0ba",
+          "id": "scene_350b4ed8aa38",
           "participants": [
             {
               "id": "primary",
@@ -3014,7 +3020,7 @@
             {
               "id": "lucas",
               "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_875955355bc6"
+              "wardrobeId": "variant_candidate_a4bdacbe3224"
             }
           ],
           "cues": [
@@ -3035,7 +3041,13 @@
           }
         },
         {
-          "id": "scene_c92bc3129dba",
+          "id": "scene_ef9020eee81c",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_ffc3d1f44b4f",
           "participants": [
             {
               "id": "primary",
@@ -3068,42 +3080,42 @@
       ],
       "imageDecoding": [
         {
-          "id": "media_3c5b90fd6c96",
+          "id": "media_1230a2abd30e",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_513d12793da8",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_77c38109e95a",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_9a9cf942c242",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_eba5c5249c38",
+          "id": "media_1f589b2c1929",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_5c1a380b7093",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_9add09a18eaf",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_e8227387e28e",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
         }
       ],
       "quota": {
-        "quota": 10737625633,
-        "usage": 207393,
+        "quota": 10737625641,
+        "usage": 207401,
         "usageDetails": {
-          "indexedDB": 207393
+          "indexedDB": 207401
         }
       },
       "counts": {
@@ -3114,20 +3126,20 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_6a48dbb3f002"
+      "preferredTake": "scene_ef9020eee81c"
     }
   ],
   "archives": {
     "full": {
-      "filename": "synthetic-full-library-1793487490985.zip",
-      "compressedBytes": 79288,
+      "filename": "synthetic-full-library-1793489696893.zip",
+      "compressedBytes": 79266,
       "uncompressedBytes": 246540,
       "entries": 6,
-      "sha256": "bc8bb95f035ab3b52f6749ee09f3f6e69ffba55c081f0db33296fedacbbf36fd"
+      "sha256": "91da5164b5e4d17053a327b2ceab264fd18ba79a427ba6bbd3763dee1e94fdf7"
     },
     "project": {
-      "filename": "synthetic-project-1793487491323.zip",
-      "sha256": "fd5a11993900de47c21780a171a8000bd48ecc33d325bddbfb506e2ea073623e",
+      "filename": "synthetic-project-1793489697229.zip",
+      "sha256": "95d9a04b45248a75fac5bee27fe7cfb29ac3bd10495cf648cab53c7c5d3658bd",
       "associations": 5
     },
     "independentReadback": {
@@ -3135,9 +3147,9 @@
       "checks": [
         {
           "kind": "full",
-          "path": "synthetic-full-library-1793487490985.zip",
-          "bytes": 79288,
-          "sha256": "bc8bb95f035ab3b52f6749ee09f3f6e69ffba55c081f0db33296fedacbbf36fd",
+          "path": "synthetic-full-library-1793489696893.zip",
+          "bytes": 79266,
+          "sha256": "91da5164b5e4d17053a327b2ceab264fd18ba79a427ba6bbd3763dee1e94fdf7",
           "entries": 6,
           "uncompressedBytes": 246540,
           "crc": "passed",
@@ -3149,9 +3161,9 @@
         },
         {
           "kind": "project",
-          "path": "synthetic-project-1793487491323.zip",
-          "bytes": 77134,
-          "sha256": "fd5a11993900de47c21780a171a8000bd48ecc33d325bddbfb506e2ea073623e",
+          "path": "synthetic-project-1793489697229.zip",
+          "bytes": 77122,
+          "sha256": "95d9a04b45248a75fac5bee27fe7cfb29ac3bd10495cf648cab53c7c5d3658bd",
           "entries": 13,
           "uncompressedBytes": 128902,
           "crc": "passed",
@@ -3161,9 +3173,9 @@
         },
         {
           "kind": "references",
-          "path": "synthetic-reference-pack-1793487487876.zip",
-          "bytes": 64964,
-          "sha256": "b44d7fff17b57daeb744a944331f0397352038e543a78e405106a4df324aae17",
+          "path": "synthetic-reference-pack-1793489693936.zip",
+          "bytes": 64963,
+          "sha256": "326fbad3de155e2e3236f2e9607b6511c4faad426a89fb8fd4fdf4d991076918",
           "entries": 4,
           "uncompressedBytes": 69527,
           "crc": "passed",
@@ -3188,8 +3200,8 @@
       "path": "docs/qa/ensemble-recipe-b2/before-density-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 129323,
-      "sha256": "75581f0dd2e1475a8a2249dd11b391bde1c7760548bc8e5983e0958b9459f37a",
+      "bytes": 129132,
+      "sha256": "ee498c5eb6f483b030be1dba53a6885044e06da132a5424f6f0b22a8a430fc48",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3199,8 +3211,8 @@
       "path": "docs/qa/ensemble-recipe-b2/builder-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 142825,
-      "sha256": "7a5ff4b5cef87b4892b46555c928b8c09cc19bab52440b0d9e0ea6a01fafcd76",
+      "bytes": 142845,
+      "sha256": "a33787e327e2b94de11efc43ba7bc34471ed4156b07072cae996a87de94bbbca",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3210,8 +3222,8 @@
       "path": "docs/qa/ensemble-recipe-b2/participants-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 128650,
-      "sha256": "fcda0f5a3b80ab52d40871119f5fe3a24c25ba44e08b0eb91fe82ce931881ee8",
+      "bytes": 128675,
+      "sha256": "5516f2362416db6642bbbe164cf9bf440ee36e4b563889c86040f608776e9ec4",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3221,8 +3233,8 @@
       "path": "docs/qa/ensemble-recipe-b2/cues-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 124824,
-      "sha256": "efdc04978ad2b38bcd9529948983d6934127c4ff8ee4dd410e048dc6d919b94c",
+      "bytes": 125040,
+      "sha256": "b1457ec528158cd74841a7cdd6e6cead804d94c976e221068d45de6ce12a7aff",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3254,8 +3266,8 @@
       "path": "docs/qa/ensemble-recipe-b2/before-density-768.png",
       "width": 768,
       "viewportHeight": 900,
-      "bytes": 159229,
-      "sha256": "92d3659cffb6fd12c796f0ecfef4e38292782ea09b71bd8656d883af1c3e4166",
+      "bytes": 159171,
+      "sha256": "feb3a2ed951ec9a07c3124e0755443a04ac53618c86cf554e59d2f5515d9f89f",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3265,8 +3277,8 @@
       "path": "docs/qa/ensemble-recipe-b2/builder-768.png",
       "width": 768,
       "viewportHeight": 900,
-      "bytes": 158940,
-      "sha256": "15af84da71cea0ace9d8d310ece363422111df31c9365821f4ac8dc1f822e39c",
+      "bytes": 158941,
+      "sha256": "3674bfb8b7c33d1843cef4de51a3acab7246a2b078e5d5adacbf1319b7b798aa",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3342,8 +3354,8 @@
       "path": "docs/qa/ensemble-recipe-b2/participants-390.png",
       "width": 390,
       "viewportHeight": 844,
-      "bytes": 111000,
-      "sha256": "d59180098ea465e6f1334ff1cad3535cba98f363d9a949ee1bbd6499a1036d8a",
+      "bytes": 110959,
+      "sha256": "4a8e3b44a8686d14fdf3ac0f7f5c76f9848cd079b31b32492366efc178d6a8be",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3858,7 +3870,7 @@
     "qa-results/playwright-runs/",
     ".superpowers/sdd/2026-11-01-ensemble-recipe-b2/"
   ],
-  "worktreeBaseHead": "710042ba032a33fef2818b6ec9e09860e0547c00",
+  "worktreeBaseHead": "25da776c0bc1c5f8daf5915aae209992a1fc2707",
   "localTestsRanOnUncommittedSource": true,
   "runtime": {
     "node": "v22.23.3",
@@ -3881,6 +3893,27 @@
       "scope": "Four final-review findings",
       "red": "Six new cases reproduced reference/template/comparison/continuity defects before product fixes",
       "green": "41 focused tests/4 files and new production browser regression passed; final whole suites follow"
+    }
+  ],
+  "hostedFailedRuns": [
+    {
+      "url": "https://github.com/Jeruzael/krakinai/actions/runs/41251350874",
+      "head": "25da776c0bc1c5f8daf5915aae209992a1fc2707",
+      "exitCode": 1,
+      "unitPassed": 1024,
+      "bridgePassed": 18,
+      "browser": {
+        "passed": 168,
+        "failed": 1,
+        "skipped": 9,
+        "total": 178
+      },
+      "failedCase": "1440px ensemble toolbar rectangle",
+      "expectedBottom": 771.5,
+      "actualBottom": 779.953125,
+      "correction": "Explicit desktop row line-height and smaller ensemble-control margins; original bounds assertion unchanged",
+      "focusedLocalLayoutPassed": 5,
+      "alternateFontCase": "Additional coverage; passed before and after, not claimed as local RED"
     }
   ],
   "failedReopenDiagnostic": {
@@ -3921,7 +3954,7 @@
     "bridge/test/stdio.test.ts": "cf20c9f9e67af5d998706f0a30d9a33bf79b25f8799e4d9772941a4a9ce17990",
     "e2e/ensemble-fixture.mjs": "540099c9d0178ff1e38e05504ba020c117f97d095187e5c3237b22ab3ee03e11",
     "e2e/ensemble-mcp.spec.mjs": "da23a527fe9eeca12fa86defa6e76cfc2c9d1a02793a4e404f2d35abb7108e6e",
-    "e2e/ensemble-recipes.spec.mjs": "a6df8cc0b9f4afc892bdf5cce60980a253ffa0c9cc7734054fc2ae60bac15dbb",
+    "e2e/ensemble-recipes.spec.mjs": "97a8214b7fdc05a9ee4d30167581c9d0a23e2c7bae83e390da0e6a1c60b15a6f",
     "e2e/recipe-mcp.spec.mjs": "0c2c013d6e32f7df37675eb3e3965116ff15f961be8b540a7137573881c49f31",
     "scripts/export-change-set-schema.mjs": "5432c3a3da180bde88b210c9a698d3997c96469954630b0844c64bee6e45728f",
     "scripts/qa/verify-ensemble-archives.py": "b55dac90e6b2b69971f363b6196c87d8336b2a80a92f1f1f21fe9e0956b35dc9",
@@ -3999,7 +4032,7 @@
     "src/storage/changeSets.ts": "f3bc1e41fc7142c2af48c53c1aaf6616a0d639553246b9e8120a86586d4d1515",
     "src/storage/db.ts": "063ac68a735b83f8f82575b176d46483149da5e4d71d01454dbd286b4916838d",
     "src/storage/sceneAuthoring.ts": "db17ee1c303a538adc73ca6256b6e10486c360f2a34d82ec22f1f3a672f21d24",
-    "src/studio.css": "46a86f93ec84a77881e5cb245d4594703d6554d88d2c44e43a75528214744f1c",
+    "src/studio.css": "a089846322a0d71e1f1004b00475680501c25ce9e73afd0f34a8e1443819ac6c",
     "src/types/changeSet.ts": "e30516c46f554c6660b7936239879d2a0321005da50d209ed050f5481191eb38",
     "src/types/domain.ts": "534d5ae54669c45e2382d76d4181a39037f1a5355018eaf3b5a8d9dfb82a40ca",
     "src/types/ensemble.ts": "91df850cd8f45bdde2425fe9b39d07e25f125108a11855b7f16f88ad6758cb18"
