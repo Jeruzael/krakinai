@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import type { Collection, MediaAsset, ProjectShot, SavedScene } from '../types/domain';
 import { ProjectContinuityPanel } from '../components/ProjectContinuityPanel';
 import * as continuity from '../storage/projectContinuity';
+import { ensembleDraft } from './fixtures/ensembleFixture';
 
 const { library } = vi.hoisted(() => ({ library: { snapshot: null as unknown } }));
 vi.mock('../context/LibraryContext', () => ({ useLibrary: () => library }));
@@ -21,6 +22,21 @@ function setup(collection = base(), media: MediaAsset[] = []) {
   return onChanged;
 }
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
+
+it('labels every ensemble wardrobe from its own frozen snapshot, including secondary people', () => {
+  const ensemble = { ...scene('a'), ...ensembleDraft(), id: 'scene-a' } as SavedScene;
+  const first = ensemble.ensemble!.participants[0], second = ensemble.ensemble!.participants[1];
+  first.wardrobe!.sourceTitle = 'Synthetic bridal gown';
+  second.wardrobe!.sourceTitle = 'Synthetic groom suit';
+  const collection = base([shot('a', 0)]);
+  const before = structuredClone(ensemble);
+  library.snapshot = { scenes: [ensemble], media: [] };
+  render(<ProjectContinuityPanel collection={collection} onChanged={vi.fn()} />);
+  const secondary = screen.getByText(second.character.sourceTitle).closest('article')!;
+  expect(secondary).toHaveTextContent('Wardrobe source: Synthetic groom suit');
+  expect(secondary).not.toHaveTextContent('Synthetic bridal gown');
+  expect(ensemble).toEqual(before);
+});
 
 it('keeps full wardrobe text collapsed and uses dedicated stacked form fields without changing records', () => {
   const collection = base();

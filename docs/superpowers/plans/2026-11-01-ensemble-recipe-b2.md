@@ -90,9 +90,9 @@
 ## Task 8: Full evidence, independent review, signing and PR/CI
 
 **Files:** docs/ensemble-recipe-b2-contract.md, ensemble-recipe-b2-qa.md, docs/qa/ensemble-recipe-b2-results.json; safe synthetic galleries/source inventories.
-- [ ] Run full root unit/component, bridge production/test builds/tests/typechecks, root typecheck/build, both prod audits, schema parity, QA8/historical ledger, CLI validators and full browser/native suites with bounded sequential local resource usage. Record real exits/warnings/skips/hash baselines and preserve all logs.
-- [ ] Audit complete diff/inventory for personal data/profiles/ZIPs/keys/certificates/temp artifacts, protected unrelated paths, actual schema/data/limits changes. Only curated synthetic proof is committed; actual user data remains untouched.
-- [ ] One fresh whole-branch reviewer on the most capable model checks spec/Review Focus/ledger. Regrade and fix only material findings in one RED→GREEN+whole-suite pass; ledger all rulings/deferred minors. No per-task reviewer or second final review.
+- [x] Run full root unit/component, bridge production/test builds/tests/typechecks, root typecheck/build, both prod audits, schema parity, QA8/historical ledger, CLI validators and full browser/native suites with bounded sequential local resource usage. Record real exits/warnings/skips/hash baselines and preserve all logs.
+- [x] Audit complete diff/inventory for personal data/profiles/ZIPs/keys/certificates/temp artifacts, protected unrelated paths, actual schema/data/limits changes. Only curated synthetic proof is committed; actual user data remains untouched.
+- [x] One fresh whole-branch reviewer on the most capable model checks spec/Review Focus/ledger. Regrade and fix only material findings in one RED→GREEN+whole-suite pass; ledger all rulings/deferred minors. No per-task reviewer or second final review.
 - [ ] Verify configured signed commits without global Git changes, push feature branch only, open separate PR against master, verify exact final signed-head hosted CI and artifacts. Keep PR unmerged and retain worktree/ignored artifacts. Publication state lives in PR/CI/ledger, not a self-referential committed SHA.
 
 ## Plan self-review and execution notes

@@ -6,7 +6,7 @@ export interface ProjectCastRow extends CharacterBibleEntry { derived: boolean; 
 export interface WardrobeContinuityRow {
   participantId?:string;
   shotId: string; code: string; characterId: string; characterName: string;
-  wardrobeSourceId?: string; wardrobeDescription?: string;
+  wardrobeSourceId?: string; wardrobeSourceTitle?: string; wardrobeDescription?: string;
   changed: boolean; intentionalReason?: WardrobeIntentReason;
 }
 export interface ProjectDialogueRow {
@@ -47,7 +47,7 @@ export function getWardrobeContinuity(collection: Collection, scenes: SavedScene
       ...(participantId?{participantId}:{}),
       shotId: shot.id, code: shot.code, characterId: character.sourceId,
       characterName: collection.project?.cast?.find(c => c.characterId === character.sourceId)?.name ?? character.sourceTitle,
-      wardrobeSourceId: current.id, wardrobeDescription: current.description,
+      wardrobeSourceId: current.id, wardrobeSourceTitle: wardrobe?.sourceTitle, wardrobeDescription: current.description,
       changed: Boolean(previous && previous.id && current.id && (previous.id !== current.id || previous.description !== current.description)),
       intentionalReason: shot.intentionalWardrobeChange,
     });

@@ -88,7 +88,9 @@ export function buildGenerationDocument(
     const activeSlots=getActiveSceneSlots(source);
     const requiredSources=getSourceReferenceEntries(source);
     const activeIds=new Set(project.referenceFiles.map(r=>r.mediaId));
-    references=references.filter(ref=>ref.sourceSlot==='result'||
+    // Supplied associations retain provenance. Default document references have
+    // already passed active-only snapshot traversal, including off-camera rules.
+    references=references.filter(ref=>Boolean(source.ensemble&&ref.participantId)||ref.sourceSlot==='result'||
       (ref.sourceSlot==='source'?requiredSources.some(s=>s.mediaId===ref.mediaId):
         ref.sourceSlot&&ref.sourceSlot!=='legacy'?Boolean(activeSlots[ref.sourceSlot]):
           activeIds.has(ref.mediaId)&&!requiredSources.some(s=>s.mediaId===ref.mediaId)));

@@ -27,6 +27,38 @@ let input: SceneDraft;
 beforeEach(async () => {
   input = await ensembleStorageFixture();
 });
+it("round trips a full template with a selected guide whose participant was explicitly removed", async () => {
+  input = await ensembleStorageFixture(true);
+  const entries = collectReferenceCandidates(input, new Map());
+  const retained = entries.find((e) => e.participantId === "lucas")!;
+  expect(retained).toBeDefined();
+  input.referencePack = { version: 1, entries };
+  input.ensemble!.participants = input.ensemble!.participants.filter(
+    (p) => p.id !== "lucas",
+  );
+  input.ensemble!.dialogueCues = input.ensemble!.dialogueCues.filter(
+    (c) => c.participantId !== "lucas",
+  );
+  const draft = await saveSceneDraft(syncEnsemblePrimary(input));
+  const template = await saveDraftAsTemplate({
+    draft,
+    name: "Historical participant guide",
+    description: "",
+    includeCharacterIdentity: true,
+    ensembleMode: "full",
+  });
+  expect(template.ensembleDefault?.referencePack?.entries).toContainEqual(
+    retained,
+  );
+  const restored = await createDraftFromTemplate(template.id);
+  expect(restored.referencePack?.entries).toContainEqual(retained);
+  expect(restored.ensemble?.participants.some((p) => p.id === "lucas")).toBe(
+    false,
+  );
+  expect(
+    (await getAllSnapshot()).drafts.find((d) => d.id === draft.id),
+  ).toEqual(draft);
+});
 it.each([false, true])(
   "reads every participant master in the actual authored-save transaction (stale secondary=%s)",
   async (stale) => {

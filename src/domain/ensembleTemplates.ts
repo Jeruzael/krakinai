@@ -12,9 +12,10 @@ export function createEnsembleTemplateDefault(
   if (!draft.ensemble || !includeEnsemble) return;
   const error = validateSceneEnsemble(draft)[0];
   if (error) throw Error(error);
-  const participants = new Set(draft.ensemble.participants.map((p) => p.id));
   const entries = draft.referencePack?.entries
-    .filter((e) => e.participantId && participants.has(e.participantId))
+    // Selected provenance can outlive a participant. Shared non-participant
+    // template pack associations remain outside this explicit template feature.
+    .filter((e) => e.participantId)
     .map((e, order) => ({ ...structuredClone(e), order }));
   return {
     version: 1,

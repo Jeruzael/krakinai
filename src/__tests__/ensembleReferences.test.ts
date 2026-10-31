@@ -15,6 +15,54 @@ const link = {
   altText: "Same file, distinct identity relationships.",
   order: 0,
 };
+it.each(["secondary-wardrobe", "off-camera", "removed"])(
+  "retains explicit participant provenance in a Property / Environment pack and Generation JSON: %s",
+  (scenario) => {
+    let s = source();
+    s.shotType = "property_environment";
+    delete s.ensemble!.participants[0].wardrobe;
+    const secondary = s.ensemble!.participants[1];
+    secondary.wardrobe = {
+      ...actor("secondary-clothing", "Secondary suit"),
+      slot: "wardrobe",
+      mediaLinks: [{ ...link, mediaId: "suit-guide" }],
+    };
+    s = syncEnsemblePrimary(s);
+    const selected = collectReferenceCandidates(s, new Map());
+    const guide = selected.find((e) => e.mediaId === "suit-guide")!;
+    s.referencePack = { version: 1, entries: selected };
+    if (scenario === "off-camera")
+      s.ensemble!.participants[1].presence = "off_camera";
+    if (scenario === "removed") s.ensemble!.participants.pop();
+    const expected = structuredClone(s.referencePack);
+    expect(getActiveReferencePack(s)?.entries).toContainEqual(guide);
+    const json = buildGenerationDocument(s, {
+      references: getGenerationPackReferences(s.referencePack),
+    });
+    expect(
+      json.references.some(
+        (e) =>
+          e.associationId === guide.associationId &&
+          e.participantId === "lucas",
+      ),
+    ).toBe(true);
+    expect(s.referencePack).toEqual(expected);
+    if (scenario !== "secondary-wardrobe") {
+      expect(
+        collectReferenceCandidates(
+          { ...s, referencePack: undefined },
+          new Map(),
+        ).some((e) => e.mediaId === "suit-guide"),
+      ).toBe(false);
+      expect(
+        buildGenerationDocument({
+          ...s,
+          referencePack: undefined,
+        }).references.some((e) => e.mediaId === "suit-guide"),
+      ).toBe(false);
+    }
+  },
+);
 it("does not auto-export a formerly visible participant file from an old saved checklist after that person moves off camera", () => {
   const s = source();
   s.ensemble!.participants[1].character.mediaLinks[0].mediaId =

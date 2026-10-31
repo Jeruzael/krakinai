@@ -30,6 +30,132 @@ async function record(name, value) {
   await mkdir(out, { recursive: true });
   await writeFile(resolve(out, name + ".json"), JSON.stringify(value, null, 2));
 }
+
+test("secondary wardrobe guides and historical templates survive production save, export and take comparison", async ({
+  page,
+}) => {
+  const ids = await seedEnsembleBrowser(page);
+  const prepared = await page.evaluate(async (ids) => {
+    const db = await import("/src/storage/db.ts");
+    const authoring = await import("/src/storage/sceneAuthoring.ts");
+    const projects = await import("/src/storage/projects.ts");
+    const { syncEnsemblePrimary } = await import("/src/domain/ensemble.ts");
+    const { buildProjectExport } = await import("/src/domain/projectExport.ts");
+    const state = await db.getAllSnapshot();
+    const original = state.drafts.find((d) => d.id === ids.draftId);
+    const input = structuredClone(original);
+    input.shotType = "property_environment";
+    delete input.ensemble.participants[0].wardrobe;
+    input.ensemble.dialogueCues[1].line = "  A different exact reply.\r\n😊  ";
+    const selectedGuide = input.referencePack.entries.find(
+      (e) => e.participantId === "lucas" && e.sourceSlot === "wardrobe",
+    );
+    if (!selectedGuide)
+      throw Error("Synthetic secondary wardrobe guide missing");
+    const draft = await db.saveSceneDraft(syncEnsemblePrimary(input));
+    const saved = await authoring.saveAuthoredScene(draft.id, {
+      requestId: "reference-review",
+      expectedInputRevision: draft.inputRevision,
+    });
+    if (
+      !saved.referencePack.entries.some(
+        (e) => e.associationId === selectedGuide.associationId,
+      )
+    )
+      throw Error("Saved secondary guide was omitted");
+    await projects.addProjectTake({
+      collectionId: ids.projectId,
+      shotId: ids.shotId,
+      sceneId: saved.id,
+    });
+    // Explicit test setup chooses this take; import never implicitly selects it.
+    await projects.selectProjectTake({
+      collectionId: ids.projectId,
+      shotId: ids.shotId,
+      sceneId: saved.id,
+    });
+    const selectedState = await db.getAllSnapshot();
+    const exported = await buildProjectExport(
+      selectedState.collections.find((c) => c.id === ids.projectId),
+      selectedState,
+    );
+    if (
+      !exported.manifest.associations.some(
+        (e) => e.associationId === selectedGuide.associationId,
+      )
+    )
+      throw Error("Project ZIP omitted secondary guide");
+    const removed = structuredClone(draft);
+    removed.ensemble.participants = removed.ensemble.participants.filter(
+      (p) => p.id !== "lucas",
+    );
+    removed.ensemble.dialogueCues = removed.ensemble.dialogueCues.filter(
+      (c) => c.participantId !== "lucas",
+    );
+    const historical = await db.saveSceneDraft(syncEnsemblePrimary(removed));
+    const template = await db.saveDraftAsTemplate({
+      draft: historical,
+      name: "Retained historical participant guide",
+      description: "",
+      includeCharacterIdentity: true,
+      ensembleMode: "full",
+    });
+    const reopened = await db.createDraftFromTemplate(template.id);
+    if (
+      !reopened.referencePack.entries.some(
+        (e) => e.associationId === selectedGuide.associationId,
+      )
+    )
+      throw Error("Template lost historical participant guide");
+    if (reopened.ensemble.participants.some((p) => p.id === "lucas"))
+      throw Error("Template invented removed participant");
+    return {
+      sceneId: saved.id,
+      cueId: saved.ensemble.dialogueCues[1].id,
+      line: saved.ensemble.dialogueCues[1].line,
+      title: saved.ensemble.participants[1].wardrobe.sourceTitle,
+      guide: selectedGuide.associationId,
+      participantGuideRetained: true,
+      templateGuideRetained: true,
+    };
+  }, ids);
+  await page.goto(`/#/collections/${ids.projectId}?tab=storyboard`);
+  await page.reload();
+  await page.locator(".cw-continuity-review > summary").click();
+  const row = page
+    .locator(".pc-row")
+    .filter({ hasText: "Lucas / Base Identity" })
+    .first();
+  await expect(row).toContainText(`Wardrobe source: ${prepared.title}`);
+  await page
+    .getByRole("button", { name: /Manage takes/i })
+    .first()
+    .click();
+  await page
+    .getByRole("button", { name: "Compare takes", exact: true })
+    .click();
+  await page
+    .getByRole("combobox", { name: "Take A", exact: true })
+    .selectOption(ids.parentId);
+  await page
+    .getByRole("combobox", { name: "Take B", exact: true })
+    .selectOption(prepared.sceneId);
+  const pane = page.getByRole("region", { name: "Take B", exact: true });
+  await pane
+    .getByText("Lucas / Base Identity locked identity", { exact: true })
+    .click();
+  await expect(
+    pane.getByText(`Clothing: ${prepared.title}`, { exact: false }),
+  ).toBeVisible();
+  await pane
+    .locator("summary")
+    .filter({ hasText: `cue ${prepared.cueId}` })
+    .click();
+  await expect(
+    pane.getByRole('textbox', { name: `Exact line ${prepared.cueId}`, exact: true }),
+  ).toHaveValue(prepared.line.replace(/\r\n/g, "\n"));
+  await record("review-reference-production", prepared);
+});
 test("deferred Outfit candidates can be reviewed later and reused without duplicating records", async ({
   page,
 }) => {
@@ -753,7 +879,17 @@ for (const width of [1440, 768, 390, 720])
     await page
       .getByRole("button", { name: "Participants (2)", exact: true })
       .click();
-    await page.getByRole('button',{name:'Close Participants',exact:true}).focus();await page.keyboard.press('Shift+Tab');await expect(page.getByRole('button',{name:'Add participant',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(page.getByRole('button',{name:'Close Participants',exact:true})).toBeFocused();
+    await page
+      .getByRole("button", { name: "Close Participants", exact: true })
+      .focus();
+    await page.keyboard.press("Shift+Tab");
+    await expect(
+      page.getByRole("button", { name: "Add participant", exact: true }),
+    ).toBeFocused();
+    await page.keyboard.press("Tab");
+    await expect(
+      page.getByRole("button", { name: "Close Participants", exact: true }),
+    ).toBeFocused();
     await page.screenshot({
       path: resolve(out, `participants-${width}.png`),
       fullPage: true,

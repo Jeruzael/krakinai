@@ -107,8 +107,11 @@ export function getActiveReferencePack(source: ShotRuleSource): ReferencePack|un
     ? {...source.referencePack,entries:source.referencePack.entries.filter(e=>e.sourceSlot!=='source')}:source.referencePack;
   const active=getActiveSceneSlots(source),sources=getActiveSourceMediaLinks(source);
   const activeIds=new Set([...Object.values(active).flatMap(s=>s?.mediaLinks??[]),...sources].map(l=>l.mediaId));
+  // Selected participant IDs are captured provenance, independent of today's
+  // primary slots or participant membership/presence. Automatic candidates use
+  // the separate active-only snapshot traversal.
   const entries=source.referencePack.entries.filter(e=>
-    e.sourceSlot==='result' || (e.sourceSlot==='source'?sources.some(l=>l.mediaId===e.mediaId):
+    Boolean(source.ensemble&&e.participantId) || e.sourceSlot==='result' || (e.sourceSlot==='source'?sources.some(l=>l.mediaId===e.mediaId):
       e.sourceSlot==='legacy'?activeIds.has(e.mediaId):Boolean(active[e.sourceSlot])));
   for(const entry of getSourceReferenceEntries(source)) if(!entries.some(e=>e.sourceSlot==='source'&&e.mediaId===entry.mediaId))entries.push({...entry,order:entries.length});
   return {...source.referencePack,entries:entries.map((entry,order)=>({...entry,order}))};

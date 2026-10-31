@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event';
 import type { Collection, ProjectShot, SavedScene } from '../types/domain';
 import { ProjectTakeManager } from '../components/ProjectTakeManager';
 import * as projects from '../storage/projects';
+import { ensembleDraft } from './fixtures/ensembleFixture';
 
 const { library } = vi.hoisted(() => ({ library: { snapshot: null as unknown, showToast: vi.fn() } }));
 vi.mock('../context/LibraryContext', () => ({ useLibrary: () => library }));
@@ -29,6 +30,25 @@ const setup = (currentShot = shot) => {
   return onChanged;
 };
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
+
+it('compares frozen ensemble participants, independent wardrobe and ordered exact cues without changing takes', () => {
+  const left = { ...scene('scene-a', ''), ...ensembleDraft(), id: 'scene-a' } as SavedScene;
+  const right = { ...structuredClone(left), id: 'scene-b' };
+  right.ensemble!.dialogueCues[1].line = '  A different exact reply.\r\n😊  ';
+  const before = structuredClone([left, right]);
+  library.snapshot = { scenes: [left, right], media: [] };
+  render(<ProjectTakeManager collection={collection} shot={shot} onClose={vi.fn()} onChanged={vi.fn()} />);
+  fireEvent.click(screen.getByRole('button', { name: 'Compare takes' }));
+  const panes = screen.getAllByRole('region', { name: /Take [AB]$/ });
+  for (const pane of panes) {
+    expect(within(pane).getByText(`${left.ensemble!.participants[1].character.sourceTitle} locked identity`)).toBeInTheDocument();
+    expect(within(pane).getByText(/Clothing:.*groom|Clothing:.*suit/i)).toBeInTheDocument();
+  }
+  expect(within(panes[0]).getByLabelText('Exact line lucas-reply')).toHaveValue(left.ensemble!.dialogueCues[1].line.replace(/\r\n/g, '\n'));
+  expect(within(panes[1]).getByLabelText('Exact line lucas-reply')).toHaveValue(right.ensemble!.dialogueCues[1].line.replace(/\r\n/g, '\n'));
+  expect(library.snapshot).toEqual({ scenes: before, media: [] });
+  expect(projects.selectProjectTake).not.toHaveBeenCalled();
+});
 
 it('adds a searched existing scene by ID without creating or changing a source scene', async () => {
   vi.mocked(projects.addProjectTake).mockResolvedValue(collection);
