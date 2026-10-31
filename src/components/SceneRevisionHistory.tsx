@@ -162,7 +162,8 @@ export const SceneRevisionActions: React.FC<{
         <button
           type="button"
           className="btn btn-secondary btn-sm"
-          disabled={busy}
+          disabled={busy||!!scene.ensemble}
+          title={scene.ensemble?'Ensemble scenes keep structured participants and cues. Use Edit as New Version.':undefined}
           onClick={() => void edit(true)}
         >
           Edit Full Prompt

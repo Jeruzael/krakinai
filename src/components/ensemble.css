@@ -1,0 +1,121 @@
+.ensemble-toolbar,
+.ensemble-actions,
+.ensemble-row-actions,
+.ensemble-fields {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.ensemble-controls {
+  margin: 12px 0;
+}
+.ensemble-toolbar > .muted-text {
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+.ensemble-list {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0;
+}
+.ensemble-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  background: var(--bg-canvas);
+}
+.ensemble-row > div:first-child {
+  min-width: 0;
+  flex: 1 1 200px;
+}
+.ensemble-row p {
+  margin: 4px 0 0;
+}
+.ensemble-row-actions {
+  flex: 0 1 auto;
+}
+.ensemble-row-actions .btn {
+  white-space: normal;
+}
+.ensemble-row strong,
+.ensemble-excerpt,
+.ensemble-dialog code {
+  overflow-wrap: anywhere;
+}
+.ensemble-excerpt {
+  font-size: 0.85rem;
+  white-space: pre-wrap;
+  max-height: 3em;
+  overflow: hidden;
+}
+.ensemble-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+}
+.ensemble-editor label,
+.ensemble-template-choice > label {
+  display: grid;
+  gap: 6px;
+}
+.ensemble-editor .import-check,
+.ensemble-template-choice .import-check {
+  display: flex;
+}
+.ensemble-editor h3 {
+  margin: 0;
+}
+.ensemble-editor details {
+  min-width: 0;
+}
+.ensemble-editor textarea,
+.ensemble-editor select,
+.ensemble-editor input:not([type="checkbox"]) {
+  width: 100%;
+}
+.ensemble-fields > label {
+  flex: 1 1 140px;
+}
+.ensemble-template-choice {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  padding: 12px;
+  min-width: 0;
+}
+.ensemble-template-choice select {
+  width: 100%;
+}
+.ensemble-review details {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-control);
+  padding: 10px;
+  margin: 8px 0;
+}
+.ensemble-review pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.ensemble-review textarea {
+  width: 100%;
+}
+.ensemble-exact {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 600px) {
+  .ensemble-row-actions {
+    width: 100%;
+  }
+  .ensemble-row-actions .btn:first-child {
+    flex: 1;
+  }
+  .ensemble-toolbar > .muted-text {
+    width: 100%;
+  }
+}

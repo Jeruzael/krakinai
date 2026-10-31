@@ -54,6 +54,9 @@ import { StudioDialog } from '../components/StudioDialog';
 import type { PreflightComponent } from '../domain/scenePreflight';
 import { resolveGenerationIdentity } from '../domain/identityAnchors';
 import { GenerationIdentityControl } from '../components/GenerationIdentityControl';
+import { resolveEnsembleGenerationIdentities } from '../domain/ensembleDocument';
+import { getSceneSnapshotEntries } from '../domain/ensembleReferences';
+import { EnsembleSummary } from '../components/EnsembleSummary';
 import { ReferencePackManager } from '../components/ReferencePackManager';
 import { getGenerationPackReferences } from '../domain/referencePack';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, SHOT_TYPE_LABELS } from '../domain/shotTypeRules';
@@ -262,6 +265,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const liveMaster = snapshot.assets.find(asset => asset.id === source.slots.character?.sourceId);
   const generationOptions = {
     identity: resolveGenerationIdentity(source, liveMaster, !!savedScene).identity,
+    ...(source.ensemble?{participantIdentities:resolveEnsembleGenerationIdentities(source,new Map(snapshot.assets.map(asset=>[asset.id,asset])),!!savedScene)}:{}),
     ...(source.referencePack ? {references:getGenerationPackReferences(source.referencePack)} : {}),
   };
 
@@ -320,6 +324,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
 
   const handleSaveManualOverride = async () => {
     if (!draft || derivedView) return;
+    try {
     const nextManual = {
       ...draft.manualOutputs,
       [mode]: {
@@ -330,12 +335,14 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     };
     await saveSceneDraft({
       ...draft,
+      ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
       manualOutputs: nextManual,
       bumpInputRevision: false,
     });
     await refreshSnapshot();
     setIsEditingManual(false);
     showToast(`Saved manual edit for ${mode} output.`, 'success');
+    } catch(error) { showToast(error instanceof Error?error.message:'Could not save the output. Your editor contents are still available.','error'); }
   };
 
   const handleDiscardManualOverride = () => {
@@ -346,10 +353,12 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       confirmLabel: 'Discard & Reassemble',
       danger: true,
       onConfirm: async () => {
+        try {
         const nextManual = { ...draft.manualOutputs };
         delete nextManual[canonicalMode];
         await saveSceneDraft({
           ...draft,
+          ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
           manualOutputs: nextManual,
           bumpInputRevision: false,
         });
@@ -357,6 +366,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
         setIsEditingManual(false);
         closeConfirmDialog();
         showToast('Restored deterministic assembled output.', 'info');
+        } catch(error) { closeConfirmDialog();showToast(error instanceof Error?error.message:'Could not discard this override. Your stored output is preserved.','error'); }
       },
     });
   };
@@ -476,6 +486,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       } else if (draft) {
         await saveSceneDraft({
           ...draft,
+          ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
           resultMediaLinks: nextLinks,
           bumpInputRevision: false,
         });
@@ -494,13 +505,13 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const record = source;
   // The display keeps every slot association, including repeated links to one blob.
   // Exports continue to use the original assembler/saved-scene reference checklist.
-  const studioReferences: StudioReference[] = ORDERED_BUILDER_SLOTS.flatMap(
-    (slot) => {
-      const component = record.slots[slot];
+  const referenceSnapshots=getSceneSnapshotEntries(record,record.ensemble?{activeOnly:true}:{});
+  const studioReferences: StudioReference[] = referenceSnapshots.flatMap(
+    ({slot,snapshot:component,participantId}) => {
       return (component?.mediaLinks ?? []).map((link, index) => ({
-        key: `${slot}_${index}_${link.mediaId}`,
+        key: `${participantId?participantId+'_':''}${slot}_${index}_${link.mediaId}`,
         mediaId: link.mediaId,
-        label: [COMPONENT_LABELS[slot], link.viewLabel]
+        label: [participantId?record.ensemble!.participants.find(p=>p.id===participantId)?.character.sourceTitle:undefined,COMPONENT_LABELS[slot], link.viewLabel]
           .filter(Boolean)
           .join(' · '),
         sourceTitle: component!.sourceTitle,
@@ -526,8 +537,8 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       link.viewLabel ?? '',
       link.filename ?? '',
     ]);
-  const unmatchedSlotReferences = ORDERED_BUILDER_SLOTS.flatMap((slot) =>
-    (record.slots[slot]?.mediaLinks ?? []).map(referenceIdentity)
+  const unmatchedSlotReferences = referenceSnapshots.flatMap(({snapshot}) =>
+    snapshot.mediaLinks.map(referenceIdentity)
   );
   unmatchedSlotReferences.push(...getActiveSourceMediaLinks(record).map(referenceIdentity));
   references.forEach((link, index) => {
@@ -584,6 +595,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       } else if (draft) {
         await saveSceneDraft({
           ...draft,
+          ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
           reviewNotes: submittedNotes,
           bumpInputRevision: false,
         });
@@ -747,7 +759,8 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           ))}
         </div>
       </div>
-      {!getShotTypeRules(record).inapplicableSlots.includes('character') && <GenerationIdentityControl
+      {record.ensemble&&<details className="studio-disclosure"><summary>Participant identities and ordered cues</summary><EnsembleSummary ensemble={record.ensemble}/><p className="muted-text">Each generation identity is checked independently. Edit per-person choices in Scene Builder; master outputs retain complete identities.</p></details>}
+      {!record.ensemble&&!getShotTypeRules(record).inapplicableSlots.includes('character') && <GenerationIdentityControl
         compact
         source={record}
         liveMaster={liveMaster}
@@ -757,6 +770,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           try {
             await saveSceneDraft({
               ...draft,
+              ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
               generation,
               bumpInputRevision: false,
             });
@@ -1204,6 +1218,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
               className="select"
               value={record.reviewStatus}
               onChange={async (e) => {
+                try {
                 if (savedScene) {
                   await updateSavedSceneReviewAndResults({
                     sceneId: savedScene.id,
@@ -1214,6 +1229,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
                 } else if (draft) {
                   await saveSceneDraft({
                     ...draft,
+                    ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
                     reviewNotes,
                     reviewStatus: e.target.value as ReviewStatus,
                     bumpInputRevision: false,
@@ -1221,6 +1237,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
                 }
                 await refreshSnapshot();
                 showToast('Updated scene review status.', 'success');
+                } catch(error) { showToast(error instanceof Error?error.message:'Could not save review status. Your stored draft is preserved.','error'); }
               }}
             >
               <option value="unreviewed">Unreviewed</option>
@@ -1452,6 +1469,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
             const inactive=(draft.referencePack?.entries??[]).filter(entry=>!activeIds.has(entry.associationId));
             await saveSceneDraft({
               ...draft,
+              ...(draft.ensemble?{expectedInputRevision:draft.inputRevision}:{}),
               referencePack:{...referencePack,entries:[...referencePack.entries,...inactive].map((entry,order)=>({...entry,order}))},
               bumpInputRevision: false,
             });

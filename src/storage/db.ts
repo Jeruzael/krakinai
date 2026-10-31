@@ -684,7 +684,7 @@ export async function saveSceneDraft(
   }
   const now = new Date().toISOString();
   const nextRevision =
-    existing&&(isDirectPrompt(input)||input.revisionIntent)
+    existing&&(isDirectPrompt(input)||input.revisionIntent||input.ensemble)
       ? input.bumpInputRevision===false?existing.inputRevision:existing.inputRevision+1
       : input.inputRevision !== undefined
       ? input.inputRevision

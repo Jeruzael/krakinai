@@ -6,6 +6,7 @@ import type {
   ChangeSetPreview as Preview,
   ChangeSetReceipt,
   ImportCandidate,
+  ImportVariantCandidate,
 } from "../types/changeSet";
 import { emptyChangeSetApproval } from "../types/changeSet";
 import {
@@ -171,16 +172,17 @@ export function ChangeSetImportScreen() {
       setBusy(undefined);
     }
   };
-  const reviewCandidate = (candidate: ImportCandidate) => {
+  const reviewCandidate = (candidate: ImportCandidate|ImportVariantCandidate) => {
+    const outfit='variantType'in candidate;
     const input: ChangeSet = {
-      schema: "krakinai.change-set.v1",
+      schema: outfit?'krakinai.change-set.v3':"krakinai.change-set.v1",
       changeSetId: generateId("candidate_review"),
       source: { kind: "manual", label: "Pending candidate review" },
       title: `Review ${candidate.title}`.slice(0, 100),
       operations: [
         {
           operationId: "review-candidate",
-          type: "asset.review_candidate",
+          type: outfit?'variant.review_candidate':"asset.review_candidate",
           candidateId: candidate.id,
           expectedRevision: candidate.revision,
         },
@@ -194,10 +196,10 @@ export function ChangeSetImportScreen() {
   if (!snapshot) return null;
   const blocked =
     preview?.plan.findings.some((f) => f.severity === "blocking") ?? true;
-  const pending =
-    snapshot.preferences.aiImports?.candidates.filter(
+  const pending = [
+    ...(snapshot.preferences.aiImports?.candidates.filter(
       (c) => c.status === "pending",
-    ) ?? [];
+    ) ?? []),...(snapshot.preferences.aiImports?.variantCandidates?.filter(c=>c.status==='pending')??[])];
   return (
     <div className={`change-set-workspace${preview ? " has-preview" : ""}`}>
       <header className="import-heading">
@@ -353,7 +355,7 @@ export function ChangeSetImportScreen() {
                 <div>
                   <strong>{c.title}</strong>
                   <small>
-                    {c.kind} · pending · rev {c.revision}
+                    {'variantType'in c?`Outfit · parent ${c.parentCharacterId}`:c.kind} · pending · rev {c.revision}
                   </small>
                 </div>
                 <button

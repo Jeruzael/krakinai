@@ -26,6 +26,14 @@ let input: SceneDraft;
 beforeEach(async () => {
   input = await ensembleStorageFixture();
 });
+it('advances opted-in draft revisions and rejects a stale explicit save without changing the newer record',async()=>{
+ const first=await saveSceneDraft(input), second=await saveSceneDraft({...first,title:'Newer synthetic draft',expectedInputRevision:first.inputRevision});
+ expect(second.inputRevision).toBe(first.inputRevision+1);
+ const metadata=await saveSceneDraft({...second,reviewNotes:'Metadata only',bumpInputRevision:false,expectedInputRevision:second.inputRevision});
+ expect(metadata.inputRevision).toBe(second.inputRevision);
+ await expect(saveSceneDraft({...first,title:'Stale local edit',expectedInputRevision:first.inputRevision})).rejects.toThrow(/another tab|compare/i);
+ expect((await getAllSnapshot()).drafts.find(d=>d.id===first.id)).toEqual(metadata);
+});
 it("preserves an exact optional ensemble in a stored draft, both immutable save paths, copies and revision plans", async () => {
   const d = await saveSceneDraft(input);
   expect(d.ensemble).toEqual(input.ensemble);

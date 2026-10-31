@@ -74,9 +74,9 @@
 
 **Files:** new components/EnsembleControls.tsx, ParticipantEditor.tsx, DialogueCueEditor.tsx and scoped CSS; SceneBuilderScreen.tsx, SharedModals.tsx, PerformanceDirection.tsx only necessary shared controls; RecipeOperationPreview.tsx, ChangeSetPreview.tsx and existing Script/Cast/continuity UI. New ensembleControls.test.tsx, ensemblePreview.test.tsx.
 **Interfaces:** EnsembleControls receives draft/current library and onChange(newDraft); central helpers own mirror updates. ParticipantEditor never edits identity strings. DialogueCueEditor uses exact DialogueConfig + stable ID and existing Performance Studio. Existing template save calls receive explicit full/shared choice and omission acknowledgement.
-- [ ] Write RED tests for explicit idempotent opt-in, actual character/variant ownership, primary/presence/removal/cue linking, ordered exact multi-cue editing, per-person anchor fallback and template inclusion/omission review.
-- [ ] Keep compact rows and add labeled details for participants/cues; full output stays accessible. Extend readonly proposal detail and Outfit create/reuse/defer decisions; show previous/new people, cues, scope, references, findings and all3 exact-copy modes.
-- [ ] Test keyboard tabs/drawers/focus/ESC, accessible labels, copy long text/line endings and no writes before approval. Run `npm test -- --run src/__tests__/ensembleControls.test.tsx src/__tests__/ensemblePreview.test.tsx src/__tests__/recipeChangeSetPreview.test.tsx src/__tests__/dialogueCompatibility.test.tsx --maxWorkers=1 --minWorkers=1`; expected all pass and typecheck0. Signed scoped commit.
+- [x] Write RED tests for explicit idempotent opt-in, actual character/variant ownership, primary/presence/removal/cue linking, ordered exact multi-cue editing, per-person anchor fallback and template inclusion/omission review.
+- [x] Keep compact rows and add labeled details for participants/cues; full output stays accessible. Extend readonly proposal detail and Outfit create/reuse/defer decisions; show previous/new people, cues, scope, references, findings and all3 exact-copy modes.
+- [x] Test keyboard tabs/drawers/focus/ESC, accessible labels, copy long text/line endings and no writes before approval. Run `npm test -- --run src/__tests__/ensembleControls.test.tsx src/__tests__/ensemblePreview.test.tsx src/__tests__/recipeChangeSetPreview.test.tsx src/__tests__/dialogueCompatibility.test.tsx --maxWorkers=1 --minWorkers=1`; expected all pass and typecheck0. Signed scoped commit.
 
 ## Task 7: Synthetic end-to-end, native compatibility and screenshots
 

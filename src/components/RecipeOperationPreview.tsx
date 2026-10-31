@@ -11,6 +11,7 @@ import type { RecipeResolvedPreview } from "../domain/changeSetRecipe";
 import { ORDERED_BUILDER_SLOTS } from "../domain/promptAssembler";
 import { SLOT_LABELS } from "../domain/validation";
 import { CinematographyTabs } from "./CinematographyTabs";
+import { EnsembleSummary } from './EnsembleSummary';
 const modes = [
   { value: "full", label: "Full" },
   { value: "structured", label: "Structured" },
@@ -79,6 +80,9 @@ export function RecipeOperationPreview({
               : "Assembled recipe ready for your review."
           : "Assembly blocked. No scene will be saved. Download this package to complete it later."}
       </p>
+      {resolved?.previousEnsemble&&<details><summary>Previous frozen participants and cues (unchanged)</summary><EnsembleSummary ensemble={resolved.previousEnsemble} label="Previous ensemble"/></details>}
+      {resolved?.ensemble&&<EnsembleSummary ensemble={resolved.ensemble}/>}
+      {!resolved?.ensemble&&operation.ensemble&&<details><summary>Unresolved participant and cue requests</summary><pre>{JSON.stringify(operation.ensemble,null,2)}</pre></details>}
       <div className="import-recipe-components">
         <table aria-label="Resolved recipe components">
           <thead>

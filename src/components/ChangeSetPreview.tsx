@@ -10,6 +10,7 @@ import { CANDIDATE_CATEGORY } from "../domain/changeSetCandidates";
 import { StudioDialog } from "./StudioDialog";
 import { isRecipeOperation } from "../types/changeSet";
 import { RecipeOperationPreview } from "./RecipeOperationPreview";
+import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 export function ChangeSetPreview({
   preview,
@@ -54,7 +55,7 @@ export function ChangeSetPreview({
         !["shot.select_take", "shot.set_status"].includes(t),
     ],
     ["Scenes", (t: string) => t.startsWith("scene.")],
-    ["Reusable candidates", (t: string) => t.startsWith("asset.")],
+    ["Reusable candidates", (t: string) => t.startsWith("asset.")||t.startsWith('variant.')],
     [
       "Preference and status",
       (t: string) => ["shot.select_take", "shot.set_status"].includes(t),
@@ -105,6 +106,7 @@ export function ChangeSetPreview({
             <dt>New scenes</dt>
             <dd>{plan.summary.scenes}</dd>
           </div>
+          {changeSet.schema==='krakinai.change-set.v3'&&<div><dt>New Outfit variants</dt><dd>{plan.variants?.length??0}</dd></div>}
           <div>
             <dt>Planned runtime</dt>
             <dd>{plan.summary.plannedSeconds}s</dd>
@@ -274,6 +276,7 @@ export function ChangeSetPreview({
               Approve production status changes
             </label>
           )}
+          <OutfitReviewDecisions changeSet={changeSet} approval={approval} plan={plan} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
           {assetOps.length > 0 && (
             <details className="import-group">
               <summary>Reusable asset decisions ({assetOps.length})</summary>

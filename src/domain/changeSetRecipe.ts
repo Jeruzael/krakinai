@@ -269,6 +269,7 @@ export function recipeDraftPreview(draft: SceneDraft, parent?: SavedScene) {
       parent && Object.keys(parent.manualOutputs).length,
     ),
     parentOutputs: clone(parent?.outputs),
+    ...(parent?.ensemble?{previousEnsemble:clone(parent.ensemble)}:{}),
     outputs: undefined as SavedScene["outputs"] | undefined,
   };
 }

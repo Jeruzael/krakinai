@@ -58,6 +58,10 @@ import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks,
 import { SourceMediaPicker } from '../components/SourceMediaPicker';
 import { CameraComposer } from '../components/CameraComposer';
 import { rebaseCameraComposition, clearCameraComposition } from '../domain/cameraComposition';
+import { EnsembleControls } from '../components/EnsembleControls';
+import { EnsembleTemplateChoice } from '../components/EnsembleTemplateChoice';
+import { getSceneSnapshotEntries } from '../domain/ensembleReferences';
+import { validateSceneEnsemble } from '../domain/ensembleValidation';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
@@ -96,6 +100,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [tplName, setTplName] = useState('');
   const [tplDesc, setTplDesc] = useState('');
   const [tplIncludeChar, setTplIncludeChar] = useState(false);
+  const [tplEnsembleMode,setTplEnsembleMode]=useState<'full'|'shared_only'>();
+  const [tplEnsembleConfirmed,setTplEnsembleConfirmed]=useState(false);
+  const [ensembleRequest,setEnsembleRequest]=useState<{kind:'participants'|'cues';id?:string;token:number}>();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -128,7 +135,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
 
   const persistDraftImmediate = async (
     nextDraft: SceneDraft,
-    bumpRevision = true
+    bumpRevision = true,
+    reportFailure = false
   ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSaveState('saving');
@@ -136,7 +144,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     try {
       const saved = await saveSceneDraft({
         ...nextDraft,
-        ...(nextDraft.revisionIntent?{expectedInputRevision:nextDraft.inputRevision}:{}),
+        ...(nextDraft.revisionIntent||nextDraft.ensemble?{expectedInputRevision:nextDraft.inputRevision}:{}),
         bumpInputRevision: bumpRevision,
       });
       setDraft(saved);
@@ -148,6 +156,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         err instanceof Error ? err.message : 'Failed to save draft locally.';
       setSaveState('error');
       setSaveError(msg);
+      if(reportFailure)throw Error(msg);
       return undefined;
     }
   };
@@ -185,14 +194,12 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     role: string;
   }> = [];
 
-  for (const slot of ORDERED_BUILDER_SLOTS) {
-    const snap = activeSlots[slot];
-    if (!snap) continue;
+  for (const {slot,snapshot:snap,participantId} of getSceneSnapshotEntries(activeDraft,{activeOnly:true})) {
     for (const link of snap.mediaLinks ?? []) {
       referenceBoardItems.push({
         slot,
         slotLabel: SLOT_LABELS[slot],
-        sourceTitle: snap.sourceTitle,
+        sourceTitle: participantId?`${draft.ensemble!.participants.find(p=>p.id===participantId)!.character.sourceTitle} · ${snap.sourceTitle}`:snap.sourceTitle,
         mediaId: link.mediaId,
         role: link.role,
       });
@@ -455,6 +462,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         name: tplName,
         description: tplDesc,
         includeCharacterIdentity: tplIncludeChar && !getShotTypeRules(draft).inapplicableSlots.includes('character'),
+        ...(draft.ensemble?{ensembleMode:tplEnsembleMode,confirmEnsembleOmissions:tplEnsembleConfirmed}:{}),
       });
       await refreshSnapshot();
       setShowTemplateModal(false);
@@ -488,7 +496,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     style: Palette,
   };
   const detailSnapshot = detailSlot ? draft.slots[detailSlot] : undefined;
+  const openEnsemble=(kind:'participants'|'cues',id?:string)=>setEnsembleRequest(previous=>({kind,id,token:(previous?.token??0)+1}));
   const openDetails = (slot: BuilderSlot) => {
+    if(draft.ensemble&&['character','wardrobe'].includes(slot)){openEnsemble('participants',draft.ensemble.primaryParticipantId??undefined);return;}
     const selected = draft.slots[slot];
     if (!selected) {
       setPickerSlot(slot);
@@ -501,6 +511,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const preflightFindings = runScenePreflight(draft, mediaMap);
   const openPreflightComponent = (component: PreflightFinding['components'][number]) => {
     setShowPreflight(false);
+    if(draft.ensemble&&component==='dialogue'){openEnsemble('cues');return;}
     if (ORDERED_BUILDER_SLOTS.includes(component as BuilderSlot)) openDetails(component as BuilderSlot);
     else requestAnimationFrame(() => {
       const target = document.querySelector<HTMLElement>(`[data-preflight="${component === 'references' && shotRules.sourceKind ? 'source' : component}"]`);
@@ -542,6 +553,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
             className="btn btn-secondary btn-sm"
             onClick={() => {
               setTplName(draft.title || 'Custom Arrangement');
+              setTplEnsembleMode(undefined);setTplEnsembleConfirmed(false);
               setShowTemplateModal(true);
             }}
           >
@@ -689,6 +701,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
             <div className="form-group builder-shot-type">
               <label htmlFor="builder-shot-type" className="form-label">Shot Type</label>
               <select id="builder-shot-type" className="select" value={resolveShotType(draft)} aria-describedby="builder-shot-description" onChange={event => {
+                if(draft.ensemble){const error=validateSceneEnsemble({...draft,shotType:event.target.value as ShotType})[0];if(error){showToast(`Review Participants and ordered cues before changing Shot Type. ${error}`,'error');return;}}
                 setDetailSlot(null); setPickerSlot(null);
                 scheduleDraftAutosave({ ...draft, shotType: event.target.value as ShotType });
               }}>{SHOT_TYPES.map(type => <option key={type} value={type}>{SHOT_TYPE_LABELS[type]}</option>)}</select>
@@ -763,7 +776,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                       className="btn btn-secondary recipe-row-change"
                       aria-label={`${selected ? 'Change' : 'Select'} ${recipeLabels[slot]}`}
                       disabled={inactive}
-                      onClick={() => setPickerSlot(slot)}
+                      onClick={() => draft.ensemble&&['character','wardrobe'].includes(slot)?openEnsemble('participants',draft.ensemble.primaryParticipantId??undefined):setPickerSlot(slot)}
                     >
                       {selected ? 'Change' : 'Select'}
                     </button>
@@ -771,6 +784,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 );
               })}
             </div>
+            <EnsembleControls draft={draft} assets={snapshot.assets} variants={snapshot.variants} request={ensembleRequest} onChange={async next=>!!(await persistDraftImmediate(next,true,true))}/>
             <div className="recipe-options">
               <button
                 type="button"
@@ -782,7 +796,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               >
                 Compose Camera directions
               </button>
-              {!shotRules.inapplicableSlots.includes('character') && <GenerationIdentityControl source={activeDraft} liveMaster={snapshot.assets.find(asset => asset.id === activeSlots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />}
+              {!draft.ensemble&&!shotRules.inapplicableSlots.includes('character') && <GenerationIdentityControl source={activeDraft} liveMaster={snapshot.assets.find(asset => asset.id === activeSlots.character?.sourceId)} onChange={async generation => { await persistDraftImmediate({...draft,generation}, false); }} />}
               <details key={shotRules.instructionLabel} className="studio-disclosure" open={shotRules.requiresInstructions || undefined}>
                 <summary>
                   {shotRules.instructionLabel}{' '}
@@ -809,7 +823,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                   />
                 </div>
               </details>
-              <details className="studio-disclosure">
+              {!draft.ensemble&&<details className="studio-disclosure">
                 <summary>
                   Dialogue{' '}
                   <span className="muted-text">
@@ -953,7 +967,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     <option value="requested">Captions requested</option>
                   </select>
                 </div>
-              </details>
+              </details>}
               <details className="studio-disclosure">
                 <summary>
                   Shot Settings{' '}
@@ -1046,7 +1060,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                     openConfirmDialog({
                       title: 'Reset Scene Draft?',
                       message:
-                        'Clear all selected slots and instructions in this draft?',
+                        draft.ensemble?'Clear all participants, clothing, ordered cues, selected slots and instructions in this draft? Saved scenes and stored media stay available.':'Clear all selected slots and instructions in this draft?',
                       confirmLabel: 'Reset Draft',
                       danger: true,
                       onConfirm: async () => {
@@ -1054,6 +1068,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                           ...draft,
                           title: 'Untitled Scene Draft',
                           slots: {},
+                          ...(draft.ensemble?{ensemble:{version:1 as const,primaryParticipantId:null,participants:[],dialogueCues:[]}}:{}),
                           extraRequiredSlots: [],
                           sceneInstructions: '',
                           dialogue: undefined,
@@ -1341,6 +1356,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 type="submit"
                 form="studio-template-form"
                 className="btn btn-primary"
+                disabled={!!draft.ensemble&&(!tplEnsembleMode||(tplEnsembleMode==='shared_only'&&!tplEnsembleConfirmed))}
               >
                 Save Template
               </button>
@@ -1371,7 +1387,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 onChange={(event) => setTplDesc(event.target.value)}
               />
             </div>
-            <label className="studio-inline">
+            {draft.ensemble?<EnsembleTemplateChoice ensemble={draft.ensemble} mode={tplEnsembleMode} confirmed={tplEnsembleConfirmed} onMode={mode=>{setTplEnsembleMode(mode);setTplEnsembleConfirmed(false);}} onConfirm={setTplEnsembleConfirmed}/>:<label className="studio-inline">
               <input
                 type="checkbox"
                 checked={tplIncludeChar}
@@ -1380,7 +1396,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               />
               Include selected character identity for private reuse (excluded by
               default)
-            </label>
+            </label>}
             <p className="muted-text">Shot Type: {SHOT_TYPE_LABELS[resolveShotType(draft)]}. The template copies applicable layers and requirements. Attach an original source to each new graphic or footage draft.</p>
           </form>
         </StudioDialog>

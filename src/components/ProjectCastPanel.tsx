@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { CharacterBibleEntry, Collection } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
-import { getProjectCast } from '../domain/projectContinuity';
+import { getProjectCast,getUnboundProjectParticipants } from '../domain/projectContinuity';
 import { getIdentityAnchorStatus } from '../domain/identityAnchors';
 import { getMediaDisplayName } from '../domain/mediaNaming';
 import { upsertProjectCast, removeProjectCast } from '../storage/projectContinuity';
@@ -30,6 +30,7 @@ export const ProjectCastPanel: React.FC<Props> = ({ collection, onChanged }) => 
   const variants = snapshot?.variants ?? [];
   const media = snapshot?.media ?? [];
   const cast = getProjectCast(collection, scenes, assets);
+  const unbound=getUnboundProjectParticipants(collection,scenes);
   const selected = cast.find(row => row.characterId === dialog?.characterId);
   const available = assets.filter(asset => asset.category === 'characters' && !cast.some(row => row.characterId === asset.id));
   const open = (kind: 'edit' | 'remove', characterId: string) => {
@@ -57,6 +58,7 @@ export const ProjectCastPanel: React.FC<Props> = ({ collection, onChanged }) => 
     });
   };
   return <section className="project-cast" aria-label="Project Cast">
+    {unbound.length>0&&<details className="banner banner-info"><summary>{unbound.length} unbound template participant(s)</summary><p>These frozen identities have no inferred Character ID or Character Bible. Bind a real Character explicitly in a new recipe version when needed.</p>{unbound.map(p=><p key={`${p.shotId}:${p.sceneId}:${p.participantId}`}>{p.name} · shot {p.shotId} · participant {p.participantId}</p>)}</details>}
     <div className="project-cast-heading"><div><h3>Characters</h3><p className="muted-text">Project Bible notes are manual. Master identities and approved anchors remain read only here.</p></div><span className="badge">{cast.length} cast</span></div>
     <div className="project-cast-add"><label htmlFor={`cast-picker-${collection.id}`}>Add existing character</label><select id={`cast-picker-${collection.id}`} value={pickerId} onChange={event => setPickerId(event.target.value)}><option value="">Choose a character</option>{available.map(asset => <option key={asset.id} value={asset.id}>{asset.title}</option>)}</select><button type="button" className="btn btn-secondary btn-sm" disabled={!pickerId || busy} onClick={() => void add()}>Add to cast</button></div>
     {error && !dialog && <p role="alert">{error}</p>}

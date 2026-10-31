@@ -53,7 +53,7 @@ export function selectParticipantIdentity(
 export function applyRecipeEnsemblePatch(
   source: SceneDraft,
   patch: RecipeEnsemblePatch,
-  state: ChangeSetState,
+  state: Pick<ChangeSetState, 'assets' | 'variants'>,
   resolve: ResolveEnsembleBinding,
 ): SceneDraft {
   const next = enableSceneEnsemble(source),
