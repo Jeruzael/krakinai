@@ -57,9 +57,9 @@
 
 **Files:** types/changeSet.ts; new domain/ensembleChangeSetSchema.ts; changeSetSchema.ts, changeSetValidation.ts, changeSetLedger.ts, mcpProtocol.ts; scripts/export-change-set-schema.mjs; docs/change-set-v3.schema.json; new ensembleChangeSetContract.test.ts.
 **Interfaces:** RecipeEnsemblePatch contains explicit participantUpserts/removeParticipantIds/participantOrder/primaryParticipantId/dialogueCues; OutfitCandidate operation type with exact stored parent ID/revision. Optional variantDecisions, variantCandidates and variantId receipt mappings leave historical defaults/shapes intact. CHANGE_SET_V3_SCHEMA joins existing supported union; no new MCP tools.
-- [ ] Write RED tests for v3 patches/Outfit proposal-review, wrong/forward kinds, unknown fields/snapshots/approval injection,8/32 bounds, exact existing parent, combined candidate caps and old default/receipt/schema parity.
-- [ ] Define exact external refs and independent human variant decisions; strict validation of conflicts, explicit removals/reorder and cue replacements. Old versions reject new fields and reject reconstructing ensemble parents at planning, not parsing unrelated metadata operations.
-- [ ] Export/check v3 without rewriting either frozen artifact; test actual MCP tool schemas. Run `npm test -- --run src/__tests__/ensembleChangeSetContract.test.ts src/__tests__/recipeChangeSetContract.test.ts src/__tests__/changeSetContract.test.ts src/__tests__/mcpProtocol.test.ts --maxWorkers=1 --minWorkers=1`; expected all pass; schema --check/typecheck0. Signed scoped commit.
+- [x] Write RED tests for v3 patches/Outfit proposal-review, wrong/forward kinds, unknown fields/snapshots/approval injection,8/32 bounds, exact existing parent, combined candidate caps and old default/receipt/schema parity.
+- [x] Define exact external refs and independent human variant decisions; strict validation of conflicts, explicit removals/reorder and cue replacements. Old versions reject new fields; Task5 adds the stateful planner guard against reconstructing ensemble parents, while leaving metadata-only operations available.
+- [x] Export/check v3 without rewriting either frozen artifact; test actual MCP tool schemas. Run `npm test -- --run src/__tests__/ensembleChangeSetContract.test.ts src/__tests__/recipeChangeSetContract.test.ts src/__tests__/changeSetContract.test.ts src/__tests__/mcpProtocol.test.ts --maxWorkers=1 --minWorkers=1`; expected all pass; schema --check/typecheck0. Signed scoped commit.
 
 ## Task 5: Atomic ensemble imports, variants and MCP boundaries
 

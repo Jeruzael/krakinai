@@ -4,6 +4,7 @@ import type {
   ReferencePack,
   SceneGenerationChoice,
 } from "./domain";
+export const ENSEMBLE_LOCAL_ID_PATTERN='^(?!(?:constructor|prototype|__proto__)$)[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$';
 export const ENSEMBLE_LIMITS = Object.freeze({
   participants: 8,
   cues: 32,

@@ -2,11 +2,13 @@ import type { ChangeSet, ChangeOperation } from "../types/changeSet";
 import {
   CHANGE_SET_SCHEMA,
   CHANGE_SET_V2_SCHEMA,
+  CHANGE_SET_V3_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
 import { isRecipeOperation } from "../types/changeSet";
 import { validatePerformanceDirection } from "./dialoguePerformance";
 import { validateCameraComposition } from "./cameraCompositionValidation";
+import{validateEnsembleRecipePatch}from'./ensembleChangeSetSchema';
 export const MAX_CHANGE_SET_BYTES = 20 * 1024 * 1024;
 export function validateJsonRule(
   rule: JsonRule,
@@ -132,6 +134,7 @@ const createdKind = (o: ChangeOperation) =>
       ? "shot"
       : o.type === "asset.propose"
         ? "candidate"
+        : o.type.startsWith('variant.')?'variant_candidate'
         : o.type.startsWith("scene.")
           ? "scene"
           : undefined;
@@ -151,7 +154,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   }
   inspect(value);
   validateJsonRule(
-    value &&
+    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
       typeof value === "object" &&
       "schema" in value &&
       value.schema === "krakinai.change-set.v2"
@@ -179,7 +182,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     projects += Number(operation.type === "project.create");
     shots += Number(operation.type === "shot.create");
     scenes += Number(operation.type.startsWith("scene."));
-    candidates += Number(operation.type.startsWith("asset."));
+    candidates += Number(operation.type.startsWith("asset.")||operation.type.startsWith('variant.'));
     if ("pendingInputs" in operation)
       pending += operation.pendingInputs?.length ?? 0;
   });
@@ -220,6 +223,12 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   };
   data.operations.forEach((o, i) => {
     if (isRecipeOperation(o)) {
+      validateEnsembleRecipePatch(o);
+      const bind=(target:{id:string}|{ref:string},kind:'character'|'wardrobe'|'outfit')=>{
+        use(target,kind==='outfit'?'variant_candidate':'asset',i);
+        if('ref'in target){const referenced=refs.get(target.ref);if(!referenced)return;const predecessor=data.operations[referenced.index];if(kind==='outfit'? !predecessor.type.startsWith('variant.'):predecessor.type!=='asset.propose'||predecessor.kind!==kind)throw Error('Wrong participant candidate reference type/kind.');}
+      };
+      for(const p of o.ensemble?.participantUpserts??[]){if(p.character)bind(p.character.asset,'character');if(p.wardrobe){if('asset'in p.wardrobe)bind(p.wardrobe.asset,'wardrobe');else bind(p.wardrobe.variant,'outfit')}}
       const cleared = o.clearSlots ?? [],
         bound = [...(o.assetRefs ?? []), ...(o.variantRefs ?? [])].map(
           (r) => r.slot,
@@ -270,6 +279,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
           "dialogue",
           "cameraComposition",
           "identitySource",
+          'ensemble',
         ].some(
           (k) =>
             k in o &&
@@ -301,7 +311,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     if ("prompt" in o && o.prompt && !o.prompt.text.trim())
       throw Error("A nonblank direct prompt is required.");
     if (
-      o.type === "asset.propose" &&
+      (o.type === "asset.propose"||o.type==='variant.propose') &&
       (!o.promptText.trim() || o.tags.some((t) => !t.trim()))
     )
       throw Error("Invalid candidate prompt/tags.");

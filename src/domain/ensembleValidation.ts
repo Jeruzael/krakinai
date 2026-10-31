@@ -1,4 +1,4 @@
-import { ENSEMBLE_LIMITS } from "../types/ensemble";
+import { ENSEMBLE_LIMITS,ENSEMBLE_LOCAL_ID_PATTERN } from "../types/ensemble";
 import { canonicalStringify } from "./changeSetCanonical";
 import { validatePhase4Record } from "./phase4Validation";
 import { validatePerformanceDirection } from "./dialoguePerformance";
@@ -10,8 +10,7 @@ const text = (v: unknown, max: number, required = false): v is string =>
   typeof v === "string" && v.length <= max && (!required || !!v.trim());
 const id = (v: unknown): v is string =>
   text(v, ENSEMBLE_LIMITS.id, true) &&
-  /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/.test(v) &&
-  !["constructor", "prototype", "__proto__"].includes(v);
+  new RegExp(ENSEMBLE_LOCAL_ID_PATTERN).test(v);
 const keys = (v: Record<string, unknown>, allowed: string[]) =>
   Object.keys(v).every((k) => allowed.includes(k));
 const same = (a: unknown, b: unknown) =>
@@ -337,24 +336,12 @@ export function validateSceneEnsemble(
     }
     const performance = validatePerformanceDirection(cue.performanceDirection);
     if (performance) errors.push(label + performance);
-    if (cue.timing !== undefined) {
-      const t = cue.timing;
-      if (
-        !record(t) ||
-        !keys(t, ["startSeconds", "endSeconds"]) ||
-        typeof t.startSeconds !== "number" ||
-        typeof t.endSeconds !== "number" ||
-        !Number.isFinite(t.startSeconds) ||
-        !Number.isFinite(t.endSeconds) ||
-        t.startSeconds < 0 ||
-        t.endSeconds <= t.startSeconds ||
-        (typeof duration === "number" && t.endSeconds > duration)
-      )
-        errors.push(
-          label +
-            "intended timing must have a finite start/end within the scene duration.",
-        );
-    }
+    const timing=validateDialogueCueTiming(cue.timing,typeof duration==='number'?duration:undefined);
+    if(timing)errors.push(label+timing);
   }
   return errors;
+}
+export function validateDialogueCueTiming(t:unknown,duration?:number):string|undefined{
+ if(t===undefined)return;
+ if(!record(t)||!keys(t,['startSeconds','endSeconds'])||typeof t.startSeconds!=='number'||typeof t.endSeconds!=='number'||!Number.isFinite(t.startSeconds)||!Number.isFinite(t.endSeconds)||t.startSeconds<0||t.endSeconds<=t.startSeconds||typeof duration==='number'&&t.endSeconds>duration)return'intended timing must have a finite start/end within the scene duration.';
 }

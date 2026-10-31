@@ -19,6 +19,7 @@ import type {
   PromptOrigin,
 } from "./sceneAuthoring";
 import type { CameraCompositionChoice } from "./cinematography";
+import type{DialogueCue}from'./ensemble';
 export type RecordTarget = { id: string } | { ref: string };
 export type ProjectTarget =
   { id: string; expectedRevision: number } | { ref: string };
@@ -166,7 +167,14 @@ type Review = OperationBase & {
   candidateId: string;
   expectedRevision: number;
 };
+export type ParticipantAssetBinding={asset:{id:string};expectedRevision:number}|{asset:{ref:string}};
+export type ParticipantWardrobeBinding=ParticipantAssetBinding|{variant:{id:string};expectedRevision:number}|{variant:{ref:string}};
+export interface RecipeParticipantUpsert{id:string;character?:ParticipantAssetBinding;wardrobe?:ParticipantWardrobeBinding|null;role?:string;presence?:'on_camera'|'off_camera';performanceNotes?:string;identitySource?:'master'|'approved_anchor'}
+export interface RecipeEnsemblePatch{version:1;participantUpserts?:RecipeParticipantUpsert[];removeParticipantIds?:string[];participantOrder?:string[];primaryParticipantId?:string|null;dialogueCues?:DialogueCue[]}
+export type OutfitProposalOperation=OperationBase&{type:'variant.propose';clientRef:string;variantType:'Outfit';parentCharacterId:string;expectedParentRevision:number;title:string;promptText:string;description?:string;tags:string[];notes?:string;sourceScene?:RecordTarget};
+export type OutfitReviewOperation=OperationBase&{type:'variant.review_candidate';candidateId:string;expectedRevision:number};
 export interface RecipeSceneFields extends Omit<ImportedSceneFields, "prompt"> {
+  ensemble?:RecipeEnsemblePatch;
   sceneInstructions?: string;
   avoidText?: string;
   clearSlots?: BuilderSlot[];
@@ -223,9 +231,11 @@ export type ChangeOperation =
   | Status
   | Propose
   | Review
+  | OutfitProposalOperation
+  | OutfitReviewOperation
   | RecipeSceneOperation;
 export interface ChangeSet {
-  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2";
+  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3";
   changeSetId: string;
   source: { kind: PromptOrigin; label?: string };
   title?: string;
@@ -239,6 +249,7 @@ export interface CandidateDecision {
   acknowledgeDuplicate?: boolean;
 }
 export interface ChangeSetApproval {
+  variantDecisions?:Record<string,{action:'defer'|'create'|'reuse';variantId?:string;expectedRevision?:number;acknowledgeDuplicate?:boolean}>;
   storyboard: boolean;
   scenes: boolean;
   preferred: boolean;
@@ -275,7 +286,8 @@ export interface ImportCandidate {
   updatedAt: string;
 }
 export interface ImportMapping {
-  kind: "project" | "shot" | "scene" | "candidate";
+  kind: "project" | "shot" | "scene" | "candidate" | 'variant_candidate';
+  variantId?:string;
   id: string;
   assetId?: string;
 }
@@ -289,6 +301,8 @@ export interface ImportOperationResult {
     | "candidate_pending"
     | "asset_created"
     | "asset_reused"
+    | 'variant_created'
+    | 'variant_reused'
     | "unchanged";
 }
 export interface ChangeSetReceipt {
@@ -306,10 +320,12 @@ export interface ChangeSetReceipt {
   projectRevisions: Record<string, { before: number; after: number }>;
 }
 export interface ImportLedger {
+  variantCandidates?:ImportVariantCandidate[];
   version: 1;
   receipts: ChangeSetReceipt[];
   candidates: ImportCandidate[];
 }
+export interface ImportVariantCandidate extends Omit<ImportCandidate,'kind'|'assetId'>{version:1;variantType:'Outfit';parentCharacterId:string;expectedParentRevision:number;variantId?:string}
 export interface ImportFinding {
   operationId?: string;
   severity: "blocking" | "advisory";
@@ -321,7 +337,7 @@ export interface CandidateMatch {
   title: string;
   revision: number;
   reason: string;
-  kind: CandidateKind;
+  kind: CandidateKind|'outfit';
 }
 export interface ImportOperationPreview {
   operationId: string;
@@ -340,6 +356,8 @@ export interface ChangeSetAllocation {
   ids: Record<string, string>;
 }
 export interface ChangeSetPlan {
+  variants?:Variant[];
+  variantCandidates?:ImportVariantCandidate[];
   findings: ImportFinding[];
   operations: ImportOperationPreview[];
   idMappings: Record<string, ImportMapping>;
