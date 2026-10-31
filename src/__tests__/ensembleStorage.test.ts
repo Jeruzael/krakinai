@@ -22,17 +22,86 @@ import {
   writeRecord,
 } from "./fixtures/ensembleStorageFixture";
 import type { SceneDraft } from "../types/domain";
+import { createSnapshotFromAsset } from "../domain/promptAssembler";
 let input: SceneDraft;
 beforeEach(async () => {
   input = await ensembleStorageFixture();
 });
-it('advances opted-in draft revisions and rejects a stale explicit save without changing the newer record',async()=>{
- const first=await saveSceneDraft(input), second=await saveSceneDraft({...first,title:'Newer synthetic draft',expectedInputRevision:first.inputRevision});
- expect(second.inputRevision).toBe(first.inputRevision+1);
- const metadata=await saveSceneDraft({...second,reviewNotes:'Metadata only',bumpInputRevision:false,expectedInputRevision:second.inputRevision});
- expect(metadata.inputRevision).toBe(second.inputRevision);
- await expect(saveSceneDraft({...first,title:'Stale local edit',expectedInputRevision:first.inputRevision})).rejects.toThrow(/another tab|compare/i);
- expect((await getAllSnapshot()).drafts.find(d=>d.id===first.id)).toEqual(metadata);
+it.each([false, true])(
+  "reads every participant master in the actual authored-save transaction (stale secondary=%s)",
+  async (stale) => {
+    const state = await getAllSnapshot(),
+      live = state.assets.find((a) => a.id === "lucas")!;
+    live.identityRevision = 1;
+    live.identityAnchor = {
+      text: "Approved secondary synthetic anchor.",
+      approvedText: "Approved secondary synthetic anchor.",
+      approvedAt: "2026-10-01T01:00:00.000Z",
+      approvedMasterIdentityRevision: 1,
+    };
+    await writeRecord("assets", live);
+    const p = input.ensemble!.participants[1];
+    p.character = createSnapshotFromAsset(live);
+    p.generation = {
+      identitySource: "approved_anchor",
+      anchor: {
+        text: live.identityAnchor.text,
+        approvedAt: live.identityAnchor.approvedAt!,
+        approvedMasterIdentityRevision: 1,
+      },
+    };
+    const d = await saveSceneDraft(syncEnsemblePrimary(input));
+    if (stale)
+      await writeRecord("assets", {
+        ...live,
+        identityRevision: 2,
+        promptText: "Changed live identity must not replace the frozen master.",
+      });
+    const scene = await saveAuthoredScene(d.id, {
+      requestId: `secondary-anchor-${stale}`,
+      expectedInputRevision: d.inputRevision,
+    });
+    expect(scene.ensemble!.participants[1].generation?.identitySource).toBe(
+      stale ? "master" : "approved_anchor",
+    );
+    if (stale)
+      expect(
+        scene.ensemble!.participants[1].generation?.fallbackReason,
+      ).toMatch(/stale|unavailable/);
+    else
+      expect(scene.ensemble!.participants[1].generation?.anchor?.text).toBe(
+        live.identityAnchor.text,
+      );
+    expect(scene.outputs.full).toContain(p.character.promptText);
+    expect(scene.outputs.full).not.toContain(live.identityAnchor.text);
+    expect(scene.ensemble!.participants[1].character).toEqual(p.character);
+  },
+);
+it("advances opted-in draft revisions and rejects a stale explicit save without changing the newer record", async () => {
+  const first = await saveSceneDraft(input),
+    second = await saveSceneDraft({
+      ...first,
+      title: "Newer synthetic draft",
+      expectedInputRevision: first.inputRevision,
+    });
+  expect(second.inputRevision).toBe(first.inputRevision + 1);
+  const metadata = await saveSceneDraft({
+    ...second,
+    reviewNotes: "Metadata only",
+    bumpInputRevision: false,
+    expectedInputRevision: second.inputRevision,
+  });
+  expect(metadata.inputRevision).toBe(second.inputRevision);
+  await expect(
+    saveSceneDraft({
+      ...first,
+      title: "Stale local edit",
+      expectedInputRevision: first.inputRevision,
+    }),
+  ).rejects.toThrow(/another tab|compare/i);
+  expect(
+    (await getAllSnapshot()).drafts.find((d) => d.id === first.id),
+  ).toEqual(metadata);
 });
 it("preserves an exact optional ensemble in a stored draft, both immutable save paths, copies and revision plans", async () => {
   const d = await saveSceneDraft(input);

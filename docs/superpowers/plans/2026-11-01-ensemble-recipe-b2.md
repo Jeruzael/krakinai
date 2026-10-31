@@ -82,10 +82,10 @@
 
 **Files:** new e2e/ensemble-fixture.mjs, ensemble-recipes.spec.mjs, ensemble-mcp.spec.mjs; minimal existing test-helper/native stdio schema assertions as demonstrated. Curated screenshots/evidence after successful runs only.
 **Interfaces:** production APIs and actual SDK preview/submit; all fresh isolated profiles refuse nonempty seeding. Receipt IDs/old records/preferred/media hashes are actual DB/Blob values. Real native signer is Valid under AllSigned; synthetic and native evidence labeled separately.
-- [ ] Add browser regressions for ensemble/Outfit create/reuse/defer, missing originals and replacement, stale tab/scope, immutable revisions and same-file roles; observe required RED before UI fixes if defects found.
-- [ ] Verify Script/Cast/wardrobe/template round trips, Full/Structured/Compact copy/download, reordered cues/participants and old outputs. Run actual SDK v3 through browser-only Apply/receipt/replay/revocation at IPv4 and localhost; check all response call IDs and metadata privacy.
-- [ ] Capture1440/768/390 and equivalent200% reflow, keyboard/focus. Rebuild/sign helper using reviewed procedure; run existing installedCLI/native regressions and new signed SDK acceptance without real-profile access. Full installedCLI ensemble remains B3.
-- [ ] Run `npx playwright test e2e/ensemble-recipes.spec.mjs e2e/ensemble-mcp.spec.mjs` plus relevant existing native regressions with explicit opt-in. Expected all cases pass; any unsupported native run remains unverified, never counted passed. Signed scoped commit.
+- [x] Add browser regressions for ensemble/Outfit create/reuse/defer, missing originals and replacement, stale tab/scope, immutable revisions and same-file roles; observe required RED before UI fixes if defects found.
+- [x] Verify Script/Cast/wardrobe/template round trips, Full/Structured/Compact copy/download, reordered cues/participants and old outputs. Run actual SDK v3 through browser-only Apply/receipt/replay/revocation at IPv4 and localhost; check all response call IDs and metadata privacy.
+- [x] Capture1440/768/390 and equivalent200% reflow, keyboard/focus. Rebuild/sign helper using reviewed procedure; run existing installedCLI/native regressions and new signed SDK acceptance without real-profile access. Full installedCLI ensemble remains B3.
+- [x] Run `npx playwright test e2e/ensemble-recipes.spec.mjs e2e/ensemble-mcp.spec.mjs` plus relevant existing native regressions with explicit opt-in. Expected all cases pass; any unsupported native run remains unverified, never counted passed. Signed scoped commit.
 
 ## Task 8: Full evidence, independent review, signing and PR/CI
 

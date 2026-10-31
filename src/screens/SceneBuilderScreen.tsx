@@ -199,7 +199,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
       referenceBoardItems.push({
         slot,
         slotLabel: SLOT_LABELS[slot],
-        sourceTitle: participantId?`${draft.ensemble!.participants.find(p=>p.id===participantId)!.character.sourceTitle} · ${snap.sourceTitle}`:snap.sourceTitle,
+        sourceTitle: participantId&&slot==='wardrobe'?`${draft.ensemble!.participants.find(p=>p.id===participantId)!.character.sourceTitle} · ${snap.sourceTitle}`:snap.sourceTitle,
         mediaId: link.mediaId,
         role: link.role,
       });

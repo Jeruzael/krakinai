@@ -225,7 +225,13 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
                           entry,
                           true
                         );
-                        const label = `${entry.sourceTitle}: ${filename} (${entry.role})`;
+                        const participant = source.ensemble?.participants.find(
+                          (person) => person.id === entry.participantId
+                        );
+                        const participantLabel = entry.participantId
+                          ? `Participant ${entry.participantId}${participant ? ` (${participant.character.sourceTitle})` : ''}: `
+                          : '';
+                        const label = `${participantLabel}${entry.sourceTitle}: ${filename} (${entry.role})`;
                         return (
                           <li
                             key={entry.associationId}
@@ -286,6 +292,14 @@ export const ReferencePackManager: React.FC<ReferencePackManagerProps> = ({
                               >
                                 {entry.sourceTitle}
                               </strong>
+                              {entry.participantId && (
+                                <p className="muted-text">
+                                  Captured participant association: <code>{entry.participantId}</code>
+                                  {participant
+                                    ? ` · Current participant: ${participant.character.sourceTitle}`
+                                    : ' · Participant is no longer in this ensemble'}
+                                </p>
+                              )}
                               <span
                                 className={`badge ${index >= 0 ? 'badge-primary' : ''}`}
                               >

@@ -7,6 +7,8 @@ import {
 import { ensembleDraft } from "./ensembleFixture";
 import { recipeState } from "./recipeChangeSetFixture";
 import { syncEnsemblePrimary } from "../../domain/ensemble";
+export const ENSEMBLE_TEST_PNG_BASE64 =
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPwd3v6HwAE3AJ6zM4FjgAAAABJRU5ErkJggg==";
 export async function writeRecord(store: string, value: unknown) {
   const db = await openDatabase();
   await new Promise<void>((resolve, reject) => {
@@ -33,12 +35,10 @@ export async function ensembleStorageFixture(withMedia = false) {
       revision: p.character.sourceRevision,
     });
   if (withMedia) {
-    // Actual PNG fixture also used by the B1 backup tests; not opaque bytes with an image suffix.
-    const bytes = Uint8Array.from(
-      atob(
-        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGFEAAAAASUVORK5CYII=",
-      ),
-      (c) => c.charCodeAt(0),
+    // New CRC-correct 1x1 RGBA PNG; independently decoded in B2 browser acceptance.
+    // The inherited B1 byte fixture is retained separately and is not decodable.
+    const bytes = Uint8Array.from(atob(ENSEMBLE_TEST_PNG_BASE64), (c) =>
+      c.charCodeAt(0),
     );
     const media = await saveMediaAsset({
       filename: "synthetic-one-pixel.png",

@@ -590,7 +590,9 @@ export async function saveAuthoredScene(draftId:string,options:AuthoredSaveOptio
     const collections=await request<Collection[]>(tx.objectStore('collections').getAll());
     const masterId=!isDirectPrompt(draft)?getActiveSceneSlots(draft).character?.sourceId:undefined;
     const master=masterId?await request<PromptAsset|undefined>(tx.objectStore('assets').get(masterId)):undefined;
-    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets:master?[master]:[]},{id:generateId('scene'),now:new Date().toISOString()});
+    const masters=draft.ensemble?await Promise.all([...new Set(draft.ensemble.participants.filter(p=>p.character.sourceType==='asset').map(p=>p.character.sourceId))].map(id=>id===masterId?Promise.resolve(master):request<PromptAsset|undefined>(tx.objectStore('assets').get(id)))):[master];
+    const assets=masters.filter((asset):asset is PromptAsset=>!!asset);
+    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets},{id:generateId('scene'),now:new Date().toISOString()});
     if(result.collection)tx.objectStore('collections').put(result.collection);
     tx.objectStore('scenes').add(result.scene);
     await completion;return result.scene;

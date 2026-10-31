@@ -481,6 +481,18 @@
   }
 }
 @media (min-width: 1024px) {
+  .recipe-scroll { padding: 12px 18px; }
+  .recipe-title-label { margin-bottom: 2px; }
+  .recipe-title { margin-bottom: 2px; min-height: 38px; padding: 8px 12px; }
+  .recipe-scroll .builder-shot-type { margin-top: 2px; margin-bottom: 4px; gap: 4px; }
+  .recipe-scroll .builder-shot-type .select { min-height: 38px; padding: 8px 12px; }
+  .recipe-scroll .builder-shot-type .muted-text { margin-top: 2px; line-height: 1.35; }
+  .recipe-scroll .recipe-rows { gap: 4px; margin: 4px 0; }
+  .recipe-scroll .recipe-row { padding: 4px; }
+  .recipe-scroll .recipe-row-main { min-height: 34px; padding: 1px; }
+  .recipe-scroll .recipe-row-copy { gap: 2px; }
+  .recipe-scroll .recipe-row-icon { width: 28px; height: 28px; }
+  .recipe-scroll .recipe-row-change { min-height: 32px; padding: 4px 8px; }
   .recipe-workspace {
     height: calc(100dvh - var(--topbar-height) - 64px);
     min-height: 650px;
