@@ -3,7 +3,7 @@ import { request as rawRequest } from 'node:http';
 import { connect, type Socket } from 'node:net';
 import { createRelay, type RelayHandle, type VerificationRequest } from '../src/relay';
 import { createOffer, deriveHandshake, proof, checkProof, deriveEpoch, signMessage, verifyMessage, randomSecret, type EpochKeys } from '../../src/domain/mcpCrypto';
-import { BRIDGE_VERSION, resultData } from '../../src/domain/mcpProtocol';
+import { BRIDGE_VERSION, MCP_LIMITS, resultData } from '../../src/domain/mcpProtocol';
 
 const origin = 'http://127.0.0.1:4173';
 const handles: RelayHandle[] = [];
@@ -104,7 +104,17 @@ describe('loopback relay boundaries', () => {
   });
   it('rejects oversized and compressed HTTP inputs without trusting CORS', async () => {
     const { relay } = await setup();
-    expect((await post(relay.url, '/v1/pair/start', { value: 'x'.repeat(1310721) })).status).toBe(413);
+    // Exercise declared-length rejection without racing a large upload against Connection: close.
+    let oversizedRequest: ReturnType<typeof rawRequest> | undefined;
+    const oversized = await new Promise<{ status: number; body: string }>((resolve, reject) => {
+      const req = oversizedRequest = rawRequest(new URL('/v1/pair/start', relay.url), { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', 'Content-Length': MCP_LIMITS.frame + 1 } }, res => {
+        let body = ''; res.setEncoding('utf8');
+        res.on('data', part => { body += part; if (body.length > 8192) req.destroy(Error('Unexpected rejection response size')); });
+        res.on('error', reject); res.on('end', () => resolve({ status: res.statusCode!, body }));
+      });
+      req.on('error', reject); req.setTimeout(3000, () => req.destroy(Error('Oversized header rejection timed out'))); req.flushHeaders();
+    }).finally(() => oversizedRequest?.destroy());
+    expect(oversized.status).toBe(413); expect(JSON.parse(oversized.body)).toMatchObject({ ok: false, error: { code: 'PAYLOAD_TOO_LARGE' } });
     expect((await post(relay.url, '/v1/pair/start', {}, { 'content-encoding': 'gzip' })).status).toBe(415);
     const options = await fetch(relay.url + '/v1/pair/start', { method: 'OPTIONS', headers: { origin, 'access-control-request-method': 'POST', 'access-control-request-headers': 'content-type' } });
     expect(options.headers.get('access-control-allow-origin')).toBe(origin);

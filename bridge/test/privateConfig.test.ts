@@ -29,10 +29,21 @@ describe('Windows adapter configuration access', () => {
     await verifyConfigurationAccess(config);
     const powershell = resolve(process.env.SystemRoot!, 'System32/WindowsPowerShell/v1.0/powershell.exe');
     const env = Object.fromEntries(['SystemRoot', 'WINDIR', 'TEMP', 'TMP'].filter(key => process.env[key]).map(key => [key, process.env[key]]));
-    const run = (script: string, extra: Record<string, string> = {}) => promisify(execFile)(powershell, ['-NoProfile', '-NonInteractive', '-Command', script], { env: { ...env, KRAKINAI_TEST_CONFIG_FOLDER: folder, ...extra }, windowsHide: true, timeout: 10000, maxBuffer: 8192 });
-    const original = (await run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; $a=$d.GetAccessControl(); $old=$a.GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Access); $r=[Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),[Security.AccessControl.FileSystemRights]::Write,[Security.AccessControl.AccessControlType]::Allow); $a.AddAccessRule($r); $d.SetAccessControl($a); Write-Output $old")).stdout.trim();
-    try { await expect(verifyConfigurationAccess(config)).rejects.toThrow('CONFIGURATION_ACCESS_UNSAFE'); }
-    finally { await run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; $a=[Security.AccessControl.DirectorySecurity]::new(); $a.SetSecurityDescriptorSddlForm($env:KRAKINAI_TEST_ORIGINAL_ACL,[Security.AccessControl.AccessControlSections]::Access); $d.SetAccessControl($a)", { KRAKINAI_TEST_ORIGINAL_ACL: original }); }
-    await verifyConfigurationAccess(config);
+    const run = (script: string, extra: Record<string, string> = {}) => promisify(execFile)(powershell, ['-NoProfile', '-NonInteractive', '-Command', "$PSModuleAutoLoadingPreference='None';" + script], { env: { ...env, KRAKINAI_TEST_CONFIG_FOLDER: folder, ...extra }, windowsHide: true, timeout: 10000, maxBuffer: 8192 });
+    // Initialize only this NEW fixture folder; preserve its rules and stabilize inheritance bookkeeping.
+    await run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; $a=$d.GetAccessControl(); $a.SetAccessRuleProtection($true,$true); $d.SetAccessControl($a)");
+    // Capture the original ACL before any mutation, then always restore even if the writer fails.
+    const readAcl = async () => (await run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; [Console]::Out.WriteLine($d.GetAccessControl().GetSecurityDescriptorSddlForm([Security.AccessControl.AccessControlSections]::Access))")).stdout.trim();
+    const original = await readAcl();
+    for (const failAfterWrite of [false, true]) {
+      try {
+        const mutation = run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; $a=$d.GetAccessControl(); $r=[Security.AccessControl.FileSystemAccessRule]::new([Security.Principal.SecurityIdentifier]::new('S-1-1-0'),[Security.AccessControl.FileSystemRights]::Write,[Security.AccessControl.AccessControlType]::Allow); $a.AddAccessRule($r); $d.SetAccessControl($a);" + (failAfterWrite ? "throw 'SYNTHETIC_ACL_WRITER_INTERRUPTED'" : ''));
+        if (failAfterWrite) await expect(mutation).rejects.toThrow('SYNTHETIC_ACL_WRITER_INTERRUPTED');
+        else await mutation;
+        await expect(verifyConfigurationAccess(config)).rejects.toThrow('CONFIGURATION_ACCESS_UNSAFE');
+      } finally { await run("$ErrorActionPreference='Stop'; $d=[IO.DirectoryInfo]$env:KRAKINAI_TEST_CONFIG_FOLDER; $a=[Security.AccessControl.DirectorySecurity]::new(); $a.SetSecurityDescriptorSddlForm($env:KRAKINAI_TEST_ORIGINAL_ACL,[Security.AccessControl.AccessControlSections]::Access); $d.SetAccessControl($a)", { KRAKINAI_TEST_ORIGINAL_ACL: original }); }
+      expect(await readAcl()).toBe(original);
+      await verifyConfigurationAccess(config);
+    }
   });
 });
