@@ -20,6 +20,7 @@ const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspa
 const ChangeSetImportScreen=React.lazy(()=>import('./screens/ChangeSetImportScreen').then(m=>({default:m.ChangeSetImportScreen})));
 const AiContextScreen=React.lazy(()=>import('./screens/AiContextScreen').then(m=>({default:m.AiContextScreen})));
 const AiConnectionsScreen=React.lazy(()=>import('./screens/AiConnectionsScreen').then(m=>({default:m.AiConnectionsScreen})));
+const AiRecipeBuilderScreen=React.lazy(()=>import('./screens/AiRecipeBuilderScreen').then(m=>({default:m.AiRecipeBuilderScreen})));
 
 const RouteDispatcher: React.FC = () => {
   const { hashPath, loading, navigate, snapshot } = useLibrary();
@@ -37,6 +38,7 @@ const RouteDispatcher: React.FC = () => {
   const searchParams = new URLSearchParams(queryStr);
 
   // S01 Home
+  if(path==='/recipes/ai')return <React.Suspense fallback={<div role="status" className="card">Loading recipe workspace…</div>}><AiRecipeBuilderScreen key={hashPath}/></React.Suspense>;
   if(path==='/connections/ai')return <React.Suspense fallback={<div role="status" className="card">Loading AI connections…</div>}><AiConnectionsScreen/></React.Suspense>;
   if(path==='/imports/ai')return <React.Suspense fallback={<div role="status" className="card">Loading import workspace…</div>}><ChangeSetImportScreen/></React.Suspense>;
   if(path==='/context/ai')return <React.Suspense fallback={<div role="status" className="card">Loading context export…</div>}><AiContextScreen key={hashPath}/></React.Suspense>;

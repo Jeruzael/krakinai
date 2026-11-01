@@ -3,8 +3,9 @@ import { useAiConnection } from '../connections/AiConnectionContext';
 import { useLibrary } from '../context/LibraryContext';
 import { ChangeSetPreview } from './ChangeSetPreview';
 import { ImportReceipt } from './ImportReceipt';
+import {stageRecipePackage}from'../domain/recipePackageHandoff';
 export function McpProposalReview({ proposalId, onClose }: { proposalId: string; onClose(): void }) {
-  const { broker, view } = useAiConnection(), { snapshot } = useLibrary();
+  const { broker, view } = useAiConnection(), { snapshot,navigate } = useLibrary();
   const proposal = view.proposals.find(p => p.id === proposalId);
   const [error, setError] = React.useState('');
   if (!proposal || !snapshot) return <p role="status">This proposal is no longer in the current queue.</p>;
@@ -13,6 +14,7 @@ export function McpProposalReview({ proposalId, onClose }: { proposalId: string;
     <div className="import-heading"><div><h2 tabIndex={-1}>Review incoming changes</h2><p>Client: Local MCP · session {proposal.sessionId.slice(0, 8)}</p></div><button className="btn btn-secondary btn-sm" onClick={onClose}>Back to proposals</button></div>
     <p className="muted-text ai-break">{proposal.changeSetId} · {proposal.packageDigest.slice(0, 12)} · <strong>{proposal.status.replaceAll('_', ' ')}</strong></p>
     {(proposal.error || error) && <p className="banner banner-warning" role="alert">{proposal.error || error}</p>}
+    {!busy&&!terminal&&preview?.changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&<div className="banner banner-info"><p>Editing makes a new local package and rejects this proposal. Its existing consent cannot be reused; the new package gets its own receipt after review.</p><button className="btn btn-secondary" onClick={()=>{stageRecipePackage(preview.changeSet);broker.reject(proposal.id);navigate('/recipes/ai')}}>Edit mapping as new package</button></div>}
     {proposal.status === 'applied' && proposal.receipt ? <ImportReceipt receipt={proposal.receipt} replay={!!preview?.replay} onNew={onClose} newLabel="Review another proposal"/> : preview ? <>
       {preview.replay && <p className="banner banner-info">This exact package already committed. Confirming shares its historical receipt; it does not create the records again.</p>}
       <ChangeSetPreview preview={preview} snapshot={snapshot} disabled={busy || terminal} onApproval={approval => { setError(''); void broker.review(proposal.id, approval).catch(() => setError('Preview could not be updated.')); }}/>

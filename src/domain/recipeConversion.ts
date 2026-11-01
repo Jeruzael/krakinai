@@ -11,14 +11,18 @@ import {validateJsonRule} from './changeSetValidation';
 export type ConversionOperation=Extract<RecipeSceneOperation,{type:'scene.convert_direct_to_recipe'}>;
 export interface ConversionSourceProof {text:string;sha256:string}
 export type ConversionSourceProofs=ReadonlyMap<string,ConversionSourceProof>;
+export async function hashConversionSourceText(text:string):Promise<string>{
+ const digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
+ return Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('');
+}
 
 /** WebCrypto runs outside write transactions. Proofs are local arguments, never package authority. */
 export async function prepareConversionSources(input:ChangeSet,scenes:readonly SavedScene[]):Promise<Map<string,ConversionSourceProof>>{
  const ids=new Set(input.operations.filter((o):o is ConversionOperation=>o.type==='scene.convert_direct_to_recipe').map(o=>o.sceneId));
  const entries=await Promise.all([...ids].map(async id=>{
   const scene=scenes.find(s=>s.id===id);if(!scene)return undefined;
-  const text=scene.outputs.full,digest=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(text));
-  return [id,{text,sha256:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join('')}] as const;
+  const text=scene.outputs.full;
+  return [id,{text,sha256:await hashConversionSourceText(text)}] as const;
  }));
  return new Map(entries.filter((e):e is NonNullable<typeof e>=>!!e));
 }

@@ -71,3 +71,6 @@
     white-space: normal;
   }
 }
+.recipe-revision-choices { max-width: 100%; }
+.recipe-revision-choices > summary { cursor: pointer; }
+.recipe-revision-choices[open] { flex-basis: 100%; padding: 10px; border: 1px solid var(--border-subtle); border-radius: var(--radius-control); }

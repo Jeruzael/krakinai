@@ -7,6 +7,7 @@ export function AiPlanningActions({ projectId }: { projectId?: string }) {
     <details className="cw-import-tools">
       <summary>AI planning tools</summary>
       <div className="ai-planning-buttons">
+        <button type="button" className="btn btn-secondary btn-sm" onClick={()=>navigate('/recipes/ai'+(projectId?'?collection='+encodeURIComponent(projectId):''))}>AI Recipe Builder</button>
         <button type="button" className="btn btn-secondary btn-sm" onClick={() => navigate('/connections/ai')}>Connect Codex</button>
         <button
           type="button"

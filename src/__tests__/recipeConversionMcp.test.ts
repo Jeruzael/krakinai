@@ -54,3 +54,8 @@ it('does not inherit the source full-prompt grant for a newly saved recipe take'
  const metadata:any=await readMcpTool('krakinai_get_scene',{sceneId:scene.id},f.scope,f.state);expect(metadata.id).toBe(scene.id);expect(metadata.fullPrompt).toBeUndefined();
  await expect(readMcpTool('krakinai_get_generation_prompt',{sceneId:scene.id},f.scope,f.state)).rejects.toThrow(/permission|outside/i);
 });
+it('provides the exact source text hash only when the source full prompt is explicitly shared',async()=>{
+ const f=await fixture();const shared:any=await readMcpTool('krakinai_get_scene',{sceneId:'direct-source'},f.scope,f.state);
+ expect(shared.sourceTextSha256).toBe(f.input.operations[0].conversion.sourceTextSha256);
+ f.scope.fullPromptSceneIds=[];const hidden:any=await readMcpTool('krakinai_get_scene',{sceneId:'direct-source'},f.scope,f.state);expect(hidden.sourceTextSha256).toBeUndefined();
+});
