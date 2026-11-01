@@ -37,6 +37,7 @@ import {
   validateShotSourceMedia,
 } from "../domain/shotTypeRules";
 import { resolveGenerationIdentity } from "../domain/identityAnchors";
+import {prepareEnsembleSource}from'../domain/ensemblePersistence';
 import { captureMediaNames } from "../domain/mediaNaming";
 import { validatePhase4Record } from "../domain/phase4Validation";
 import {
@@ -175,6 +176,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
       "This scene belongs to multiple projects. Choose an explicit project and shot before revising.",
     );
   const direct = options.asDirect || isDirectPrompt(source);
+  if(options.asDirect&&source.ensemble)throw Error('Ensemble Direct Prompt conversion belongs to B3. Keep this recipe and its participants unchanged.');
   const prefix = savedAvoidPrefix(source, snap.scenes);
   const editableAvoid =
     !direct &&
@@ -188,6 +190,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     ...emptyDraft(),
     title: source.title,
     slots: clone(source.slots),
+    ...(source.ensemble?{ensemble:clone(source.ensemble)}:{}),
     extraRequiredSlots: clone(source.extraRequiredSlots),
     sceneInstructions: source.sceneInstructions,
     dialogue: clone(source.dialogue),
@@ -378,6 +381,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         : {}),
     };
     const base = {
+      ...(draft.ensemble?{ensemble:clone(draft.ensemble)}:{}),
       id,
       title: draft.title.trim(),
       slots: clone(draft.slots),
@@ -503,6 +507,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         references: captureMediaNames(assembled.references, mediaMap),
       };
     }
+    if(scene.ensemble){scene=prepareEnsembleSource(scene,state.assets,mediaMap);const error=validatePhase4Record(scene);if(error)throw Error(error);}
     for (const slot of Object.values(scene.slots))
       if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
     scene.resultMediaLinks = captureMediaNames(
@@ -585,7 +590,9 @@ export async function saveAuthoredScene(draftId:string,options:AuthoredSaveOptio
     const collections=await request<Collection[]>(tx.objectStore('collections').getAll());
     const masterId=!isDirectPrompt(draft)?getActiveSceneSlots(draft).character?.sourceId:undefined;
     const master=masterId?await request<PromptAsset|undefined>(tx.objectStore('assets').get(masterId)):undefined;
-    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets:master?[master]:[]},{id:generateId('scene'),now:new Date().toISOString()});
+    const masters=draft.ensemble?await Promise.all([...new Set(draft.ensemble.participants.filter(p=>p.character.sourceType==='asset').map(p=>p.character.sourceId))].map(id=>id===masterId?Promise.resolve(master):request<PromptAsset|undefined>(tx.objectStore('assets').get(id)))):[master];
+    const assets=masters.filter((asset):asset is PromptAsset=>!!asset);
+    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets},{id:generateId('scene'),now:new Date().toISOString()});
     if(result.collection)tx.objectStore('collections').put(result.collection);
     tx.objectStore('scenes').add(result.scene);
     await completion;return result.scene;

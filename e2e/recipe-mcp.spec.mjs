@@ -133,6 +133,7 @@ for (const mode of [
       expect(schema.oneOf.map((v) => v.properties.schema.const)).toEqual([
         "krakinai.change-set.v1",
         "krakinai.change-set.v2",
+        "krakinai.change-set.v3",
       ]);
       const preview = await bridge.call("krakinai_preview_change_set", {
         changeSet: input,

@@ -7,8 +7,10 @@ import {
 import { getActiveSceneSlots, getSceneLevelAvoidText, getSourceReferenceEntries, resolveShotType } from './shotTypeRules';
 import {isDirectPrompt} from './directPrompt';
 import {buildDirectPromptDocument} from './directPromptDocument';
+import{getEnsembleAvoidParts}from './ensembleReferences';
 
 export interface GenerationReference {
+  participantId?:string;
   associationId?: string;
   mediaId: string;
   sourceSlot?: BuilderSlot | "result" | "legacy" | "source";
@@ -20,6 +22,7 @@ export interface GenerationReference {
   altText: string | null;
 }
 export interface GenerationExportOptions {
+  participantIdentities?:Record<string,{source:'master'|'approved_anchor';description:string}>;
   identity?: { source: "master" | "approved_anchor"; description: string };
   references?: GenerationReference[];
 }
@@ -38,13 +41,13 @@ const safeFilename = (value: string | undefined | null): string | null =>
 
 function negativeInstructions(source: SceneDocumentSource): string[] {
   const activeSlots=getActiveSceneSlots(source);
-  const parts = SCENE_COMPONENT_ORDER.map(
+  const parts = source.ensemble?getEnsembleAvoidParts(source):SCENE_COMPONENT_ORDER.map(
     (slot) => activeSlots[slot]?.avoidText,
   ).filter(hasText);
   let extra: string|undefined = getSceneLevelAvoidText(source);
   // Saved scenes hold the assembler's component-joined prefix plus scene negatives.
   // Only remove this exact prefix; never tokenize authored punctuation.
-  if (resolveShotType(source)==='character_scene' && source.references !== undefined && parts.length && extra) {
+  if (!source.ensemble && resolveShotType(source)==='character_scene' && source.references !== undefined && parts.length && extra) {
     const prefix = SCENE_COMPONENT_ORDER.map(slot=>source.slots[slot]?.avoidText).filter(hasText).join(", ");
     if (extra === prefix) extra = undefined;
     else if (extra.startsWith(`${prefix}, `))
@@ -71,6 +74,9 @@ export function buildGenerationDocument(
   let references: GenerationReference[] =
     options.references ??
     project.referenceFiles.map((reference) => ({
+      ...(reference.participantId?{participantId:reference.participantId}:{}),
+      ...(reference.associationId?{associationId:reference.associationId}:{}),
+      ...(reference.sourceSlot?{sourceSlot:reference.sourceSlot}:{}),
       mediaId: reference.mediaId ?? "",
       role: reference.role,
       altText: reference.altText,
@@ -82,7 +88,9 @@ export function buildGenerationDocument(
     const activeSlots=getActiveSceneSlots(source);
     const requiredSources=getSourceReferenceEntries(source);
     const activeIds=new Set(project.referenceFiles.map(r=>r.mediaId));
-    references=references.filter(ref=>ref.sourceSlot==='result'||
+    // Supplied associations retain provenance. Default document references have
+    // already passed active-only snapshot traversal, including off-camera rules.
+    references=references.filter(ref=>Boolean(source.ensemble&&ref.participantId)||ref.sourceSlot==='result'||
       (ref.sourceSlot==='source'?requiredSources.some(s=>s.mediaId===ref.mediaId):
         ref.sourceSlot&&ref.sourceSlot!=='legacy'?Boolean(activeSlots[ref.sourceSlot]):
           activeIds.has(ref.mediaId)&&!requiredSources.some(s=>s.mediaId===ref.mediaId)));
@@ -93,7 +101,8 @@ export function buildGenerationDocument(
     references=references.map((ref,order)=>({...ref,order}));
   }
   return {
-    schema: "krakinai.generation-prompt.v1" as const,
+    schema: source.ensemble?"krakinai.generation-prompt.v2" as const:"krakinai.generation-prompt.v1" as const,
+    ...(project.participants?{primaryParticipantId:project.primaryParticipantId,participants:project.participants.map(p=>({id:p.id,name:p.name,presence:p.presence,role:p.role,characterSource:p.characterSource,identity:p.character?(options.participantIdentities?.[p.id]??{source:'master' as const,description:p.character.prompt}):null,wardrobe:p.wardrobe?.prompt??null,performanceNotes:p.performanceNotes})),dialogueCues:project.dialogueCues}:{}),
     scene: {
       title: source.title,
       type: "single_shot" as const,
@@ -130,6 +139,7 @@ export function buildGenerationDocument(
       : null,
     negativeInstructions: negativeInstructions(source),
     references: references.map((reference) => ({
+      ...(reference.participantId!==undefined?{participantId:safeMetadata(reference.participantId)??''}:{}),
       ...(reference.associationId !== undefined
         ? { associationId: safeMetadata(reference.associationId) ?? "" }
         : {}),

@@ -56,6 +56,9 @@ export function findCandidateMatches(
             tags: a.tags,
             revision: a.revision,
           }));
+  return findContentCandidateMatches(candidate,values,candidate.kind);
+}
+export function findContentCandidateMatches(candidate:Pick<ImportCandidate,'title'|'promptText'|'tags'>,values:{id:string;title:string;text:string;tags:string[];revision:number}[],kind:CandidateMatch['kind']):CandidateMatch[]{
   const content = normalize(candidate.promptText),
     words = terms(candidate.promptText),
     title = normalize(candidate.title),
@@ -84,7 +87,7 @@ export function findCandidateMatches(
               title: v.title,
               revision: v.revision,
               reason,
-              kind: candidate.kind,
+              kind,
             },
           ]
         : [];

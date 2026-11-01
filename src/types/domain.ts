@@ -1,4 +1,5 @@
 import type {CameraComposition} from './cinematography';
+import type {SceneEnsembleV1,EnsembleTemplateDefaultV1} from './ensemble';
 import type {ImportLedger} from './changeSet';
 import type {DirectPromptContent, SceneAuthoringFields, SceneProjectTarget, SceneRevision, SceneRevisionIntent} from './sceneAuthoring';
 export const SCHEMA_VERSION = 1;
@@ -91,6 +92,7 @@ export interface SceneGenerationChoice {
 }
 
 export interface ReferencePackEntry {
+  participantId?: string;
   displayName?: string;
   exportFilename?: string;
   namesCaptured?: true;
@@ -223,6 +225,7 @@ export interface ManualOutputOverride {
 }
 
 export interface SceneDraft extends SceneAuthoringFields {
+  ensemble?:SceneEnsembleV1;
   revisionIntent?: SceneRevisionIntent;
   authoredProjectTarget?: SceneProjectTarget;
   inheritedAvoidPrefix?: string;
@@ -249,6 +252,7 @@ export interface SceneDraft extends SceneAuthoringFields {
 }
 
 interface SavedSceneBase extends Omit<SceneAuthoringFields, 'authoringMode' | 'directPrompt'> {
+  ensemble?:SceneEnsembleV1;
   sceneRevision?: SceneRevision;
   authoredSaveFingerprint?: string;
   inheritedAvoidPrefix?: string;
@@ -363,6 +367,7 @@ export interface TemplateSlotDefault {
 }
 
 export interface Template {
+  ensembleDefault?:EnsembleTemplateDefaultV1;
   shotType?: ShotType;
   id: string;
   name: string;

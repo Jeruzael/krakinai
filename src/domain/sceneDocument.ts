@@ -9,6 +9,8 @@ import type {
   ShotType,
 } from '../types/domain';
 import { getEffectiveDialogueDelivery } from './dialoguePerformance';
+import type {SceneEnsembleV1} from '../types/ensemble';
+import {buildEnsembleDocument,formatEnsembleParticipants} from './ensembleDocument';
 import type {CameraComposition} from '../types/cinematography';
 import type {SceneAuthoringFields, SceneRevision} from '../types/sceneAuthoring';
 import {isDirectPrompt} from './directPrompt';
@@ -26,6 +28,7 @@ export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
 ];
 
 export interface SceneDocumentSource extends SceneAuthoringFields {
+  ensemble?: SceneEnsembleV1;
   sceneRevision?: SceneRevision;
   referencePack?: import('../types/domain').ReferencePack;
   inheritedAvoidPrefix?: string;
@@ -41,7 +44,7 @@ export interface SceneDocumentSource extends SceneAuthoringFields {
   references?: MediaLink[];
 }
 
-interface SceneComponentDocument {
+export interface SceneComponentDocument {
   title: string;
   prompt: string;
   compactPrompt: string;
@@ -62,7 +65,10 @@ interface SceneComponentDocument {
 }
 
 export interface SceneDocument {
-  schema: 'krakinai.scene-prompt.v1';
+  schema: 'krakinai.scene-prompt.v1' | 'krakinai.scene-prompt.v2';
+  participants?: EnsembleParticipantDocument[];
+  primaryParticipantId?: string|null;
+  dialogueCues?: (NonNullable<SceneDocument['dialogue']>&{id:string;participantId?:string;timing?:{startSeconds:number;endSeconds:number}})[];
   scene: { title: string; type: 'single_shot'; instructions: string; shotType?: ShotType; sourceFidelity?: string };
   sourceMedia?: {mediaId:string|null;filename:string|null;mimeType:string|null}[];
   components: Record<BuilderSlot, SceneComponentDocument | null>;
@@ -83,6 +89,10 @@ export interface SceneDocument {
     toolNotes: string | null;
   };
   referenceFiles: {
+    sourceSlot?:BuilderSlot;
+    sourceId?:string;
+    associationId?:string;
+    participantId?:string;
     mediaId: string | null;
     role: MediaLink['role'];
     altText: string | null;
@@ -91,6 +101,11 @@ export interface SceneDocument {
     filename: string | null;
     mimeType: string | null;
   }[];
+}
+export interface EnsembleParticipantDocument {
+  id:string;name:string;presence:'on_camera'|'off_camera';role:string|null;performanceNotes:string|null;
+  characterSource:SceneComponentDocument['source'];
+  character:SceneComponentDocument|null;wardrobe:SceneComponentDocument|null;
 }
 
 const hasText = (text: string | undefined | null): text is string =>
@@ -102,6 +117,17 @@ const safeFilename = (text: string | undefined): string | null =>
     ? text.split(/[\\/]/).pop() || null
     : null;
 
+export function buildSceneComponentDocument(slot:BuilderSlot,snap:ComponentSnapshot):SceneComponentDocument {
+ const overridden=slot!=='character'&&hasText(snap.overrideText);
+ const prompt=overridden?snap.overrideText!:snap.promptText;
+ const compactPrompt=slot==='character'?snap.promptText:overridden?hasText(snap.overrideCompactText)?snap.overrideCompactText:prompt:hasText(snap.compactText)?snap.compactText:prompt;
+ return {title:snap.sourceTitle,prompt,compactPrompt,avoidText:snap.avoidText??null,
+  source:{type:snap.sourceType,id:snap.sourceId,revision:snap.sourceRevision,parentCharacterId:snap.parentCharacterId??null},
+  snapshot:{...(slot==='camera'&&snap.cameraComposition?{cameraComposition:structuredClone(snap.cameraComposition)}:{}),promptText:snap.promptText,compactText:snap.compactText??null,overrideText:snap.overrideText??null,overrideCompactText:snap.overrideCompactText??null}};
+}
+export function buildDialogueDocument(dialogue?:DialogueConfig):SceneDocument['dialogue']{
+ return dialogue&&hasText(dialogue.speaker)&&hasText(dialogue.line)?{type:'spoken_audio',mode:dialogue.mode??'spoken',speaker:dialogue.speaker,language:hasText(dialogue.language)?dialogue.language:null,deliveryNotes:getEffectiveDialogueDelivery(dialogue)??null,...(dialogue.performanceDirection?{performanceDirection:structuredClone(dialogue.performanceDirection)}:{}),exactLine:dialogue.line,captionPreference:dialogue.captionPreference??'unspecified'}:null;
+}
 export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
   if(isDirectPrompt(source))throw new Error('Direct Prompt has no assembled component document. Use its original prompt or direct JSON export.');
   const activeSlots=getActiveSceneSlots(source);
@@ -118,37 +144,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
       components[slot] = null;
       continue;
     }
-    const overridden = slot !== 'character' && hasText(snap.overrideText);
-    const prompt = overridden ? snap.overrideText! : snap.promptText;
-    const compactPrompt =
-      slot === 'character'
-        ? snap.promptText
-        : overridden
-          ? hasText(snap.overrideCompactText)
-            ? snap.overrideCompactText
-            : prompt
-          : hasText(snap.compactText)
-            ? snap.compactText
-            : prompt;
-    components[slot] = {
-      title: snap.sourceTitle,
-      prompt,
-      compactPrompt,
-      avoidText: snap.avoidText ?? null,
-      source: {
-        type: snap.sourceType,
-        id: snap.sourceId,
-        revision: snap.sourceRevision,
-        parentCharacterId: snap.parentCharacterId ?? null,
-      },
-      snapshot: {
-        ...(slot==='camera'&&snap.cameraComposition?{cameraComposition:structuredClone(snap.cameraComposition)}:{}),
-        promptText: snap.promptText,
-        compactText: snap.compactText ?? null,
-        overrideText: snap.overrideText ?? null,
-        overrideCompactText: snap.overrideCompactText ?? null,
-      },
-    };
+    components[slot] = buildSceneComponentDocument(slot,snap);
     if (hasText(snap.avoidText)) negativeParts.push(snap.avoidText);
     for (const link of snap.mediaLinks ?? []) {
       if (!seenMedia.has(link.mediaId)) {
@@ -166,7 +162,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
     selectedReferences=selectedReferences.filter(l=>activeIds.has(l.mediaId));
     for(const link of sources)if(!selectedReferences.some(l=>l.mediaId===link.mediaId))selectedReferences=[...selectedReferences,link];
   }
-  return {
+  const document:SceneDocument = {
     schema: 'krakinai.scene-prompt.v1',
     scene: {
       title: source.title,
@@ -176,19 +172,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
     },
     ...(sources.length?{sourceMedia:sources.map(l=>({mediaId:safeMetadata(l.mediaId),filename:safeFilename(l.filename),mimeType:safeMetadata(l.mimeType)}))}:{}),
     components,
-    dialogue:
-      dialogue && hasText(dialogue.speaker) && hasText(dialogue.line)
-        ? {
-            type: 'spoken_audio',
-            mode: dialogue.mode ?? 'spoken',
-            speaker: dialogue.speaker,
-            language: hasText(dialogue.language) ? dialogue.language : null,
-            deliveryNotes: getEffectiveDialogueDelivery(dialogue) ?? null,
-            ...(dialogue.performanceDirection ? {performanceDirection:structuredClone(dialogue.performanceDirection)} : {}),
-            exactLine: dialogue.line,
-            captionPreference: dialogue.captionPreference ?? 'unspecified',
-          }
-        : null,
+    dialogue:buildDialogueDocument(dialogue),
     avoidText:
       source.references !== undefined && shotType==='character_scene'
         ? (source.avoidText ?? '')
@@ -208,6 +192,7 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
       mimeType: safeMetadata(link.mimeType),
     })),
   };
+  return source.ensemble?buildEnsembleDocument(source,document):document;
 }
 
 export function serializeSceneJson(source: SceneDocumentSource): string {
@@ -293,6 +278,7 @@ export function formatSceneDocumentText(
     overview.push(`Tool / Provider Notes: ${doc.settings.toolNotes}`);
   const blocks = [overview.join('\n')];
   if(doc.sourceMedia?.length)blocks.push(`${structured?'=== ORIGINAL SOURCE MEDIA ===':'## Original Source Media'}\n${doc.sourceMedia.map(l=>`${l.filename??l.mediaId} | ID: ${l.mediaId} | ${l.mimeType}`).join('\n')}\n${doc.scene.sourceFidelity??''}`);
+  blocks.push(...formatEnsembleParticipants(doc,mode));
   for (const slot of SCENE_COMPONENT_ORDER) {
     const component = doc.components[slot];
     if (!component || !hasText(component.prompt)) continue;
@@ -305,6 +291,7 @@ export function formatSceneDocumentText(
   }
   const dialogue = formatDialogue(doc);
   if (dialogue) blocks.push(dialogue);
+  for(const [index,cue]of(doc.dialogueCues??[]).entries())blocks.push(`Cue ${index+1} [${cue.id}]${cue.participantId?` — Participant: ${cue.participantId}`:''}${cue.timing?` | ${cue.timing.startSeconds}–${cue.timing.endSeconds}s`:''}\n${formatDialogue({...doc,dialogue:cue})}`);
   if (hasText(doc.scene.instructions))
     blocks.push(
       `${doc.scene.shotType && getShotTypeRules({shotType:doc.scene.shotType}).requiresInstructions

@@ -19,6 +19,7 @@ import { StudioDialog } from './StudioDialog';
 import {isDirectPrompt} from '../domain/directPrompt';
 import {getRevisionLabel} from '../domain/sceneRevisions';
 import {SceneVersionComparison} from './SceneRevisionHistory';
+import {EnsembleSummary} from './EnsembleSummary';
 import './projectTakes.css';
 
 type Props = {
@@ -161,7 +162,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
     const fields = document ? [
       ['Camera', document.components.camera?.prompt],
       ['Action', document.components.action?.prompt],
-      ['Dialogue', document.dialogue?.exactLine],
+      ['Dialogue', document.dialogueCues?.map(cue => `${cue.speaker}: ${cue.exactLine}`).join('\n\n') ?? document.dialogue?.exactLine],
       ['Scene instructions', document.scene.instructions],
       ['Aspect ratio', document.settings.aspectRatio],
       ['Duration seconds', document.settings.durationSeconds],
@@ -199,9 +200,9 @@ export const ProjectTakeManager: React.FC<Props> = ({
               </React.Fragment>
             ))}
           </dl>
-          <h4>All component prompts and sources</h4>
+          <h4>{document?.participants ? 'Shared component prompts and sources' : 'All component prompts and sources'}</h4>
           <dl>
-            {Object.entries(document?.components??{}).map(([slot, component]) => (
+            {Object.entries(document?.components??{}).filter(([slot]) => !document?.participants || (slot !== 'character' && slot !== 'wardrobe')).map(([slot, component]) => (
               <React.Fragment key={slot}>
                 <dt>{slot}</dt>
                 <dd className="project-take-exact">
@@ -226,7 +227,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
           <pre className="project-take-exact">
             {JSON.stringify(
               {
-                dialogue: document?.dialogue??null,
+                ...(document?.participants ? { primaryParticipantId: document.primaryParticipantId, participants: document.participants, dialogueCues: document.dialogueCues } : { dialogue: document?.dialogue??null }),
                 settings: document?.settings??scene.settings,
                 reviewStatus: scene.reviewStatus,
                 reviewNotes: scene.reviewNotes,
@@ -237,6 +238,7 @@ export const ProjectTakeManager: React.FC<Props> = ({
             )}
           </pre>
         </details>
+        {scene.ensemble && <EnsembleSummary ensemble={scene.ensemble} label={`${label} ensemble participants and cues`} />}
       </section>
     );
   };

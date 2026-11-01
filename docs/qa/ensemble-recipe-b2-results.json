@@ -1,0 +1,4069 @@
+{
+  "schema": "krakinai.qa.ensemble-b2.v1",
+  "recordedAt": "2026-11-01T00:06:42.554Z",
+  "base": "7ce149200bdd09b5d7c8f2f4d74a00801b0fd9c3",
+  "headNote": "Final signed publication head and hosted results are authoritative in PR/Actions. Documentation does not encode its own future commit SHA.",
+  "status": "locally_verified_pending_hosted_ci",
+  "scope": {
+    "participants": 8,
+    "cues": 32,
+    "newDependencies": 0,
+    "newDatabaseStores": 0,
+    "databaseMigration": false,
+    "projectExportLimitBytes": 134217728,
+    "realLibraryAccess": false,
+    "productionBridge4177Access": false,
+    "pr12Changed": false,
+    "b3Excluded": true
+  },
+  "commands": [
+    {
+      "command": "npm test -- --maxWorkers=1 --minWorkers=1",
+      "exitCode": 0,
+      "passed": 1024,
+      "files": 119,
+      "durationSeconds": 292.59,
+      "evidence": "Final post-review full suite; raw log retained locally"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "cwd": "bridge"
+    },
+    {
+      "command": "npm run build:test",
+      "exitCode": 0,
+      "cwd": "bridge"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "cwd": "bridge"
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "passed": 18,
+      "files": 3,
+      "cwd": "bridge"
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "passed": 8,
+      "historicalChecks": 207,
+      "historicalScreenshots": 45
+    },
+    {
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs",
+      "exitCode": 0,
+      "passed": 23
+    },
+    {
+      "command": "node scripts/export-change-set-schema.mjs --check",
+      "exitCode": 0
+    },
+    {
+      "command": "python scripts/qa/verify-ensemble-archives.py",
+      "exitCode": 0,
+      "archiveCount": 3
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0
+    }
+  ],
+  "audit": {
+    "root": {
+      "exitCode": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 8,
+        "dev": 279,
+        "optional": 99,
+        "peer": 8,
+        "peerOptional": 0,
+        "total": 286
+      }
+    },
+    "bridge": {
+      "exitCode": 0,
+      "vulnerabilities": {
+        "info": 0,
+        "low": 0,
+        "moderate": 0,
+        "high": 0,
+        "critical": 0,
+        "total": 0
+      },
+      "dependencies": {
+        "prod": 5,
+        "dev": 40,
+        "optional": 26,
+        "peer": 0,
+        "peerOptional": 0,
+        "total": 44
+      }
+    }
+  },
+  "browser": {
+    "state": "complete",
+    "command": "npx playwright test",
+    "exitCode": 0,
+    "stats": {
+      "startTime": "2026-10-31T23:30:57.627Z",
+      "duration": 692916.606,
+      "expected": 179,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "cases": [
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "permission workspace bulk selection covers hidden pages, preserves search selections and reflows",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2816,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "oversized global and Full Access selections fail without a partial grant",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1761,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "actual SDK observes no draft grants, then all 65 matches only after one explicit Apply",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 15789,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "proposal arrival preserves permission focus and reviewed receipt grants are visible and revocable",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7943,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "permissions remain readable at 200-percent-equivalent reflow with DPR2",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2061,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "title": "delayed connection startup locks permission changes before the native challenge arrives",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3742,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-candidate-review.spec.mjs",
+        "title": "deferred candidate review after reload exposes exact content before creating one unreviewed asset",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2737,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a shared scene revision changes only the explicitly chosen project and shot",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1414,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a pending original is linked later as a new immutable version without replacing its pending snapshot",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2333,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "200 percent desktop reflow retains readable controls at 720 CSS pixels and DPR 2",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1817,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "append to an existing project preserves every prior shot,scene,draft and unrelated project",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1342,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "revision,restore and alternate take keep old snapshots and require separate preference and status approval",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2462,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "mismatched project,shot and source scene blocks the complete batch",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1135,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a second tab write invalidates an approved preview without losing the foreign write",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1564,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a quota failure after queued writes rolls back the entire import",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1959,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a abort failure after queued writes rolls back the entire import",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1907,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "current media disappearance or MIME metadata mismatch blocks the batch without fabricated replacements",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1747,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "duplicate character and camera proposals need explicit reuse or separate-create acknowledgement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1323,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "a JSON file imports exact text and preserves it through clipboard,TXT and selected-take project ZIP",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1675,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "context export remains read-only and independently protects full prompts,identity,notes and filenames",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1674,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "maximum operation count and long exact prompt previews remain collapsed,scrollable and keyboard accessible",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 8114,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "title": "full backup restores receipts,candidates,scenes and media hashes,and replays after a whole browser restart",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 4167,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2824,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 1366",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2630,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2437,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "title": "change-set after workspace screenshots 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2344,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "title": "canonical package preview and cancel do not write or install proposed assets",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1773,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "title": "MIDORI creates exactly fifteen ordered shots,60seconds,types2/9/4 and pending4,then replays without duplication",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2204,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1304,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1163,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "title": "cinematography after responsive screenshots 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1070,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1563,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1630,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1154,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1312,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7164,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1147,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "library-first composition previews the existing fallback source draft before updating it",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1056,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "title": "manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1095,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1713,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1564,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "title": "dialogue and cover visual evidence 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1495,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 6772,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1244,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1833,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1257,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "title": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1287,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1092,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 1366",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1081,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 970,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "title": "direct prompt after responsive screenshots 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 908,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "a shared saved scene revises the explicit project being viewed, preserving its original project",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1240,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "managed recipe editor and reviewed output reject another tab changes without replacing its draft",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1362,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct prompt import saves without components and copies/downloads the exact complete original",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5363,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "storyboard revision comparison preserves original text, fifteen planned shots, and preferred take",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1427,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "restoring an earlier prompt creates version three and never silently selects it",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1362,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "saved direct scenes expose a distinct alternate take workflow",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1049,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1364,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "stale browser tab cannot overwrite a changed direct draft",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1386,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "quota and interrupted transactions roll back new scene and storyboard shot together",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 852,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "same-request saves are idempotent and cross-project revisions are rejected",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 849,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mixed library backup restores exact versions and original media into another isolated browser context",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3347,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "project destination creates a new planned shot atomically without selecting it",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1149,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "mode changes and saved-draft reload preserve earlier recipe and direct data",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1377,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "legacy recipe output hashes remain identical to the captured master baseline",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 677,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "title": "direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1007,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "title": "B2 sdk-synthetic: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 22806,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "title": "B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 24173,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "title": "B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 24179,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "secondary wardrobe guides and historical templates survive production save, export and take comparison",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2373,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "deferred Outfit candidates can be reviewed later and reused without duplicating records",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2356,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "a removed original blocks an ensemble narration draft and an explicit valid replacement permits assembly",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2318,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "shared-file participant reference associations have distinct accessible controls",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2296,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "mixed legacy, v2 and ensemble backups survive UI restore, browser restart, exact replay and Project Export",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5345,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "ensemble recipe copies complete outputs and commits a new immutable revision with a parent-bound Outfit",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3030,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "all recipe rows and ensemble controls fit with alternate native button font metrics",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1860,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "ensemble workspace reflows, locks identities and keeps focus at 1440px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2609,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "ensemble workspace reflows, locks identities and keeps focus at 768px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2594,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "ensemble workspace reflows, locks identities and keeps focus at 390px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2372,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "title": "ensemble workspace reflows, locks identities and keeps focus at 720px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2498,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "title": "revoking permissions while the apply digest is paused prevents every write",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5404,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "title": "an injected quota error after initial writes rolls back the complete MCP batch and receipt",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5241,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "title": "background arrival preserves the active draft and focus; disconnect restores dialog focus and revokes reads",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 6660,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "title": "Windows production launcher pairs only after the real owned WPF verification window allows it",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 4347,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "title": "native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7518,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "title": "actual installed Codex CLI pairs through the signed Windows window and reads only the selected project",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7384,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-screenshots.spec.mjs",
+        "title": "AI Connections retains readable controls at four viewports in disconnected, connected, review and applied states",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 9492,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-screenshots.spec.mjs",
+        "title": "200 percent equivalent reflow and keyboard focus remain usable at 720 CSS pixels and DPR2",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1274,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "title": "actual CLI complete revision workflow at http://127.0.0.1:4173",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 23468,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "title": "actual CLI complete revision workflow at http://localhost:4173",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 24418,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp.spec.mjs",
+        "title": "SDK proposal requires trusted browser review and creates exact MIDORI records without widening scope",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 25730,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "local-mcp.spec.mjs",
+        "title": "only the human-selected camera candidate is created and confirmed; Character proposal stays pending",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 8288,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2781,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2727,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "title": "media inspection visual evidence 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2565,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2916,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3300,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2555,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "repeated image/video previews release URLs and pause detached players with heap observations",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3353,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 1440x900",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2391,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 768x1024",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2381,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 390x844",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2345,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "eleven-shot List/Grid layout stays bounded at 720x450",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2359,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "title": "camera media has explicit touch Preview with no hover playback",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2162,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2222,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2123,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "title": "output workspace after screenshots 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1891,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1052,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 8003,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 27538,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7857,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 32477,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 889,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 824,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 977,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "reference and sample previews use the existing associations without reassigning media",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 831,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "complete long raw output and missing-media/empty states do not invent scene details",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1267,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "an associated decodable result video is labeled Result and opens the existing explicit player",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1042,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "title": "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 651,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2033,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1503,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "title": "Performance Studio after visual evidence 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1475,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2826,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1294,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "title": "legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1290,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "recipe preview copies complete outputs, saves an immutable take and reopens as an editable recipe",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2130,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "blocked recipe downloads preserve the full planning package with zero partial writes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1887,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "recipe revisions preserve frozen components and create alternate takes through actual review controls",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2574,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "deleting a selected original blocks atomic save, preserves drafts and permits a valid explicit replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2093,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "recipe review reflows and preserves keyboard access at 1440px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1891,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "recipe review reflows and preserves keyboard access at 768px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1868,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "recipe review reflows and preserves keyboard access at 390px",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1793,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "title": "original MIME claims are checked against stored media before assembly",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2032,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "title": "B1 sdk-existing: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 20036,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "title": "B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 21395,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "title": "B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 21499,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "title": "B1 same-batch create/reuse/defer uses exact approved IDs without scope expansion",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 11880,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "canonical output copy, save, and small legacy backup roundtrip",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 4858,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "duplicate save requires an explicit decision",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 695,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "title": "storyboard order and collection return survive navigation",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 766,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 8672,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 4818,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1262,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1347,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1153,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1174,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1124,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 928,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 1440x900",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1201,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 768x1024",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1265,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "title": "MIDORI responsive builder and output at 390x844",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1178,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3518,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "reduced motion disables hover and explicit Preview stays usable",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1964,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2537,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 1440x900",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2404,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 768x1024",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2372,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 390x844",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2374,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "continuity forms stack, footer and focus remain reachable at 720x450",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2780,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2740,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2101,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2031,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2526,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "title": "uses visible Preview rather than hover and never navigates on playback",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1939,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2569,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2443,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "title": "storyboard visual evidence 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2376,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 861,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 822,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "long take names and IDs stay inside the dialog at 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 826,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1997,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 963,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 830,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 803,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1042,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "take preference, project note, comparison and removal keep immutable source scenes",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 998,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "title": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1189,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 1440",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1736,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 768",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1612,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "title": "polish visual evidence 390",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 1476,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "fullRunHead": "b630507463376ad3934640eede75fabfb8429c0e",
+    "coverageNote": "Full Windows179 run before final desktop gap4->2 CSS-only correction. Post-gap B2 and real native/installedCLI follow-up reported separately; final whole hosted suite identifies final signed head."
+  },
+  "mcp": [
+    {
+      "source": "mcp-sdk-synthetic.json",
+      "origin": "http://127.0.0.1:4173",
+      "pairing": "SDK stdio with synthetic private-pipe verification",
+      "calls": [
+        {
+          "id": 2,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "08d3ed87e437be4c099108470fa314fd012c0e7d23c9e269ea3f3ffcd75fdb50",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_preview_change_set",
+          "received": true,
+          "responseSha256": "4e20f321bb1d721e47a4399cfb0cd04863bbc1b5f0f8c66b546f894cfa296a8b",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "18fc435697854ff42f276f5f739177ecccaafe4aad11e7d6e861c95503d29e34",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 5,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "97df12e0e13b4aa171930885d2213d627a0248a3150bf107467cc867a6d245f4",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 6,
+          "tool": "krakinai_get_import_receipt",
+          "received": true,
+          "responseSha256": "7b791069b3cb234bbb15020ea9c97d9b21ba0ae9711b0e79e97d2e035f353d31",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 7,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "ef0ebcf7588ab5b9e11febe20b9ed7c63811cd86cc82605f78fc00068f78f0d1",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 8,
+          "tool": "krakinai_get_generation_prompt",
+          "received": true,
+          "responseSha256": "27accadc73748a29e75e2f9db3086f81a613507d3903a09419dae82de908138d",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "expectedOk": false
+        },
+        {
+          "id": 9,
+          "tool": "krakinai_connection_status",
+          "received": true,
+          "responseSha256": "577400b6f37395ed868204476643d2249e697d39808f9707a51d0ff866385b2e",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 10,
+          "tool": "krakinai_list_projects",
+          "received": true,
+          "responseSha256": "f7f20dd70eca3e3db62c2b9e22a07c53c3b61d2a56169e009b32a265e8023b31",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "expectedOk": false
+        }
+      ],
+      "zeroWritesBeforeApproval": true,
+      "oldScenesAndPreferredPreserved": true,
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-b2-sdk-synthetic",
+        "packageDigest": "b96814dd626429be98849acc294daf28b8c07b214f3a44b0e59afd72b7dcc51f",
+        "approvedDigest": "150baf4be62e38ef7e5b1bd616b38721bf7a6bb26022a62a0ab96476769babf4",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic ensemble acceptance"
+        },
+        "title": "Synthetic B2 ensemble revision",
+        "preparedAt": "2026-10-31T23:58:53.817Z",
+        "appliedAt": "2026-10-31T23:58:53.917Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": [],
+          "variantDecisions": {
+            "outfit": {
+              "action": "create"
+            }
+          }
+        },
+        "idMappings": {
+          "new-outfit": {
+            "kind": "variant_candidate",
+            "id": "candidate_9bae9e84d038",
+            "variantId": "variant_candidate_9bae9e84d038"
+          },
+          "new-scene": {
+            "kind": "scene",
+            "id": "scene_066c613bde00"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "outfit",
+            "type": "variant.propose",
+            "recordId": "candidate_9bae9e84d038",
+            "status": "variant_created"
+          },
+          {
+            "operationId": "ensemble",
+            "type": "scene.revise_recipe",
+            "recordId": "scene_066c613bde00",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 3,
+            "after": 4
+          }
+        }
+      },
+      "mediaHashes": [
+        {
+          "id": "media_4df5f9bb1116",
+          "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
+        },
+        {
+          "id": "media_647df5524924",
+          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+        },
+        {
+          "id": "media_a1ca5a73dccc",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+        },
+        {
+          "id": "media_dcc8e23873a6",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_f39de68d8c4f",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        }
+      ],
+      "scenes": [
+        {
+          "id": "scene_066c613bde00",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_9bae9e84d038"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
+        },
+        {
+          "id": "scene_44fa2ee7c981",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_add9667b67d3",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "lucas-suit"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "202e4d3f67c1564b0cd129f611dda8bf8f0049f3b79ee44f010b36d60080a33b",
+            "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
+            "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
+          }
+        }
+      ],
+      "imageDecoding": [
+        {
+          "id": "media_4df5f9bb1116",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_647df5524924",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_a1ca5a73dccc",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_dcc8e23873a6",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_f39de68d8c4f",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        }
+      ],
+      "quota": {
+        "quota": 10737625576,
+        "usage": 207336,
+        "usageDetails": {
+          "indexedDB": 207336
+        }
+      },
+      "counts": {
+        "assets": 9,
+        "scenes": 3,
+        "projects": 1,
+        "drafts": 2,
+        "media": 5
+      },
+      "variants": 4,
+      "preferredTake": "scene_44fa2ee7c981"
+    },
+    {
+      "source": "mcp-signed-native-ipv4.json",
+      "origin": "http://127.0.0.1:4173",
+      "pairing": "Production stdio launcher and real Valid signed Windows verification",
+      "calls": [
+        {
+          "id": 2,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "474f501144868b4f00f7b24b3f9fd5e26bc6c1a230b2c590dc3e8afda912d992",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_preview_change_set",
+          "received": true,
+          "responseSha256": "23477aa411c37260d7857a6ae8fa45000434758d9093079ecf6f521ab437d6f8",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "6db54c585a4fd139318d342b219527e2ad4a5da78bdbf25bd7960741d426632e",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 5,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "09bdfd2fb14e067ea4b1a4295bb4b42dc8cf533f97f0c38a65faf9efee93e7ee",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 6,
+          "tool": "krakinai_get_import_receipt",
+          "received": true,
+          "responseSha256": "08a8791e7f3248ad05f0709f250fbe4139396b50455d0549f3c8ca79a54243fa",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 7,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "9f4a244baf5310b1e57bb956664c8c580f1114749f7bffb5fce490dc981b52d6",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 8,
+          "tool": "krakinai_get_generation_prompt",
+          "received": true,
+          "responseSha256": "27accadc73748a29e75e2f9db3086f81a613507d3903a09419dae82de908138d",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "expectedOk": false
+        },
+        {
+          "id": 9,
+          "tool": "krakinai_connection_status",
+          "received": true,
+          "responseSha256": "577400b6f37395ed868204476643d2249e697d39808f9707a51d0ff866385b2e",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 10,
+          "tool": "krakinai_list_projects",
+          "received": true,
+          "responseSha256": "f7f20dd70eca3e3db62c2b9e22a07c53c3b61d2a56169e009b32a265e8023b31",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "expectedOk": false
+        }
+      ],
+      "zeroWritesBeforeApproval": true,
+      "oldScenesAndPreferredPreserved": true,
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-b2-signed-native-ipv4",
+        "packageDigest": "9742ee085835139560e4460461dd056654e62fbd705d21c5db8fb5bf51420fde",
+        "approvedDigest": "b63a0c21edc1d68f418c2a9e97c23bc3d1527bccbf2390b30b6eeb9cdf6de0b9",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic ensemble acceptance"
+        },
+        "title": "Synthetic B2 ensemble revision",
+        "preparedAt": "2026-10-31T23:59:18.017Z",
+        "appliedAt": "2026-10-31T23:59:18.116Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": [],
+          "variantDecisions": {
+            "outfit": {
+              "action": "create"
+            }
+          }
+        },
+        "idMappings": {
+          "new-outfit": {
+            "kind": "variant_candidate",
+            "id": "candidate_343063d0c9d0",
+            "variantId": "variant_candidate_343063d0c9d0"
+          },
+          "new-scene": {
+            "kind": "scene",
+            "id": "scene_ee5a10de0a93"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "outfit",
+            "type": "variant.propose",
+            "recordId": "candidate_343063d0c9d0",
+            "status": "variant_created"
+          },
+          {
+            "operationId": "ensemble",
+            "type": "scene.revise_recipe",
+            "recordId": "scene_ee5a10de0a93",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 3,
+            "after": 4
+          }
+        }
+      },
+      "mediaHashes": [
+        {
+          "id": "media_03b20bb95253",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+        },
+        {
+          "id": "media_26562f7ba0b7",
+          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+        },
+        {
+          "id": "media_33bbe926897c",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_405c100caa2d",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_a4324397c675",
+          "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
+        }
+      ],
+      "scenes": [
+        {
+          "id": "scene_02c5ce09cbed",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "lucas-suit"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "202e4d3f67c1564b0cd129f611dda8bf8f0049f3b79ee44f010b36d60080a33b",
+            "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
+            "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
+          }
+        },
+        {
+          "id": "scene_a9892d298b91",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_ee5a10de0a93",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_343063d0c9d0"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
+        }
+      ],
+      "imageDecoding": [
+        {
+          "id": "media_03b20bb95253",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_26562f7ba0b7",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_33bbe926897c",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_405c100caa2d",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_a4324397c675",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        }
+      ],
+      "quota": {
+        "quota": 10737625628,
+        "usage": 207388,
+        "usageDetails": {
+          "indexedDB": 207388
+        }
+      },
+      "counts": {
+        "assets": 9,
+        "scenes": 3,
+        "projects": 1,
+        "drafts": 2,
+        "media": 5
+      },
+      "variants": 4,
+      "preferredTake": "scene_a9892d298b91"
+    },
+    {
+      "source": "mcp-signed-native-localhost.json",
+      "origin": "http://localhost:4173",
+      "pairing": "Production stdio launcher and real Valid signed Windows verification",
+      "calls": [
+        {
+          "id": 2,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "170d257dfa5976c869b7dd74e63aec1f1436bfa5f6c3ec85acd7c065d845d085",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_preview_change_set",
+          "received": true,
+          "responseSha256": "a66c20c29d6f2ddfa56981e23218d033e19484c51f85320bdb64dd6d692b3ff0",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "222ce7424173c2cfa847477e755ec7bfe1c35c9df0d10e8b1bd266d507d9dfd4",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 5,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "d69607cc5ac591ba5bd0ee32bd29ea38befbbeaea57ced89bf4e7b0674d91cd1",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 6,
+          "tool": "krakinai_get_import_receipt",
+          "received": true,
+          "responseSha256": "6b1497d1981d4313d23a8da0e2df6fa3214404f39640c5da0079da550d55e0a1",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 7,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "0d3442bb49aff4dadb158983205bf6e14196dca50f281f3953bc31c2cecb1731",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 8,
+          "tool": "krakinai_get_generation_prompt",
+          "received": true,
+          "responseSha256": "27accadc73748a29e75e2f9db3086f81a613507d3903a09419dae82de908138d",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "expectedOk": false
+        },
+        {
+          "id": 9,
+          "tool": "krakinai_connection_status",
+          "received": true,
+          "responseSha256": "577400b6f37395ed868204476643d2249e697d39808f9707a51d0ff866385b2e",
+          "ok": true,
+          "expectedOk": true
+        },
+        {
+          "id": 10,
+          "tool": "krakinai_list_projects",
+          "received": true,
+          "responseSha256": "f7f20dd70eca3e3db62c2b9e22a07c53c3b61d2a56169e009b32a265e8023b31",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "expectedOk": false
+        }
+      ],
+      "zeroWritesBeforeApproval": true,
+      "oldScenesAndPreferredPreserved": true,
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-b2-signed-native-localhost",
+        "packageDigest": "07fe9b6616a4793e7f330bccbb86946515c495dee13f3177e9f95f331b015db2",
+        "approvedDigest": "2e557e51d863fb54df2262eb06f48672c86fe02f3d0f403af001da547a71145d",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic ensemble acceptance"
+        },
+        "title": "Synthetic B2 ensemble revision",
+        "preparedAt": "2026-10-31T23:59:42.018Z",
+        "appliedAt": "2026-10-31T23:59:42.117Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": [],
+          "variantDecisions": {
+            "outfit": {
+              "action": "create"
+            }
+          }
+        },
+        "idMappings": {
+          "new-outfit": {
+            "kind": "variant_candidate",
+            "id": "candidate_7e7901b4a61d",
+            "variantId": "variant_candidate_7e7901b4a61d"
+          },
+          "new-scene": {
+            "kind": "scene",
+            "id": "scene_80d0bdf048af"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "outfit",
+            "type": "variant.propose",
+            "recordId": "candidate_7e7901b4a61d",
+            "status": "variant_created"
+          },
+          {
+            "operationId": "ensemble",
+            "type": "scene.revise_recipe",
+            "recordId": "scene_80d0bdf048af",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 3,
+            "after": 4
+          }
+        }
+      },
+      "mediaHashes": [
+        {
+          "id": "media_08ea04dddc53",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_33aaef34be1d",
+          "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
+        },
+        {
+          "id": "media_5a3ba7fb2cb1",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+        },
+        {
+          "id": "media_5e71b6e10090",
+          "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+        },
+        {
+          "id": "media_d98f1eb82327",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        }
+      ],
+      "scenes": [
+        {
+          "id": "scene_6065820988aa",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_7b3f8e7e166a",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "lucas-suit"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "202e4d3f67c1564b0cd129f611dda8bf8f0049f3b79ee44f010b36d60080a33b",
+            "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
+            "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
+          }
+        },
+        {
+          "id": "scene_80d0bdf048af",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_7e7901b4a61d"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
+        }
+      ],
+      "imageDecoding": [
+        {
+          "id": "media_08ea04dddc53",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_33aaef34be1d",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_5a3ba7fb2cb1",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_5e71b6e10090",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_d98f1eb82327",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        }
+      ],
+      "quota": {
+        "quota": 10737625641,
+        "usage": 207401,
+        "usageDetails": {
+          "indexedDB": 207401
+        }
+      },
+      "counts": {
+        "assets": 9,
+        "scenes": 3,
+        "projects": 1,
+        "drafts": 2,
+        "media": 5
+      },
+      "variants": 4,
+      "preferredTake": "scene_6065820988aa"
+    }
+  ],
+  "archives": {
+    "full": {
+      "filename": "synthetic-full-library-1793491210381.zip",
+      "compressedBytes": 79330,
+      "uncompressedBytes": 246540,
+      "entries": 6,
+      "sha256": "ea8d5f6b5f307136913f17697ae7238c627997fa7adaea8d2d98b9e6073b1bbb"
+    },
+    "project": {
+      "filename": "synthetic-project-1793491210711.zip",
+      "sha256": "763ccb1254513c23ed2a86e23f35f77174f8206ef08187c89f678c5dedcb7b49",
+      "associations": 5
+    },
+    "independentReadback": {
+      "reader": "Python zipfile",
+      "checks": [
+        {
+          "kind": "full",
+          "path": "synthetic-full-library-1793491210381.zip",
+          "bytes": 79330,
+          "sha256": "ea8d5f6b5f307136913f17697ae7238c627997fa7adaea8d2d98b9e6073b1bbb",
+          "entries": 6,
+          "uncompressedBytes": 246540,
+          "crc": "passed",
+          "sourceMediaHashesMatched": 5,
+          "scenes": 5,
+          "assets": 9,
+          "variants": 4,
+          "templates": 5
+        },
+        {
+          "kind": "project",
+          "path": "synthetic-project-1793491210711.zip",
+          "bytes": 77122,
+          "sha256": "763ccb1254513c23ed2a86e23f35f77174f8206ef08187c89f678c5dedcb7b49",
+          "entries": 13,
+          "uncompressedBytes": 128902,
+          "crc": "passed",
+          "binaryHashesMatched": 3,
+          "associationCount": 5,
+          "uniqueMedia": 3
+        },
+        {
+          "kind": "references",
+          "path": "synthetic-reference-pack-1793491207410.zip",
+          "bytes": 64964,
+          "sha256": "cf351ab10effc59f8548b0bc68e8ff63c22c46e38753c2c16321aa8af09898b7",
+          "entries": 4,
+          "uncompressedBytes": 69527,
+          "crc": "passed",
+          "associations": 5,
+          "binaries": 3,
+          "participantIds": [
+            "primary",
+            "lucas"
+          ]
+        }
+      ],
+      "fixtureNote": "New canvas PNGs and corrected unit PNG are browser-decoded; two inherited PNG-labelled byte fixtures remain opaque and byte-identical. Small fixtures only; no large-capacity certification."
+    }
+  },
+  "schemaHashes": {
+    "v1": "1daa940b3c00dc8df420aa18435911b2a1776b64d0a193ed2215d8cbed7a046a",
+    "v2": "2a618f829c4bf6ab97399a72f553ec3e4a52a273e92e31463e30652570d4568d",
+    "v3": "c9032a057e590484a37bb230b29d51a2daa3650547a282612084abad3ae360f8"
+  },
+  "screenshots": [
+    {
+      "path": "docs/qa/ensemble-recipe-b2/before-density-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 129175,
+      "sha256": "8295d915880710c84b6611f1050e8fcc637fbaf24cd387d120c1536c1518af9c",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/builder-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 143342,
+      "sha256": "119e9a2335519e4611e6dec88fe5caf32ec3908e73f5c095c86326360f6a071c",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/participants-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 128847,
+      "sha256": "eebc4502bc5e298f9c9789ff0f94e3267b73243205b5c74fc7273f5dc83640da",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/cues-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 124154,
+      "sha256": "1ef8b7cb5ce49692c9743a47858794cf99bb8c76aefcb1f804800eed508de615",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/proposal-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 101962,
+      "sha256": "135ddc18b67af04f4461587787c87c032dc8e68d7bced43daa40b27cfa8711cb",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/output-1440.png",
+      "width": 1440,
+      "viewportHeight": 900,
+      "bytes": 130061,
+      "sha256": "6f1c43c551e2e675b494fd0182bcdc25e98ba0a0e97400fb2f0d2cfdd51413bb",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/before-density-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 159119,
+      "sha256": "621bb5129fb900add90fb126578e31228611ff6e62f5881a8afc495d0b1da535",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/builder-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 158941,
+      "sha256": "3674bfb8b7c33d1843cef4de51a3acab7246a2b078e5d5adacbf1319b7b798aa",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/participants-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 139013,
+      "sha256": "0edc61fe3b87f27656000b65ad05b9b5e3cf3fd738bf6926c0dffd70cdab7262",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/cues-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 134786,
+      "sha256": "61df8e99bec7f5f1f9e74f45e377ee27955ca096fc207ff021fcc4fb537a4747",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/proposal-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 104597,
+      "sha256": "2dca83dc447b6bb0852b87e7c8b6ce252872b7003ada3d655180d9fcea52228f",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/output-768.png",
+      "width": 768,
+      "viewportHeight": 900,
+      "bytes": 108938,
+      "sha256": "eb0f5462bca79ebb074bd6911d68cab70588f53aaf29df7ef1ca7302d71fe8e6",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/before-density-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 116451,
+      "sha256": "7c622ce61c88cfb7f428a3ae73551974be1a080840d8bbb8abaaaf33774ca66c",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/builder-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 116451,
+      "sha256": "7c622ce61c88cfb7f428a3ae73551974be1a080840d8bbb8abaaaf33774ca66c",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/participants-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 111000,
+      "sha256": "d59180098ea465e6f1334ff1cad3535cba98f363d9a949ee1bbd6499a1036d8a",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/cues-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 110089,
+      "sha256": "8964b2cd500e686e0fab9df93b54cd946e8fe935947b2c78819e5d722de49d52",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/proposal-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 92032,
+      "sha256": "a931ece6f523b2a33945481a45b00dffe1b9cac2cca419708154961552dd6ad4",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    },
+    {
+      "path": "docs/qa/ensemble-recipe-b2/output-390.png",
+      "width": 390,
+      "viewportHeight": 844,
+      "bytes": 71089,
+      "sha256": "0b4982c4b60dd49f1ed40695f86462219ba3182b0553b04d8d879149d7343061",
+      "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
+      "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
+      "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
+      "pageErrors": []
+    }
+  ],
+  "changedFiles": [
+    {
+      "status": "M",
+      "path": "bridge/test/stdio.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "docs/change-set-v3.schema.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/ensemble-recipe-b2-contract.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/ensemble-recipe-b2-qa.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2-files.txt"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2-results.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/before-density-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/before-density-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/before-density-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/builder-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/builder-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/builder-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/cues-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/cues-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/cues-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/output-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/output-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/output-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/participants-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/participants-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/participants-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/proposal-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/proposal-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/ensemble-recipe-b2/proposal-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/plans/2026-11-01-ensemble-recipe-b2.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/specs/2026-11-01-ensemble-recipe-b2-design.md"
+    },
+    {
+      "status": "A",
+      "path": "e2e/ensemble-fixture.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/ensemble-mcp.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/ensemble-recipes.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "e2e/recipe-mcp.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/export-change-set-schema.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/verify-ensemble-archives.py"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleAssembly.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleBackup.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleChangeSetContract.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleChangeSetPlanning.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleChangeSetStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleControls.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleMcp.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleModel.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensemblePreview.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleProduction.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleReferences.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/ensembleWorkspace.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/ensembleChangeSetFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/ensembleFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/ensemblePlanningFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/ensembleStorageFixture.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/projectContinuityPanel.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/projectTakeManager.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ChangeSetPreview.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/DialogueCueEditor.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ensemble.css"
+    },
+    {
+      "status": "A",
+      "path": "src/components/EnsembleControls.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/EnsembleSummary.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/EnsembleTemplateChoice.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/OutfitReviewDecisions.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ParticipantEditor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectCastPanel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectContinuityPanel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectScriptPanel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectTakeManager.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/RecipeOperationPreview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ReferencePackManager.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/SceneRevisionHistory.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/aiContext.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetCandidates.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetCapacity.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/changeSetEnsemble.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetLedger.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetPlanner.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetRecipe.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetRecipeContent.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetSchema.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetState.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetValidation.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/changeSetVariants.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensemble.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleAiContext.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleChangeSetSchema.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleDocument.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensemblePersistence.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleReferences.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleTemplates.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/ensembleValidation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/exportPresets.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/generationDocument.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpPermissionDraft.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpScope.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/phase4Validation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectContinuity.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectExport.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/promptAssembler.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/referencePack.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDocument.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDuplicates.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/scenePreflight.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/shotTypeRules.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/variantRecord.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/ChangeSetImportScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/PromptOutputScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/SceneBuilderScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/changeSets.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/db.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/sceneAuthoring.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/studio.css"
+    },
+    {
+      "status": "M",
+      "path": "src/types/changeSet.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/domain.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/types/ensemble.ts"
+    }
+  ],
+  "native": {
+    "platform": "Windows",
+    "effectiveExecutionPolicy": "AllSigned",
+    "compiledHelperAuthenticode": "Valid",
+    "qaDriverAuthenticode": "Valid",
+    "signingKeysExported": false,
+    "profilesRetained": true,
+    "installedCliLegacyRegression": true,
+    "completeInstalledCliEnsembleCertification": false
+  },
+  "warnings": [
+    "Existing Vite mixed static/dynamic sceneAuthoring import",
+    "Existing Vite index chunk >500 kB (~1049 kB)",
+    "Inherited NO_COLOR/FORCE_COLOR notices",
+    "Existing React act warnings in component tests"
+  ],
+  "limitations": [
+    "Windows native cases are opt-in and skipped on Linux hosted CI; inspect actual hosted counts",
+    "Before-density screenshots compare b49f815 Studio CSS against current CSS on the same B2 UI/data, not a master-code comparison",
+    "720px equivalent-width reflow is not actual browser zoom",
+    "Inherited B1 PNG-labelled fixtures with fe116 SHA are opaque/undecodable; three new B2 canvas guides and the new 4e77 unit PNG are decoded",
+    "Small synthetic archives only; no large-limit ZIP64/restore recertification or gate increase",
+    "Trusted OS/browser/signer and existing transaction semantics; no independent penetration test or human screen-reader session",
+    "Media stale proof binds metadata/size/type, not a new same-size raw-Blob tampering guarantee",
+    "B3 Direct Prompt conversion and full installed-Codex ensemble workflow excluded",
+    "One initial legacy backup/reopen UI assertion failed intermittently; original prompt remained exact in retained failed profile. Root cause not established; final complete rerun and hosted checks are reported separately."
+  ],
+  "retainedArtifacts": [
+    "qa-results/ensemble-b2/",
+    "qa-results/local-mcp/profiles/",
+    "qa-results/playwright-runs/",
+    ".superpowers/sdd/2026-11-01-ensemble-recipe-b2/"
+  ],
+  "worktreeBaseHead": "b630507463376ad3934640eede75fabfb8429c0e",
+  "localTestsRanOnUncommittedSource": true,
+  "runtime": {
+    "node": "v22.23.3",
+    "platform": "win32",
+    "arch": "x64"
+  },
+  "correctedFailedRuns": [
+    {
+      "command": "npx playwright test",
+      "exitCode": 1,
+      "passed": 176,
+      "failed": 1,
+      "total": 177,
+      "retries": 0,
+      "failedCase": "Direct Prompt mixed library backup persistent-browser reopen at direct-prompt.spec.mjs:763",
+      "evidence": "Retained command stdout and error-context; original global reporter JSON was overwritten by a focused run",
+      "rootCause": "Unestablished; unchanged isolated test and final full rerun passed. No router/storage fix claimed."
+    },
+    {
+      "scope": "Four final-review findings",
+      "red": "Six new cases reproduced reference/template/comparison/continuity defects before product fixes",
+      "green": "41 focused tests/4 files and new production browser regression passed; final whole suites follow"
+    }
+  ],
+  "hostedFailedRuns": [
+    {
+      "url": "https://github.com/Jeruzael/krakinai/actions/runs/41251350874",
+      "head": "25da776c0bc1c5f8daf5915aae209992a1fc2707",
+      "exitCode": 1,
+      "unitPassed": 1024,
+      "bridgePassed": 18,
+      "browser": {
+        "passed": 168,
+        "failed": 1,
+        "skipped": 9,
+        "total": 178
+      },
+      "failedCase": "1440px ensemble toolbar rectangle",
+      "expectedBottom": 771.5,
+      "actualBottom": 779.953125,
+      "correction": "Explicit desktop row line-height and smaller ensemble-control margins; original bounds assertion unchanged",
+      "focusedLocalLayoutPassed": 5,
+      "alternateFontCase": "Additional coverage; passed before and after, not claimed as local RED"
+    },
+    {
+      "url": "https://github.com/Jeruzael/krakinai/actions/runs/41253729415",
+      "head": "b630507463376ad3934640eede75fabfb8429c0e",
+      "browser": {
+        "passed": 168,
+        "failed": 2,
+        "skipped": 9,
+        "total": 179
+      },
+      "expectedBottom": 771.5,
+      "actualBottom": 775.953125,
+      "diagnosis": "First correction recovered4px but remained4.45px over budget; font-specific hypothesis not established",
+      "finalCorrection": "Six desktop row gaps reduced4->2 to reclaim12px; rows/control sizes/assertions unchanged"
+    }
+  ],
+  "followupBrowser": {
+    "command": "npx playwright test e2e/ensemble-recipes.spec.mjs e2e/ensemble-mcp.spec.mjs e2e/recipe-mcp.spec.mjs e2e/local-mcp-native.spec.mjs e2e/local-mcp-workflow-native.spec.mjs",
+    "exitCode": 0,
+    "stats": {
+      "startTime": "2026-10-31T23:58:37.004Z",
+      "duration": 250780.92,
+      "expected": 23,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "scope": "After final gap-only CSS correction: all B2 plus signed Windows native and installedCLI compatibility"
+  },
+  "failedReopenDiagnostic": {
+    "profile": "qa-results/direct-prompts/profiles/restart-1793485512027",
+    "counts": {
+      "assets": 10,
+      "scenes": 3,
+      "drafts": 4
+    },
+    "sceneId": "scene_bf118b0ccc79",
+    "promptSha256": "4a76873a9abd7094b5b1f35c9a78d43454793b28e754221dc2776eedc2a10913",
+    "matchesOriginalExact": true,
+    "uiRegionVisible": true,
+    "libraryRecordsUnchanged": true,
+    "url": "http://127.0.0.1:4173/#/output/scene_bf118b0ccc79",
+    "note": "Reopening the retained first-failed synthetic profile now renders correctly and retains the exact original. This does not establish why the original UI navigation failed."
+  },
+  "finalReview": {
+    "reviewers": 1,
+    "model": "gpt-6-astra",
+    "mode": "Read-only whole branch, source/probes/synthetic rendering; not a full suite rerun",
+    "materialFindings": 4,
+    "resolved": 4,
+    "findings": [
+      "Selected secondary/historical participant reference filtering",
+      "Historical participant guide loss in full template",
+      "Missing participants/cues in take comparison",
+      "Primary outfit label reused for secondary continuity row"
+    ],
+    "deferredMinor": [
+      "Primary-centric scene-version metadata summary"
+    ],
+    "limitations": [
+      "Per-person freeform wardrobe override editing remains a UI limitation; frozen overrides survive"
+    ]
+  },
+  "sourceHashes": {
+    "bridge/test/stdio.test.ts": "cf20c9f9e67af5d998706f0a30d9a33bf79b25f8799e4d9772941a4a9ce17990",
+    "e2e/ensemble-fixture.mjs": "540099c9d0178ff1e38e05504ba020c117f97d095187e5c3237b22ab3ee03e11",
+    "e2e/ensemble-mcp.spec.mjs": "da23a527fe9eeca12fa86defa6e76cfc2c9d1a02793a4e404f2d35abb7108e6e",
+    "e2e/ensemble-recipes.spec.mjs": "8d7e6f010cef266688aaf87ee5c4626663d07b3fd1e4c6de97ad91a2ac68a15b",
+    "e2e/recipe-mcp.spec.mjs": "0c2c013d6e32f7df37675eb3e3965116ff15f961be8b540a7137573881c49f31",
+    "scripts/export-change-set-schema.mjs": "5432c3a3da180bde88b210c9a698d3997c96469954630b0844c64bee6e45728f",
+    "scripts/qa/verify-ensemble-archives.py": "b55dac90e6b2b69971f363b6196c87d8336b2a80a92f1f1f21fe9e0956b35dc9",
+    "src/__tests__/ensembleAssembly.test.ts": "ea54ef39a3ddc0f3914050270eb7f9e3b54f53d020007b7ef43f9956fc07c079",
+    "src/__tests__/ensembleBackup.test.ts": "84292af09b6c3ff4b68ab9a945efe8362c6eee82384b204a50a2e0fa763ed833",
+    "src/__tests__/ensembleChangeSetContract.test.ts": "5798fce046f6a09cf093f280ef3fd1419815a1b984dbe19b5459ed663f21d7f8",
+    "src/__tests__/ensembleChangeSetPlanning.test.ts": "a967f836a10078182a2fef525d202c90567df1c054aa97524bea321cb87dbe7c",
+    "src/__tests__/ensembleChangeSetStorage.test.ts": "1c2c627eb27cfd361e8e286acf4385d8287498a4e12836f03fc973753a761754",
+    "src/__tests__/ensembleControls.test.tsx": "138ae66043d35c4f314e0c55f222fcfa0c188f5509fb884c56e4417349b826af",
+    "src/__tests__/ensembleMcp.test.ts": "6e6f7946cdf1288833bd57e7fadbd7e5ca835b52ac19fd6dfc2040c8d5342a45",
+    "src/__tests__/ensembleModel.test.ts": "ee159de61860d3d7cd39e9f42169ae22978308a9c560c26b06229b47d7392669",
+    "src/__tests__/ensemblePreview.test.tsx": "de6ba064abe5f9214b846aa2b1c3e48e0acac5a340fe7c04b6fe382136d29a67",
+    "src/__tests__/ensembleProduction.test.ts": "a41d8cfa618a217d66f25a01d3d971afec7c49cedf25bd62b7b5f0bf0931a0cf",
+    "src/__tests__/ensembleReferences.test.ts": "9cdde98ad520dc20392a7eefc1ac13126ed55dfc9db1f5c059dc06fd0a577936",
+    "src/__tests__/ensembleStorage.test.ts": "9d51c6905426d65dae79aeeb46a32da435be8e668f62283e5dea4a9dcc1c53c8",
+    "src/__tests__/ensembleWorkspace.test.tsx": "d21832f35aaacfaff78aee032344397f93d3910bd35d308bb35a7193fceac5e8",
+    "src/__tests__/fixtures/ensembleChangeSetFixture.ts": "8db79bfcdcd9747ef8588042c8ac07d9c7668796895b004750c1d60c485bc4cc",
+    "src/__tests__/fixtures/ensembleFixture.ts": "f03cdf821050c3b9dcbf3a3c9bc1802aafd831cbdc33929f2d03b460063fbf91",
+    "src/__tests__/fixtures/ensemblePlanningFixture.ts": "efddf2ba35749ebc6aea591ee8c2ec42ae9b1004c4f65cd3ed6ddca3b41efb9d",
+    "src/__tests__/fixtures/ensembleStorageFixture.ts": "c78cab9a174485f68bd73b1c73fd2743c1577787d03ed894b148c7e39da26ecc",
+    "src/__tests__/projectContinuityPanel.test.tsx": "c307abb866884020d574596a8f3790a9d3f79be426d33d8aa3180596624ec01e",
+    "src/__tests__/projectTakeManager.test.tsx": "0a721943178823b9fe6700b5c5b2aea0f6d2b56d8e231aa50900538f5f3c441f",
+    "src/components/ChangeSetPreview.tsx": "54af7950f393fffd359f21742595a32802a2853201b22f339bb266b31e4df775",
+    "src/components/DialogueCueEditor.tsx": "172e6cde78bc163d09abe56de153e18da26b078ec13636fc4b5bfc1c0c275ad1",
+    "src/components/ensemble.css": "e9acb22f7532e22f1011309f193b337b9e908d388e27d7867d55ff5304ff9e1b",
+    "src/components/EnsembleControls.tsx": "34f44c5dddf5dfb94b4e770ddc8f2a72b6c20dd4ee066432a7a68e854ae799e8",
+    "src/components/EnsembleSummary.tsx": "cedcace576c2e4d183903aed797915856af1af0793514dee900348da4dfcdd13",
+    "src/components/EnsembleTemplateChoice.tsx": "7713397dfd00ed0d7d714a04d5b86fe71d2ddba877d1981b33a3fcfd5bec8161",
+    "src/components/OutfitReviewDecisions.tsx": "9b7581d5cbca78c9c5bc6483cb688aa214b834e7915395fb6196321e7c29dd41",
+    "src/components/ParticipantEditor.tsx": "d5daf1b3aabcdc6c3a4e39ae18fe7fe7779a7ed2251d5552e51b0f50e3dc35cb",
+    "src/components/ProjectCastPanel.tsx": "e218c821be1bf0e5aefa329debe9117d97361f21fcb69ca774f5b3620fbf37d0",
+    "src/components/ProjectContinuityPanel.tsx": "872ae3b175375c18e5c6be6fcb376f2c6bd9f7a4959481bbe734c8cc0bca6259",
+    "src/components/ProjectScriptPanel.tsx": "d7c3c19135026212702fa52494476f178534e514532007e15fe4a2702147942f",
+    "src/components/ProjectTakeManager.tsx": "a3c1fec8b6663aee65d268d36cb355d626cb6c8a0aad3352aab9867885a04ede",
+    "src/components/RecipeOperationPreview.tsx": "b71d7a3edd6cae97818b73aa676579f93dc3463fbf74b2488d8f636da4f862f6",
+    "src/components/ReferencePackManager.tsx": "8a405a8829ad313c178531a7413b77e893183707a7703c15f4750248109e2dcb",
+    "src/components/SceneRevisionHistory.tsx": "87edde5fe935faaeaa7fcdfef1584c5d5a74b1c361391d4009eba2776a63aba3",
+    "src/domain/aiContext.ts": "2378a6384fc17923e89f374580e76f91c68759a724482c499dcc3373ca8b3414",
+    "src/domain/changeSetCandidates.ts": "da71697ea44c52803ee03f414d90b830643911e315d997ce063eede0e6d08d4a",
+    "src/domain/changeSetCapacity.ts": "dcebeec620ffec769e91dbb0daa4819f848fd5e2ae91a5fa889d3985d54a0cb4",
+    "src/domain/changeSetEnsemble.ts": "4449616948e04bf21e394d033c2d23603deb9d4e99a0c27536e52732f15875fe",
+    "src/domain/changeSetLedger.ts": "f9def4ce7e98dc637fc9cdc8aef447134afe61e2e80764672ea862f2336088db",
+    "src/domain/changeSetPlanner.ts": "d42136026394eeb544ff75357735d3316c80f2c46739c90f97cb5e854a6313c3",
+    "src/domain/changeSetRecipe.ts": "ee49eed72fbb7f9c893688fd0d0d55a082af3b73cbdede2b9552ccc791337676",
+    "src/domain/changeSetRecipeContent.ts": "d5a06e62686ad9777f2b1d11fed5e881bf4f7ab577adc61172565c4327769fb6",
+    "src/domain/changeSetSchema.ts": "6aa7747013572075c04fde7d96d5733f6f4126b220be249153fab09ee2d375b1",
+    "src/domain/changeSetState.ts": "ccda999c346a087cfc86621656ecf869e66724cec4e00f2299d61ab32e21e8df",
+    "src/domain/changeSetValidation.ts": "d3355cfef51a8b2887f8e01759f42d2cf6353da4f803257494c33c0442638313",
+    "src/domain/changeSetVariants.ts": "83785355e0512485ba583ce09e6153b4cea89cae0c9df51033bcff60ed1bcd46",
+    "src/domain/ensemble.ts": "7255d7bde5f8acb64615d8a0eff0b05867db02c968043d0b52b7ca82502f8e38",
+    "src/domain/ensembleAiContext.ts": "7052450540a8e9a63fbc3fae19617320453439b9da5ee620e205a7066db75095",
+    "src/domain/ensembleChangeSetSchema.ts": "c59a17752fdfa8162e8981f555a4d9a3a0c5852d843d10ac1fc118b3c6326cf5",
+    "src/domain/ensembleDocument.ts": "b92c741880e4c2e74215f33968be3d37c541915af34ab44e0cbd8192c24c1949",
+    "src/domain/ensemblePersistence.ts": "f51a4e7ea552889b32c3bb6ce4c31b2170defce627740db90cf72def58dcb2da",
+    "src/domain/ensembleReferences.ts": "d34cb0a5dbbc473fc5ec74a8c4978bb43fbe3be597e738db6aed04bad39327d6",
+    "src/domain/ensembleTemplates.ts": "a2b1ff5828c8b4c5edff381f8f7dfe26070c23fd7558b4dfbedf9d50a3fb31b5",
+    "src/domain/ensembleValidation.ts": "b6f8e802fe637a1e468ac25095e354ad6312cd9a0c18d862ae317fa66514f498",
+    "src/domain/exportPresets.ts": "471039a13bdb922e88db6854667b6c1ddf5d86a3eee671d43561129ed7ab3e3e",
+    "src/domain/generationDocument.ts": "c8395f4b580f05c69ef506709fdd63b5b6abd709325be0d22d2de44f9be14c95",
+    "src/domain/mcpPermissionDraft.ts": "c331c052405b598f21bcdd0366f130111e69c9c8e04efa402d790556362edd54",
+    "src/domain/mcpScope.ts": "be4e3f2853c0c3dd045458c438523cbc0c8e20c555f2d16c3478a43afbca02ab",
+    "src/domain/phase4Validation.ts": "517cd04efdcb4cb4892521263464e621cb2ca1991e3771cd18ef5baccb61209c",
+    "src/domain/projectContinuity.ts": "20af4ca7aa704d41d056a12f575a65dd45743f183c1143d5b4178cd684fba9b0",
+    "src/domain/projectExport.ts": "7de06637b6a20b568a3a4c9e3c0f5162b3773ed53ca90b92fb65e4867965baa8",
+    "src/domain/promptAssembler.ts": "dee1de5a622fe02cc2ba7e8f0643575c9f704ef964bac32aa6b8a8dc9b3fd788",
+    "src/domain/referencePack.ts": "82700f74531b7092cfcbe85c249c417212d1afde20876b4dc53e87c85111a613",
+    "src/domain/sceneDocument.ts": "5d97fedd7b79f65043872251122cff53c6dfc18651fac2cf7316598d7f408b8a",
+    "src/domain/sceneDuplicates.ts": "e844ca90108eeebb2c09845d80e184f556de4e7d10f45ea5d2abee9a3360783c",
+    "src/domain/scenePreflight.ts": "fae9038dcb3d907e14a0bf678f2ada72aea50bc7379be572656f96c6642241cb",
+    "src/domain/shotTypeRules.ts": "edf82679ec7c1b894dbd8b43232491b97456e3b679f0291dcc14e75181880162",
+    "src/domain/variantRecord.ts": "4cc1ebdab79179763c3cd3abe2fce8bbb8454c7f3005a966ddb1505f215e1379",
+    "src/screens/ChangeSetImportScreen.tsx": "d07eda09b89d5010a5ee00d44c7ff4744d684c35cc6fad79074c07d9da6d8d18",
+    "src/screens/PromptOutputScreen.tsx": "35e70de4a59b9f3f2822915412ab1d7814b43d9001b7a1372f50d833a0f82797",
+    "src/screens/SceneBuilderScreen.tsx": "5f7e5dde53cc0f56bc786b7a5de3784297b5e5055377eca2cf2f79f2ddd44070",
+    "src/storage/changeSets.ts": "f3bc1e41fc7142c2af48c53c1aaf6616a0d639553246b9e8120a86586d4d1515",
+    "src/storage/db.ts": "063ac68a735b83f8f82575b176d46483149da5e4d71d01454dbd286b4916838d",
+    "src/storage/sceneAuthoring.ts": "db17ee1c303a538adc73ca6256b6e10486c360f2a34d82ec22f1f3a672f21d24",
+    "src/studio.css": "996da17df123a1b74591f686ca97805be2350a2ca0144348d37afdf848536679",
+    "src/types/changeSet.ts": "e30516c46f554c6660b7936239879d2a0321005da50d209ed050f5481191eb38",
+    "src/types/domain.ts": "534d5ae54669c45e2382d76d4181a39037f1a5355018eaf3b5a8d9dfb82a40ca",
+    "src/types/ensemble.ts": "91df850cd8f45bdde2425fe9b39d07e25f125108a11855b7f16f88ad6758cb18"
+  }
+}

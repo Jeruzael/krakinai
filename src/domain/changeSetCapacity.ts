@@ -16,7 +16,7 @@ export function validateChangeSetBackupCapacity(
   const projects = new Map(plan.collections.map((c) => [c.id, c]));
   const snapshot = {
     ...state,
-    variants: state.variants ?? [],
+    variants: [...(state.variants ?? []),...(plan.variants??[])],
     drafts: state.drafts ?? [],
     collections: [
       ...state.collections.map((c) => projects.get(c.id) ?? c),

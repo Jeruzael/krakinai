@@ -19,6 +19,8 @@ import {
 import { CATEGORY_TO_SLOT, SLOT_LABELS } from './validation';
 import { getEffectiveDialogueDelivery, validatePerformanceDirection } from './dialoguePerformance';
 import { dialogueRequiresCharacter, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
+import {validateSceneEnsemble} from './ensembleValidation';
+import {getSceneSnapshotEntries} from './ensembleReferences';
 
 export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
@@ -84,7 +86,7 @@ export interface AssembledPromptResult {
 
 export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
   const draft = {...input, avoidText:getSceneLevelAvoidText(input), slots:getActiveSceneSlots(input)};
-  const errors: string[] = validateShotSourceMedia(draft);
+  const errors: string[] = [...validateShotSourceMedia(draft),...validateSceneEnsemble(input,{forAssembly:true})];
   const title = (draft.title ?? '').trim();
   if (!title) {
     errors.push('Scene title is required.');
@@ -184,9 +186,9 @@ export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
   for(const link of getActiveSourceMediaLinks(draft)) {
     if(!seenMediaIds.has(link.mediaId)){references.push({...link});seenMediaIds.add(link.mediaId);}
   }
-  for (const slot of ORDERED_BUILDER_SLOTS) {
-    for (const link of draft.slots[slot]?.mediaLinks ?? []) {
-      if (!seenMediaIds.has(link.mediaId)) {
+  for (const {snapshot} of getSceneSnapshotEntries(draft,{activeOnly:true})) {
+    for (const link of snapshot.mediaLinks ?? []) {
+      if (draft.ensemble || !seenMediaIds.has(link.mediaId)) {
         references.push({ ...link });
         seenMediaIds.add(link.mediaId);
       }

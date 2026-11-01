@@ -98,7 +98,7 @@ export const ProjectContinuityPanel: React.FC<Props> = ({ collection, onChanged 
       if (!shot) return null;
       return <article className="pc-row" key={`${row.shotId}-${row.characterId}`}>
         <div className="pc-wardrobe-heading"><strong>{row.characterName}</strong><span>{title(shot)}</span></div>
-        <div className="pc-source">{row.wardrobeSourceId ? <>Wardrobe source: {selectedSceneForShot(shot,scenes)?.slots.wardrobe?.sourceTitle || row.wardrobeSourceId}</> : <span className="pc-missing">Wardrobe unknown</span>}</div>
+        <div className="pc-source">{row.wardrobeSourceId ? <>Wardrobe source: {row.wardrobeSourceTitle || row.wardrobeSourceId}</> : <span className="pc-missing">Wardrobe unknown</span>}</div>
         <div>{!row.wardrobeSourceId ? 'Change unknown' : row.changed ? <span className="pc-warning">Clothing changed from previous appearance</span> : 'No detected change'}{row.intentionalReason && <> · Intentional: {reasons.find(reason => reason.value === row.intentionalReason)?.label}</>}</div>
         <details className="pc-wardrobe-details"><summary>Details</summary>{row.wardrobeSourceId && <><p className="pc-source">Source ID: {row.wardrobeSourceId}</p><p className="pc-prewrap">{row.wardrobeDescription || 'Description unavailable'}</p></>}{shot.continuityNotes && <p className="pc-prewrap">{shot.continuityNotes}</p>}</details>
         <button type="button" className="btn btn-secondary" onClick={() => { setEditor({ kind: 'wardrobe', shot, reason: shot.intentionalWardrobeChange ?? '', notes: shot.continuityNotes ?? '' }); setError(''); }}>Review wardrobe</button>

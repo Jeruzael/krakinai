@@ -3,6 +3,8 @@ import type { McpScope } from '../types/mcp';
 import { getProjectShots } from './projectStoryboard';
 import { readImportLedger } from './changeSetLedger';
 import { McpError, record, exactKeys } from './mcpProtocol';
+import{getSceneSnapshotEntries}from'./ensembleReferences';
+import{isRecipeOperation}from'../types/changeSet';
 
 export const MCP_SCOPE_ID_LIMITS = Object.freeze({ projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250 });
 export const MCP_SCOPE_LIMITS = Object.freeze({ ...MCP_SCOPE_ID_LIMITS, reusableRecords: 500, receiptGrants: 1000 });
@@ -33,7 +35,7 @@ export function canReadReceipt(receipt: ChangeSetReceipt, scope: McpScope, state
   const projectAllowed = (id: string) => projects.some(p => p.id === id);
   const shotAllowed = (id: string) => shots.has(id);
   const sceneAllowed = (id: string) => scenes.has(id) && state.scenes.some(s => s.id === id);
-  const candidateAllowed = (id: string) => scope.candidateIds.includes(id) && (storedCandidates ??= new Set(readImportLedger(state.preferences).candidates.map(c => c.id))).has(id);
+  const candidateAllowed = (id: string) => scope.candidateIds.includes(id) && (storedCandidates ??= new Set([...readImportLedger(state.preferences).candidates,...(readImportLedger(state.preferences).variantCandidates??[])].map(c => c.id))).has(id);
   if (!mappings.length && !projectIds.length && !receipt.operations.some(op => op.recordId)) return false;
   if (!projectIds.every(projectAllowed)) return false;
   // Operations without a clientRef have no idMapping. Every disclosed target
@@ -43,27 +45,38 @@ export function canReadReceipt(receipt: ChangeSetReceipt, scope: McpScope, state
     if (op.type.startsWith('project.') || op.type === 'shot.reorder') return projectAllowed(op.recordId);
     if (op.type.startsWith('shot.')) return shotAllowed(op.recordId);
     if (op.type.startsWith('scene.')) return sceneAllowed(op.recordId);
-    if (op.type.startsWith('asset.')) return candidateAllowed(op.recordId);
+    if (op.type.startsWith('asset.')||op.type.startsWith('variant.')) return candidateAllowed(op.recordId);
     return false;
   })) return false;
   return mappings.every(m => {
     if (m.kind === 'project') return projectAllowed(m.id);
     if (m.kind === 'scene') return sceneAllowed(m.id);
     if (m.kind === 'shot') return shotAllowed(m.id);
+    if(m.kind==='variant_candidate')return candidateAllowed(m.id)&&(!m.variantId||scope.variantIds.includes(m.variantId)&&(state.variants??[]).some(v=>v.id===m.variantId));
     return candidateAllowed(m.id) && (!m.assetId || (scope.assetIds.includes(m.assetId) && state.assets.some(a => a.id === m.assetId)) || (scope.templateIds.includes(m.assetId) && state.templates.some(t => t.id === m.assetId)));
   });
 }
 function availableMedia(scope: McpScope, state: ChangeSetState): Set<string> {
   const ids = new Set(scope.mediaIds), scenes = authorizedSceneIds(scope, state);
-  for (const scene of state.scenes.filter(s => scenes.has(s.id))) for (const link of [...scene.references, ...(scene.referencePack?.entries ?? []), ...(scene.sourceMediaLinks ?? [])]) ids.add(link.mediaId);
+  for (const scene of state.scenes.filter(s => scenes.has(s.id))) for (const link of [...scene.references, ...(scene.referencePack?.entries ?? []), ...(scene.sourceMediaLinks ?? []),...getSceneSnapshotEntries(scene).flatMap(e=>e.snapshot.mediaLinks)]) ids.add(link.mediaId);
   for (const asset of state.assets.filter(a => scope.assetIds.includes(a.id))) for (const link of asset.mediaLinks) ids.add(link.mediaId);
   for (const variant of (state.variants ?? []).filter(v => scope.variantIds.includes(v.id))) for (const link of variant.mediaLinks) ids.add(link.mediaId);
+  for(const template of state.templates.filter(t=>scope.templateIds.includes(t.id))) {
+    for(const {snapshot}of getSceneSnapshotEntries({slots:{},ensemble:template.ensembleDefault?.ensemble}))for(const link of snapshot.mediaLinks)ids.add(link.mediaId);
+    for(const link of template.ensembleDefault?.referencePack?.entries??[])ids.add(link.mediaId);
+  }
   return ids;
 }
 export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state: ChangeSetState, localReuseGrants: ReadonlySet<string> = new Set()): void {
   if (!scope.allowProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
   const requireExistingScene = (id: string) => { if (!scenes.has(id) || !state.scenes.some(s => s.id === id)) denyScope(); };
   for (const op of changeSet.operations) {
+    const requireParent=(id:string)=>{if(!scope.assetIds.includes(id)||!state.assets.some(a=>a.id===id&&a.category==='characters'))denyScope()};
+    if(op.type==='variant.propose')requireParent(op.parentCharacterId);
+    if(isRecipeOperation(op))for(const p of op.ensemble?.participantUpserts??[]){
+      if(p.character&&'id'in p.character.asset&&!scope.assetIds.includes(p.character.asset.id))denyScope();
+      if(p.wardrobe){if('asset'in p.wardrobe){if('id'in p.wardrobe.asset&&!scope.assetIds.includes(p.wardrobe.asset.id))denyScope()}else if('id'in p.wardrobe.variant){const id=p.wardrobe.variant.id,v=state.variants?.find(v=>v.id===id);if(!scope.variantIds.includes(id)||!v||v.type!=='Outfit'||v.targetSlot!=='wardrobe')denyScope();requireParent(v.parentCharacterId)}}
+    }
     if (op.type === 'project.create' && !scope.allowNewProjects) denyScope();
     let targetProject: ReturnType<typeof requireProject> | undefined;
     if ('project' in op && op.project && 'id' in op.project) targetProject = requireProject(op.project.id, scope, state);
@@ -90,6 +103,10 @@ export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state
       const ledger = readImportLedger(state.preferences), candidate = ledger.candidates.find(c => c.id === op.candidateId);
       const receipt = candidate && ledger.receipts.find(r => r.changeSetId === candidate.changeSetId);
       if (!candidate || (!scope.candidateIds.includes(candidate.id) && (!receipt || !hasReceiptGrant(receipt, scope)))) denyScope();
+    }
+    if(op.type==='variant.review_candidate'){
+      const ledger=readImportLedger(state.preferences),candidate=ledger.variantCandidates?.find(c=>c.id===op.candidateId),receipt=candidate&&ledger.receipts.find(r=>r.changeSetId===candidate.changeSetId);
+      if(!candidate||!scope.candidateIds.includes(candidate.id)&&(!receipt||!hasReceiptGrant(receipt,scope)))denyScope();requireParent(candidate.parentCharacterId);
     }
   }
 }
