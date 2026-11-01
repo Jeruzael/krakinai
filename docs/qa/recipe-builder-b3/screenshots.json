@@ -19,10 +19,10 @@
     },
     {
       "path": "docs/qa/recipe-builder-b3/after-review-1440.png",
-      "sha256": "8829e068386d3807a0955ce3500064c83b49a7beeca5d72ef18a500d751390dc",
+      "sha256": "a552f593954d50ffbc6a5bf1461ec846971efa3953715d7d96734f04d6c9b220",
       "width": 1440,
       "height": 900,
-      "bytes": 110384
+      "bytes": 110255
     },
     {
       "path": "docs/qa/recipe-builder-b3/before-direct-768.png",
@@ -40,10 +40,10 @@
     },
     {
       "path": "docs/qa/recipe-builder-b3/after-review-768.png",
-      "sha256": "d9ead3b419b3c1236542909db42a2fc65b28562bea678dcbc226e02b87889ed9",
+      "sha256": "83d123f2b9530442e8a89dc9cbf3d8b42e96dc19f81d2b92c75d294642d33654",
       "width": 768,
       "height": 1605,
-      "bytes": 102245
+      "bytes": 102189
     },
     {
       "path": "docs/qa/recipe-builder-b3/before-direct-390.png",
@@ -61,10 +61,10 @@
     },
     {
       "path": "docs/qa/recipe-builder-b3/after-review-390.png",
-      "sha256": "0d2ca459f30a501d69160795fc256d4e73b85494c0469f4e0c17d5ff4c8d2d9d",
+      "sha256": "b05f74fa9859455946427cf0f47b22f211e5191d919da648f1ab29d882ee2935",
       "width": 390,
       "height": 1603,
-      "bytes": 84764
+      "bytes": 84757
     }
   ]
 }
