@@ -71,6 +71,7 @@ export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state
   if (!scope.allowProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
   const requireExistingScene = (id: string) => { if (!scenes.has(id) || !state.scenes.some(s => s.id === id)) denyScope(); };
   for (const op of changeSet.operations) {
+    if(op.type==='scene.convert_direct_to_recipe'&&!scope.fullPromptSceneIds.includes(op.sceneId))denyScope();
     const requireParent=(id:string)=>{if(!scope.assetIds.includes(id)||!state.assets.some(a=>a.id===id&&a.category==='characters'))denyScope()};
     if(op.type==='variant.propose')requireParent(op.parentCharacterId);
     if(isRecipeOperation(op))for(const p of op.ensemble?.participantUpserts??[]){
