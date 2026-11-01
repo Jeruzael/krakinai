@@ -4,9 +4,10 @@ Verification snapshot: 2026-11-01, Windows, base
 `96e819ae23adc2bf897c7e3ccc71e16176e28b42`. Runtime implementation through signed
 commit `58532f62db674f7b73500a612014cd1562ad082a`.
 
-**In progress:** the complete browser suite is running after the independent
-review fixes. The reviewer approved those fixes; hosted CI has not yet run. This snapshot is not a completion
-claim; the final delivery must include the PR's exact signed HEAD and green CI link.
+**Local verification passed.** PR [#32](https://github.com/Jeruzael/krakinai/pull/32)
+remains unmerged. Hosted CI is reported separately against the final signed HEAD
+in the PR checks and final delivery report; this committed report records local
+measurements without claiming a self-referential final commit hash.
 
 ## Directly inspected facts
 
@@ -55,7 +56,7 @@ claim; the final delivery must include the PR's exact signed HEAD and green CI l
 | `npm --prefix bridge test` |18/18; 3 files on corrected rerun|0|
 | `npm --prefix bridge audit --omit=dev` |0 vulnerabilities|0|
 | Focused actual installed-CLI browser acceptance |2/2;41 actual calls per origin|0|
-| Complete browser suite |191 declared; final result pending|Pending|
+| Complete browser suite |191 passed;0 failed/skipped/flaky|0|
 
 The 207-check ledger is historical QA evidence, not the number of B3 browser
 tests. CLI calls are not counted as additional Playwright cases. No failed,
@@ -85,7 +86,7 @@ for delayed actual file reading/no writes and guided cue+participant deletion.
 
 The first complete Windows browser run finished 183 passed/6 failed (exit 1).
 All six failures were legacy B1/B2 schema-discovery assertions listing v1–v3;
-the assertions now include v4, and the 191-case rerun remains pending. No failed
+the assertions now include v4, and the 191-case rerun passed (exit 0), with no failures, skips or flaky cases. No failed
 case was counted as passed. The reviewer also checked that template defaults
 cannot enter conversions through an untracked source under the current contract;
 future template-binding support would need its own disclosure checks.
@@ -186,6 +187,13 @@ was changed. No signing key or certificate was exported.
   `.superpowers/sdd/` ledger. No profile, test ZIP, key, certificate, credential
   or raw run dump is intended for Git. No deletion/cleanup was performed.
 
-Final machine results and complete file inventory will be linked here after the
-full suite and review finish. Hosted CI must be checked on the PR's final signed
-HEAD; Linux CI skips Windows-only native acceptance and cannot replace it.
+Machine results: [`qa_results.json`](qa/recipe-builder-b3/qa_results.json).
+Complete added/modified file list: [`changed-files.txt`](qa/recipe-builder-b3/changed-files.txt)
+(85 files). All nine screenshot files/hashes were verified. File inventory and
+new fixture/evidence content were checked for scope: no actual library records,
+profiles, test ZIPs, credentials, keys or certificates are committed. This is
+an inventory/content review, not a claim of an exhaustive security scan.
+
+The final delivery report at `qa-results/recipe-builder-b3/final/final-report.md`
+records the exact final signed HEAD and hosted run URL. Linux CI skips
+Windows-only native acceptance and cannot replace the completed Windows run.
