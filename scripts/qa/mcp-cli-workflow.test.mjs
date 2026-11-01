@@ -72,3 +72,20 @@ test('fabricated assistant success JSON is not a tool response',async()=>{
 test('a final success string cannot complete a truncated workflow',async()=>{
   const s=scenario(),values=fixture();await s.consume([]);await s.consume(values.slice(0,1));assert.throws(()=>s.summary(),/before every actual call/);
 });
+
+test('launcher acceptance validates scoped project reads and every shifted call ID',async()=>{
+  const s=createRevisionWorkflow({projectId,excludedProjectId,projectName:'Synthetic MIDORI',scopedReads:true,changeSet,onReply:async()=>{}});
+  assert.deepEqual(s.plan.slice(0,4).map(t=>t.suffix),['krakinai_connection_status','krakinai_list_projects','krakinai_get_project','krakinai_submit_change_set']);
+  const payloads=fixture().map(m=>JSON.parse(JSON.parse(m.content).content[0].text));
+  payloads.splice(1,0,ok({items:[{id:projectId,name:'Synthetic MIDORI'}],nextCursor:null}),ok({id:projectId,name:'Synthetic MIDORI'}));
+  const values=payloads.map((p,i)=>message(i,p));
+  await s.consume([]);for(let i=1;i<=values.length;i++)await s.consume(values.slice(0,i));
+  assert.equal(s.summary().callAudit.length,11);
+  assert.deepEqual(s.summary().callAudit.slice(-3).map(c=>c.errorCode),Array(3).fill('PAIRING_REQUIRED'));
+});
+
+test('launcher scoped-read acceptance rejects an extra project',async()=>{
+  const s=createRevisionWorkflow({projectId,excludedProjectId,projectName:'Synthetic MIDORI',scopedReads:true,changeSet,onReply:async()=>{}});
+  await s.consume([fixture()[0]]);
+  await assert.rejects(s.consume([fixture()[0],message(1,ok({items:[{id:projectId,name:'Synthetic MIDORI'},{id:'unexpected-project',name:'Other'}],nextCursor:null}))]),/selected project list/i);
+});

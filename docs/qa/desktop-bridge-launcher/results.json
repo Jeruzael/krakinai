@@ -1,0 +1,119 @@
+{
+  "date": "2026-11-01",
+  "timezone": "Asia/Taipei",
+  "branch": "codex/desktop-bridge-launcher",
+  "baseCommit": "20f964adf5eeae1e0093e282d7ffc0e8d12800e9",
+  "status": "local checks, source review and signed paired CLI acceptance passed",
+  "checks": [
+    {
+      "name": "application",
+      "passed": 1118,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "root-tests-serial.log",
+      "logSha256": "46d21360df91af144d83783ebd9662f07ad02074b12dc846824787de2bf907d9"
+    },
+    {
+      "name": "bridge",
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "fresh-compiled-bridge-tests.log",
+      "logSha256": "ae885f79f5baa7d3a984e98defec10d0b39fb5d57e7bb9035a31b85a8b91399a"
+    },
+    {
+      "name": "native",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "review-native-green-2.log",
+      "logSha256": "e304d7ee56361ea071e60fd4ec8d0c8b8612ad4a060dcae613f2575387f24b5c"
+    },
+    {
+      "name": "browser",
+      "passed": 180,
+      "failed": 0,
+      "skipped": 11,
+      "exitCode": 0,
+      "log": "browser-serial.log",
+      "logSha256": "612360ee07dda17dc5e997663d4a6054749b66b0df8fb3ac7dec8e163d281836"
+    },
+    {
+      "name": "qaHelpers",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "qa-helpers.log",
+      "logSha256": "4bb2e85c3e514c280a16cb5e61b0b0c6adafba19c6be1e8b0f50e38f857ef46f"
+    },
+    {
+      "name": "qaLedger",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "qa-reconciliation.log",
+      "logSha256": "360715a41cdf0ef37945ab88a22f478222e0acf5a876c278671678048e3de190"
+    }
+  ],
+  "earlierRuns": [
+    {
+      "name": "application concurrent run",
+      "passed": 1117,
+      "failed": 1,
+      "exitCode": 1,
+      "reason": "asynchronous Participants (2) lookup; unchanged isolated file and full serial rerun passed"
+    },
+    {
+      "name": "browser concurrent run",
+      "passed": 179,
+      "failed": 1,
+      "skipped": 11,
+      "exitCode": 1,
+      "reason": "Windows net::ERR_NO_BUFFER_SPACE navigation; full serial rerun passed"
+    }
+  ],
+  "release": {
+    "unsignedExeSha256": "df774cb51bcb11f5314ec540956695404270ff3f01fe37db504e59b89597c51a",
+    "signedFiles": [
+      {
+        "file": "Krakinai.BridgeLauncher.exe",
+        "status": "Valid",
+        "sha256": "e7fa8faa64ce203438bca22f6e8f5f201bfe8c65db5c4ab95c5356a2ed5bab0c"
+      },
+      {
+        "file": "bridge/native/verify.ps1",
+        "status": "Valid",
+        "sha256": "9da3e09687e6d95761513be7e61c8b07b6d114924d8852ea407a5fb694b97390"
+      }
+    ],
+    "nativeSourceDigest": "e0db8bce4f9d3165388c9424f3037433da38fd1b6c89c25f72946fdabe15bab5",
+    "helperBodyMatchesSource": true
+  },
+  "sourceReview": {
+    "importantFindings": 2,
+    "resolved": 2,
+    "remainingImportant": 0
+  },
+  "warnings": [
+    "Vite main chunk 1067.89 kB (274.14 kB gzip), above 500 kB threshold"
+  ],
+  "pending": [
+    "complete native keyboard/focus, 200 percent scaling and high contrast checks"
+  ],
+  "notes": [
+    "Synthetic library only; real localhost:5173 library not used.",
+    "An earlier accidentally overlapping screenshot was excluded and retained locally, never committed or uploaded.",
+    "Historical QA ledger 207 checks / 45 screenshots is distinct from current browser count.",
+    "No automatic trust, execution-policy or global Codex-configuration changes."
+  ],
+  "realBrowserLibraryAccessed": false,
+  "syntheticLibraryAccessed": true,
+  "pairedCliAcceptance": "cli-acceptance.json",
+  "recordType": "local precommit evidence snapshot",
+  "publicationEvidence": "Final signed Git commit and hosted CI runs are recorded in the PR after publication; both must pass before merge."
+}

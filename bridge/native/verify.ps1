@@ -4,7 +4,7 @@ try {
   if (-not $pairingRequest -or $pairingRequest.secret.Length -ne 43) { throw 'Invalid pairing input' }
   Add-Type -AssemblyName PresentationFramework
   [xml]$pairingMarkup = @'
-<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="KRAKINAI Local Bridge Verification" Width="590" Height="650" WindowStartupLocation="CenterScreen" Background="#F5F8FF" ResizeMode="CanResize">
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="KRAKINAI Local Bridge Verification" Width="590" Height="650" WindowStartupLocation="CenterScreen" WindowState="Normal" ShowActivated="True" ShowInTaskbar="True" Topmost="True" Background="#F5F8FF" ResizeMode="CanResize">
  <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="24">
   <TextBlock Text="Verify your local KRAKINAI bridge" FontSize="21" FontWeight="Bold" TextWrapping="Wrap" Margin="0,0,0,14"/>
   <TextBlock Text="Continue only if you deliberately started this bridge. Compare this origin and verification code with AI Connections in your browser." TextWrapping="Wrap" Margin="0,0,0,14"/>
@@ -23,7 +23,12 @@ try {
   $pairingWindow.FindName('BridgePath').Text = [string]$pairingRequest.bridgePath
   $pairingWindow.FindName('Origins').Text = ([string]$pairingRequest.origin + "`n" + [string]$pairingRequest.relay)
   $pairingWindow.FindName('VerificationCode').Text = [string]$pairingRequest.verificationCode
-  $pairingWindow.FindName('Reveal').Add_Click({ $pairingWindow.FindName('PairingKey').Text = [string]$pairingRequest.secret })
+  $pairingWindow.Add_ContentRendered({
+    $null = $pairingWindow.Activate()
+    # Non-secret display diagnostics only. Never emit the request, key or code.
+    [Console]::Error.WriteLine('NATIVE_WINDOW_STATE ' + ((@{ visible = $pairingWindow.IsVisible; active = $pairingWindow.IsActive; topmost = $pairingWindow.Topmost; taskbar = $pairingWindow.ShowInTaskbar; state = [string]$pairingWindow.WindowState } | ConvertTo-Json -Compress)))
+  })
+  $pairingWindow.FindName('Reveal').Add_Click({ $pairingWindow.FindName('PairingKey').Text = [string]$pairingRequest.secret; $pairingWindow.Topmost = $false })
   $updatePairingConsent = { $pairingWindow.FindName('Allow').IsEnabled = $pairingWindow.FindName('Compared').IsChecked -eq $true }
   $pairingWindow.FindName('Compared').Add_Checked($updatePairingConsent)
   $pairingWindow.FindName('Compared').Add_Unchecked($updatePairingConsent)

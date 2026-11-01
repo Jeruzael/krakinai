@@ -2,13 +2,18 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readCliReply } from './mcp-cli-replies.mjs';
 
-export function createRevisionWorkflow({ projectId, excludedProjectId, changeSet, onReply }) {
+export function createRevisionWorkflow({ projectId, excludedProjectId, projectName, scopedReads = false, changeSet, onReply }) {
   const input=structuredClone(changeSet),op=input?.operations?.[0];
   assert(input?.operations?.length===1&&op.type==='scene.revise'&&op.project.id===projectId,'Workflow requires one scoped scene revision');
   assert(typeof excludedProjectId==='string'&&excludedProjectId&&typeof onReply==='function','Workflow needs an excluded project and browser observer');
+  assert(!scopedReads||(typeof projectName==='string'&&projectName),'Scoped reads require the selected synthetic project name');
   const replies=[],audit=[];let submitted,receipt;
   const plan=[
     {step:'connected',suffix:'krakinai_connection_status',args:{}},
+    ...(scopedReads?[
+      {step:'project-list',suffix:'krakinai_list_projects',args:{}},
+      {step:'project-read',suffix:'krakinai_get_project',args:{projectId}},
+    ]:[]),
     {step:'submitted',suffix:'krakinai_submit_change_set',args:()=>({changeSet:structuredClone(input)})},
     {step:'applied',suffix:'krakinai_get_proposal_status',args:()=>({proposalId:submitted.proposalId})},
     {step:'receipt',suffix:'krakinai_get_import_receipt',args:()=>({changeSetId:input.changeSetId,packageDigest:submitted.packageDigest})},
@@ -43,6 +48,10 @@ export function createRevisionWorkflow({ projectId, excludedProjectId, changeSet
     assert.equal(value.ok,true,`${plan[index].suffix} must succeed`);const data=value.data;assert(data,'Missing actual tool data');
     if(step==='connected'){
       assert.equal(data.connected,true);assert.deepEqual(data.projectIds,[projectId],'Unexpected project permissions');assert.equal(data.allowProposals,true);
+    }else if(step==='project-list'){
+      assert(Array.isArray(data.items)&&data.items.length===1&&data.items[0].id===projectId&&data.items[0].name===projectName&&data.nextCursor===null,'Unexpected selected project list');
+    }else if(step==='project-read'){
+      assert.equal(data.id,projectId,'Unexpected selected project read ID');assert.equal(data.name,projectName,'Unexpected selected project read name');
     }else if(step==='submitted'){
       assert.equal(data.changeSetId,input.changeSetId);assert.equal(data.status,'review_required');assert(typeof data.proposalId==='string'&&data.proposalId);assert.match(data.packageDigest,/^[a-f0-9]{64}$/i);submitted=structuredClone(data);
     }else if(step==='applied'||step==='retried'){
@@ -61,7 +70,7 @@ export function createRevisionWorkflow({ projectId, excludedProjectId, changeSet
       assert.equal(messages.length,replies.length+1,'Expected one new correlated actual tool reply');
       for(let index=0;index<messages.length;index++){
         const tool=plan[index];assert(tool,'Unexpected tool response');
-        const reply=readCliReply(messages,`synthetic_cli_read_${index+1}`,tool.suffix,{allowError:index>=6});
+        const reply=readCliReply(messages,`synthetic_cli_read_${index+1}`,tool.suffix,{allowError:tool.step.endsWith('-denied')});
         if(index<replies.length)assert.deepEqual(reply,replies[index],'Earlier actual CLI reply changed');
         else{
           validate(index,reply);replies.push(structuredClone(reply));
@@ -72,7 +81,7 @@ export function createRevisionWorkflow({ projectId, excludedProjectId, changeSet
     },
     summary() {
       assert.equal(replies.length,plan.length,'Workflow ended before every actual call was validated');
-      return {workflowVerified:true,proposalId:submitted.proposalId,changeSetId:input.changeSetId,packageDigest:submitted.packageDigest,sceneId:receipt.idMappings[op.clientRef].id,approvedDigest:receipt.approvedDigest,revoked:true,callAudit:structuredClone(audit)};
+      return {workflowVerified:true,scopedReadsVerified:scopedReads,proposalId:submitted.proposalId,changeSetId:input.changeSetId,packageDigest:submitted.packageDigest,sceneId:receipt.idMappings[op.clientRef].id,approvedDigest:receipt.approvedDigest,revoked:true,callAudit:structuredClone(audit)};
     },
   };
 }

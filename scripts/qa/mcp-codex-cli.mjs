@@ -10,11 +10,20 @@ import { fileURLToPath } from 'node:url';
 import { readCliReply,validateCliToolCalls } from './mcp-cli-replies.mjs';
 import { createRevisionWorkflow } from './mcp-cli-workflow.mjs';
 import { createRecipeWorkflow } from './mcp-recipe-workflow.mjs';
-export function createCliWorkflow({workflow,projectId,excludedProjectId}){
+export function resolveCliLaunch({appOrigin,port,launcher}) {
+  if(launcher){
+    const s=launcher.settings;
+    if(!s||s.formatVersion!==1||s.appOrigin!==appOrigin||!Number.isSafeInteger(s.relayPort)||s.relayPort<1||s.relayPort>65535||s.relayPort===80||typeof s.bridgeDirectory!=='string'||typeof launcher.path!=='string')throw Error('Invalid scoped launcher QA configuration');
+    const entry=resolve(s.bridgeDirectory,'krakinai-stdio-adapter.mjs');
+    return{entry,args:[entry,'--config',resolve(launcher.path)],port:s.relayPort,managedEntry:resolve(s.bridgeDirectory,'krakinai-managed-host.mjs')};
+  }
+  const entry=resolve('bridge',process.env.KRAKINAI_TEST_BRIDGE_DIST??'dist','krakinai-mcp.mjs');return{entry,args:[entry,'--app-origin',appOrigin,'--port',String(port)],port};
+}
+export function createCliWorkflow({workflow,projectId,projectName,excludedProjectId}){
   if(!workflow)return undefined;
   if(workflow.kind==='recipe_conversion')return createRecipeWorkflow({projectId,excludedProjectId,...workflow});
   if(workflow.kind!==undefined)throw Error('Unknown synthetic CLI workflow');
-  return createRevisionWorkflow({projectId,excludedProjectId,...workflow});
+  return createRevisionWorkflow({projectId,projectName,excludedProjectId,...workflow});
 }
 
 export function analyzeCliResults(messages, plan, { projectId, projectName, excludedProjectId } = {}) {
@@ -31,14 +40,14 @@ export function analyzeCliResults(messages, plan, { projectId, projectName, excl
   return { connectedTrue, connectedFalse, projectListMatches: true, projectReadMatches: true, foreignProjectAbsent: true };
 }
 
-export async function certifyInstalledCli({ projectId, projectName, excludedProjectId, onReady, appOrigin = 'http://127.0.0.1:4173', workflow } = {}) {
+export async function certifyInstalledCli({ projectId, projectName, excludedProjectId, onReady, appOrigin = 'http://127.0.0.1:4173', workflow, launcherConfig, manualApproval = false } = {}) {
   if (process.platform !== 'win32') throw new Error('This installed-CLI driver targets the existing Windows installation.');
   const paired = typeof projectId === 'string' && projectId.length > 0;
   if (paired && (typeof projectName !== 'string' || typeof excludedProjectId !== 'string' || !excludedProjectId || typeof onReady !== 'function')) throw new Error('Paired CLI certification requires selected/excluded synthetic projects and browser authorization callback.');
   const applicationUrl=new URL(appOrigin);
   if(applicationUrl.origin!==appOrigin||applicationUrl.protocol!=='http:'||!['127.0.0.1','localhost'].includes(applicationUrl.hostname)||!applicationUrl.port)throw new Error('Use an exact loopback application origin.');
   if(workflow&&!paired)throw new Error('Revision workflow requires explicit project permissions.');
-  const scenario=createCliWorkflow({workflow,projectId,excludedProjectId});
+  const scenario=createCliWorkflow({workflow,projectId,projectName,excludedProjectId});
   const installation = resolve(process.env.APPDATA, 'npm/node_modules/@openai/codex'), metadata = JSON.parse(await readFile(resolve(installation, 'package.json'), 'utf8'));
   const executable = resolve(installation, 'vendor', process.arch === 'arm64' ? 'aarch64-pc-windows-msvc' : 'x86_64-pc-windows-msvc', 'codex/codex.exe');
   const directory = resolve('qa-results/local-mcp/cli', randomUUID()), isolatedHome = resolve(directory, 'home'), cwd = resolve(directory, 'workspace');
@@ -47,9 +56,11 @@ export async function certifyInstalledCli({ projectId, projectName, excludedProj
   const cliVersionOutput=await new Promise((accept,reject)=>execFile(executable,['--version'],{cwd,env:versionEnv,windowsHide:true,timeout:10000},(error,stdout)=>error?reject(error):accept(stdout.trim())));
   if(cliVersionOutput!==`codex-cli ${metadata.version}`)throw Error('Installed CLI executable version differs from its package metadata.');
   const cliExecutableSha256=createHash('sha256').update(await readFile(executable)).digest('hex');
-  const probe = tcpServer(); await new Promise(r => probe.listen(0, '127.0.0.1', r)); const bridgePort = probe.address().port; await new Promise(r => probe.close(r));
+  const probe = tcpServer(); await new Promise(r => probe.listen(0, '127.0.0.1', r)); const unusedPort = probe.address().port; await new Promise(r => probe.close(r));
+  const launcher=launcherConfig?{path:launcherConfig,settings:JSON.parse(await readFile(launcherConfig,'utf8'))}:undefined;
+  const launch=resolveCliLaunch({appOrigin,port:unusedPort,launcher}),bridgePort=launch.port;
   const toolMessages = [], selectedTools = [], paths = [], emittedCalls=[];let observedCallAudit=[]; let requests = 0, providerFailure = '', child, readinessError, lastScenarioToolAt = 0;
-  const entry = resolve('bridge/dist/krakinai-mcp.mjs');
+  const entry = launch.entry;
   const plan = scenario?.plan ?? [{ suffix: 'krakinai_connection_status', args: {} }, ...(paired ? [{ suffix: 'krakinai_list_projects', args: {} }, { suffix: 'krakinai_get_project', args: { projectId } }] : [])];
   const server = createServer(async (request, response) => {
     try {
@@ -58,9 +69,9 @@ export async function certifyInstalledCli({ projectId, projectName, excludedProj
       const body = JSON.parse(text); requests++;
       const messages = body.messages ?? [], results = messages.filter(m => m.role === 'tool');
       toolMessages.splice(0,toolMessages.length,...results);
-      if(workflow?.kind==='recipe_conversion')observedCallAudit=validateCliToolCalls(messages,emittedCalls);
+      observedCallAudit=validateCliToolCalls(messages,emittedCalls);
       if (requests === 1 && paired) {
-        try { await onReady({ cliPid: child.pid, port: bridgePort, entry }); }
+        try { await onReady({ cliPid: child.pid, port: bridgePort, entry, managedEntry:launch.managedEntry, launcherMode:!!launcher }); }
         catch (error) { readinessError = error; child.kill(); throw error; }
       }
       if(scenario){try{await scenario.consume(results);}catch(error){readinessError=error;child.kill();throw error;}}
@@ -87,7 +98,7 @@ export async function certifyInstalledCli({ projectId, projectName, excludedProj
     'model_providers.krakinai_synthetic.base_url': `${origin}/v1`, 'model_providers.krakinai_synthetic.wire_api': 'chat',
     'model_providers.krakinai_synthetic.env_key': 'KRAKINAI_SYNTHETIC_MODEL_KEY', 'model_providers.krakinai_synthetic.requires_openai_auth': false,
     'mcp_servers.krakinai.command': process.execPath,
-    'mcp_servers.krakinai.args': [entry, '--app-origin', appOrigin, '--port', String(bridgePort)],
+    'mcp_servers.krakinai.args': launch.args,
     'mcp_servers.krakinai.startup_timeout_sec': 20, 'mcp_servers.krakinai.tool_timeout_sec': 20,
     // This owned fixture must receive all ten complete three-mode previews.
     // No user configuration, application byte limit or production permission is changed.
@@ -97,15 +108,15 @@ export async function certifyInstalledCli({ projectId, projectName, excludedProj
   args.push('exec','--skip-git-repo-check','--sandbox','read-only','--json','--cd',cwd,workflow?'Follow the finite synthetic KRAKINAI revision scenario using only the specified MCP calls. Browser approval is separate. Do not use shell, files or external network tools.':paired ? 'Read KRAKINAI connection status, list selected projects, then read the selected synthetic project. Do not use shell, files, network tools or any mutation tool. Then finish.' : 'Call only the KRAKINAI connection status tool once. Do not use shell, files, network tools or any mutation tool. Then finish.');
   child = spawn(executable, args, { cwd, windowsHide: true, stdio: ['ignore','pipe','pipe'], env: { SystemRoot: process.env.SystemRoot, WINDIR: process.env.WINDIR, PATH: process.env.PATH, TEMP: process.env.TEMP, TMP: process.env.TMP, USERPROFILE: cwd, LOCALAPPDATA: resolve(directory,'local'), APPDATA: resolve(directory,'roaming'), CODEX_HOME: isolatedHome, KRAKINAI_SYNTHETIC_MODEL_KEY: 'synthetic-fixture-only', HTTP_PROXY: origin, HTTPS_PROXY: origin, ALL_PROXY: origin, NO_PROXY: '127.0.0.1,localhost', DO_NOT_TRACK: '1' } });
   let output = '', diagnostic = ''; child.stdout.on('data', b => { output += b; if (output.length > 2097152) child.kill(); }); child.stderr.on('data', b => { diagnostic = (diagnostic + b).slice(-8192); });
-  const timer = setTimeout(() => child.kill(), workflow?.kind==='recipe_conversion'?300000:workflow?150000:75000);
+  const timer = setTimeout(() => child.kill(), manualApproval?600000:workflow?.kind==='recipe_conversion'?300000:workflow?150000:75000);
   try {
     const exitCode = await new Promise((r,j) => { child.once('exit', r); child.once('error', j); });
     // Only synthetic metadata from this isolated fixture; never pairing keys or credentials.
     await writeFile(resolve(directory, 'tool-messages.json'), JSON.stringify(toolMessages, null, 2));
     if (readinessError) throw readinessError;
     const evidence = scenario?scenario.summary():analyzeCliResults(toolMessages, plan, { projectId, projectName, excludedProjectId });
-    if(workflow?.kind==='recipe_conversion')evidence.callAudit=evidence.callAudit.map(row=>({...row,...observedCallAudit.find(call=>call.callId===row.callId)}));
-    const result = { implementation: 'actual installed Codex CLI / production SDK stdio server', cliVersion: metadata.version,cliVersionOutput,cliExecutable:executable,cliExecutableSha256, toolOutputTokenLimit:config.tool_output_token_limit??null, applicationOrigin:appOrigin, exitCode, requests, selectedTools, ...evidence, providerFailure, modelProvider: 'loopback synthetic Chat Completions SSE; no external AI provider', nativePairing: paired ? 'Signed production Windows verifier; browser callback must finish pairing and select project before model tools run.' : 'not exercised: unpaired status-only certification', isolatedHome: directory, warning: /deprecated/i.test(diagnostic) ? 'Installed CLI reported a deprecation warning.' : null };
+    if(evidence.callAudit)evidence.callAudit=evidence.callAudit.map(row=>({...row,...observedCallAudit.find(call=>call.callId===row.callId)}));else evidence.callAudit=observedCallAudit;
+    const result = { implementation: launcher?'actual installed Codex CLI / production persistent stdio adapter / signed native launcher':'actual installed Codex CLI / production SDK stdio server', stdioEntry:entry,stdioEntrySha256:createHash('sha256').update(await readFile(entry)).digest('hex'),cliVersion: metadata.version,cliVersionOutput,cliExecutable:executable,cliExecutableSha256, toolOutputTokenLimit:config.tool_output_token_limit??null, applicationOrigin:appOrigin, exitCode, requests, selectedTools, ...evidence, providerFailure, modelProvider: 'loopback synthetic Chat Completions SSE; no external AI provider', nativePairing: paired ? 'Signed production Windows verifier; browser callback must finish pairing and select project before model tools run.' : 'not exercised: unpaired status-only certification', isolatedHome: directory, warning: /deprecated/i.test(diagnostic) ? 'Installed CLI reported a deprecation warning.' : null };
     await writeFile(resolve(directory, 'result.json'), JSON.stringify(result, null, 2));
     if (exitCode !== 0 || selectedTools.length !== plan.length || requests !== plan.length + 1 || providerFailure) { await writeFile(resolve(directory,'diagnostic.txt'), diagnostic); throw new Error(`Installed CLI fixture failed; sanitized synthetic evidence: ${directory}`); }
     return result;

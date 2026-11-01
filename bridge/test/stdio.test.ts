@@ -8,7 +8,7 @@ import { resolve } from 'node:path';
 async function unusedPort() { const server = createServer(); await new Promise<void>(r => server.listen(0, '127.0.0.1', r)); const port = (server.address() as { port: number }).port; await new Promise<void>(r => server.close(() => r())); return port; }
 describe('actual compiled SDK stdio process', () => {
   it('negotiates a legacy client, lists the allowlist and calls a real tool without a browser', async () => {
-    const transport = new StdioClientTransport({ command: process.execPath, args: [resolve('dist/krakinai-mcp.mjs'), '--app-origin', 'http://127.0.0.1:4173', '--port', String(await unusedPort())], stderr: 'pipe' });
+    const transport = new StdioClientTransport({ command: process.execPath, args: [resolve(process.env.KRAKINAI_TEST_BRIDGE_DIST ?? 'dist', 'krakinai-mcp.mjs'), '--app-origin', 'http://127.0.0.1:4173', '--port', String(await unusedPort())], stderr: 'pipe' });
     let stderr = ''; transport.stderr?.on('data', part => { stderr += String(part); });
     const client = new Client({ name: 'krakinai-synthetic-sdk-client', version: '1.0.0' });
     try {
@@ -33,11 +33,11 @@ describe('actual compiled SDK stdio process', () => {
   });
   it('rejects LAN binding/options and oversized frames without protocol pollution', async () => {
     for (const args of [['--app-origin', 'http://evil.test', '--port', '4177'], ['--app-origin', 'http://127.0.0.1:4173', '--host', '0.0.0.0']]) {
-      const child = spawn(process.execPath, [resolve('dist/krakinai-mcp.mjs'), ...args], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+      const child = spawn(process.execPath, [resolve(process.env.KRAKINAI_TEST_BRIDGE_DIST ?? 'dist', 'krakinai-mcp.mjs'), ...args], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
       let out = ''; child.stdout.on('data', part => out += String(part));
       expect(await new Promise<number | null>(r => child.once('exit', r))).not.toBe(0); expect(out).toBe('');
     }
-    const child = spawn(process.execPath, [resolve('dist/krakinai-mcp.mjs'), '--app-origin', 'http://127.0.0.1:4173', '--port', String(await unusedPort())], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
+    const child = spawn(process.execPath, [resolve(process.env.KRAKINAI_TEST_BRIDGE_DIST ?? 'dist', 'krakinai-mcp.mjs'), '--app-origin', 'http://127.0.0.1:4173', '--port', String(await unusedPort())], { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     let out = ''; child.stdout.on('data', part => out += String(part)); child.stderr.resume(); child.stdin.on('error', () => {});
     child.stdin.write('x'.repeat(1310721));
     expect(await new Promise<number | null>(r => child.once('exit', r))).not.toBe(0); expect(out).toBe('');

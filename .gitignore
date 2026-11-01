@@ -5,6 +5,8 @@ dist
 qa-results/
 test-results/
 playwright-report/
+/launcher/**/bin/
+/launcher/**/obj/
 
 # Local Environment & Secrets
 .env
