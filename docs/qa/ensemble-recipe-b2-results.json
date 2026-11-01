@@ -1,6 +1,6 @@
 {
   "schema": "krakinai.qa.ensemble-b2.v1",
-  "recordedAt": "2026-10-31T23:43:00.110Z",
+  "recordedAt": "2026-11-01T00:06:42.554Z",
   "base": "7ce149200bdd09b5d7c8f2f4d74a00801b0fd9c3",
   "headNote": "Final signed publication head and hosted results are authoritative in PR/Actions. Documentation does not encode its own future commit SHA.",
   "status": "locally_verified_pending_hosted_ci",
@@ -2282,7 +2282,9 @@
           }
         ]
       }
-    ]
+    ],
+    "fullRunHead": "b630507463376ad3934640eede75fabfb8429c0e",
+    "coverageNote": "Full Windows179 run before final desktop gap4->2 CSS-only correction. Post-gap B2 and real native/installedCLI follow-up reported separately; final whole hosted suite identifies final signed head."
   },
   "mcp": [
     {
@@ -2294,7 +2296,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "65ec3e43eece001112ba8a75346ddacb394b02f826bf00f4bb647ab4298d71e8",
+          "responseSha256": "08d3ed87e437be4c099108470fa314fd012c0e7d23c9e269ea3f3ffcd75fdb50",
           "ok": true,
           "expectedOk": true
         },
@@ -2302,7 +2304,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "bd2c9ea09e0209e2c2b5408d6f1b10f8a28ea8ad09fc85b61542ea8ea9700feb",
+          "responseSha256": "4e20f321bb1d721e47a4399cfb0cd04863bbc1b5f0f8c66b546f894cfa296a8b",
           "ok": true,
           "expectedOk": true
         },
@@ -2310,7 +2312,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "7da9b5e8aa5d49283259396c408c2c91ccc655fe99218c355cecdda16eeb9b3a",
+          "responseSha256": "18fc435697854ff42f276f5f739177ecccaafe4aad11e7d6e861c95503d29e34",
           "ok": true,
           "expectedOk": true
         },
@@ -2318,7 +2320,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "907adc36ee2e258428a3c0c8d0f384e918b6fd5c7f5607af0f4d1b55cc6ad835",
+          "responseSha256": "97df12e0e13b4aa171930885d2213d627a0248a3150bf107467cc867a6d245f4",
           "ok": true,
           "expectedOk": true
         },
@@ -2326,7 +2328,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "39c0c5021fd5543a4a940dce39ed6000780549c4d322f09fabf5cefbcab26f46",
+          "responseSha256": "7b791069b3cb234bbb15020ea9c97d9b21ba0ae9711b0e79e97d2e035f353d31",
           "ok": true,
           "expectedOk": true
         },
@@ -2334,7 +2336,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "8397a9023dde360ab77b8f21ce79dec803b0e4f56a8c00337d95ccf53dcad9ee",
+          "responseSha256": "ef0ebcf7588ab5b9e11febe20b9ed7c63811cd86cc82605f78fc00068f78f0d1",
           "ok": true,
           "expectedOk": true
         },
@@ -2370,15 +2372,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-sdk-synthetic",
-        "packageDigest": "f7b79c589930ce9f5b9d523577cbe7acd4c2601192938cd850c108136d3fcb8f",
-        "approvedDigest": "cee336f1f6d6fb1cf3b6c3a6e9720585bd28b2d1dc419cceda3927e223ec564b",
+        "packageDigest": "b96814dd626429be98849acc294daf28b8c07b214f3a44b0e59afd72b7dcc51f",
+        "approvedDigest": "150baf4be62e38ef7e5b1bd616b38721bf7a6bb26022a62a0ab96476769babf4",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T23:33:44.561Z",
-        "appliedAt": "2026-10-31T23:33:44.651Z",
+        "preparedAt": "2026-10-31T23:58:53.817Z",
+        "appliedAt": "2026-10-31T23:58:53.917Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2395,25 +2397,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_dc2b0a342a8b",
-            "variantId": "variant_candidate_dc2b0a342a8b"
+            "id": "candidate_9bae9e84d038",
+            "variantId": "variant_candidate_9bae9e84d038"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_77dba161c05d"
+            "id": "scene_066c613bde00"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_dc2b0a342a8b",
+            "recordId": "candidate_9bae9e84d038",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_77dba161c05d",
+            "recordId": "scene_066c613bde00",
             "status": "created"
           }
         ],
@@ -2426,29 +2428,66 @@
       },
       "mediaHashes": [
         {
-          "id": "media_06ada303c492",
-          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
-        },
-        {
-          "id": "media_1cbe3b1ccff3",
+          "id": "media_4df5f9bb1116",
           "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         },
         {
-          "id": "media_1d74d8873e39",
+          "id": "media_647df5524924",
           "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
         },
         {
-          "id": "media_74c780ffd3aa",
+          "id": "media_a1ca5a73dccc",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+        },
+        {
+          "id": "media_dcc8e23873a6",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_aecb774a76dc",
-          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+          "id": "media_f39de68d8c4f",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         }
       ],
       "scenes": [
         {
-          "id": "scene_53b62b69a415",
+          "id": "scene_066c613bde00",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_9bae9e84d038"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
+        },
+        {
+          "id": "scene_44fa2ee7c981",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_add9667b67d3",
           "participants": [
             {
               "id": "primary",
@@ -2477,83 +2516,46 @@
             "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
             "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
           }
-        },
-        {
-          "id": "scene_77dba161c05d",
-          "participants": [
-            {
-              "id": "primary",
-              "sourceId": "character",
-              "wardrobeId": "aya-outfit"
-            },
-            {
-              "id": "lucas",
-              "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_dc2b0a342a8b"
-            }
-          ],
-          "cues": [
-            {
-              "id": "officiant",
-              "mode": "off_screen"
-            },
-            {
-              "id": "lucas-reply",
-              "participantId": "lucas",
-              "mode": "on_camera"
-            }
-          ],
-          "outputHashes": {
-            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
-            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
-            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
-          }
-        },
-        {
-          "id": "scene_e3045f22d186",
-          "outputHashes": {
-            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
-          }
         }
       ],
       "imageDecoding": [
         {
-          "id": "media_06ada303c492",
+          "id": "media_4df5f9bb1116",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_647df5524924",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_a1ca5a73dccc",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_dcc8e23873a6",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_1cbe3b1ccff3",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_1d74d8873e39",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_74c780ffd3aa",
+          "id": "media_f39de68d8c4f",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
-        },
-        {
-          "id": "media_aecb774a76dc",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
         }
       ],
       "quota": {
-        "quota": 10737625578,
-        "usage": 207338,
+        "quota": 10737625576,
+        "usage": 207336,
         "usageDetails": {
-          "indexedDB": 207338
+          "indexedDB": 207336
         }
       },
       "counts": {
@@ -2564,7 +2566,7 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_e3045f22d186"
+      "preferredTake": "scene_44fa2ee7c981"
     },
     {
       "source": "mcp-signed-native-ipv4.json",
@@ -2575,7 +2577,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "6ec08cb19bd379dd5332cd9218431b6e8366510cc16c3ac5759ea81accafb070",
+          "responseSha256": "474f501144868b4f00f7b24b3f9fd5e26bc6c1a230b2c590dc3e8afda912d992",
           "ok": true,
           "expectedOk": true
         },
@@ -2583,7 +2585,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "608e04e9b48c5f5f56332ed306b5485cdbe19eda2000e3796858732c90f18448",
+          "responseSha256": "23477aa411c37260d7857a6ae8fa45000434758d9093079ecf6f521ab437d6f8",
           "ok": true,
           "expectedOk": true
         },
@@ -2591,7 +2593,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "8415d68d401aa9aa3b65d13df6f3aeca12fd2bfe6b42533c7971a467ce6ea413",
+          "responseSha256": "6db54c585a4fd139318d342b219527e2ad4a5da78bdbf25bd7960741d426632e",
           "ok": true,
           "expectedOk": true
         },
@@ -2599,7 +2601,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "4eda0bbeb2712e3280e3962236e3c7045112a1a9aa13d09b6bc00df2710c474d",
+          "responseSha256": "09bdfd2fb14e067ea4b1a4295bb4b42dc8cf533f97f0c38a65faf9efee93e7ee",
           "ok": true,
           "expectedOk": true
         },
@@ -2607,7 +2609,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "c9c01ce81b367686d702f3603e69eba66fb7697a82ea8b37fd2c98e10e096173",
+          "responseSha256": "08a8791e7f3248ad05f0709f250fbe4139396b50455d0549f3c8ca79a54243fa",
           "ok": true,
           "expectedOk": true
         },
@@ -2615,7 +2617,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "f177ef8d93003f4ce2df98e5b4357f33282135e25c3ae40cea5b59e2010cc6af",
+          "responseSha256": "9f4a244baf5310b1e57bb956664c8c580f1114749f7bffb5fce490dc981b52d6",
           "ok": true,
           "expectedOk": true
         },
@@ -2651,15 +2653,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-signed-native-ipv4",
-        "packageDigest": "e63d3afd783ffa210a50ecb16e1aff4a6d1a87d96b2b0f6da5a23f8ab3464422",
-        "approvedDigest": "03a28e565db7f80d9dc59d123a2a7631d3c6bb408905e4dd70ab04ded48f5db1",
+        "packageDigest": "9742ee085835139560e4460461dd056654e62fbd705d21c5db8fb5bf51420fde",
+        "approvedDigest": "b63a0c21edc1d68f418c2a9e97c23bc3d1527bccbf2390b30b6eeb9cdf6de0b9",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T23:34:08.711Z",
-        "appliedAt": "2026-10-31T23:34:08.793Z",
+        "preparedAt": "2026-10-31T23:59:18.017Z",
+        "appliedAt": "2026-10-31T23:59:18.116Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2676,25 +2678,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_21a073b94fb5",
-            "variantId": "variant_candidate_21a073b94fb5"
+            "id": "candidate_343063d0c9d0",
+            "variantId": "variant_candidate_343063d0c9d0"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_dc0b79c25b93"
+            "id": "scene_ee5a10de0a93"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_21a073b94fb5",
+            "recordId": "candidate_343063d0c9d0",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_dc0b79c25b93",
+            "recordId": "scene_ee5a10de0a93",
             "status": "created"
           }
         ],
@@ -2707,35 +2709,29 @@
       },
       "mediaHashes": [
         {
-          "id": "media_30355eb45a71",
-          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+          "id": "media_03b20bb95253",
+          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
         },
         {
-          "id": "media_5904c9a7f14f",
-          "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
-        },
-        {
-          "id": "media_88b490937d3b",
+          "id": "media_26562f7ba0b7",
           "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
         },
         {
-          "id": "media_8b3c662f3d49",
+          "id": "media_33bbe926897c",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_b728549327d5",
-          "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
+          "id": "media_405c100caa2d",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
+        },
+        {
+          "id": "media_a4324397c675",
+          "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         }
       ],
       "scenes": [
         {
-          "id": "scene_69db730c90d7",
-          "outputHashes": {
-            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
-          }
-        },
-        {
-          "id": "scene_c8451242b32b",
+          "id": "scene_02c5ce09cbed",
           "participants": [
             {
               "id": "primary",
@@ -2766,7 +2762,13 @@
           }
         },
         {
-          "id": "scene_dc0b79c25b93",
+          "id": "scene_a9892d298b91",
+          "outputHashes": {
+            "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
+          }
+        },
+        {
+          "id": "scene_ee5a10de0a93",
           "participants": [
             {
               "id": "primary",
@@ -2776,7 +2778,7 @@
             {
               "id": "lucas",
               "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_21a073b94fb5"
+              "wardrobeId": "variant_candidate_343063d0c9d0"
             }
           ],
           "cues": [
@@ -2799,31 +2801,31 @@
       ],
       "imageDecoding": [
         {
-          "id": "media_30355eb45a71",
-          "decodable": false,
-          "fixtureClass": "inherited_opaque_png_labelled_bytes"
-        },
-        {
-          "id": "media_5904c9a7f14f",
+          "id": "media_03b20bb95253",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_88b490937d3b",
+          "id": "media_26562f7ba0b7",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
           "height": 560
         },
         {
-          "id": "media_8b3c662f3d49",
+          "id": "media_33bbe926897c",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_b728549327d5",
+          "id": "media_405c100caa2d",
+          "decodable": false,
+          "fixtureClass": "inherited_opaque_png_labelled_bytes"
+        },
+        {
+          "id": "media_a4324397c675",
           "decodable": true,
           "fixtureClass": "generated_png",
           "width": 400,
@@ -2831,10 +2833,10 @@
         }
       ],
       "quota": {
-        "quota": 10737625629,
-        "usage": 207389,
+        "quota": 10737625628,
+        "usage": 207388,
         "usageDetails": {
-          "indexedDB": 207389
+          "indexedDB": 207388
         }
       },
       "counts": {
@@ -2845,7 +2847,7 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_69db730c90d7"
+      "preferredTake": "scene_a9892d298b91"
     },
     {
       "source": "mcp-signed-native-localhost.json",
@@ -2856,7 +2858,7 @@
           "id": 2,
           "tool": "krakinai_get_scene",
           "received": true,
-          "responseSha256": "2a2b69fe206ce928e0bb5e67e21a504cebf05b6184751c81dd4f2c0efcdc4432",
+          "responseSha256": "170d257dfa5976c869b7dd74e63aec1f1436bfa5f6c3ec85acd7c065d845d085",
           "ok": true,
           "expectedOk": true
         },
@@ -2864,7 +2866,7 @@
           "id": 3,
           "tool": "krakinai_preview_change_set",
           "received": true,
-          "responseSha256": "ed48354f7f618c5e0e08aa60aa4d9e1d974563a4ed7af563e8aa76eacf366544",
+          "responseSha256": "a66c20c29d6f2ddfa56981e23218d033e19484c51f85320bdb64dd6d692b3ff0",
           "ok": true,
           "expectedOk": true
         },
@@ -2872,7 +2874,7 @@
           "id": 4,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "aa7306f35183b5b28790055e1c1c9f4f736483094672d6403993b02a5fbd5e8d",
+          "responseSha256": "222ce7424173c2cfa847477e755ec7bfe1c35c9df0d10e8b1bd266d507d9dfd4",
           "ok": true,
           "expectedOk": true
         },
@@ -2880,7 +2882,7 @@
           "id": 5,
           "tool": "krakinai_get_proposal_status",
           "received": true,
-          "responseSha256": "5c4ff71712454cb825bafac0430255256a3f0c82f1af3631868adaf0b044c715",
+          "responseSha256": "d69607cc5ac591ba5bd0ee32bd29ea38befbbeaea57ced89bf4e7b0674d91cd1",
           "ok": true,
           "expectedOk": true
         },
@@ -2888,7 +2890,7 @@
           "id": 6,
           "tool": "krakinai_get_import_receipt",
           "received": true,
-          "responseSha256": "db06e9e19e5030c5776df2bfbde3d0cc5412d333515e80cbbace8ee7ef8721e0",
+          "responseSha256": "6b1497d1981d4313d23a8da0e2df6fa3214404f39640c5da0079da550d55e0a1",
           "ok": true,
           "expectedOk": true
         },
@@ -2896,7 +2898,7 @@
           "id": 7,
           "tool": "krakinai_submit_change_set",
           "received": true,
-          "responseSha256": "39d68ea687cc12f2b80a9d5abfab82faee890ccbfdd2e003f81fd2080100e790",
+          "responseSha256": "0d3442bb49aff4dadb158983205bf6e14196dca50f281f3953bc31c2cecb1731",
           "ok": true,
           "expectedOk": true
         },
@@ -2932,15 +2934,15 @@
       "receipt": {
         "version": 1,
         "changeSetId": "synthetic-b2-signed-native-localhost",
-        "packageDigest": "93dda208063a015432edcb518b3d470e93e5e43b74bc13026925d4abb179ac40",
-        "approvedDigest": "53d2a616ef2804ea7242335598fcc8a2ee0a9b5ef5eefdf51e405dd3d115352d",
+        "packageDigest": "07fe9b6616a4793e7f330bccbb86946515c495dee13f3177e9f95f331b015db2",
+        "approvedDigest": "2e557e51d863fb54df2262eb06f48672c86fe02f3d0f403af001da547a71145d",
         "source": {
           "kind": "codex",
           "label": "Synthetic ensemble acceptance"
         },
         "title": "Synthetic B2 ensemble revision",
-        "preparedAt": "2026-10-31T23:34:32.910Z",
-        "appliedAt": "2026-10-31T23:34:32.992Z",
+        "preparedAt": "2026-10-31T23:59:42.018Z",
+        "appliedAt": "2026-10-31T23:59:42.117Z",
         "approval": {
           "storyboard": true,
           "scenes": true,
@@ -2957,25 +2959,25 @@
         "idMappings": {
           "new-outfit": {
             "kind": "variant_candidate",
-            "id": "candidate_a4bdacbe3224",
-            "variantId": "variant_candidate_a4bdacbe3224"
+            "id": "candidate_7e7901b4a61d",
+            "variantId": "variant_candidate_7e7901b4a61d"
           },
           "new-scene": {
             "kind": "scene",
-            "id": "scene_350b4ed8aa38"
+            "id": "scene_80d0bdf048af"
           }
         },
         "operations": [
           {
             "operationId": "outfit",
             "type": "variant.propose",
-            "recordId": "candidate_a4bdacbe3224",
+            "recordId": "candidate_7e7901b4a61d",
             "status": "variant_created"
           },
           {
             "operationId": "ensemble",
             "type": "scene.revise_recipe",
-            "recordId": "scene_350b4ed8aa38",
+            "recordId": "scene_80d0bdf048af",
             "status": "created"
           }
         ],
@@ -2988,66 +2990,35 @@
       },
       "mediaHashes": [
         {
-          "id": "media_1230a2abd30e",
+          "id": "media_08ea04dddc53",
           "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         },
         {
-          "id": "media_1f589b2c1929",
-          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
-        },
-        {
-          "id": "media_5c1a380b7093",
+          "id": "media_33aaef34be1d",
           "sha256": "303efbdf17935b0ae859e5c0be3e6c927fb71eab3ad91451c77831dd1c9bf5cb"
         },
         {
-          "id": "media_9add09a18eaf",
+          "id": "media_5a3ba7fb2cb1",
           "sha256": "85982c1e716f6b633260091657d94a893cdf96f17b8dfb8be222ed05962328a3"
         },
         {
-          "id": "media_e8227387e28e",
+          "id": "media_5e71b6e10090",
           "sha256": "9de148b1be7adc39694b056e0cfaa8db7f3849c5be597382ae9c0429aff5fc2a"
+        },
+        {
+          "id": "media_d98f1eb82327",
+          "sha256": "fe11666ec8157e27b056de146fa15436e929c550174e27f631435ef023238942"
         }
       ],
       "scenes": [
         {
-          "id": "scene_350b4ed8aa38",
-          "participants": [
-            {
-              "id": "primary",
-              "sourceId": "character",
-              "wardrobeId": "aya-outfit"
-            },
-            {
-              "id": "lucas",
-              "sourceId": "lucas",
-              "wardrobeId": "variant_candidate_a4bdacbe3224"
-            }
-          ],
-          "cues": [
-            {
-              "id": "officiant",
-              "mode": "off_screen"
-            },
-            {
-              "id": "lucas-reply",
-              "participantId": "lucas",
-              "mode": "on_camera"
-            }
-          ],
-          "outputHashes": {
-            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
-            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
-            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
-          }
-        },
-        {
-          "id": "scene_ef9020eee81c",
+          "id": "scene_6065820988aa",
           "outputHashes": {
             "full": "c680eb471cbef9402cf39d7b7ee37f42f635ccaa297b448ae92039b76673e4de"
           }
         },
         {
-          "id": "scene_ffc3d1f44b4f",
+          "id": "scene_7b3f8e7e166a",
           "participants": [
             {
               "id": "primary",
@@ -3076,39 +3047,70 @@
             "structured": "ec61a26cfca204c575fcc54b24a38177b774001cfab2e122a923515d265b80be",
             "compact": "ddb07aef12958fb372cd2188c35371d276d8d6656965a587ed2310200d338ef7"
           }
+        },
+        {
+          "id": "scene_80d0bdf048af",
+          "participants": [
+            {
+              "id": "primary",
+              "sourceId": "character",
+              "wardrobeId": "aya-outfit"
+            },
+            {
+              "id": "lucas",
+              "sourceId": "lucas",
+              "wardrobeId": "variant_candidate_7e7901b4a61d"
+            }
+          ],
+          "cues": [
+            {
+              "id": "officiant",
+              "mode": "off_screen"
+            },
+            {
+              "id": "lucas-reply",
+              "participantId": "lucas",
+              "mode": "on_camera"
+            }
+          ],
+          "outputHashes": {
+            "full": "a4117be7e24ed48cfe91093ce480e9857aa23eed6ed8e6430845ccd1ed2dc26f",
+            "structured": "c6e58c0fb4fa553eb424b4083ccd8d967899d40569337d81e481d3f1feeeba1b",
+            "compact": "c42c230a86db19ca23af1c3edd3d84d460d3417814666cb47be6bf3b489e984f"
+          }
         }
       ],
       "imageDecoding": [
         {
-          "id": "media_1230a2abd30e",
+          "id": "media_08ea04dddc53",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
         },
         {
-          "id": "media_1f589b2c1929",
+          "id": "media_33aaef34be1d",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_5a3ba7fb2cb1",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_5e71b6e10090",
+          "decodable": true,
+          "fixtureClass": "generated_png",
+          "width": 400,
+          "height": 560
+        },
+        {
+          "id": "media_d98f1eb82327",
           "decodable": false,
           "fixtureClass": "inherited_opaque_png_labelled_bytes"
-        },
-        {
-          "id": "media_5c1a380b7093",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_9add09a18eaf",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
-        },
-        {
-          "id": "media_e8227387e28e",
-          "decodable": true,
-          "fixtureClass": "generated_png",
-          "width": 400,
-          "height": 560
         }
       ],
       "quota": {
@@ -3126,20 +3128,20 @@
         "media": 5
       },
       "variants": 4,
-      "preferredTake": "scene_ef9020eee81c"
+      "preferredTake": "scene_6065820988aa"
     }
   ],
   "archives": {
     "full": {
-      "filename": "synthetic-full-library-1793489696893.zip",
-      "compressedBytes": 79266,
+      "filename": "synthetic-full-library-1793491210381.zip",
+      "compressedBytes": 79330,
       "uncompressedBytes": 246540,
       "entries": 6,
-      "sha256": "91da5164b5e4d17053a327b2ceab264fd18ba79a427ba6bbd3763dee1e94fdf7"
+      "sha256": "ea8d5f6b5f307136913f17697ae7238c627997fa7adaea8d2d98b9e6073b1bbb"
     },
     "project": {
-      "filename": "synthetic-project-1793489697229.zip",
-      "sha256": "95d9a04b45248a75fac5bee27fe7cfb29ac3bd10495cf648cab53c7c5d3658bd",
+      "filename": "synthetic-project-1793491210711.zip",
+      "sha256": "763ccb1254513c23ed2a86e23f35f77174f8206ef08187c89f678c5dedcb7b49",
       "associations": 5
     },
     "independentReadback": {
@@ -3147,9 +3149,9 @@
       "checks": [
         {
           "kind": "full",
-          "path": "synthetic-full-library-1793489696893.zip",
-          "bytes": 79266,
-          "sha256": "91da5164b5e4d17053a327b2ceab264fd18ba79a427ba6bbd3763dee1e94fdf7",
+          "path": "synthetic-full-library-1793491210381.zip",
+          "bytes": 79330,
+          "sha256": "ea8d5f6b5f307136913f17697ae7238c627997fa7adaea8d2d98b9e6073b1bbb",
           "entries": 6,
           "uncompressedBytes": 246540,
           "crc": "passed",
@@ -3161,9 +3163,9 @@
         },
         {
           "kind": "project",
-          "path": "synthetic-project-1793489697229.zip",
+          "path": "synthetic-project-1793491210711.zip",
           "bytes": 77122,
-          "sha256": "95d9a04b45248a75fac5bee27fe7cfb29ac3bd10495cf648cab53c7c5d3658bd",
+          "sha256": "763ccb1254513c23ed2a86e23f35f77174f8206ef08187c89f678c5dedcb7b49",
           "entries": 13,
           "uncompressedBytes": 128902,
           "crc": "passed",
@@ -3173,9 +3175,9 @@
         },
         {
           "kind": "references",
-          "path": "synthetic-reference-pack-1793489693936.zip",
-          "bytes": 64963,
-          "sha256": "326fbad3de155e2e3236f2e9607b6511c4faad426a89fb8fd4fdf4d991076918",
+          "path": "synthetic-reference-pack-1793491207410.zip",
+          "bytes": 64964,
+          "sha256": "cf351ab10effc59f8548b0bc68e8ff63c22c46e38753c2c16321aa8af09898b7",
           "entries": 4,
           "uncompressedBytes": 69527,
           "crc": "passed",
@@ -3200,8 +3202,8 @@
       "path": "docs/qa/ensemble-recipe-b2/before-density-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 129132,
-      "sha256": "ee498c5eb6f483b030be1dba53a6885044e06da132a5424f6f0b22a8a430fc48",
+      "bytes": 129175,
+      "sha256": "8295d915880710c84b6611f1050e8fcc637fbaf24cd387d120c1536c1518af9c",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3211,8 +3213,8 @@
       "path": "docs/qa/ensemble-recipe-b2/builder-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 142845,
-      "sha256": "a33787e327e2b94de11efc43ba7bc34471ed4156b07072cae996a87de94bbbca",
+      "bytes": 143342,
+      "sha256": "119e9a2335519e4611e6dec88fe5caf32ec3908e73f5c095c86326360f6a071c",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3222,8 +3224,8 @@
       "path": "docs/qa/ensemble-recipe-b2/participants-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 128675,
-      "sha256": "5516f2362416db6642bbbe164cf9bf440ee36e4b563889c86040f608776e9ec4",
+      "bytes": 128847,
+      "sha256": "eebc4502bc5e298f9c9789ff0f94e3267b73243205b5c74fc7273f5dc83640da",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3233,8 +3235,8 @@
       "path": "docs/qa/ensemble-recipe-b2/cues-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 125040,
-      "sha256": "b1457ec528158cd74841a7cdd6e6cead804d94c976e221068d45de6ce12a7aff",
+      "bytes": 124154,
+      "sha256": "1ef8b7cb5ce49692c9743a47858794cf99bb8c76aefcb1f804800eed508de615",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3255,8 +3257,8 @@
       "path": "docs/qa/ensemble-recipe-b2/output-1440.png",
       "width": 1440,
       "viewportHeight": 900,
-      "bytes": 130123,
-      "sha256": "126a305af7e8473df0470e7e0f637ba64e777839ef747fdbae9ac0ca3524a9c6",
+      "bytes": 130061,
+      "sha256": "6f1c43c551e2e675b494fd0182bcdc25e98ba0a0e97400fb2f0d2cfdd51413bb",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3266,8 +3268,8 @@
       "path": "docs/qa/ensemble-recipe-b2/before-density-768.png",
       "width": 768,
       "viewportHeight": 900,
-      "bytes": 159171,
-      "sha256": "feb3a2ed951ec9a07c3124e0755443a04ac53618c86cf554e59d2f5515d9f89f",
+      "bytes": 159119,
+      "sha256": "621bb5129fb900add90fb126578e31228611ff6e62f5881a8afc495d0b1da535",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3354,8 +3356,8 @@
       "path": "docs/qa/ensemble-recipe-b2/participants-390.png",
       "width": 390,
       "viewportHeight": 844,
-      "bytes": 110959,
-      "sha256": "4a8e3b44a8686d14fdf3ac0f7f5c76f9848cd079b31b32492366efc178d6a8be",
+      "bytes": 111000,
+      "sha256": "d59180098ea465e6f1334ff1cad3535cba98f363d9a949ee1bbd6499a1036d8a",
       "comparison": "Same synthetic B2 records and UI; actual Studio CSS from the pre-density-correction commit versus current CSS. Not a full-master-code comparison.",
       "baselineCommit": "b49f815039e1bd8a369135a957a7e50fdb807c1c",
       "baselineCssSHA256": "1cf229b5f89c70aad8ecb46b6165800abfa76d131a67dd270712dfea268aac23",
@@ -3870,7 +3872,7 @@
     "qa-results/playwright-runs/",
     ".superpowers/sdd/2026-11-01-ensemble-recipe-b2/"
   ],
-  "worktreeBaseHead": "25da776c0bc1c5f8daf5915aae209992a1fc2707",
+  "worktreeBaseHead": "b630507463376ad3934640eede75fabfb8429c0e",
   "localTestsRanOnUncommittedSource": true,
   "runtime": {
     "node": "v22.23.3",
@@ -3914,8 +3916,35 @@
       "correction": "Explicit desktop row line-height and smaller ensemble-control margins; original bounds assertion unchanged",
       "focusedLocalLayoutPassed": 5,
       "alternateFontCase": "Additional coverage; passed before and after, not claimed as local RED"
+    },
+    {
+      "url": "https://github.com/Jeruzael/krakinai/actions/runs/41253729415",
+      "head": "b630507463376ad3934640eede75fabfb8429c0e",
+      "browser": {
+        "passed": 168,
+        "failed": 2,
+        "skipped": 9,
+        "total": 179
+      },
+      "expectedBottom": 771.5,
+      "actualBottom": 775.953125,
+      "diagnosis": "First correction recovered4px but remained4.45px over budget; font-specific hypothesis not established",
+      "finalCorrection": "Six desktop row gaps reduced4->2 to reclaim12px; rows/control sizes/assertions unchanged"
     }
   ],
+  "followupBrowser": {
+    "command": "npx playwright test e2e/ensemble-recipes.spec.mjs e2e/ensemble-mcp.spec.mjs e2e/recipe-mcp.spec.mjs e2e/local-mcp-native.spec.mjs e2e/local-mcp-workflow-native.spec.mjs",
+    "exitCode": 0,
+    "stats": {
+      "startTime": "2026-10-31T23:58:37.004Z",
+      "duration": 250780.92,
+      "expected": 23,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "scope": "After final gap-only CSS correction: all B2 plus signed Windows native and installedCLI compatibility"
+  },
   "failedReopenDiagnostic": {
     "profile": "qa-results/direct-prompts/profiles/restart-1793485512027",
     "counts": {
@@ -3954,7 +3983,7 @@
     "bridge/test/stdio.test.ts": "cf20c9f9e67af5d998706f0a30d9a33bf79b25f8799e4d9772941a4a9ce17990",
     "e2e/ensemble-fixture.mjs": "540099c9d0178ff1e38e05504ba020c117f97d095187e5c3237b22ab3ee03e11",
     "e2e/ensemble-mcp.spec.mjs": "da23a527fe9eeca12fa86defa6e76cfc2c9d1a02793a4e404f2d35abb7108e6e",
-    "e2e/ensemble-recipes.spec.mjs": "97a8214b7fdc05a9ee4d30167581c9d0a23e2c7bae83e390da0e6a1c60b15a6f",
+    "e2e/ensemble-recipes.spec.mjs": "8d7e6f010cef266688aaf87ee5c4626663d07b3fd1e4c6de97ad91a2ac68a15b",
     "e2e/recipe-mcp.spec.mjs": "0c2c013d6e32f7df37675eb3e3965116ff15f961be8b540a7137573881c49f31",
     "scripts/export-change-set-schema.mjs": "5432c3a3da180bde88b210c9a698d3997c96469954630b0844c64bee6e45728f",
     "scripts/qa/verify-ensemble-archives.py": "b55dac90e6b2b69971f363b6196c87d8336b2a80a92f1f1f21fe9e0956b35dc9",
@@ -4032,7 +4061,7 @@
     "src/storage/changeSets.ts": "f3bc1e41fc7142c2af48c53c1aaf6616a0d639553246b9e8120a86586d4d1515",
     "src/storage/db.ts": "063ac68a735b83f8f82575b176d46483149da5e4d71d01454dbd286b4916838d",
     "src/storage/sceneAuthoring.ts": "db17ee1c303a538adc73ca6256b6e10486c360f2a34d82ec22f1f3a672f21d24",
-    "src/studio.css": "a089846322a0d71e1f1004b00475680501c25ce9e73afd0f34a8e1443819ac6c",
+    "src/studio.css": "996da17df123a1b74591f686ca97805be2350a2ca0144348d37afdf848536679",
     "src/types/changeSet.ts": "e30516c46f554c6660b7936239879d2a0321005da50d209ed050f5481191eb38",
     "src/types/domain.ts": "534d5ae54669c45e2382d76d4181a39037f1a5355018eaf3b5a8d9dfb82a40ca",
     "src/types/ensemble.ts": "91df850cd8f45bdde2425fe9b39d07e25f125108a11855b7f16f88ad6758cb18"

@@ -842,11 +842,14 @@ test("all recipe rows and ensemble controls fit with alternate native button fon
   await page.goto(`/#/builder/${ids.draftId}`);
   await expect(page.getByTestId("recipe-row")).toHaveCount(7);
   await page.addStyleTag({
-    content: ".recipe-row-main { font-family: Verdana, sans-serif; }",
+    // Reserve 15px as a non-overlay scrollbar would, even on Windows overlay scrollbars.
+    content:
+      ".recipe-row-main { font-family: Verdana, sans-serif; } .recipe-scroll { padding-right: 33px; }",
   });
   await assertRecipeControlsFit(page);
 });
 async function assertRecipeControlsFit(page) {
+  await recordRecipeLayout(page);
   const pane = await page.locator(".recipe-scroll").boundingBox();
   for (const row of await page.getByTestId("recipe-row").all()) {
     const bounds = await row.boundingBox();
@@ -859,6 +862,27 @@ async function assertRecipeControlsFit(page) {
       .boundingBox();
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(pane.y + pane.height);
   }
+}
+async function recordRecipeLayout(page) {
+  const geometry = await page.evaluate(() => {
+    const pane = document.querySelector(".recipe-scroll");
+    const hint = pane.querySelector(".builder-shot-type .muted-text");
+    const row = pane.querySelector(".recipe-row-main");
+    const buttons = [...pane.querySelectorAll(".ensemble-toolbar button")];
+    return {
+      paneBottom: pane.getBoundingClientRect().bottom,
+      paneClientWidth: pane.clientWidth,
+      scrollbarWidth: pane.offsetWidth - pane.clientWidth,
+      hintHeight: hint?.getBoundingClientRect().height,
+      rowHeights: [...pane.querySelectorAll('[data-testid="recipe-row"]')].map(
+        (e) => e.getBoundingClientRect().height,
+      ),
+      rowGap: getComputedStyle(pane.querySelector(".recipe-rows")).rowGap,
+      nativeButtonFont: getComputedStyle(row).font,
+      toolbarBottoms: buttons.map((e) => e.getBoundingClientRect().bottom),
+    };
+  });
+  console.info("KRAKINAI_RECIPE_LAYOUT " + JSON.stringify(geometry));
 }
 for (const width of [1440, 768, 390, 720])
   test(`ensemble workspace reflows, locks identities and keeps focus at ${width}px`, async ({
@@ -880,6 +904,7 @@ for (const width of [1440, 768, 390, 720])
       ),
     ).toBe(true);
     if (width === 1440) {
+      await recordRecipeLayout(page);
       const rows = await page.getByTestId("recipe-row").evaluateAll((rows) =>
         rows.map((row) => ({
           top: row.getBoundingClientRect().top,
