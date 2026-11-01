@@ -25,3 +25,12 @@ export function conversionState(): ChangeSetState {
 export function conversionApproval(): ChangeSetApproval {
   return {...recipeApproval(),conversionDecisions:{convert:{reviewed:true,acknowledgedRowIds:[]}}} as ChangeSetApproval;
 }
+export async function conversionScenario(){
+ const state=conversionState(),input=conversionPackage(),source=state.scenes[0];
+ const bytes=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(source.outputs.full));
+ const sha256=Array.from(new Uint8Array(bytes),b=>b.toString(16).padStart(2,'0')).join('');
+ const op=input.operations[0];op.project.expectedRevision=state.collections[0].project!.revision;
+ op.conversion.sourceTextSha256=sha256;
+ op.conversion.mappings.push(...(['settings','instructions','pending_inputs'] as const).map(kind=>({id:kind+'-map',target:{kind},assessment:'suggested'})));
+ return{state,input,approval:conversionApproval(),proofs:new Map([[source.id,{text:source.outputs.full,sha256}]])};
+}

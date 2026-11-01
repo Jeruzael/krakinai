@@ -41,6 +41,7 @@ import type { ImportFinding } from "../types/changeSet";
 import{applyRecipeEnsemblePatch}from'./changeSetEnsemble';
 import{prepareEnsembleSource}from'./ensemblePersistence';
 import{getSceneSnapshotEntries}from'./ensembleReferences';
+import{validateConversionSource,prepareConversionDraft,retainConversionReferences,type ConversionSourceProofs}from'./recipeConversion';
 const clone = <T>(value: T): T => structuredClone(value);
 
 /** A transient authoring draft, never an assertion that a stored draft exists. */
@@ -51,6 +52,7 @@ export function buildRecipeChangeDraft(
   target: SceneProjectTarget,
   resolveAsset: (target: RecordTarget) => string,
   resolveVariant?: (target:RecordTarget)=>string,
+  conversionProofs:ConversionSourceProofs=new Map(),
 ): SceneDraft {
   let draft: SceneDraft;
   const identity = {
@@ -58,7 +60,10 @@ export function buildRecipeChangeDraft(
     inputRevision: 1,
     updatedAt: allocation.preparedAt,
   };
-  if (operation.type === "scene.create_recipe") {
+  if(operation.type==='scene.convert_direct_to_recipe'){
+    const source=validateConversionSource(operation,state,conversionProofs);
+    draft=prepareConversionDraft(operation,source,identity);
+  }else if (operation.type === "scene.create_recipe") {
     draft = {
       ...identity,
       title: operation.title,
@@ -245,6 +250,7 @@ export function buildRecipeChangeDraft(
       entries: captureMediaNames([...retained, ...extras], mediaMap),
     };
   }
+  if(operation.type==='scene.convert_direct_to_recipe')retainConversionReferences(draft,state);
   return draft;
 }
 

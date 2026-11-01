@@ -50,6 +50,7 @@ import {
 } from "./changeSetCandidates";
 import { changeSetStateSignature } from "./changeSetState";
 import { getDirectPromptReadiness } from "./directPrompt";
+import{conversionReviewFindings,type ConversionSourceProofs}from'./recipeConversion';
 const copy = <T>(v: T): T => structuredClone(v);
 class PlanningError extends Error {
   constructor(
@@ -67,6 +68,7 @@ export function planChangeSet(
   approval: ChangeSetApproval,
   initial: ChangeSetState,
   allocation: ChangeSetAllocation,
+  conversionProofs:ConversionSourceProofs=new Map(),
 ): ChangeSetPlan {
   const state: ChangeSetState = {
     ...initial,
@@ -192,7 +194,7 @@ export function planChangeSet(
     };
     plan.operations.push(row);
     try {
-      if('sceneId'in op&&input.schema!=='krakinai.change-set.v3'&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 to reconstruct it; the old scene is unchanged.');
+      if('sceneId'in op&&!['krakinai.change-set.v3','krakinai.change-set.v4'].includes(input.schema)&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 or v4 to reconstruct it; the old scene is unchanged.');
       if (requiresStoryboardApproval(op) && !approval.storyboard)
         finding(
           op.operationId,
@@ -546,7 +548,7 @@ export function planChangeSet(
         row.projectId = c.id;
         row.shotId = s.id;
         row.currentPrompt = parent?.outputs.full;
-        row.summary = `${op.type === "scene.create_recipe" ? "New recipe" : op.type === "scene.revise_recipe" ? "New recipe revision" : "Alternate recipe take"}: ${op.title ?? parent?.title ?? op.clientRef}`;
+        row.summary = `${op.type === 'scene.convert_direct_to_recipe'?'Direct Prompt → recipe alternate take':op.type === "scene.create_recipe" ? "New recipe" : op.type === "scene.revise_recipe" ? "New recipe revision" : "Alternate recipe take"}: ${op.title ?? parent?.title ?? op.clientRef}`;
         const draft = buildRecipeChangeDraft(
           op,
           state,
@@ -563,13 +565,16 @@ export function planChangeSet(
             return mapped.assetId;
           },
           target=>{if('id'in target)return target.id;const mapped=mappings[target.ref];if(mapped?.kind!=='variant_candidate'||!mapped.variantId)fail('DEPENDENCY_BLOCKED','A recipe depends on a deferred Outfit candidate. Approve creation/reuse or remove that binding. Download this package to complete it later.');return mapped.variantId;},
+          conversionProofs,
         );
         const resolved = recipeDraftPreview(draft, parent);
         row.resolved = { recipe: resolved };
+        const conversionFindings=op.type==='scene.convert_direct_to_recipe'?conversionReviewFindings(op,approval,parent!,draft):[];
+        plan.findings.push(...conversionFindings);
         const advice = recipeAdvisories(op.operationId, draft, state);
         plan.findings.push(...advice);
         const manualConsent =
-          resolved.manualOutputsDiscarded &&
+          op.type!=='scene.convert_direct_to_recipe'&&resolved.manualOutputsDiscarded &&
           !approval.discardManualOutputOperations?.includes(op.operationId);
         if (manualConsent)
           finding(
@@ -591,6 +596,7 @@ export function planChangeSet(
           { id: allocation.ids[op.operationId], now: allocation.preparedAt },
         );
         finishRecipeScene(result.scene, input);
+        if(op.type==='scene.convert_direct_to_recipe')Object.assign(result.scene,{saveDecision:'take',separateTakeOfSceneId:op.sceneId});
         const error = validatePhase4Record(result.scene);
         if (error) throw Error(error);
         if (state.scenes.some((s) => s.id === result.scene.id))
@@ -612,7 +618,7 @@ export function planChangeSet(
             "advisory",
           );
         Object.assign(resolved, {
-          readiness: manualConsent
+          readiness: manualConsent||conversionFindings.length
             ? "blocked"
             : warnings.length ||
                 advice.some((f) => f.code === "RECIPE_PREFLIGHT_P008")
@@ -917,7 +923,8 @@ export function planChangeSet(
   plan.stateSignature = changeSetStateSignature(input, approval, initial, [
     ...duplicateScenes,
   ]);
-  if(input.schema==='krakinai.change-set.v3')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v3Review:ensembleReviewedProjection(plan)});
+  if(input.schema==='krakinai.change-set.v4')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v4Review:ensembleReviewedProjection(plan)});
+  else if(input.schema==='krakinai.change-set.v3')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v3Review:ensembleReviewedProjection(plan)});
   else if (
     input.schema === "krakinai.change-set.v2" &&
     input.operations.some(isRecipeOperation)

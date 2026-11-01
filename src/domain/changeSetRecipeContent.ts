@@ -28,6 +28,7 @@ export function recipeContentProjection(scene: SavedScene) {
     sourceSceneId,
   } = scene;
   return {
+    ...(scene.conversionProvenance?{conversionProvenance:scene.conversionProvenance}:{}),
     ...(ensemble?{ensemble}:{}),
     id,
     title,

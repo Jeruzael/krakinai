@@ -18,6 +18,8 @@ import {
   changeSetDigest,
 } from "../domain/changeSetCanonical";
 import { planChangeSet } from "../domain/changeSetPlanner";
+import {prepareConversionSources,type ConversionSourceProofs}from'../domain/recipeConversion';
+import type {SavedScene}from'../types/domain';
 import {
   appendImportReceipt,
   readImportLedger,
@@ -34,6 +36,14 @@ const done = (tx: IDBTransaction) =>
     tx.onabort = tx.onerror = () =>
       reject(tx.error ?? new Error("Change-set transaction aborted."));
   });
+async function readConversionProofs(input:ChangeSet):Promise<ConversionSourceProofs>{
+  const ids=[...new Set(input.operations.flatMap(o=>o.type==='scene.convert_direct_to_recipe'?[o.sceneId]:[]))];
+  if(!ids.length)return new Map();
+  const db=await openDatabase(),tx=db.transaction('scenes','readonly'),completion=done(tx);
+  const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(tx.objectStore('scenes').get(id))));
+  await completion;
+  return prepareConversionSources(input,scenes.filter((s):s is SavedScene=>!!s));
+}
 const signedContent = (
   input: Pick<
     ChangeSetPreview,
@@ -45,6 +55,7 @@ const signedContent = (
   allocation: input.allocation,
   stateSignature: input.plan.stateSignature,
   ...(input.changeSet.schema==='krakinai.change-set.v3'?{v3Review:ensembleReviewedProjection(input.plan)}:{}),
+  ...(input.changeSet.schema==='krakinai.change-set.v4'?{v4Review:ensembleReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema === "krakinai.change-set.v2" &&
   input.changeSet.operations.some(isRecipeOperation)
     ? { recipeReview: recipeReviewedProjection(input.plan) }
@@ -129,7 +140,8 @@ export async function previewChangeSet(
       replay: structuredClone(existing),
     };
   }
-  const plan = planChangeSet(changeSet, decisions, snapshot, allocation),
+  const conversionProofs=await prepareConversionSources(changeSet,snapshot.scenes);
+  const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs),
     draft = { changeSet, approval: decisions, allocation, plan };
   const approvedDigest = await changeSetDigest(signedContent(draft));
   if (
@@ -256,6 +268,7 @@ export async function applyApprovedChangeSet(
     )
   )
     throw Error("Invalid preview allocation.");
+  const conversionProofs=await readConversionProofs(changeSet);
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -297,7 +310,7 @@ export async function applyApprovedChangeSet(
     const plan = planChangeSet(changeSet, prepared.approval, state, {
         ...prepared.allocation,
         preparedAt: appliedAt,
-      }),
+      },conversionProofs),
       blocked = plan.findings.filter((f) => f.severity === "blocking");
     if (blocked.length) throw Error(blocked.map((f) => f.message).join(" "));
     if (plan.stateSignature !== prepared.plan.stateSignature)
