@@ -115,5 +115,142 @@
   "syntheticLibraryAccessed": true,
   "pairedCliAcceptance": "cli-acceptance.json",
   "recordType": "local precommit evidence snapshot",
-  "publicationEvidence": "Final signed Git commit and hosted CI runs are recorded in the PR after publication; both must pass before merge."
+  "publicationEvidence": "Final signed Git commit and hosted CI runs are recorded in the PR after publication; both must pass before merge.",
+  "ciInvestigation": {
+    "runUrl": "https://github.com/Jeruzael/krakinai/actions/runs/41315170900",
+    "testedCommit": "a0b4c6d9c15e91eeb0ff5d9b0afc8662d526e162",
+    "linux": "success",
+    "windowsAttempts": [
+      {
+        "passed": 48,
+        "failed": 2,
+        "exitCode": 1,
+        "jobId": 124873563017
+      },
+      {
+        "passed": 47,
+        "failed": 3,
+        "exitCode": 1,
+        "jobId": 124877278408
+      }
+    ],
+    "underlyingProbeCause": "not established; process failures and ACL rejection share the same production error",
+    "fixScope": "CI fixture ACL setup, sanitized diagnostics and Windows test serialization; production unchanged",
+    "hostedFollowup": "required on new signed commit"
+  },
+  "followupChecks": [
+    {
+      "name": "serial bridge",
+      "passed": 50,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "ci-windows-serial-local.log",
+      "logSha256": "e472bf29f25bc8a3fd0430e3a697dd19436425c9e6f21796fe45bae6d318fd6a"
+    },
+    {
+      "name": "QA helpers",
+      "passed": 52,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "ci-helper-final.log",
+      "logSha256": "82420d2a2a1e0bbc8461a0493dc8640fab22e7b1dbbc9a186e910929b0269dc4"
+    }
+  ],
+  "followupProbe": {
+    "event": "KRAKINAI_CI_PRIVATE_PROBE",
+    "logicalProcessors": 12,
+    "privateConfiguration": true,
+    "elapsedMs": 585,
+    "failure": null,
+    "exitCode": 0,
+    "killed": false,
+    "signal": null,
+    "lastLevel": 14,
+    "ancestors": [
+      {
+        "level": 1,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 2,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 3,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 4,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 5,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 6,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 7,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 8,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 9,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 10,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 11,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 12,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 13,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 14,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      }
+    ]
+  }
 }

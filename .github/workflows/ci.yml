@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Test installed-CLI evidence validation
-        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs
 
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium
@@ -142,6 +142,15 @@ jobs:
         shell: pwsh
         run: |
           $qaRoot = Join-Path $env:LOCALAPPDATA ('KRAKINAI-Launcher-CI-' + [guid]::NewGuid().ToString('N'))
+          # Only this newly created disposable directory receives an ACL change.
+          if (Test-Path -LiteralPath $qaRoot) { throw 'Unexpected existing QA directory.' }
+          $qaDirectory = [IO.Directory]::CreateDirectory($qaRoot)
+          $qaUser = [Security.Principal.WindowsIdentity]::GetCurrent().User
+          $qaAcl = [Security.AccessControl.DirectorySecurity]::new()
+          $qaAcl.SetAccessRuleProtection($true, $false)
+          $qaAcl.SetOwner($qaUser)
+          $qaAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($qaUser, 'FullControl', 'ContainerInherit, ObjectInherit', 'None', 'Allow'))
+          [IO.FileSystemAclExtensions]::SetAccessControl($qaDirectory, $qaAcl)
           "KRAKINAI_TEST_ROOT=$qaRoot\native" >> $env:GITHUB_ENV
           "KRAKINAI_PRIVATE_CONFIG_TEST_ROOT=$qaRoot\bridge" >> $env:GITHUB_ENV
           "KRAKINAI_TEST_NODE=$((Get-Command node).Source)" >> $env:GITHUB_ENV
@@ -157,8 +166,11 @@ jobs:
         run: npm --prefix bridge run build:test
       - name: Typecheck bridge
         run: npm --prefix bridge run typecheck
+      - name: Diagnose owned Windows configuration probe
+        run: node scripts/qa/launcher-windows-probe.mjs
       - name: Test bridge
-        run: npm --prefix bridge test
+        # Keep the real ten-second ACL deadline; avoid concurrent cold PS/SDK starts.
+        run: npm --prefix bridge test -- --maxWorkers=1 --minWorkers=1
       - name: Audit bridge production dependencies
         run: npm --prefix bridge audit --omit=dev
       - name: Verify Windows core

@@ -83,6 +83,16 @@ After the actual CLI exited, three independent TCP probes received explicit refu
 
 ## Assumptions and remaining verification
 
+### Hosted CI investigation and fixture follow-up
+
+The first hosted run on signed commit `a0b4c6d9c15e91eeb0ff5d9b0afc8662d526e162` passed the complete Linux job. Windows failed 2/50 bridge tests: the first positive configuration-access probe stopped after 10,059 ms, and adapter startup closed after 10,508 ms. A Windows-only rerun reproduced those failures at 10,066/10,425 ms and additionally hit an oversized-HTTP `ECONNRESET` (47/50 passed). Neither failed attempt is a passing certification. Run: [41315170900](https://github.com/Jeruzael/krakinai/actions/runs/41315170900).
+
+The guard intentionally reports one fixed error for process, deadline and ACL failures, so those logs alone cannot establish which underlying cause occurred. The CI-only follow-up creates an owner-controlled inheritable DACL on the fresh GUID fixture root, records fixed probe stage/ACL/process metadata without paths or raw stderr, and serializes all 50 Windows bridge tests. It does not change production checks, trusted identities, ten-second deadline, execution policy, signed artifacts or application code. The actual source probe is reused, with extra read-only diagnostic work; its timing includes instrumentation/cache effects and is not an identical production benchmark.
+
+Local follow-up: instrumented probe passed in 573 ms with 14 trusted, non-reparse file/ancestor checks and no untrusted mutation rules; the complete serial bridge suite passed 50/50, and the expanded QA helper suite passed 52/52. The new diagnostic tests failed before implementation and then passed 3/3, including redaction and rejection of fabricated success output. The independent focused source review cleared this follow-up. Hosted confirmation, including the intermittent HTTP case and Windows native/build steps, is still required on the new signed head.
+
+### Verification limits
+
 - Local executable/build paths and the same Windows user are trusted. Same-user/administrator compromise and malicious same-origin scripts/extensions are outside the threat model.
 - The executable signature does not sign adjacent JavaScript/dependencies. Release inventory hashes and locked dependencies must be reviewed alongside it.
 - The full final-artifact paired workflow above was demonstrated at `localhost`; a separate full paired IPv4 configuration and browser-process restart were not demonstrated.
