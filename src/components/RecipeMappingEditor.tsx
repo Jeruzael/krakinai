@@ -1,4 +1,4 @@
-import React,{useRef,useState}from'react';
+import React,{useEffect,useRef,useState}from'react';
 import type{ChangeSet,ChangeSetState}from'../types/changeSet';
 import type{BuilderSlot,SceneDraft,SavedScene}from'../types/domain';
 import type{RecipeResolvedPreview}from'../domain/changeSetRecipe';
@@ -12,10 +12,11 @@ import{StudioDialog}from'./StudioDialog';
 import{EnsembleControls}from'./EnsembleControls';
 import{resolveImportedBindings}from'../domain/changeSetReferences';
 import{applyRecipeEnsemblePatch}from'../domain/changeSetEnsemble';
-export function RecipeMappingEditor({input,operation,source,state,resolved,onChange}:{input:ChangeSet;operation:ConversionOperation;source:SavedScene;state:ChangeSetState;resolved?:RecipeResolvedPreview;onChange(op:ConversionOperation,extra?:ChangeSet['operations'][number]):void}){
+export function RecipeMappingEditor({input,operation,source,state,resolved,onChange,onUnsubmittedChange}:{input:ChangeSet;operation:ConversionOperation;source:SavedScene;state:ChangeSetState;resolved?:RecipeResolvedPreview;onChange(op:ConversionOperation,extra?:ChangeSet['operations'][number]):void;onUnsubmittedChange?:(dirty:boolean)=>void}){
  const[slot,setSlot]=useState<BuilderSlot>(),[search,setSearch]=useState(''),[proposing,setProposing]=useState(false),[candidateDrafts,setCandidateDrafts]=useState<Record<string,{title:string;text:string}>>({}),[error,setError]=useState('');
  const draftKey=JSON.stringify([source.id,operation.operationId,slot]);
  const candidateTitle=candidateDrafts[draftKey]?.title??'',candidateText=candidateDrafts[draftKey]?.text??'';
+ useEffect(()=>{onUnsubmittedChange?.(Object.values(candidateDrafts).some(d=>!!(d.title||d.text)))},[candidateDrafts,onUnsubmittedChange]);
  const setCandidateTitle=(title:string)=>{if(slot)setCandidateDrafts(previous=>({...previous,[draftKey]:{title,text:previous[draftKey]?.text??''}}))};
  const setCandidateText=(text:string)=>{if(slot)setCandidateDrafts(previous=>({...previous,[draftKey]:{title:previous[draftKey]?.title??'',text}}))};
  const trigger=useRef<HTMLButtonElement|null>(null),op=operation;
@@ -61,7 +62,7 @@ export function RecipeMappingEditor({input,operation,source,state,resolved,onCha
    <label>{SLOT_LABELS[slot]} asset<select className="select" aria-label={SLOT_LABELS[slot]+' asset'} value={selected?.id??''} onChange={e=>replace(e.target.value)}><option value="">Unassigned</option>{state.assets.filter(a=>a.category===SLOT_TO_CATEGORY[slot]&&(`${a.title} ${a.tags.join(' ')}`).toLowerCase().includes(search.toLowerCase())).map(a=><option key={a.id} value={a.id}>{a.title} · rev {a.revision}</option>)}</select></label>
    {selected&&<><p><code>{selected.id}</code> · rev {selected.revision}</p><details><summary>Complete component prompt {slot==='character'?'(identity locked)':''}</summary><textarea readOnly rows={5} value={selected.promptText}/></details>{slot!=='character'&&<label>Scene-only override<textarea rows={4} maxLength={100000} value={op.overrides?.[slot]?.overrideText??''} onChange={e=>change({overrides:{...op.overrides,[slot]:{...op.overrides?.[slot],overrideText:e.target.value}}})}/></label>}</>}
    <button type="button" className="btn btn-secondary" onClick={()=>setProposing(!proposing)}>Propose missing {SLOT_LABELS[slot]}</button>
-   {proposing&&<section><p>This adds a candidate proposal, not a library record. Creation/reuse needs explicit batch review.</p><label>Candidate title<input className="input" maxLength={100} value={candidateTitle} onChange={e=>setCandidateTitle(e.target.value)}/></label><label>Candidate prompt<textarea rows={5} maxLength={12000} value={candidateText} onChange={e=>setCandidateText(e.target.value)}/></label><button type="button" className="btn btn-secondary" disabled={!candidateTitle.trim()||!candidateText.trim()||input.operations.filter(o=>o.type.startsWith('asset.')||o.type.startsWith('variant.')).length>=50} onClick={()=>{
+   {proposing&&<section><p>Add the candidate to the mapping before downloading. Unsubmitted text stays in this tab. Creating or reusing a library record requires explicit batch review.</p><label>Candidate title<input className="input" maxLength={100} value={candidateTitle} onChange={e=>setCandidateTitle(e.target.value)}/></label><label>Candidate prompt<textarea rows={5} maxLength={12000} value={candidateText} onChange={e=>setCandidateText(e.target.value)}/></label><button type="button" className="btn btn-secondary" disabled={!candidateTitle.trim()||!candidateText.trim()||input.operations.length>=250||input.operations.filter(o=>o.type.startsWith('asset.')||o.type.startsWith('variant.')).length>=50} onClick={()=>{
     const id=generateId('candidate');const extra={operationId:id,type:'asset.propose' as const,clientRef:id,kind:slot,title:candidateTitle,promptText:candidateText,tags:[],sourceScene:{id:source.id}};
     onChange({...op,assetRefs:[...(op.assetRefs??[]).filter(r=>r.slot!==slot),{slot,asset:{ref:id}}],variantRefs:op.variantRefs?.filter(r=>r.slot!==slot)},extra);setProposing(false);setCandidateTitle('');setCandidateText('');
    }}>Add candidate to mapping</button></section>}

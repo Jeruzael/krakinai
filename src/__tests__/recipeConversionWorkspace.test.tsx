@@ -11,6 +11,12 @@ import{stageRecipePackage}from'../domain/recipePackageHandoff';
 beforeEach(async()=>{await clearAllStoresForTesting();await initializeDatabase();const{state}=await conversionScenario(),db=await openDatabase();await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['assets','scenes','collections'],'readwrite');for(const key of['assets','scenes','collections']as const)for(const r of state[key])tx.objectStore(key).put(r);tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error)});window.location.hash='#/recipes/ai?scene=direct-source&collection=project&shot=shot';});
 afterEach(()=>{cleanup();vi.restoreAllMocks()});
 async function setup(){render(<App/>);await screen.findByRole('heading',{name:'AI Recipe Builder'}, {timeout:5000});await screen.findByRole('button',{name:'Change Environment'}, {timeout:5000});}
+it('initializes a new guided mapping under the production StrictMode lifecycle',async()=>{
+ render(<React.StrictMode><App/></React.StrictMode>);expect(await screen.findByRole('button',{name:'Change Environment'},{timeout:5000})).toBeEnabled();
+},10000);
+it('does not announce a recipe preview as ready when the read-only calculation failed',async()=>{
+ const f=await conversionScenario();stageRecipePackage(f.input);vi.spyOn(changeSetStorage,'previewChangeSet').mockRejectedValue(Error('Synthetic preview read failure'));await setup();expect(await screen.findByRole('alert')).toHaveTextContent('Synthetic preview read failure');expect(screen.queryByText('Review the assembled recipe before saving.',{exact:true})).not.toBeInTheDocument();expect(screen.getByRole('button',{name:'Download mapping package'})).toBeEnabled();
+});
 it('opens a transient same-shot mapping workspace without expanding source prose or writing drafts',async()=>{
  const before=await getAllSnapshot();await setup();expect(screen.getByText('Original Direct Prompt (preserved)',{exact:true}).closest('details')).not.toHaveAttribute('open');
  expect(screen.getByRole('button',{name:'Change Environment'})).toBeEnabled();expect(screen.getByRole('button',{name:'Review and save alternate take'})).toBeInTheDocument();
@@ -78,3 +84,20 @@ it('preserves unsubmitted candidate text when returning from review to mapping',
  await user.click(screen.getByRole('button',{name:'Review and save alternate take'}));await screen.findByRole('heading',{name:'Change-set preview'},{timeout:5000});await user.click(screen.getByRole('button',{name:'Back to Recipe mapping'}));
  await user.click(screen.getByRole('button',{name:'Change Environment'}));await user.click(screen.getByRole('button',{name:'Propose missing Environment'}));expect(screen.getByRole('textbox',{name:'Candidate title'})).toHaveValue('Unfinished local idea');
 });
+it('reports unavailable clipboard access instead of crashing the workspace',async()=>{
+ await setup();const user=userEvent.setup();Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});
+ await user.click(screen.getByRole('button',{name:'Prepare Codex mapping request'}));expect(await screen.findByRole('alert')).toHaveTextContent('Copy failed');expect(screen.getByRole('button',{name:'Download mapping package'})).toBeEnabled();
+});
+it('guards a mapping against browser unload until it is saved or deliberately discarded',async()=>{
+ await setup();const event=new Event('beforeunload',{cancelable:true});window.dispatchEvent(event);expect(event.defaultPrevented).toBe(true);
+ cleanup();const after=new Event('beforeunload',{cancelable:true});window.dispatchEvent(after);expect(after.defaultPrevented).toBe(false);
+});
+it('keeps guarding an unsubmitted candidate idea after the reviewed package has committed',async()=>{
+ const f=await conversionScenario();stageRecipePackage(f.input);const user=userEvent.setup();await setup();
+ await user.click(screen.getByRole('button',{name:'Change Environment'}));await user.click(screen.getByRole('button',{name:'Propose missing Environment'}));await user.type(screen.getByRole('textbox',{name:'Candidate title'}),'Not submitted yet');await user.click(screen.getByRole('button',{name:'Done mapping'}));
+ await user.click(screen.getByRole('button',{name:'Review and save alternate take'}));await screen.findByRole('heading',{name:'Change-set preview'},{timeout:5000});await user.click(screen.getByRole('button',{name:'Review convert'}));
+ await user.click(screen.getByRole('checkbox',{name:'I reviewed conversion mapping (convert)'}));await user.keyboard('{Escape}');
+ await user.click(screen.getByRole('checkbox',{name:'Approve storyboard changes'}));await user.click(screen.getByRole('checkbox',{name:'Approve new immutable scenes'}));await user.click(screen.getByRole('checkbox',{name:'I reviewed this exact preview'}));
+ await waitFor(()=>expect(screen.getByRole('button',{name:'Apply approved changes'})).toBeEnabled());await user.click(screen.getByRole('button',{name:'Apply approved changes'}));await screen.findByRole('region',{name:'Import receipt'},{timeout:5000});
+ await user.click(screen.getByRole('button',{name:'Home'}));expect(await screen.findByRole('dialog')).toHaveTextContent('Unsaved Changes');await user.click(screen.getByRole('button',{name:'Stay on Page'}));await user.click(screen.getByRole('button',{name:'Back to Recipe mapping'}));await user.click(screen.getByRole('button',{name:'Change Environment'}));await user.click(screen.getByRole('button',{name:'Propose missing Environment'}));expect(screen.getByRole('textbox',{name:'Candidate title'})).toHaveValue('Not submitted yet');
+},20000);

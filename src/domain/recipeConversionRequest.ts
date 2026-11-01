@@ -5,19 +5,31 @@ import type{ConversionMappingTarget}from'../types/recipeConversion';
 import{isDirectPrompt}from'./directPrompt';
 import{getRevisionHead}from'./sceneRevisions';
 import{getShotTypeRules}from'./shotTypeRules';
-import{conversionTargetKey,prepareConversionSources,type ConversionOperation}from'./recipeConversion';
+import{conversionTargetKey,prepareConversionSources,prepareConversionDraft,getConversionSourceReferencePack,type ConversionOperation}from'./recipeConversion';
+import{resolveImportedBindings}from'./changeSetReferences';
+import{applyRecipeEnsemblePatch}from'./changeSetEnsemble';
+import{collectReferenceCandidates}from'./referencePack';
 import{generateId}from'../storage/db';
 const clone=<T>(x:T):T=>structuredClone(x);
 /** Match the JSON transport's optional-field semantics without changing any string value. */
 export const serializableMappingPackage=(input:ChangeSet):ChangeSet=>JSON.parse(JSON.stringify(input)) as ChangeSet;
-export function reconcileConversionMappings(op:ConversionOperation,source:SavedScene):ConversionOperation{
+export function reconcileConversionMappings(op:ConversionOperation,source:SavedScene,state?:ChangeSetState):ConversionOperation{
  const selected=new Map<string,ConversionMappingTarget>();
  const add=(t:ConversionMappingTarget)=>selected.set(conversionTargetKey(t),t);
  for(const r of[...(op.assetRefs??[]),...(op.variantRefs??[])])add({kind:'slot',slot:r.slot});
  for(const p of op.ensemble?.participantUpserts??[]){if(p.character)add({kind:'participant',participantId:p.id,field:'character'});if(p.wardrobe)add({kind:'participant',participantId:p.id,field:'wardrobe'})}
  for(const c of op.ensemble?.dialogueCues??[])add({kind:'cue',cueId:c.id});
  add({kind:'settings'});if(op.sceneInstructions)add({kind:'instructions'});if(op.avoidText)add({kind:'avoid'});
- if(source.referencePack?.entries.length||op.references?.length)add({kind:'references'});
+ let hasReferences=!!(getConversionSourceReferencePack(source)?.entries.length||op.references?.length);
+ if(state){
+  let draft=prepareConversionDraft(op,source,{id:'mapping-reference-preview',inputRevision:1,updatedAt:source.updatedAt});draft.shotType=op.shotType;draft.sourceMediaLinks=op.sourceMedia?.map((link,order)=>({...link,role:link.role??'reference',altText:link.altText??'',order}))??source.sourceMediaLinks;
+  try{
+   for(const snapshot of resolveImportedBindings({...op,assetRefs:op.assetRefs?.filter(r=>'id'in r.asset)},state,target=>{if('id'in target)return target.id;throw Error('Candidate needs review.')}))draft.slots[snapshot.slot]=snapshot;
+   if(op.ensemble)draft=applyRecipeEnsemblePatch(draft,op.ensemble,state,(_kind,target)=>{if('id'in target)return target.id;throw Error('Candidate needs review.')});
+  }catch{/* Incomplete selections stay unresolved; the authoritative preview reports their findings. */}
+  hasReferences=hasReferences||collectReferenceCandidates(draft,new Map(state.media.map(m=>[m.id,m]))).length>0;
+ }
+ if(hasReferences)add({kind:'references'});
  if((op.sourceMedia??source.sourceMediaLinks)?.length)add({kind:'source_media'});
  if((op.pendingInputs??source.pendingInputs)?.length)add({kind:'pending_inputs'});
  const required=getShotTypeRules({shotType:op.shotType,dialogue:op.dialogue??undefined}).requiredSlots;
@@ -35,7 +47,7 @@ export async function createConversionPackage(source:SavedScene,target:SceneProj
  if(!current||!isDirectPrompt(current)||!shot?.takeSceneIds.includes(current.id)||collection?.project?.revision!==target.expectedProjectRevision)throw Error('Select the saved Direct Prompt and its exact current project shot before mapping.');
  let op:ConversionOperation={type:'scene.convert_direct_to_recipe',operationId:'convert',clientRef:'converted',sceneId:current.id,expectedHeadId:getRevisionHead(current,state.scenes).id,project:{id:collection.id,expectedRevision:target.expectedProjectRevision},shot:{id:shot.id},title:(current.title+' — Recipe').slice(0,100),shotType:current.shotType??'character_scene',settings:{...clone(current.settings),aspectRatio:current.settings.aspectRatio??'16:9',durationSeconds:current.settings.durationSeconds??8},sceneInstructions:'',pendingInputs:clone(current.pendingInputs??[]),conversion:{version:1,sourceTextSha256:'0'.repeat(64),mappings:[]}};
  const input:ChangeSet={schema:'krakinai.change-set.v4',changeSetId:generateId('recipe_conversion'),source:{kind:'manual',label:'Guided Direct Prompt conversion'},title:'Direct Prompt → recipe alternate take',operations:[op]};
- const proofs=await prepareConversionSources(input,[current]);op.conversion.sourceTextSha256=proofs.get(current.id)!.sha256;op=reconcileConversionMappings(op,current);input.operations=[op];return serializableMappingPackage(input);
+ const proofs=await prepareConversionSources(input,[current]);op.conversion.sourceTextSha256=proofs.get(current.id)!.sha256;op=reconcileConversionMappings(op,current,state);input.operations=[op];return serializableMappingPackage(input);
 }
 export function buildConversionRequest(source:SavedScene,target:SceneProjectTarget):string{
  return `Prepare a KRAKINAI v4 recipe conversion proposal.\nProject: ${target.collectionId}\nShot: ${target.shotId}\nExpected project revision: ${target.expectedProjectRevision}\nOriginal saved Direct Prompt: ${source.id}\nRead the authorized project and krakinai_get_scene for this source (explicit full-prompt permission required). Use its sourceTextSha256 and expectedHeadId. Search authorized reusable assets and compatible Outfits before proposing missing elements. Map participants and exact dialogue cues explicitly; mark uncertainty and unresolved inputs honestly. Preview with krakinai_preview_change_set, then submit for browser review. Preserve the original, references, pending frames and preferred take. Save a genuine assembled recipe alternate take on this same shot only after human browser approval. Do not create a new project or widen read permissions. This request contains IDs only; it grants no access and includes no original prompt text.`;

@@ -57,7 +57,7 @@ it('keeps source settings and optional pending frames visible while an explicit 
  expect((p.operations[0].resolved as any).recipe.readiness).toBe('assembled_pending');
 });
 it('retains inactive original associations and appends actual component references without reassigning them',async()=>{
- const f=await scenario();const png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGFEAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
+ const f=await scenario();const png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPwd3v6HwAE3AJ6zM4FjgAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0));
  f.state.media=[{id:'guide',filename:'synthetic-guide.png',mimeType:'image/png',blob:new Blob([png],{type:'image/png'}),size:png.length,createdAt:'2026-11-01T00:00:00Z'}] as any;
  const original:any={associationId:'original-explicit',mediaId:'guide',sourceSlot:'legacy',sourceId:'direct-source',sourceTitle:'Original context',role:'sample',altText:'Original illustrative guide',purpose:'general',order:0};
  f.state.scenes[0].referencePack={version:1,entries:[original]};

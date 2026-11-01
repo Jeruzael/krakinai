@@ -41,13 +41,20 @@ it('withholds complete assembled output containing provider notes until the sepa
  f.scope.includeNotes=true;broker.setScope(f.scope);const shared:any=await broker.handle({requestId:'note-shared',tool:'krakinai_preview_change_set',args:{changeSet:f.input}},'synthetic');expect(shared.data.conversions[0].outputs.full).toContain('PRIVATE_PROVIDER_NOTE');
 });
 it('requires the separate filename grant for complete output that names an original image',async()=>{
- const f=await fixture(),op=f.input.operations[0],png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aGFEAAAAASUVORK5CYII='),c=>c.charCodeAt(0));
+ const f=await fixture(),op=f.input.operations[0],png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPwd3v6HwAE3AJ6zM4FjgAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0));
  const media=await saveMediaAsset({filename:'PRIVATE_ORIGINAL_FILENAME.png',mimeType:'image/png',blob:new Blob([png],{type:'image/png'})});
  op.shotType='graphic_motion';op.assetRefs=[{asset:{id:'camera'},slot:'camera',expectedRevision:1}];op.sourceMedia=[{mediaId:media.id,role:'reference',altText:''}];
  op.conversion.mappings=op.conversion.mappings.filter((m:any)=>m.id!=='environment-map');op.conversion.mappings.push({id:'camera',target:{kind:'slot',slot:'camera'},assessment:'suggested'},{id:'original',target:{kind:'source_media'},assessment:'suggested'},{id:'refs',target:{kind:'references'},assessment:'suggested'});
  f.scope.assetIds=['camera'];f.scope.mediaIds=[media.id];f.scope.includeAssetText=true;const broker=new ProposalBroker();broker.connect('synthetic',f.scope);
  const hidden:any=await broker.handle({requestId:'file-hidden',tool:'krakinai_preview_change_set',args:{changeSet:f.input}},'synthetic');expect(hidden.ok).toBe(true);expect(JSON.stringify(hidden)).not.toContain('PRIVATE_ORIGINAL_FILENAME');
  f.scope.includeMediaFilenames=true;broker.setScope(f.scope);const shared:any=await broker.handle({requestId:'file-shared',tool:'krakinai_preview_change_set',args:{changeSet:f.input}},'synthetic');expect(shared.data.conversions[0].outputs.full).toContain('PRIVATE_ORIGINAL_FILENAME.png');
+});
+it('does not expose ordinary reference-pack filenames through raw three-mode MCP previews',async()=>{
+ const f=await fixture(),png=Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGPwd3v6HwAE3AJ6zM4FjgAAAABJRU5ErkJggg=='),c=>c.charCodeAt(0));
+ const media=await saveMediaAsset({filename:'PRIVATE_GUIDE_FILENAME.png',mimeType:'image/png',blob:new Blob([png],{type:'image/png'})}),db=await openDatabase(),asset=f.state.assets.find(a=>a.id==='environment')!;asset.mediaLinks=[{mediaId:media.id,role:'reference',altText:'Explicit guide',filename:media.filename,mimeType:media.mimeType,namesCaptured:true,order:0}];await new Promise<void>(resolve=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').put(asset);tx.oncomplete=()=>resolve()});
+ f.input.operations[0].shotType='character_scene';f.input.operations[0].assetRefs.push({slot:'action',asset:{id:'action'},expectedRevision:1});f.scope.assetIds.push('action');f.input.operations[0].conversion.mappings.push({id:'refs',target:{kind:'references'},assessment:'suggested'});f.scope.includeAssetText=true;const broker=new ProposalBroker();broker.connect('synthetic',f.scope);
+ const hidden:any=await broker.handle({requestId:'guide-hidden',tool:'krakinai_preview_change_set',args:{changeSet:f.input}},'synthetic');expect(hidden.ok).toBe(true);expect(JSON.stringify(hidden)).not.toContain('PRIVATE_GUIDE_FILENAME');expect(hidden.data.conversions[0].outputDisclosure).toBe('shared');
+ f.scope.includeMediaFilenames=true;broker.setScope(f.scope);const shared:any=await broker.handle({requestId:'guide-shared',tool:'krakinai_preview_change_set',args:{changeSet:f.input}},'synthetic');expect(shared.data.conversions[0].outputs).toEqual(hidden.data.conversions[0].outputs);expect(JSON.stringify(shared)).not.toContain('PRIVATE_GUIDE_FILENAME');
 });
 it('does not inherit the source full-prompt grant for a newly saved recipe take',async()=>{
  const f=await fixture(),preview=await previewChangeSet(f.input,f.approval),scene=preview.plan.scenes[0];f.state.scenes.push(scene);f.state.collections=preview.plan.collections;

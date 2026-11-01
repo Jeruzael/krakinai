@@ -18,7 +18,7 @@ import { MAX_CHANGE_SET_BYTES } from "../domain/changeSetValidation";
 import { ChangeSetPreview } from "../components/ChangeSetPreview";
 import { ImportReceipt } from "../components/ImportReceipt";
 import "./changeSets.css";
-export function ChangeSetImportScreen({initialChangeSet,onBack}:{initialChangeSet?:ChangeSet;onBack?:()=>void}={}) {
+export function ChangeSetImportScreen({initialChangeSet,onBack,onDirtyChange}:{initialChangeSet?:ChangeSet;onBack?:()=>void;onDirtyChange?:(dirty:boolean)=>void}={}) {
   const { snapshot, navigate, refreshSnapshot, setDirtyFormGuard } =
     useLibrary();
   const [raw, setRaw] = useState(()=>initialChangeSet?JSON.stringify(initialChangeSet,null,2):""),
@@ -45,9 +45,10 @@ export function ChangeSetImportScreen({initialChangeSet,onBack}:{initialChangeSe
     }
   }, [preview, receipt]);
   useEffect(() => {
-    setDirtyFormGuard(!!raw.trim() && !receipt);
-    return () => setDirtyFormGuard(false);
-  }, [raw, receipt, setDirtyFormGuard]);
+    const report=onDirtyChange??setDirtyFormGuard;
+    report(!!raw.trim() && !receipt);
+    return () => report(false);
+  }, [raw, receipt, setDirtyFormGuard,onDirtyChange]);
   useEffect(
     () => () => {
       generation.current++;

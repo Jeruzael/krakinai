@@ -3,8 +3,8 @@ import type {SavedScene,SceneDraft} from '../types/domain';
 import type {ConversionMappingTarget,ConversionProvenance} from '../types/recipeConversion';
 import {isDirectPrompt} from './directPrompt';
 import {getRevisionHead} from './sceneRevisions';
-import {getShotTypeRules} from './shotTypeRules';
-import {getSceneSnapshotEntries} from './ensembleReferences';
+import {getShotTypeRules,getSourceReferenceEntries} from './shotTypeRules';
+import {getSceneSnapshotEntries,getReferenceLinkIdentity,getReferenceAssociationId} from './ensembleReferences';
 import {collectReferenceCandidates} from './referencePack';
 import {CONVERSION_PROVENANCE_SCHEMA,validateConversionInput} from './recipeConversionSchema';
 import {validateJsonRule} from './changeSetValidation';
@@ -43,9 +43,26 @@ export function validateConversionSource(operation:ConversionOperation,state:Cha
  }
  return source;
 }
+/** Keep the frozen pack and any older Direct Prompt checklist associations it did not contain. */
+export function getConversionSourceReferencePack(source:SavedScene):SceneDraft['referencePack']{
+ const pack=structuredClone(source.referencePack??{version:1 as const,entries:[]});
+ for(const entry of getSourceReferenceEntries(source))if(!pack.entries.some(e=>e.sourceSlot===entry.sourceSlot&&getReferenceLinkIdentity(e)===getReferenceLinkIdentity(entry)))pack.entries.push({...entry,order:pack.entries.length});
+ const checklist=structuredClone(source.references??[]),counts=new Map<string,number>(),directCounts=new Map<string,number>();
+ for(const link of checklist){const key=getReferenceLinkIdentity(link);counts.set(key,(counts.get(key)??0)+1)}
+ for(const link of source.directReferences??[]){const key=getReferenceLinkIdentity(link),count=(directCounts.get(key)??0)+1;directCounts.set(key,count);if(count>(counts.get(key)??0))checklist.push(structuredClone(link))}
+ const represented=new Map<string,number>(),ids=new Set(pack.entries.map(e=>e.associationId));
+ for(const entry of pack.entries){const key=getReferenceLinkIdentity(entry);represented.set(key,(represented.get(key)??0)+1)}
+ for(const link of checklist){
+  const key=getReferenceLinkIdentity(link),count=represented.get(key)??0;if(count){represented.set(key,count-1);continue}
+  let occurrence=0,associationId=getReferenceAssociationId('legacy',source.id,key,occurrence);while(ids.has(associationId))associationId=getReferenceAssociationId('legacy',source.id,key,++occurrence);
+  pack.entries.push({...link,associationId,sourceSlot:'legacy',sourceId:source.id,sourceTitle:source.title,purpose:'general',order:pack.entries.length});ids.add(associationId);
+ }
+ return pack.entries.length||source.referencePack?pack:undefined;
+}
 export function prepareConversionDraft(operation:ConversionOperation,source:SavedScene,identity:Pick<SceneDraft,'id'|'inputRevision'|'updatedAt'>):SceneDraft{
+ const referencePack=getConversionSourceReferencePack(source);
  return {...identity,title:operation.title,authoringMode:'recipe',slots:{},extraRequiredSlots:[],sceneInstructions:'',settings:{},manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed',sourceSceneId:source.id,inheritedAvoidPrefix:'',
-  ...(source.referencePack?{referencePack:structuredClone(source.referencePack)}:{}),
+  ...(referencePack?{referencePack}:{}),
   ...(source.sourceMediaLinks?{sourceMediaLinks:structuredClone(source.sourceMediaLinks)}:{}),
   ...(source.pendingInputs?{pendingInputs:structuredClone(source.pendingInputs)}:{}),
   ...(source.claimNotes?{claimNotes:source.claimNotes}:{}),

@@ -1,0 +1,70 @@
+{
+  "syntheticOnly": true,
+  "baselineCommit": "96e819ae23adc2bf897c7e3ccc71e16176e28b42",
+  "fixture": "e2e/recipe-conversion-fixture.mjs; independently decoded CRC-correct synthetic 1x1 PNGs; no photographs or actual user data",
+  "screenshots": [
+    {
+      "path": "docs/qa/recipe-builder-b3/before-direct-1440.png",
+      "sha256": "94da08f07b043635aee06daa1066a1b652f2e533ff5044439d742d2b52b9b0c7",
+      "width": 1440,
+      "height": 900,
+      "bytes": 120092
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-mapping-1440.png",
+      "sha256": "a8edf7c8ec7b4212373dd3200503a81f572a1c099eb94902c43896f6552216bd",
+      "width": 1440,
+      "height": 2148,
+      "bytes": 176600
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-review-1440.png",
+      "sha256": "8829e068386d3807a0955ce3500064c83b49a7beeca5d72ef18a500d751390dc",
+      "width": 1440,
+      "height": 900,
+      "bytes": 110384
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/before-direct-768.png",
+      "sha256": "00a564f5fe166f0b97ed00e6843cf0462e89491d7669508e8e8b4114ef482d61",
+      "width": 768,
+      "height": 1555,
+      "bytes": 118961
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-mapping-768.png",
+      "sha256": "177a8c19a1576cdea8b27465d7941a2e60f9255a40ebefd47f09c5a1888e56f1",
+      "width": 768,
+      "height": 2494,
+      "bytes": 172457
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-review-768.png",
+      "sha256": "d9ead3b419b3c1236542909db42a2fc65b28562bea678dcbc226e02b87889ed9",
+      "width": 768,
+      "height": 1605,
+      "bytes": 102245
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/before-direct-390.png",
+      "sha256": "4bbb456f28ff958b937701c0d1afa963a989c4d6693c19c05884bf341f174c48",
+      "width": 390,
+      "height": 1587,
+      "bytes": 83692
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-mapping-390.png",
+      "sha256": "bdfc9578c7ffb45cafef437b9462ca3037b8aba4129f0af5fe39a04af4d36785",
+      "width": 390,
+      "height": 2593,
+      "bytes": 130054
+    },
+    {
+      "path": "docs/qa/recipe-builder-b3/after-review-390.png",
+      "sha256": "0d2ca459f30a501d69160795fc256d4e73b85494c0469f4e0c17d5ff4c8d2d9d",
+      "width": 390,
+      "height": 1603,
+      "bytes": 84764
+    }
+  ]
+}
