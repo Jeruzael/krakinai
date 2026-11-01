@@ -9,7 +9,8 @@ test('diagnostics reuse the actual guard while retaining all rejection checks',a
  for(const guard of ["throw 'CONFIGURATION_ACCESS_UNSAFE'",'$allowed -notcontains $rule.IdentityReference.Value','[IO.FileAttributes]::ReparsePoint','AssertPrivate $file $write'])assert(script.includes(guard));
  assert(script.includes('QA_GUARD_META '));assert(!script.includes('Set-Acl'));assert(!script.includes('SetAccessControl'));
  assert(script.includes('QA_GUARD_PHASE boot'));assert(script.indexOf('QA_GUARD_PHASE boot')<script.indexOf('$allowed='));
- assert(script.includes('QA_GUARD_PHASE file_lookup'));assert(script.indexOf('QA_GUARD_PHASE file_lookup')<script.indexOf('$file=Get-Item'));
+ assert(script.includes('QA_GUARD_PHASE file_lookup'));assert(script.indexOf('QA_GUARD_PHASE file_lookup')<script.indexOf('$file=[IO.FileInfo]::new'));
+ for(const cmdlet of ['Get-Item','Get-Acl','Write-Output','Where-Object','ConvertTo-Json'])assert(!script.includes(cmdlet));
  assert.throws(()=>instrumentProbe('unexpected source'),/PROBE_SOURCE_CHANGED/);
 });
 test('only fixed execution phase names are exposed',()=>{

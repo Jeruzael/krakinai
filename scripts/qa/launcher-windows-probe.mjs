@@ -7,12 +7,13 @@ import {availableParallelism} from 'node:os';
 
 export function instrumentProbe(source){
  const probe=source.match(/const probe = String\.raw`([\s\S]*?)`;/)?.[1];
- const start='function AssertPrivate($item,[long]$mask) {',acl='$acl=Get-Acl -LiteralPath $item.FullName';
+ const start='function AssertPrivate($item,[long]$mask) {',acl='$acl=$item.GetAccessControl()';
  if(!probe?.includes(start)||!probe.includes(acl))throw Error('PROBE_SOURCE_CHANGED');
  const metadata=String.raw`
-  $qaRules=@($acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])|Where-Object{$_.AccessControlType -eq 'Allow' -and (($_.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -eq 0) -and ($allowed -notcontains $_.IdentityReference.Value) -and (([long]$_.FileSystemRights -band ($mask -bor 0x50000000)) -ne 0)})
-  [Console]::Error.WriteLine('QA_GUARD_META '+(@{level=$script:qaGuardLevel;ownerTrusted=($allowed -contains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value);reparse=(($item.Attributes -band [IO.FileAttributes]::ReparsePoint)-ne 0);mutationRuleCount=$qaRules.Count}|ConvertTo-Json -Compress))`;
- return "[Console]::Error.WriteLine('QA_GUARD_PHASE boot')\n$script:qaGuardLevel=0\n"+probe.replace('$control=[long]',"[Console]::Error.WriteLine('QA_GUARD_PHASE identity_loaded')\n$control=[long]").replace('$file=Get-Item',"[Console]::Error.WriteLine('QA_GUARD_PHASE file_lookup')\n$file=Get-Item").replace('if($file.PSIsContainer)',"[Console]::Error.WriteLine('QA_GUARD_PHASE file_loaded')\nif($file.PSIsContainer)").replace(start,start+"\n  $script:qaGuardLevel++;[Console]::Error.WriteLine('QA_GUARD_LEVEL '+$script:qaGuardLevel)").replace(acl,acl+metadata);
+  $qaCount=0;foreach($qaRule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])){if($qaRule.AccessControlType -eq 'Allow' -and (($qaRule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -eq 0) -and ($allowed -notcontains $qaRule.IdentityReference.Value) -and (([long]$qaRule.FileSystemRights -band ($mask -bor 0x50000000)) -ne 0)){$qaCount++}}
+  $qaOwner=($allowed -contains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value);$qaReparse=(($item.Attributes -band [IO.FileAttributes]::ReparsePoint)-ne 0)
+  [Console]::Error.WriteLine('QA_GUARD_META {"level":'+$script:qaGuardLevel+',"ownerTrusted":'+$qaOwner.ToString().ToLowerInvariant()+',"reparse":'+$qaReparse.ToString().ToLowerInvariant()+',"mutationRuleCount":'+$qaCount+'}')`;
+ return "[Console]::Error.WriteLine('QA_GUARD_PHASE boot')\n$script:qaGuardLevel=0\n"+probe.replace('$control=[long]',"[Console]::Error.WriteLine('QA_GUARD_PHASE identity_loaded')\n$control=[long]").replace('$file=[IO.FileInfo]::new',"[Console]::Error.WriteLine('QA_GUARD_PHASE file_lookup')\n$file=[IO.FileInfo]::new").replace('if(-not $file.Exists',"[Console]::Error.WriteLine('QA_GUARD_PHASE file_loaded')\nif(-not $file.Exists").replace(start,start+"\n  $script:qaGuardLevel++;[Console]::Error.WriteLine('QA_GUARD_LEVEL '+$script:qaGuardLevel)").replace(acl,acl+metadata);
 }
 export function summarizeProbe({error,stdout='',stderr='',elapsedMs}){
  const ancestors=[];let lastLevel=null,phase=null;

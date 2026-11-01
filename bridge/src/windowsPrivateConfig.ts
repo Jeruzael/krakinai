@@ -3,6 +3,7 @@ import { promisify } from 'node:util';
 import { win32 } from 'node:path';
 
 // Mirror native SettingsAccess at the other execution boundary. No trust/ACL mutation.
+// Direct CLR reads avoid filesystem-cmdlet discovery under the restricted environment.
 const probe = String.raw`
 $ErrorActionPreference='Stop'
 $allowed=@([Security.Principal.WindowsIdentity]::GetCurrent().User.Value,'S-1-5-18','S-1-5-32-544','S-1-5-80-956008885-3418522649-1831038044-1853292631-2271478464')
@@ -10,19 +11,19 @@ $control=[long]([Security.AccessControl.FileSystemRights]::Delete -bor [Security
 $write=$control -bor [long][Security.AccessControl.FileSystemRights]::Write
 function AssertPrivate($item,[long]$mask) {
   if(($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0){throw 'CONFIGURATION_ACCESS_UNSAFE'}
-  $acl=Get-Acl -LiteralPath $item.FullName
+  $acl=$item.GetAccessControl()
   if($allowed -notcontains $acl.GetOwner([Security.Principal.SecurityIdentifier]).Value){throw 'CONFIGURATION_ACCESS_UNSAFE'}
   foreach($rule in $acl.GetAccessRules($true,$true,[Security.Principal.SecurityIdentifier])) {
     if($rule.AccessControlType -ne 'Allow' -or ($rule.PropagationFlags -band [Security.AccessControl.PropagationFlags]::InheritOnly) -ne 0){continue}
     if($allowed -notcontains $rule.IdentityReference.Value -and (([long]$rule.FileSystemRights -band ($mask -bor 0x50000000)) -ne 0)){throw 'CONFIGURATION_ACCESS_UNSAFE'}
   }
 }
-$file=Get-Item -LiteralPath $env:KRAKINAI_CONFIGURATION_PATH
-if($file.PSIsContainer){throw 'CONFIGURATION_ACCESS_UNSAFE'}
+$file=[IO.FileInfo]::new($env:KRAKINAI_CONFIGURATION_PATH)
+if(-not $file.Exists -or ($file.Attributes -band [IO.FileAttributes]::Directory) -ne 0){throw 'CONFIGURATION_ACCESS_UNSAFE'}
 AssertPrivate $file $write
 $parent=$file.Directory; $first=$true
 while($null -ne $parent){if($first){AssertPrivate $parent $write}else{AssertPrivate $parent $control};$first=$false;$parent=$parent.Parent}
-Write-Output 'PRIVATE_CONFIGURATION'
+[Console]::Out.WriteLine('PRIVATE_CONFIGURATION')
 `;
 export async function verifyConfigurationAccess(path: string) {
   if (process.platform !== 'win32') throw Error('WINDOWS_REQUIRED');

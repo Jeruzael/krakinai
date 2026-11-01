@@ -371,5 +371,214 @@
     "log": "ci-ab-local.log",
     "logSha256": "e2ac37cc71950a14c62415852631843c1bd65c607ef6f5d2f0f3fd14c6e2d31f",
     "review": "No Critical/Important findings. Minor coalesced BOOT marker timing issue corrected; split/large-chunk regression passes."
+  },
+  "clrCorrection": {
+    "hostedEvidence": {
+      "head": "9df4592eb016f5b3bd04142f3554f4270cbe9b3f",
+      "run": "https://github.com/Jeruzael/krakinai/actions/runs/41319722596",
+      "cases": [
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 1,
+          "mode": "production_open",
+          "privateConfiguration": false,
+          "elapsedMs": 10032,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 7,
+          "firstMarkerMs": 2710,
+          "exitMs": 10031,
+          "closeMs": 10031
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 1,
+          "mode": "experiment_eof",
+          "privateConfiguration": false,
+          "elapsedMs": 10018,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 2,
+          "firstMarkerMs": 153,
+          "exitMs": 10018,
+          "closeMs": 10018
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 2,
+          "mode": "production_open",
+          "privateConfiguration": false,
+          "elapsedMs": 10017,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 3,
+          "firstMarkerMs": 163,
+          "exitMs": 10017,
+          "closeMs": 10017
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 2,
+          "mode": "experiment_eof",
+          "privateConfiguration": false,
+          "elapsedMs": 10028,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 2,
+          "firstMarkerMs": 148,
+          "exitMs": 10028,
+          "closeMs": 10028
+        }
+      ],
+      "eofHypothesis": "falsified as remedy",
+      "observedBoundary": "Get-Item after identity/setup",
+      "moduleDiscoveryExplanation": "inference only"
+    },
+    "change": "Direct CLR metadata reads and success output; no policy/trust/environment/deadline/ACL-rule changes",
+    "local": {
+      "bridgeTests": {
+        "passed": 52,
+        "failed": 0
+      },
+      "helpers": {
+        "passed": 54,
+        "failed": 0
+      },
+      "diagnostics": [
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 1,
+          "mode": "production_open",
+          "privateConfiguration": true,
+          "elapsedMs": 352,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 18,
+          "firstMarkerMs": 270,
+          "exitMs": 352,
+          "closeMs": 352,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 1,
+          "mode": "experiment_eof",
+          "privateConfiguration": true,
+          "elapsedMs": 296,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 7,
+          "firstMarkerMs": 214,
+          "exitMs": 296,
+          "closeMs": 296,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 2,
+          "mode": "production_open",
+          "privateConfiguration": true,
+          "elapsedMs": 297,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 6,
+          "firstMarkerMs": 213,
+          "exitMs": 297,
+          "closeMs": 297,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 2,
+          "mode": "experiment_eof",
+          "privateConfiguration": true,
+          "elapsedMs": 318,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 6,
+          "firstMarkerMs": 225,
+          "exitMs": 318,
+          "closeMs": 318,
+          "checkedFileAndAncestors": 14
+        }
+      ],
+      "logs": {
+        "no-autoload-red.log": {
+          "sha256": "f3f069105c173fc19c6a5fa01fb4f2d47b9c5f4be23c23e29b80022a8ec6a7c0",
+          "exitCode": 1
+        },
+        "no-autoload-green.log": {
+          "sha256": "21301af1d469ecb06e793c863ae637b4b4ccc755e1fd10bfdca23b4adcfd0e50",
+          "exitCode": 0
+        },
+        "clr-bridge-build.log": {
+          "sha256": "b76d3db229a02cab745e19f2089b0f845d69562e4ada4fcc3f183aefcf844fcc",
+          "exitCode": 0
+        },
+        "clr-bridge-typecheck.log": {
+          "sha256": "558e60ab5bd92d62515f99d34f19f25f859351ee7d9e36b164fcdb5ea494ce74",
+          "exitCode": 0
+        },
+        "clr-bridge-tests.log": {
+          "sha256": "7e18ad1a6708f83335300f8b604ffffa38ef372b17a0435c1faa95847cea9496",
+          "exitCode": 0
+        },
+        "clr-helpers.log": {
+          "sha256": "525047d8791034f5484fba48330f991cfe86bcda58d67e2fd94b9861efe7581d",
+          "exitCode": 0
+        },
+        "clr-probe-local.log": {
+          "sha256": "302576da908bc9798c686487191113e001c6d5f31b12e2443431d66d9d8c15bc",
+          "exitCode": 0
+        }
+      }
+    },
+    "review": "No substantive findings",
+    "hostedConfirmation": "not yet run at this commit",
+    "finalPackagedAcceptance": "pending; earlier full paired workflow belongs to R2"
   }
 }
