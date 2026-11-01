@@ -1,0 +1,167 @@
+{
+  "schemaVersion": 1,
+  "syntheticOnly": true,
+  "status": "pending-complete-browser-review-and-hosted-ci",
+  "baseCommit": "96e819ae23adc2bf897c7e3ccc71e16176e28b42",
+  "runtimeCommit": "0a35dc707ccd9fd20e32d477fb4ab3d774f271ad",
+  "commands": [
+    {
+      "command": "npm test",
+      "id": "unit",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/unit.log",
+      "durationSeconds": 75.617
+    },
+    {
+      "command": "npm run typecheck",
+      "id": "typecheck",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/typecheck.log",
+      "durationSeconds": 20.972
+    },
+    {
+      "command": "npm run build",
+      "id": "build",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/build.log",
+      "durationSeconds": 19.201
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "id": "audit",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/audit.log",
+      "durationSeconds": 12.299
+    },
+    {
+      "command": "npm run test:qa",
+      "id": "qa",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/qa.log",
+      "durationSeconds": 1.066
+    },
+    {
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs",
+      "id": "cli",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/cli.log",
+      "durationSeconds": 0.405
+    },
+    {
+      "command": "npm --prefix bridge run build",
+      "id": "bridge-build",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/bridge-build.log",
+      "durationSeconds": 0.84
+    },
+    {
+      "command": "npm --prefix bridge run build:test",
+      "id": "bridge-build-test",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/bridge-build-test.log",
+      "durationSeconds": 0.848
+    },
+    {
+      "command": "npm --prefix bridge run typecheck",
+      "id": "bridge-typecheck",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/bridge-typecheck.log",
+      "durationSeconds": 4.769
+    },
+    {
+      "command": "npm --prefix bridge test",
+      "id": "bridge-test",
+      "exitCode": 1,
+      "log": "qa-results/recipe-builder-b3/final/bridge-test-initial-failed.log",
+      "durationSeconds": 10.064
+    },
+    {
+      "id": "bridge-test-rerun",
+      "command": "npm --prefix bridge test",
+      "exitCode": 0,
+      "log": "qa-results/recipe-builder-b3/final/bridge-test.log",
+      "frameworkDurationSeconds": 4.36
+    },
+    {
+      "id": "bridge-audit",
+      "command": "npm --prefix bridge audit --omit=dev",
+      "exitCode": 0,
+      "durationSeconds": 1.783,
+      "log": "qa-results/recipe-builder-b3/final/bridge-audit.log"
+    }
+  ],
+  "unit": {
+    "numTotalTests": 1105,
+    "numPassedTests": 1105,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "bridge": {
+    "passed": 18,
+    "failed": 0,
+    "initialFailed": 2,
+    "initialReason": "Stale v1-v3 discovery assertion corrected for v4; oversized HTTP ECONNRESET passed isolated and full rerun without relay changes."
+  },
+  "cliValidators": {
+    "passed": 42,
+    "failed": 0
+  },
+  "historicalQaLedger": {
+    "tests": 8,
+    "countedChecks": 207,
+    "screenshots": 45,
+    "notCurrentBrowserCount": true
+  },
+  "browser": {
+    "declared": 189,
+    "status": "running"
+  },
+  "native": [
+    {
+      "path": "native-127.json",
+      "sha256": "4fc9b0a2301dea7a2c182f324fc6923f76a01cdd6631523cd82cd009a5353663",
+      "cases": 1,
+      "correlatedCalls": 41
+    },
+    {
+      "path": "native-localhost.json",
+      "sha256": "91b653f9a0e69bd71c9ece42561130079c17df116572a56444b9194fe0c3edc0",
+      "cases": 1,
+      "correlatedCalls": 41
+    }
+  ],
+  "windowsNative": {
+    "windowsPowerShell": "5.1.26100.9818",
+    "effectiveExecutionPolicy": "AllSigned",
+    "helperSignature": "Valid",
+    "driverSignature": "Valid",
+    "sourceSha256": "D53A8E816C226B4BBB46A378487154742FDB66930B42693505DAAC7F757688F2"
+  },
+  "warnings": [
+    "43 React act warnings in root test log.",
+    "Vite main chunk1066.86kB exceeds500kB advisory; gzip273.94kB.",
+    "Playwright NO_COLOR ignored because FORCE_COLOR is set."
+  ],
+  "screenshots": {
+    "manifest": "screenshots.json",
+    "verified": 9
+  },
+  "hostedCi": {
+    "status": "pending",
+    "finalSignedHead": "to be verified against the PR checks"
+  },
+  "realLibraryAccessed": false,
+  "realWeddingConverted": false,
+  "profilesDeleted": false,
+  "securityAssumptions": [
+    "Trusted local OS, browser and installed executables; approved signing trust.",
+    "Not an exhaustive security audit."
+  ],
+  "limitations": [
+    "Deterministic loopback fixture certifies transport/approval mechanics, not model creativity.",
+    "Child CLI tool_output_token_limit=100000; actual clipping observed at default budget.",
+    "Actual native Windows Chromium only; no human screen-reader certification.",
+    "Transient edits need explicit download for crash recovery.",
+    "No large ZIP64 or video codec certification."
+  ]
+}
