@@ -1,4 +1,5 @@
 import type { MediaLink, ShotType } from "./domain";
+import type {ConversionProvenance} from './recipeConversion';
 
 export type SceneAuthoringMode = "recipe" | "direct_prompt";
 export type PromptOrigin = "manual" | "chatgpt" | "codex" | "external";
@@ -45,6 +46,7 @@ export interface SceneRevisionIntent {
   restoredFromSceneId?: string;
 }
 export interface SceneAuthoringFields {
+  conversionProvenance?:ConversionProvenance;
   authoringMode?: SceneAuthoringMode;
   directPrompt?: DirectPromptContent;
   directReferences?: MediaLink[];

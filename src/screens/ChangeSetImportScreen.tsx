@@ -18,10 +18,10 @@ import { MAX_CHANGE_SET_BYTES } from "../domain/changeSetValidation";
 import { ChangeSetPreview } from "../components/ChangeSetPreview";
 import { ImportReceipt } from "../components/ImportReceipt";
 import "./changeSets.css";
-export function ChangeSetImportScreen() {
+export function ChangeSetImportScreen({initialChangeSet,onBack,onDirtyChange}:{initialChangeSet?:ChangeSet;onBack?:()=>void;onDirtyChange?:(dirty:boolean)=>void}={}) {
   const { snapshot, navigate, refreshSnapshot, setDirtyFormGuard } =
     useLibrary();
-  const [raw, setRaw] = useState(""),
+  const [raw, setRaw] = useState(()=>initialChangeSet?JSON.stringify(initialChangeSet,null,2):""),
     [preview, setPreview] = useState<Preview>(),
     [receipt, setReceipt] = useState<ChangeSetReceipt>(),
     [replay, setReplay] = useState(false),
@@ -45,9 +45,10 @@ export function ChangeSetImportScreen() {
     }
   }, [preview, receipt]);
   useEffect(() => {
-    setDirtyFormGuard(!!raw.trim() && !receipt);
-    return () => setDirtyFormGuard(false);
-  }, [raw, receipt, setDirtyFormGuard]);
+    const report=onDirtyChange??setDirtyFormGuard;
+    report(!!raw.trim() && !receipt);
+    return () => report(false);
+  }, [raw, receipt, setDirtyFormGuard,onDirtyChange]);
   useEffect(
     () => () => {
       generation.current++;
@@ -137,6 +138,7 @@ export function ChangeSetImportScreen() {
         );
     }
   };
+  useEffect(()=>{if(initialChangeSet)void runPreview(JSON.stringify(initialChangeSet,null,2))},[]);
   const changeApproval = (approval: ChangeSetApproval) => {
     // Keep the chosen control value visible while its new read-only preview resolves.
     setPreview((previous) => (previous ? { ...previous, approval } : previous));
@@ -212,6 +214,7 @@ export function ChangeSetImportScreen() {
           </p>
         </div>
         <div className="import-buttons">
+          {onBack&&<button type="button" className="btn btn-secondary" disabled={busy==='apply'} onClick={onBack}>Back to Recipe mapping</button>}
           <button
             type="button"
             className="btn btn-secondary"
@@ -252,7 +255,7 @@ export function ChangeSetImportScreen() {
               value={raw}
               rows={10}
               maxLength={MAX_CHANGE_SET_BYTES}
-              placeholder="Paste a krakinai.change-set.v1 planning/Direct Prompt or v2 recipe package"
+              placeholder="Paste a krakinai.change-set.v1–v4 planning, Direct Prompt, recipe or conversion package"
               disabled={busy === "apply"}
               onChange={(e) => {
                 resetPreview();

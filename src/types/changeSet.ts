@@ -1,3 +1,4 @@
+import type {ConversionInput,ConversionDecision} from './recipeConversion';
 import type {
   BuilderSlot,
   DialogueConfig,
@@ -204,6 +205,15 @@ export type RecipeSceneOperation = OperationBase &
         settings: SceneSettings;
       }
     | {
+        type: "scene.convert_direct_to_recipe";
+        sceneId: string;
+        expectedHeadId: string;
+        conversion: ConversionInput;
+        title: string;
+        shotType: ShotType;
+        settings: SceneSettings;
+      }
+    | {
         type: "scene.revise_recipe" | "scene.create_recipe_take";
         sceneId: string;
         expectedHeadId: string;
@@ -216,6 +226,7 @@ export function isRecipeOperation(
     "scene.create_recipe",
     "scene.revise_recipe",
     "scene.create_recipe_take",
+    "scene.convert_direct_to_recipe",
   ].includes(op.type);
 }
 export type ChangeOperation =
@@ -235,7 +246,7 @@ export type ChangeOperation =
   | OutfitReviewOperation
   | RecipeSceneOperation;
 export interface ChangeSet {
-  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3";
+  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3" | "krakinai.change-set.v4";
   changeSetId: string;
   source: { kind: PromptOrigin; label?: string };
   title?: string;
@@ -249,6 +260,7 @@ export interface CandidateDecision {
   acknowledgeDuplicate?: boolean;
 }
 export interface ChangeSetApproval {
+  conversionDecisions?:Record<string,ConversionDecision>;
   variantDecisions?:Record<string,{action:'defer'|'create'|'reuse';variantId?:string;expectedRevision?:number;acknowledgeDuplicate?:boolean}>;
   storyboard: boolean;
   scenes: boolean;

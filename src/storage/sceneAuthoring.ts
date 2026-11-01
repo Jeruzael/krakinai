@@ -196,6 +196,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     dialogue: clone(source.dialogue),
     settings: clone(source.settings),
     sourceSceneId: source.id,
+    ...(!direct&&source.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:clone(source.conversionProvenance)}:{}),
     shotType: source.shotType,
     sourceMediaLinks: clone(source.sourceMediaLinks),
     referencePack: clone(source.referencePack),
@@ -397,6 +398,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
       createdAt: now,
       updatedAt: now,
       sourceSceneId: draft.sourceSceneId,
+      ...(draft.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:clone(draft.conversionProvenance)}:{}),
       sourceDraftId: draft.id,
       sourceDraftInputRevision: draft.inputRevision,
       saveRequestId: options.requestId,
@@ -487,7 +489,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
           { ...draft, slots: activeSlots },
           master,
         ).generation,
-        referencePack: clone(pack),
+        referencePack: clone(draft.conversionProvenance?draft.referencePack:pack),
         sourceMediaLinks: draft.sourceMediaLinks
           ? captureMediaNames(getActiveSourceMediaLinks(draft), mediaMap)
           : undefined,

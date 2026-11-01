@@ -3,12 +3,14 @@ import {
   CHANGE_SET_SCHEMA,
   CHANGE_SET_V2_SCHEMA,
   CHANGE_SET_V3_SCHEMA,
+  CHANGE_SET_V4_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
 import { isRecipeOperation } from "../types/changeSet";
 import { validatePerformanceDirection } from "./dialoguePerformance";
 import { validateCameraComposition } from "./cameraCompositionValidation";
 import{validateEnsembleRecipePatch}from'./ensembleChangeSetSchema';
+import{validateConversionInput}from'./recipeConversionSchema';
 export const MAX_CHANGE_SET_BYTES = 20 * 1024 * 1024;
 export function validateJsonRule(
   rule: JsonRule,
@@ -154,7 +156,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   }
   inspect(value);
   validateJsonRule(
-    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
+    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
       typeof value === "object" &&
       "schema" in value &&
       value.schema === "krakinai.change-set.v2"
@@ -222,6 +224,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     edges[index].push(reference.index);
   };
   data.operations.forEach((o, i) => {
+    if(o.type==='scene.convert_direct_to_recipe')validateConversionInput(o.conversion);
     if (isRecipeOperation(o)) {
       validateEnsembleRecipePatch(o);
       const bind=(target:{id:string}|{ref:string},kind:'character'|'wardrobe'|'outfit')=>{

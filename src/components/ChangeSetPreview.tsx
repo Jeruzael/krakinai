@@ -12,11 +12,13 @@ import { isRecipeOperation } from "../types/changeSet";
 import { RecipeOperationPreview } from "./RecipeOperationPreview";
 import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
+import {RecipeConversionReview}from'./RecipeConversionReview';
+import {canonicalStringify}from'../domain/changeSetCanonical';
 export function ChangeSetPreview({
   preview,
   snapshot,
   disabled,
-  onApproval,
+  onApproval:supplyApproval,
   headingRef,
 }: {
   preview: Preview;
@@ -28,6 +30,10 @@ export function ChangeSetPreview({
   const [detail, setDetail] = useState<string>();
   const [downloadStatus, setDownloadStatus] = useState("");
   const { plan, approval, changeSet } = preview;
+  const onApproval=(next:ChangeSetApproval)=>{
+    if(changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,conversionDecisions:{}};
+    supplyApproval(next);
+  };
   const conflicts = plan.findings.filter(
     (f) => f.severity === "blocking" && !f.code.startsWith("APPROVAL_"),
   );
@@ -106,7 +112,7 @@ export function ChangeSetPreview({
             <dt>New scenes</dt>
             <dd>{plan.summary.scenes}</dd>
           </div>
-          {changeSet.schema==='krakinai.change-set.v3'&&<div><dt>New Outfit variants</dt><dd>{plan.variants?.length??0}</dd></div>}
+          {['krakinai.change-set.v3','krakinai.change-set.v4'].includes(changeSet.schema)&&<div><dt>New Outfit variants</dt><dd>{plan.variants?.length??0}</dd></div>}
           <div>
             <dt>Planned runtime</dt>
             <dd>{plan.summary.plannedSeconds}s</dd>
@@ -396,7 +402,7 @@ export function ChangeSetPreview({
           {changeSet.operations
             .filter(
               (o) =>
-                ["scene.create_direct_prompt", "scene.create_recipe"].includes(
+                ["scene.create_direct_prompt", "scene.create_recipe", "scene.convert_direct_to_recipe"].includes(
                   o.type,
                 ) &&
                 (plan.findings.some(
@@ -436,7 +442,7 @@ export function ChangeSetPreview({
           {plan.operations
             .filter(
               (row) =>
-                isRecipeOperation(row) &&
+                isRecipeOperation(row) && row.type!=='scene.convert_direct_to_recipe'&&
                 ((
                   row.resolved as
                     | { recipe?: { manualOutputsDiscarded?: boolean } }
@@ -506,12 +512,13 @@ export function ChangeSetPreview({
                 )}
               </p>
             )}
-            {selected.currentPrompt !== undefined && (
+            {selected.currentPrompt !== undefined && selected.type!=='scene.convert_direct_to_recipe'&&(
               <label>
                 Existing prompt {selected.operationId}
                 <textarea readOnly rows={7} value={selected.currentPrompt} />
               </label>
             )}
+            {selected.type==='scene.convert_direct_to_recipe'&&<RecipeConversionReview row={selected} source={snapshot.scenes.find(s=>s.id===(selected.details as {sceneId:string}).sceneId)} approval={approval} onApproval={onApproval} disabled={disabled}/>}
             {isRecipeOperation(selected) ? (
               <RecipeOperationPreview
                 row={selected}

@@ -1,0 +1,7 @@
+.conversion-review { display: grid; gap: 14px; min-width: 0; }
+.conversion-review > details > summary { cursor: pointer; font-weight: 600; }
+.conversion-review pre { max-height: 32vh; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+.conversion-review .import-recipe-components { max-width: 100%; }
+.conversion-review table { min-width: 560px; }
+.conversion-review .import-check { align-items: flex-start; overflow-wrap: anywhere; }
+.conversion-review input[type="checkbox"] { flex: 0 0 auto; }

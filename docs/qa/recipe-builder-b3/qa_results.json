@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "syntheticOnly": true,
+  "status": "local-verification-passed",
+  "baseCommit": "96e819ae23adc2bf897c7e3ccc71e16176e28b42",
+  "runtimeCommit": "58532f62db674f7b73500a612014cd1562ad082a",
+  "commands": [
+    {
+      "id": "unit",
+      "command": "npm test -- --reporter=default --reporter=json --outputFile=qa-results/recipe-builder-b3/final/vitest.json",
+      "log": "qa-results/recipe-builder-b3/final/unit.log",
+      "exitCode": 0,
+      "durationSeconds": 76.561,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "typecheck",
+      "command": "npm run typecheck",
+      "log": "qa-results/recipe-builder-b3/final/typecheck.log",
+      "exitCode": 0,
+      "durationSeconds": 10.284,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "build",
+      "command": "npm run build",
+      "log": "qa-results/recipe-builder-b3/final/build.log",
+      "exitCode": 0,
+      "durationSeconds": 14.879,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "audit",
+      "command": "npm audit --omit=dev",
+      "log": "qa-results/recipe-builder-b3/final/audit.log",
+      "exitCode": 0,
+      "durationSeconds": 1.846,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "qa",
+      "command": "npm run test:qa",
+      "log": "qa-results/recipe-builder-b3/final/qa.log",
+      "exitCode": 0,
+      "durationSeconds": 0.764,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "cli",
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs",
+      "log": "qa-results/recipe-builder-b3/final/cli.log",
+      "exitCode": 0,
+      "durationSeconds": 0.326,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "bridge-build",
+      "command": "npm --prefix bridge run build",
+      "log": "qa-results/recipe-builder-b3/final/bridge-build.log",
+      "exitCode": 0,
+      "durationSeconds": 0.698,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "bridge-build-test",
+      "command": "npm --prefix bridge run build:test",
+      "log": "qa-results/recipe-builder-b3/final/bridge-build-test.log",
+      "exitCode": 0,
+      "durationSeconds": 0.849,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "bridge-typecheck",
+      "command": "npm --prefix bridge run typecheck",
+      "log": "qa-results/recipe-builder-b3/final/bridge-typecheck.log",
+      "exitCode": 0,
+      "durationSeconds": 3.167,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "bridge-test",
+      "command": "npm --prefix bridge test",
+      "log": "qa-results/recipe-builder-b3/final/bridge-test.log",
+      "exitCode": 0,
+      "durationSeconds": 5.556,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "id": "bridge-audit",
+      "command": "npm --prefix bridge audit --omit=dev",
+      "log": "qa-results/recipe-builder-b3/final/bridge-audit.log",
+      "exitCode": 0,
+      "durationSeconds": 1.758,
+      "testedCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    }
+  ],
+  "unit": {
+    "numTotalTests": 1118,
+    "numPassedTests": 1118,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "bridge": {
+    "passed": 18,
+    "failed": 0,
+    "initialFailed": 2,
+    "initialReason": "Stale v1-v3 discovery assertion corrected for v4; oversized HTTP ECONNRESET passed isolated and full rerun without relay changes."
+  },
+  "cliValidators": {
+    "passed": 42,
+    "failed": 0
+  },
+  "historicalQaLedger": {
+    "tests": 8,
+    "countedChecks": 207,
+    "screenshots": 45,
+    "notCurrentBrowserCount": true
+  },
+  "browser": {
+    "declared": 191,
+    "status": "passed",
+    "initialFullRun": {
+      "passed": 183,
+      "failed": 6,
+      "exitCode": 1,
+      "reason": "B1/B2 discovery assertions expected only v1-v3; corrected to include v4."
+    },
+    "expected": 191,
+    "unexpected": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "durationMs": 1001002.043,
+    "exitCode": 0,
+    "source": "qa-results/recipe-builder-b3/final/playwright.json"
+  },
+  "native": [
+    {
+      "path": "native-127.json",
+      "sha256": "12a317ae855afe0e14e2a9b92f58208c64086a9d192679c47ddab46780ec2b5b",
+      "cases": 1,
+      "correlatedCalls": 41,
+      "proofRuntimeCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    },
+    {
+      "path": "native-localhost.json",
+      "sha256": "6ae9b5835d78fa568c60e0ee3c13748b002238bbc16d787cba3739d9492b5d64",
+      "cases": 1,
+      "correlatedCalls": 41,
+      "proofRuntimeCommit": "58532f62db674f7b73500a612014cd1562ad082a"
+    }
+  ],
+  "windowsNative": {
+    "windowsPowerShell": "5.1.26100.9818",
+    "effectiveExecutionPolicy": "AllSigned",
+    "helperSignature": "Valid",
+    "driverSignature": "Valid",
+    "sourceSha256": "D53A8E816C226B4BBB46A378487154742FDB66930B42693505DAAC7F757688F2"
+  },
+  "warnings": [
+    "48 React act warnings in current root test log.",
+    "Vite main chunk1067.89kB exceeds500kB advisory; gzip274.14kB.",
+    "Playwright NO_COLOR ignored because FORCE_COLOR is set."
+  ],
+  "screenshots": {
+    "manifest": "screenshots.json",
+    "verified": 9
+  },
+  "hostedCi": {
+    "status": "reported separately for final signed HEAD",
+    "pullRequest": "https://github.com/Jeruzael/krakinai/pull/32",
+    "deliveryReport": "qa-results/recipe-builder-b3/final/final-report.md",
+    "supersededCancelledRuns": [
+      41286755049
+    ]
+  },
+  "realLibraryAccessed": false,
+  "realWeddingConverted": false,
+  "profilesDeleted": false,
+  "securityAssumptions": [
+    "Trusted local OS, browser and installed executables; approved signing trust.",
+    "Not an exhaustive security audit."
+  ],
+  "limitations": [
+    "Deterministic loopback fixture certifies transport/approval mechanics, not model creativity.",
+    "Child CLI tool_output_token_limit=100000; actual clipping observed at default budget.",
+    "Actual native Windows Chromium only; no human screen-reader certification.",
+    "Transient edits need explicit download for crash recovery.",
+    "No large ZIP64 or video codec certification."
+  ],
+  "codeReview": {
+    "reviewedFixCommit": "58532f62db674f7b73500a612014cd1562ad082a",
+    "importantFindings": 3,
+    "fixed": 3,
+    "status": "approved; full local regression passed",
+    "readOnlyReviewer": true
+  }
+}

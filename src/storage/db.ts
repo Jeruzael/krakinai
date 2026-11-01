@@ -717,6 +717,7 @@ export async function saveSceneDraft(
     dialogue: input.dialogue ? structuredClone(input.dialogue) : undefined,
     settings: input.settings ?? {},
     sourceSceneId: input.sourceSceneId,
+    ...(input.conversionProvenance?{conversionProvenance:structuredClone(input.conversionProvenance)}:{}),
     templateId: input.templateId,
     inputRevision: nextRevision,
     manualOutputs: input.manualOutputs ?? {},
@@ -789,7 +790,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     ...(draft.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(getActiveSourceMediaLinks(draft)) } : {}),
     slots: structuredClone(activeSlots),
     generation: resolvedIdentity.generation,
-    referencePack: activePack ? structuredClone(activePack) : undefined,
+    referencePack: draft.conversionProvenance?structuredClone(draft.referencePack):activePack ? structuredClone(activePack) : undefined,
     extraRequiredSlots: [...draft.extraRequiredSlots],
     sceneInstructions: draft.sceneInstructions,
     avoidText: assembled.avoidText,
@@ -799,6 +800,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     manualOutputs: structuredClone(draft.manualOutputs),
     references: assembled.references.map((r) => ({ ...r })),
     sourceSceneId: draft.sourceSceneId,
+    ...(draft.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:structuredClone(draft.conversionProvenance)}:{}),
     resultMediaLinks: draft.resultMediaLinks.map((r) => ({ ...r })),
     reviewNotes: draft.reviewNotes,
     reviewStatus: draft.reviewStatus,
@@ -910,6 +912,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
 
   return saveSceneDraft({
     title: `${scene.title} (Copy)`,
+    ...(scene.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:structuredClone(scene.conversionProvenance)}:{}),
     ...(scene.ensemble?{ensemble:structuredClone(scene.ensemble)}:{}),
     inheritedAvoidPrefix:savedAvoidPrefix(scene,snap.scenes),
     ...(scene.shotType !== undefined ? { shotType: scene.shotType } : {}),

@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Test installed-CLI evidence validation
-        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs
 
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium

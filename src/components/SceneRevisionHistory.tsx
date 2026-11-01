@@ -14,6 +14,7 @@ import { selectProjectTake } from "../storage/projects";
 import { isDirectPrompt } from "../domain/directPrompt";
 import { getSavedSceneProjectTarget } from "../domain/projectRoutes";
 import "./sceneRevisions.css";
+import {RecipeRevisionChoices}from'./RecipeRevisionChoices';
 
 export const SceneVersionComparison: React.FC<{
   before: SavedScene;
@@ -150,6 +151,7 @@ export const SceneRevisionActions: React.FC<{
   );
   return (
     <div className="scene-revision-actions">
+      {!isDirectPrompt(scene)&&<RecipeRevisionChoices scene={scene} onRevise={()=>void edit()}/>}
       <button
         type="button"
         className="btn btn-secondary btn-sm"

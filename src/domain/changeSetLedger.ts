@@ -10,6 +10,7 @@ import type { Preferences } from "../types/domain";
 import {
   CHANGE_SET_SCHEMA,
   CHANGE_SET_V3_SCHEMA,
+  CHANGE_SET_V4_SCHEMA,
   CHANGE_SET_ID_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
@@ -38,7 +39,7 @@ const enumRule = (...values: string[]): JsonRule => ({
   type: "string",
   enum: values,
 });
-const types = CHANGE_SET_V3_SCHEMA.properties!.operations.items!.oneOf!.map(
+const types = CHANGE_SET_V4_SCHEMA.properties!.operations.items!.oneOf!.map(
   (r) => r.properties!.type.const,
 );
 const decisionRule = obj(
@@ -63,6 +64,7 @@ export function validateChangeSetApproval(
         statuses: { type: "boolean" },
         assetDecisions: { type: "object" },
         variantDecisions:{type:'object'},
+        conversionDecisions:{type:'object'},
         allowDuplicateSceneOperations: {
           type: "array",
           items: id,
@@ -88,6 +90,15 @@ export function validateChangeSetApproval(
   );
   const approval = value as ChangeSetApproval,
     known = new Map(operations.map((o) => [o.operationId, o.type]));
+  const conversions=Object.entries(approval.conversionDecisions??{});
+  if(conversions.length>100)throw Error('Too many conversion approval decisions.');
+  for(const [operationId,decision]of conversions){
+    if(known.get(operationId)!=='scene.convert_direct_to_recipe')throw Error('Conversion approval targets an unknown operation.');
+    validateJsonRule(obj({reviewed:{type:'boolean'},acknowledgedRowIds:{type:'array',maxItems:128,items:{...id,maxLength:64}}}),decision,'conversion approval');
+    const rows=decision.acknowledgedRowIds;
+    const operation=operations.find(o=>o.operationId===operationId) as ChangeOperation;
+    if(new Set(rows).size!==rows.length||('conversion'in operation&&rows.some(r=>!operation.conversion.mappings.some(m=>m.id===r))))throw Error('Conversion acknowledgement targets an unknown or duplicate mapping row.');
+  }
   if (Object.keys(approval.assetDecisions).length+Object.keys(approval.variantDecisions??{}).length > 50)
     throw Error("Too many candidate approval decisions.");
   for (const [operationId, decision] of Object.entries(
@@ -121,7 +132,7 @@ export function validateChangeSetApproval(
       approval.allowDuplicateSceneOperations.length ||
     approval.allowDuplicateSceneOperations.some(
       (id) =>
-        !["scene.create_direct_prompt", "scene.create_recipe"].includes(
+        !["scene.create_direct_prompt", "scene.create_recipe", "scene.convert_direct_to_recipe"].includes(
           known.get(id) ?? "",
         ),
     )

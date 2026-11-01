@@ -9,6 +9,8 @@ import { SLOT_TO_CATEGORY } from './validation';
 import { SHOT_TYPES, SHOT_TYPE_DESCRIPTIONS, SHOT_TYPE_LABELS, getShotTypeRules } from './shotTypeRules';
 import { authorizedSceneIds, canReadReceipt, denyScope, requireProject, requireScene } from './mcpScope';
 import { McpError, MCP_LIMITS, assertByteLimit, validateToolArgs, type McpToolName } from './mcpProtocol';
+import {hashConversionSourceText}from'./recipeConversion';
+import {isDirectPrompt}from'./directPrompt';
 
 async function page<T>(items: T[], args: Record<string, unknown>, scope: McpScope, stampInput: unknown) {
   const signature = await changeSetDigest(stampInput), limit = Number(args.limit ?? 20); let offset = 0;
@@ -40,7 +42,7 @@ export async function readMcpTool(tool: McpToolName, raw: unknown, scope: McpSco
   } else if (tool === 'krakinai_get_scene' || tool === 'krakinai_get_generation_prompt') {
     const scene = requireScene(String(args.sceneId), scope, state);
     if (tool === 'krakinai_get_generation_prompt') { if (!scope.fullPromptSceneIds.includes(scene.id)) denyScope(); result = { sceneId: scene.id, format: 'full', text: scene.outputs.full, trust: 'untrusted_user_content' }; }
-    else { const doc = buildAiContext(state, { ...disclosures, sceneIds: [scene.id], fullPromptSceneIds: scope.fullPromptSceneIds.includes(scene.id) ? [scene.id] : [] }); const map = new Map(state.media.map(m => [m.id, m])); result = { ...doc.scenes[0], sourceMedia: (scene.sourceMediaLinks ?? []).map(l => projectAiContextLink(l, map, scope.includeNotes, scope.includeMediaFilenames)), trust: 'untrusted_user_content' }; }
+    else { const doc = buildAiContext(state, { ...disclosures, sceneIds: [scene.id], fullPromptSceneIds: scope.fullPromptSceneIds.includes(scene.id) ? [scene.id] : [] }); const map = new Map(state.media.map(m => [m.id, m])); result = { ...doc.scenes[0],...(isDirectPrompt(scene)&&scope.fullPromptSceneIds.includes(scene.id)?{sourceTextSha256:await hashConversionSourceText(scene.outputs.full)}:{}), sourceMedia: (scene.sourceMediaLinks ?? []).map(l => projectAiContextLink(l, map, scope.includeNotes, scope.includeMediaFilenames)), trust: 'untrusted_user_content' }; }
   } else if (tool === 'krakinai_get_scene_history') {
     const scene = requireScene(String(args.sceneId), scope, state), root = revisionRoot(scene), authorized = authorizedSceneIds(scope, state);
     const records = state.scenes.filter(s => revisionRoot(s) === root && authorized.has(s.id)).sort((a, b) => (a.sceneRevision?.sequence ?? 1) - (b.sceneRevision?.sequence ?? 1));

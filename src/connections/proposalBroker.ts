@@ -8,6 +8,7 @@ import { readMcpTool, receiptProjection } from '../domain/mcpReads';
 import { MCP_LIMITS, McpError, resultData, resultError, validateToolArgs, type McpCommand, type McpResult } from '../domain/mcpProtocol';
 import { emptyChangeSetApproval, type ChangeSetApproval, type ChangeSetState } from '../types/changeSet';
 import type { McpProposalView, McpScope, ReceiptGrant } from '../types/mcp';
+import {conversionMcpPreview}from'../domain/recipeConversionMcp';
 
 interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void> }
 interface Consent { digest: string; packageDigest: string; sessionId: string; scopeEpoch: number; expiresAt: number; used: boolean }
@@ -65,6 +66,10 @@ export class ProposalBroker {
         const p = this.#proposal(String(args.proposalId));
         if (p.scopeEpoch !== this.#scope.epoch) throw new McpError('PERMISSION_DENIED');
         const data = this.#status(p);
+        if(p.preview?.changeSet.schema==='krakinai.change-set.v4'&&p.status!=='applied'){
+          const state=await this.#deps.readState();this.#assert(context);assertProposalScope(p.preview.changeSet,this.#scope,state,this.#reuse.get(p.id));
+          return resultData({...data,previewIsSnapshot:true,previewPreparedAt:p.preview.allocation.preparedAt,previewDigest:p.preview.approvedDigest,conversions:conversionMcpPreview(p.preview,this.#scope)});
+        }
         if (p.status === 'applied' && p.receipt) { const state = await this.#deps.readState(); this.#assert(context); if (!canReadReceipt(p.receipt, this.#effectiveScope(), state)) throw new McpError('PERMISSION_DENIED'); return resultData({ ...data, receipt: receiptProjection(p.receipt, state) }); }
         return resultData(data);
       }
@@ -73,8 +78,8 @@ export class ProposalBroker {
         const pkg = parseChangeSet(args.changeSet); assertProposalScope(pkg, this.#scope, state);
         const digest = await changeSetDigest(pkg); this.#assert(context);
         if (command.tool === 'krakinai_preview_change_set') {
-          await this.#deps.preview(pkg); this.#assert(context);
-          return resultData({ changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true });
+          const preview=await this.#deps.preview(pkg); this.#assert(context);
+          return resultData({ changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}) });
         }
         const existing = [...this.#proposals.values()].find(p => p.sessionId === sessionId && p.changeSetId === pkg.changeSetId);
         if (existing) { if (existing.packageDigest !== digest) throw new McpError('CONFLICT', 'This change-set ID already identifies different content.'); return resultData(this.#status(existing)); }

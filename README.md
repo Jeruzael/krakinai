@@ -6,7 +6,9 @@
 
 ## 1. Product Boundaries & External-Generation Workflow
 
-KRAKINAI manages reusable creative instructions, reference files, and sample results. It **does not** call external AI APIs, request API keys, include authentication/cloud sync/payments/analytics, or generate images/videos inside the app.
+KRAKINAI manages reusable creative instructions, reference files, and sample results. It **does not** call external AI APIs, request API keys, include cloud accounts/cloud sync/payments/analytics, or generate images/videos inside the app. The optional local Codex bridge uses authenticated pairing and explicit browser-owned permissions.
+
+**AI Recipe Builder** maps a saved Direct Prompt into a new recipe alternate take on the same storyboard shot. Review components, participants, dialogue, uncertain mappings and complete assembled outputs before saving. The original and preferred take stay preserved; master-library edits and scene-only revisions have separate actions. [Workflow and v4 contract](docs/recipe-builder-b3-contract.md) · [QA evidence and limitations](docs/recipe-builder-b3-qa.md).
 
 ### Core Workflow
 
@@ -41,7 +43,7 @@ KRAKINAI manages reusable creative instructions, reference files, and sample res
 
 ## 2. Information Architecture & Hash Routes
 
-All 9 primary screen types use client-side hash routing (`/#/...`) so refreshes work on any static host without server rewrites:
+Screens use client-side hash routing (`/#/...`) so refreshes work on any static host without server rewrites:
 
 | Screen ID | Screen Name                        | Hash Route(s)                                                                                     | Source File                          |
 | :-------- | :--------------------------------- | :------------------------------------------------------------------------------------------------ | :----------------------------------- |
@@ -54,6 +56,8 @@ All 9 primary screen types use client-side hash routing (`/#/...`) so refreshes 
 | **S07**   | **Prompt Output**                  | `/#/output/:sceneOrDraftId`                                                                       | `src/screens/PromptOutputScreen.tsx` |
 | **S08**   | **Collections**                    | `/#/collections`, `/#/collections/:id`                                                            | `src/screens/CollectionsScreen.tsx`  |
 | **S09**   | **Templates**                      | `/#/templates`                                                                                    | `src/screens/TemplatesScreen.tsx`    |
+| **S10**   | **AI Connections**                 | `/#/connections/ai`                                                                               | `src/screens/AiConnectionsScreen.tsx` |
+| **S11**   | **AI Recipe Builder**              | `/#/recipes/ai`                                                                                   | `src/screens/AiRecipeBuilderScreen.tsx` |
 
 Supporting dialogs/drawers (`src/components/SharedModals.tsx` and `src/screens/SceneBuilderScreen.tsx`):
 

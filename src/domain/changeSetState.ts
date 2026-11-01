@@ -122,7 +122,7 @@ export function changeSetStateSignature(
     variants,
     templates,
     candidates,
-    ...(input.schema==='krakinai.change-set.v3'?{variantCandidates,variantMatches}:{}),
+    ...(['krakinai.change-set.v3','krakinai.change-set.v4'].includes(input.schema)?{variantCandidates,variantMatches}:{}),
     heads: state.scenes
       .filter((s) => roots.has(revisionRoot(s)))
       .map((s) => ({

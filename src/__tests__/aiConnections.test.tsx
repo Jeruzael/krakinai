@@ -47,6 +47,10 @@ it('keeps the browser controller alive as the pairing screen transitions to conn
   await user.click(screen.getByRole('button', { name: 'Confirm pairing' }));
   expect(await screen.findByText('Connected', { exact: true })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Disconnect Codex' })).toBeInTheDocument();
+  await user.click(screen.getByRole('button', { name: 'Home' }));
+  await user.click(screen.getByRole('button', { name: 'AI Connections' }));
+  await screen.findByRole('heading', { name: 'AI Connections' });
+  expect(screen.getByRole('textbox', { name: 'Local bridge address' })).toHaveValue(relay!.url);
 }, 15000);
 
 it('explains malformed pasted pairing keys locally without sending a proof or revealing the value', async () => {
