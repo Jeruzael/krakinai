@@ -1,5 +1,6 @@
 import { RECIPE_SCENE_FIELDS } from "./recipeChangeSetSchema";
 import{createEnsembleChangeSetSchema}from'./ensembleChangeSetSchema';
+import{createConversionChangeSetSchema}from'./recipeConversionSchema';
 export interface JsonRule {
   type?: string | string[];
   const?: unknown;
@@ -369,7 +370,8 @@ export const CHANGE_SET_V2_SCHEMA: JsonRule = {
   },
 };
 export const CHANGE_SET_V3_SCHEMA:JsonRule=createEnsembleChangeSetSchema(CHANGE_SET_V2_SCHEMA,CHANGE_SET_ID_SCHEMA);
+export const CHANGE_SET_V4_SCHEMA:JsonRule=createConversionChangeSetSchema(CHANGE_SET_V3_SCHEMA,CHANGE_SET_ID_SCHEMA);
 export const SUPPORTED_CHANGE_SET_SCHEMA: JsonRule = {
   type: "object",
-  oneOf: [CHANGE_SET_SCHEMA, CHANGE_SET_V2_SCHEMA,CHANGE_SET_V3_SCHEMA],
+  oneOf: [CHANGE_SET_SCHEMA, CHANGE_SET_V2_SCHEMA,CHANGE_SET_V3_SCHEMA,CHANGE_SET_V4_SCHEMA],
 };

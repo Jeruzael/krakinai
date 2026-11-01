@@ -13,6 +13,7 @@ try {
     ["change-set.schema.json", "CHANGE_SET_SCHEMA"],
     ["change-set-v2.schema.json", "CHANGE_SET_V2_SCHEMA"],
     ['change-set-v3.schema.json','CHANGE_SET_V3_SCHEMA'],
+    ['change-set-v4.schema.json','CHANGE_SET_V4_SCHEMA'],
   ]) {
     const path = new URL("../docs/" + file, import.meta.url),
       text = JSON.stringify(schemas[key], null, 2) + "\n";
@@ -26,7 +27,7 @@ try {
         readFileSync(path, "utf8").replace(/\r\n/g, "\n") !== text
       )
         throw Error("Stale schema: " + file);
-    } else if (file === "change-set.schema.json"||file==='change-set-v2.schema.json') {
+    } else if (file === "change-set.schema.json"||file==='change-set-v2.schema.json'||file==='change-set-v3.schema.json') {
       if (JSON.stringify(JSON.parse(readFileSync(path,'utf8')))!==JSON.stringify(schemas[key]))
         throw Error('The v1/v2 schemas are frozen; do not rewrite them.');
     } else writeFileSync(path, text);

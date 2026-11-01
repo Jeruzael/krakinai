@@ -1,6 +1,6 @@
 # B3 — Guided AI Recipe Builder and Direct Prompt Conversion
 
-Date: 2026-11-01. Status: design proposed; implementation not approved yet.
+Date: 2026-11-01. Status: approved for inline implementation on 2026-11-01.
 
 ## Intent and baseline
 
@@ -16,7 +16,9 @@ Base: `master` merge commit `96e819ae23adc2bf897c7e3ccc71e16176e28b42`
 
 The user's Workstream B brief, sections 17–24 and its compatibility/delivery
 requirements, defines B3. The user chose **Guided conversion screen** on
-2026-11-01. Approval of this document is still required before product changes.
+2026-11-01 and approved this document for inline implementation, including writing
+the implementation plan without another planning approval. Production conversion
+and PR merging remain unauthorized.
 
 ### Existing implementation, directly inspected
 
