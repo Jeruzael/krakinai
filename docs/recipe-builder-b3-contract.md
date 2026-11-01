@@ -90,7 +90,10 @@ and media filenames keep their existing separate controls. Full-prompt grants
 share the saved string verbatim; they do not redact text embedded inside it.
 
 A v4 conversion preview/status may return complete three-mode outputs only when
-its source/text/identity scopes permit them. Server response bounds still fail
+its source/text/identity scopes permit them. Resolved stored component text and
+identifying metadata also require their explicit record grants; a local reuse
+decision does not widen MCP reads. Package-authored creations are a bounded
+proposal-preview exception, not an ongoing read grant. Server response bounds still fail
 explicitly; they do not truncate output. A new record's receipt ID does not grant
 ongoing read access. Project membership permits metadata access; full prompt
 and reusable-asset reads retain their separate grants. Permission changes revoke

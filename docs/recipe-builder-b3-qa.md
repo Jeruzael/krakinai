@@ -2,10 +2,10 @@
 
 Verification snapshot: 2026-11-01, Windows, base
 `96e819ae23adc2bf897c7e3ccc71e16176e28b42`. Runtime implementation through signed
-commit `0a35dc707ccd9fd20e32d477fb4ab3d774f271ad`.
+commit `58532f62db674f7b73500a612014cd1562ad082a`.
 
-**In progress:** the complete browser suite and final independent branch review
-are running/pending. Hosted CI has not yet run. This snapshot is not a completion
+**In progress:** the complete browser suite is running after the independent
+review fixes. The reviewer approved those fixes; hosted CI has not yet run. This snapshot is not a completion
 claim; the final delivery must include the PR's exact signed HEAD and green CI link.
 
 ## Directly inspected facts
@@ -43,7 +43,7 @@ claim; the final delivery must include the PR's exact signed HEAD and green CI l
 
 | Command | Result | Exit |
 | --- | --- | --- |
-| `npm test` (default plus JSON reporter) |1105/1105; 128 files|0|
+| `npm test` (default plus JSON reporter) |1118/1118; 128 files|0|
 | `npm run typecheck` |Passed|0|
 | `npm run build` |Passed; bundle-size warning below|0|
 | `npm audit --omit=dev` |0 vulnerabilities|0|
@@ -55,7 +55,7 @@ claim; the final delivery must include the PR's exact signed HEAD and green CI l
 | `npm --prefix bridge test` |18/18; 3 files on corrected rerun|0|
 | `npm --prefix bridge audit --omit=dev` |0 vulnerabilities|0|
 | Focused actual installed-CLI browser acceptance |2/2;41 actual calls per origin|0|
-| Complete browser suite |189 declared; final result pending|Pending|
+| Complete browser suite |191 declared; final result pending|Pending|
 
 The 207-check ledger is historical QA evidence, not the number of B3 browser
 tests. CLI calls are not counted as additional Playwright cases. No failed,
@@ -67,10 +67,28 @@ HTTP test also saw `ECONNRESET`; it passed in isolation and in the full rerun
 without a production relay change. Retained initial logs remain part of the
 record; a clean rerun is not proof that the network flake cannot recur.
 
-Root tests emitted 43 React `act` warnings. Vite reported a 1,066.86 kB main chunk
-(273.94 kB gzip), exceeding its 500 kB advisory. Browser execution emits the
+Root tests emitted 48 React `act` warnings. Vite reported a 1,067.89 kB main chunk
+(274.14 kB gzip), exceeding its 500 kB advisory. Browser execution emits the
 `NO_COLOR`/`FORCE_COLOR` warning. The two completed installed-CLI records reported
 no deprecation warning. Warnings were not suppressed.
+
+## Independent review and corrected regressions
+
+One fresh whole-branch reviewer requested three fixes, then reproduced their
+resolution and approved the code at `58532f6`: reused unshared asset/Outfit text and
+metadata are withheld from MCP; removed cue/participant targets are reconciled
+without allowing forged dangling targets; and resumed-file generations preserve
+newer unsaved work, newer files and unmounted screens. Package-authored creation
+previews still work without ongoing record grants. 13 root regression cases were
+added, with failing tests captured before the fixes. Two new browser cases passed
+for delayed actual file reading/no writes and guided cue+participant deletion.
+
+The first complete Windows browser run finished 183 passed/6 failed (exit 1).
+All six failures were legacy B1/B2 schema-discovery assertions listing v1–v3;
+the assertions now include v4, and the 191-case rerun remains pending. No failed
+case was counted as passed. The reviewer also checked that template defaults
+cannot enter conversions through an untracked source under the current contract;
+future template-binding support would need its own disclosure checks.
 
 ## Browser and installed-CLI evidence
 
