@@ -35,7 +35,8 @@ export function reconcileConversionMappings(op:ConversionOperation,source:SavedS
  const required=getShotTypeRules({shotType:op.shotType,dialogue:op.dialogue??undefined}).requiredSlots;
  const targets=new Map(selected);for(const slot of required)if(!targets.has('slot:'+slot))targets.set('slot:'+slot,{kind:'slot',slot});
  const prior=new Map(op.conversion.mappings.map(r=>[conversionTargetKey(r.target),r]));
- for(const[key,row]of prior)if(!targets.has(key))targets.set(key,row.target);
+ const participants=new Set((op.ensemble?.participantUpserts??[]).map(p=>p.id)),cues=new Set((op.ensemble?.dialogueCues??[]).map(c=>c.id));
+ for(const[key,row]of prior)if(!targets.has(key)&&!(row.target.kind==='participant'&&!participants.has(row.target.participantId))&&!(row.target.kind==='cue'&&!cues.has(row.target.cueId)))targets.set(key,row.target);
  const mappings=[...targets].map(([key,target])=>{
   const old=prior.get(key),present=selected.has(key);
   return{...(old??{id:generateId('map'),target}),assessment:present?(old&&['suggested','uncertain'].includes(old.assessment)?old.assessment:'suggested' as const):target.kind==='slot'&&required.includes(target.slot)?'unassigned' as const:'omitted' as const};

@@ -1,6 +1,6 @@
 import React from'react';
 import{beforeEach,afterEach,it,expect,vi}from'vitest';
-import{render,screen,within,waitFor,cleanup}from'@testing-library/react';
+import{render,screen,within,waitFor,cleanup,act}from'@testing-library/react';
 import userEvent from'@testing-library/user-event';
 import App from'../App';
 import{clearAllStoresForTesting,initializeDatabase,openDatabase,getAllSnapshot}from'../storage/db';
@@ -101,3 +101,16 @@ it('keeps guarding an unsubmitted candidate idea after the reviewed package has 
  await waitFor(()=>expect(screen.getByRole('button',{name:'Apply approved changes'})).toBeEnabled());await user.click(screen.getByRole('button',{name:'Apply approved changes'}));await screen.findByRole('region',{name:'Import receipt'},{timeout:5000});
  await user.click(screen.getByRole('button',{name:'Home'}));expect(await screen.findByRole('dialog')).toHaveTextContent('Unsaved Changes');await user.click(screen.getByRole('button',{name:'Stay on Page'}));await user.click(screen.getByRole('button',{name:'Back to Recipe mapping'}));await user.click(screen.getByRole('button',{name:'Change Environment'}));await user.click(screen.getByRole('button',{name:'Propose missing Environment'}));expect(screen.getByRole('textbox',{name:'Candidate title'})).toHaveValue('Not submitted yet');
 },20000);
+
+function delayedMappingFile(){let resolve!:(text:string)=>void;const pending=new Promise<string>(r=>{resolve=r}),file=new File(['{}'],'synthetic-mapping.json',{type:'application/json'});Object.defineProperty(file,'text',{value:()=>pending});return{file,resolve}}
+it('ignores an older resumed file after a newer mapping edit',async()=>{
+ const user=userEvent.setup(),f=await conversionScenario();await setup();const older=delayedMappingFile();await user.upload(screen.getByLabelText('Resume mapping package'),older.file);const title=screen.getByRole('textbox',{name:'New recipe title'});await user.clear(title);await user.type(title,'NEWER UNSAVED WORK');f.input.operations[0].title='STALE FILE';vi.spyOn(window,'confirm').mockReturnValue(true);await act(async()=>older.resolve(JSON.stringify(f.input)));expect(title).toHaveValue('NEWER UNSAVED WORK');
+});
+it('keeps the later resumed file when file reads finish out of order',async()=>{
+ const user=userEvent.setup(),a=await conversionScenario(),b=await conversionScenario();await setup();vi.spyOn(window,'confirm').mockReturnValue(true);const older=delayedMappingFile(),newer=delayedMappingFile();a.input.operations[0].title='OLDER FILE';b.input.operations[0].title='LATEST FILE';await user.upload(screen.getByLabelText('Resume mapping package'),older.file);await user.upload(screen.getByLabelText('Resume mapping package'),newer.file);await act(async()=>newer.resolve(JSON.stringify(b.input)));await waitFor(()=>expect(screen.getByRole('textbox',{name:'New recipe title'})).toHaveValue('LATEST FILE'));await act(async()=>older.resolve(JSON.stringify(a.input)));expect(screen.getByRole('textbox',{name:'New recipe title'})).toHaveValue('LATEST FILE');
+});
+it('does not replace a newly selected source and its unsaved work when a read started with no package',async()=>{
+ const user=userEvent.setup(),f=await conversionScenario();window.location.hash='#/recipes/ai';render(<App/>);await screen.findByRole('heading',{name:'AI Recipe Builder'});const older=delayedMappingFile();await user.upload(screen.getByLabelText('Resume mapping package'),older.file);await user.selectOptions(screen.getByRole('combobox',{name:'Saved Direct Prompt'}),'direct-source');await screen.findByRole('textbox',{name:'New recipe title'});await user.type(screen.getByRole('textbox',{name:'New recipe title'}),' NEW USER EDIT');const expected=(screen.getByRole('textbox',{name:'New recipe title'})as HTMLInputElement).value;f.input.operations[0].title='STALE NO-PACKAGE FILE';const confirm=vi.spyOn(window,'confirm').mockReturnValue(true);await act(async()=>older.resolve(JSON.stringify(f.input)));expect(screen.getByRole('textbox',{name:'New recipe title'})).toHaveValue(expected);expect(confirm).not.toHaveBeenCalled();
+});
+
+it('discards pending file completions after unmount without a late confirmation or database write',async()=>{const user=userEvent.setup(),f=await conversionScenario();await setup();const before=await getAllSnapshot(),older=delayedMappingFile();await user.upload(screen.getByLabelText('Resume mapping package'),older.file);const confirm=vi.spyOn(window,'confirm').mockReturnValue(true);cleanup();await act(async()=>older.resolve(JSON.stringify(f.input)));expect(confirm).not.toHaveBeenCalled();expect(await getAllSnapshot()).toEqual(before)});

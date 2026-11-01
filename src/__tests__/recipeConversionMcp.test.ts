@@ -1,3 +1,4 @@
+import {parseChangeSet} from '../domain/changeSetValidation';
 import{beforeEach,it,expect}from'vitest';
 import{emptyMcpScope,assertProposalScope}from'../domain/mcpScope';
 import{ProposalBroker}from'../connections/proposalBroker';
@@ -66,3 +67,26 @@ it('provides the exact source text hash only when the source full prompt is expl
  expect(shared.sourceTextSha256).toBe(f.input.operations[0].conversion.sourceTextSha256);
  f.scope.fullPromptSceneIds=[];const hidden:any=await readMcpTool('krakinai_get_scene',{sceneId:'direct-source'},f.scope,f.state);expect(hidden.sourceTextSha256).toBeUndefined();
 });
+
+async function candidateReuseScenario(includeAssetText:boolean,action:'reuse'|'create'){
+ const f=await fixture(),asset={...f.state.assets.find(a=>a.id==='environment')!,id:'private-unshared-environment',title:'PRIVATE_UNSHARED_TITLE',promptText:'PRIVATE_UNSHARED_LIBRARY_TEXT',compactText:'PRIVATE_UNSHARED_LIBRARY_TEXT'},db=await openDatabase();await new Promise<void>(resolve=>{const tx=db.transaction('assets','readwrite');tx.objectStore('assets').put(asset);tx.oncomplete=()=>resolve()});
+ f.scope.assetIds=[];f.scope.includeAssetText=includeAssetText;f.input.operations[0].assetRefs=[{slot:'environment',asset:{ref:'proposal'}}];f.input.operations.unshift({type:'asset.propose',operationId:'propose-env',clientRef:'proposal',kind:'environment',title:'Package-authored courtyard',promptText:'PACKAGE_AUTHORED_ENVIRONMENT',tags:[]});
+ f.approval.assetDecisions['propose-env']=action==='reuse'?{action,assetId:asset.id,expectedRevision:asset.revision}:{action};const broker=new ProposalBroker();broker.connect('synthetic',f.scope);const submitted:any=await broker.handle({requestId:'submit',tool:'krakinai_submit_change_set',args:{changeSet:f.input}},'synthetic');expect(submitted.ok).toBe(true);await broker.review(submitted.data.proposalId,f.approval);const result:any=await broker.handle({requestId:'status',tool:'krakinai_get_proposal_status',args:{proposalId:submitted.data.proposalId}},'synthetic');expect(result.ok).toBe(true);return{result,broker,f};
+}
+it.each([true,false])('never discloses locally reused out-of-scope asset text or metadata through proposal status (ordinary text=%s)',async includeText=>{
+ const{result}=await candidateReuseScenario(includeText,'reuse');expect(result.data.conversions[0].outputDisclosure).toBe('withheld');for(const secret of['PRIVATE_UNSHARED_LIBRARY_TEXT','PRIVATE_UNSHARED_TITLE','private-unshared-environment'])expect(JSON.stringify(result)).not.toContain(secret);
+});
+it('still previews package-authored creations without implicitly granting ongoing record reads',async()=>{
+ const{result,f}=await candidateReuseScenario(true,'create');expect(result.data.conversions[0].outputDisclosure).toBe('shared');expect(result.data.conversions[0].outputs.full).toContain('PACKAGE_AUTHORED_ENVIRONMENT');expect(f.scope.assetIds).toEqual([]);expect((await getAllSnapshot()).assets.some(a=>a.promptText==='PACKAGE_AUTHORED_ENVIRONMENT')).toBe(false);
+});
+
+import {reconcileConversionMappings} from '../domain/recipeConversionRequest';
+import {outfitProposal} from './fixtures/ensembleChangeSetFixture';
+
+async function outfitReuseScenario(action:'reuse'|'create',includeAssetText=true){
+ const f=await fixture(),variant={id:'private-unshared-outfit',parentCharacterId:'character',type:'Outfit',targetSlot:'wardrobe',title:'PRIVATE_OUTFIT_TITLE',promptText:'PRIVATE_OUTFIT_TEXT',compactText:'PRIVATE_OUTFIT_TEXT',tags:[],mediaLinks:[],favorite:false,reviewStatus:'unreviewed',revision:1,createdAt:f.state.scenes[0].createdAt,updatedAt:f.state.scenes[0].updatedAt},db=await openDatabase();await new Promise<void>(resolve=>{const tx=db.transaction('variants','readwrite');tx.objectStore('variants').put(variant);tx.oncomplete=()=>resolve()});
+ f.scope.assetIds=['environment','character','action'];f.scope.includeCharacterIdentity=true;f.scope.includeAssetText=includeAssetText;const op=f.input.operations[0];op.shotType='character_scene';op.assetRefs.push({slot:'action',asset:{id:'action'},expectedRevision:1});op.ensemble={version:1,primaryParticipantId:'lead',participantOrder:['lead'],participantUpserts:[{id:'lead',character:{asset:{id:'character'},expectedRevision:1},wardrobe:{variant:{ref:'outfit'}},presence:'on_camera'}],dialogueCues:[]};f.input.operations[0]=reconcileConversionMappings(op,f.state.scenes[0],f.state);const proposal=outfitProposal();proposal.promptText='PACKAGE_AUTHORED_OUTFIT';f.input.operations.unshift(proposal);f.approval.variantDecisions={outfit:action==='reuse'?{action,variantId:variant.id,expectedRevision:1}:{action}};
+ parseChangeSet(f.input);const broker=new ProposalBroker();broker.connect('synthetic',f.scope);const submitted:any=await broker.handle({requestId:'submit-outfit',tool:'krakinai_submit_change_set',args:{changeSet:f.input}},'synthetic');expect(submitted).toMatchObject({ok:true});await broker.review(submitted.data.proposalId,f.approval);const result:any=await broker.handle({requestId:'status-outfit',tool:'krakinai_get_proposal_status',args:{proposalId:submitted.data.proposalId}},'synthetic');expect(result.ok).toBe(true);return{result,f};
+}
+it.each([true,false])('withholds unshared reused Outfit text and metadata (ordinary text=%s)',async includeText=>{const{result}=await outfitReuseScenario('reuse',includeText);expect(result.data.conversions[0].outputDisclosure).toBe('withheld');for(const value of['PRIVATE_OUTFIT_TEXT','PRIVATE_OUTFIT_TITLE','private-unshared-outfit'])expect(JSON.stringify(result)).not.toContain(value)});
+it('keeps package-authored Outfit creation previews available under explicit parent and text grants',async()=>{const{result,f}=await outfitReuseScenario('create');expect(result.data.conversions[0].outputDisclosure).toBe('shared');expect(result.data.conversions[0].outputs.full).toContain('PACKAGE_AUTHORED_OUTFIT');expect(f.scope.variantIds).toEqual([])});

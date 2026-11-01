@@ -22,7 +22,8 @@ export function AiRecipeBuilderScreen(){
  const[targetKey,setTargetKey]=useState(()=>query.has('collection')&&query.has('shot')?JSON.stringify([query.get('collection'),query.get('shot')]):initialOp&&'id'in initialOp.project&&'id'in initialOp.shot?JSON.stringify([initialOp.project.id,initialOp.shot.id]):'');
  const[operationId,setOperationId]=useState(initialOp?.operationId??'convert'),[preview,setPreview]=useState<ChangeSetPreview>(),[reviewing,setReviewing]=useState(false),[error,setError]=useState(''),[status,setStatus]=useState(''),[busy,setBusy]=useState(false);
  const[reviewDirty,setReviewDirty]=useState(false),[hasUnsubmitted,setHasUnsubmitted]=useState(false);
- const initGeneration=useRef(0),previewGeneration=useRef(0),selectionKey=useRef(pkg?sourceId+'|'+targetKey:'');
+ const initGeneration=useRef(0),previewGeneration=useRef(0),loadGeneration=useRef(0),selectionKey=useRef(pkg?sourceId+'|'+targetKey:'');
+ const currentPackage=useRef(pkg);currentPackage.current=pkg;
  const source=snapshot?.scenes.find(s=>s.id===sourceId&&isDirectPrompt(s));
  const memberships=(snapshot?.collections??[]).flatMap(c=>(c.project?.shots??[]).filter(s=>s.takeSceneIds.includes(sourceId)).map(s=>({key:JSON.stringify([c.id,s.id]),collection:c,shot:s})));
  const destination=memberships.find(m=>m.key===targetKey);
@@ -41,35 +42,37 @@ export function AiRecipeBuilderScreen(){
   setBusy(true);const timer=window.setTimeout(()=>{void previewChangeSet(pkg).then(p=>{if(token===previewGeneration.current){setPreview(p);setError('')}}).catch(cause=>{if(token===previewGeneration.current){setPreview(undefined);setError((cause as Error).message)}}).finally(()=>{if(token===previewGeneration.current)setBusy(false)})},120);
   return()=>{clearTimeout(timer);previewGeneration.current++};
  },[pkg,snapshot,reviewing]);
- useEffect(()=>()=>{initGeneration.current++;previewGeneration.current++},[]);
+ useEffect(()=>()=>{initGeneration.current++;previewGeneration.current++;loadGeneration.current++},[]);
  if(!snapshot)return <p role="status">Loading recipe workspace…</p>;
  const changeSelection=(kind:'source'|'target',value:string)=>{
   if(pkg&&!window.confirm('Changing the source or destination starts a new mapping. Download the current mapping package first if you want to keep these unsaved edits. Continue?'))return;
-  initGeneration.current++;selectionKey.current='';setPackage(undefined);setPreview(undefined);setError('');
+  loadGeneration.current++;initGeneration.current++;selectionKey.current='';setPackage(undefined);setPreview(undefined);setError('');
   if(kind==='source'){setSourceId(value);setTargetKey('')}else setTargetKey(value);
  };
  const update=(next:ConversionOperation,extra?:ChangeSet['operations'][number])=>{
   if(!pkg||!source||!snapshot)return;
+  loadGeneration.current++;
   const mapped=reconcileConversionMappings(next,source,snapshot);
   setPackage(serializableMappingPackage({...pkg,operations:[...(extra?[extra]:[]),...pkg.operations.map(o=>o.operationId===mapped.operationId?mapped:o)]}));
  };
  const download=()=>{if(pkg){downloadBlobAsFile(new Blob([JSON.stringify(pkg,null,2)+'\n'],{type:'application/json'}),`krakinai-mapping-${pkg.changeSetId}.json`);setStatus('Complete mapping package download requested. Browser approvals are not included.')}};
  const copyRequest=async()=>{if(!source||!destination)return;try{if(!navigator.clipboard?.writeText)throw Error('Clipboard unavailable');await navigator.clipboard.writeText(buildConversionRequest(source,{collectionId:destination.collection.id,shotId:destination.shot.id,expectedProjectRevision:destination.collection.project!.revision}));setStatus('IDs-only Codex request copied. Permissions are unchanged.')}catch{setError('Copy failed. Use context export and share only explicitly selected records.')}};
  const load=async(file?:File)=>{
-  if(!file)return;if(file.size>MAX_CHANGE_SET_BYTES){setError('Mapping package exceeds 20 MiB. It was not read.');return}
+  if(!file)return;const token=++loadGeneration.current;if(file.size>MAX_CHANGE_SET_BYTES){setError('Mapping package exceeds 20 MiB. It was not read.');return}
   try{
    if(!file.name.toLowerCase().endsWith('.json'))throw Error('Choose a JSON change-set package.');
-   const input=parseChangeSet(await file.text()),first=input.operations.find((o):o is ConversionOperation=>o.type==='scene.convert_direct_to_recipe');
+   const text=await file.text();if(token!==loadGeneration.current)return;
+   const input=parseChangeSet(text),first=input.operations.find((o):o is ConversionOperation=>o.type==='scene.convert_direct_to_recipe');
    if(input.schema!=='krakinai.change-set.v4'||!first||!('id'in first.project)||!('id'in first.shot))throw Error('Choose a v4 Direct Prompt conversion package. Use Import AI Change Set for other workflows.');
-   if(pkg&&!window.confirm('Replace the current unsaved mapping with this package?'))return;
+   if(currentPackage.current&&!window.confirm('Replace the current unsaved mapping with this package?'))return;
    initGeneration.current++;const key=JSON.stringify([first.project.id,first.shot.id]);selectionKey.current=first.sceneId+'|'+key;setSourceId(first.sceneId);setTargetKey(key);setOperationId(first.operationId);setPackage(input);setPreview(undefined);setError('');setStatus('Mapping loaded without approvals. Review all bindings before saving.');
-  }catch(cause){setError((cause as Error).message)}
+  }catch(cause){if(token===loadGeneration.current)setError((cause as Error).message)}
  };
  const row=preview?.plan.operations.find(r=>r.operationId===op?.operationId),resolved=(row?.resolved as{recipe?:RecipeResolvedPreview}|undefined)?.recipe;
  const blockers=preview?.plan.findings.filter(f=>f.severity==='blocking'&&!f.code.startsWith('APPROVAL_')&&f.code!=='CONVERSION_MAPPING_REVIEW')??[];
  return <>
   {reviewing&&pkg&&<ChangeSetImportScreen initialChangeSet={pkg} onDirtyChange={setReviewDirty} onBack={()=>{setPackage({...pkg,changeSetId:generateId('recipe_mapping')});setReviewing(false)}}/>}
-  <section hidden={reviewing} className="ai-recipe-workspace" aria-label="AI Recipe Builder workspace">
+  <section hidden={reviewing} className="ai-recipe-workspace" aria-label="AI Recipe Builder workspace" onChangeCapture={()=>{loadGeneration.current++}}>
   <header className="import-heading"><div><span className="import-eyebrow">Local creation · explicit review</span><h1>AI Recipe Builder</h1><p className="muted-text">Map a saved Direct Prompt into a new recipe alternate take. Preserve the original and its preferred selection.</p></div><button className="btn btn-secondary" onClick={()=>navigate('/connections/ai')}>Connect Codex</button></header>
   <section className="card recipe-start"><div><h2>Build a recipe</h2><p>Start from reusable assets in Scene Builder, or map a saved Direct Prompt below. Codex assistance uses the existing explicit connection and browser review.</p><button className="btn btn-secondary" onClick={()=>navigate('/builder')}>Open Scene Builder</button></div><label>Resume mapping package<input type="file" accept=".json,application/json" onChange={e=>{const file=e.currentTarget.files?.[0];e.currentTarget.value='';void load(file)}}/></label></section>
   <section className="card recipe-field-grid" aria-label="Source and destination"><label>Saved Direct Prompt<select className="select" value={sourceId} onChange={e=>changeSelection('source',e.target.value)}><option value="">Choose a saved Direct Prompt…</option>{snapshot.scenes.filter(isDirectPrompt).map(s=><option key={s.id} value={s.id}>{s.title}</option>)}</select></label><label>Destination project and shot<select className="select" value={targetKey} onChange={e=>changeSelection('target',e.target.value)}><option value="">Choose its exact project and shot…</option>{memberships.map(m=><option key={m.key} value={m.key}>{m.collection.name} · {m.shot.code} — {m.shot.title}</option>)}</select></label></section>
@@ -84,7 +87,7 @@ export function AiRecipeBuilderScreen(){
    <label>New recipe title<input className="input" value={op.title} maxLength={100} onChange={e=>update({...op,title:e.target.value})}/></label>
    <RecipeMappingEditor input={pkg} operation={op} source={source} state={snapshot} resolved={resolved} onChange={update} onUnsubmittedChange={setHasUnsubmitted}/>
    <section className="card"><h3>Readiness</h3><p role="status">{busy?'Computing a read-only recipe preview…':!resolved?'Select valid inputs to compute a recipe preview.':blockers.length?`${blockers.length} mapping/input issue(s) to resolve before saving.`:resolved?.pendingInputs?.length?'Recipe inputs selected; production references remain pending.':'Review the assembled recipe before saving.'}</p>{blockers.length>0&&<details><summary>Show required corrections</summary><ul>{blockers.map((f,i)=><li key={i}>{f.message}</li>)}</ul></details>}<p>Required originals must be selected in Source Media. Optional reference frames may remain pending.</p></section>
-   <footer className="card recipe-workspace-actions"><button className="btn btn-secondary" onClick={download}>Download mapping package</button><button className="btn btn-secondary" onClick={()=>{void copyRequest()}}>Prepare Codex mapping request</button><button className="btn btn-primary" onClick={()=>setReviewing(true)}>Review and save alternate take</button></footer>
+   <footer className="card recipe-workspace-actions"><button className="btn btn-secondary" onClick={download}>Download mapping package</button><button className="btn btn-secondary" onClick={()=>{void copyRequest()}}>Prepare Codex mapping request</button><button className="btn btn-primary" onClick={()=>{loadGeneration.current++;setReviewing(true)}}>Review and save alternate take</button></footer>
   </>}
   {status&&<p role="status" aria-live="polite">{status}</p>}
  </section></>;

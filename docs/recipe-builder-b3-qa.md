@@ -110,7 +110,7 @@ Per profile:
   browser grants. Preferred selection changed only in a third, separately
   approved batch. Exact retry did not duplicate records.
 - Disconnect confirmation completed an actual successful revoke request.
-  Subsequent status/read/preview/submit calls confirmed revocation. The other
+  Subsequent connection-status/project-read/proposal-status/submit calls confirmed revocation. The other
   application origin had an empty separate library; reopening the same owned
   profile retained exact records and all five media hashes.
 
