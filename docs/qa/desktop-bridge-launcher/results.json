@@ -1,0 +1,694 @@
+{
+  "date": "2026-11-01",
+  "timezone": "Asia/Taipei",
+  "branch": "codex/desktop-bridge-launcher",
+  "baseCommit": "20f964adf5eeae1e0093e282d7ffc0e8d12800e9",
+  "status": "local checks, source review and signed paired CLI acceptance passed",
+  "checks": [
+    {
+      "name": "application",
+      "passed": 1118,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "root-tests-serial.log",
+      "logSha256": "46d21360df91af144d83783ebd9662f07ad02074b12dc846824787de2bf907d9"
+    },
+    {
+      "name": "bridge",
+      "passed": 50,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "fresh-compiled-bridge-tests.log",
+      "logSha256": "ae885f79f5baa7d3a984e98defec10d0b39fb5d57e7bb9035a31b85a8b91399a"
+    },
+    {
+      "name": "native",
+      "passed": 23,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "review-native-green-2.log",
+      "logSha256": "e304d7ee56361ea071e60fd4ec8d0c8b8612ad4a060dcae613f2575387f24b5c"
+    },
+    {
+      "name": "browser",
+      "passed": 180,
+      "failed": 0,
+      "skipped": 11,
+      "exitCode": 0,
+      "log": "browser-serial.log",
+      "logSha256": "612360ee07dda17dc5e997663d4a6054749b66b0df8fb3ac7dec8e163d281836"
+    },
+    {
+      "name": "qaHelpers",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "qa-helpers.log",
+      "logSha256": "4bb2e85c3e514c280a16cb5e61b0b0c6adafba19c6be1e8b0f50e38f857ef46f"
+    },
+    {
+      "name": "qaLedger",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "log": "qa-reconciliation.log",
+      "logSha256": "360715a41cdf0ef37945ab88a22f478222e0acf5a876c278671678048e3de190"
+    }
+  ],
+  "earlierRuns": [
+    {
+      "name": "application concurrent run",
+      "passed": 1117,
+      "failed": 1,
+      "exitCode": 1,
+      "reason": "asynchronous Participants (2) lookup; unchanged isolated file and full serial rerun passed"
+    },
+    {
+      "name": "browser concurrent run",
+      "passed": 179,
+      "failed": 1,
+      "skipped": 11,
+      "exitCode": 1,
+      "reason": "Windows net::ERR_NO_BUFFER_SPACE navigation; full serial rerun passed"
+    }
+  ],
+  "release": {
+    "unsignedExeSha256": "df774cb51bcb11f5314ec540956695404270ff3f01fe37db504e59b89597c51a",
+    "signedFiles": [
+      {
+        "file": "Krakinai.BridgeLauncher.exe",
+        "status": "Valid",
+        "sha256": "e7fa8faa64ce203438bca22f6e8f5f201bfe8c65db5c4ab95c5356a2ed5bab0c"
+      },
+      {
+        "file": "bridge/native/verify.ps1",
+        "status": "Valid",
+        "sha256": "9da3e09687e6d95761513be7e61c8b07b6d114924d8852ea407a5fb694b97390"
+      }
+    ],
+    "nativeSourceDigest": "e0db8bce4f9d3165388c9424f3037433da38fd1b6c89c25f72946fdabe15bab5",
+    "helperBodyMatchesSource": true
+  },
+  "sourceReview": {
+    "importantFindings": 2,
+    "resolved": 2,
+    "remainingImportant": 0
+  },
+  "warnings": [
+    "Vite main chunk 1067.89 kB (274.14 kB gzip), above 500 kB threshold"
+  ],
+  "pending": [
+    "complete native keyboard/focus, 200 percent scaling and high contrast checks"
+  ],
+  "notes": [
+    "Synthetic library only; real localhost:5173 library not used.",
+    "An earlier accidentally overlapping screenshot was excluded and retained locally, never committed or uploaded.",
+    "Historical QA ledger 207 checks / 45 screenshots is distinct from current browser count.",
+    "No automatic trust, execution-policy or global Codex-configuration changes."
+  ],
+  "realBrowserLibraryAccessed": false,
+  "syntheticLibraryAccessed": true,
+  "pairedCliAcceptance": "cli-acceptance.json",
+  "recordType": "local precommit evidence snapshot",
+  "publicationEvidence": "Final signed Git commit and hosted CI runs are recorded in the PR after publication; both must pass before merge.",
+  "ciInvestigation": {
+    "runUrl": "https://github.com/Jeruzael/krakinai/actions/runs/41315170900",
+    "testedCommit": "a0b4c6d9c15e91eeb0ff5d9b0afc8662d526e162",
+    "linux": "success",
+    "windowsAttempts": [
+      {
+        "passed": 48,
+        "failed": 2,
+        "exitCode": 1,
+        "jobId": 124873563017
+      },
+      {
+        "passed": 47,
+        "failed": 3,
+        "exitCode": 1,
+        "jobId": 124877278408
+      }
+    ],
+    "underlyingProbeCause": "not established; process failures and ACL rejection share the same production error",
+    "fixScope": "CI fixture ACL setup, sanitized diagnostics and Windows test serialization; production unchanged",
+    "hostedFollowup": "required on new signed commit"
+  },
+  "followupChecks": [
+    {
+      "name": "serial bridge",
+      "passed": 50,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "ci-windows-serial-local.log",
+      "logSha256": "e472bf29f25bc8a3fd0430e3a697dd19436425c9e6f21796fe45bae6d318fd6a"
+    },
+    {
+      "name": "QA helpers",
+      "passed": 52,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "ci-helper-final.log",
+      "logSha256": "82420d2a2a1e0bbc8461a0493dc8640fab22e7b1dbbc9a186e910929b0269dc4"
+    }
+  ],
+  "followupProbe": {
+    "event": "KRAKINAI_CI_PRIVATE_PROBE",
+    "logicalProcessors": 12,
+    "privateConfiguration": true,
+    "elapsedMs": 585,
+    "failure": null,
+    "exitCode": 0,
+    "killed": false,
+    "signal": null,
+    "lastLevel": 14,
+    "ancestors": [
+      {
+        "level": 1,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 2,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 3,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 4,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 5,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 6,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 7,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 8,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 9,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 10,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 11,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 12,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 13,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      },
+      {
+        "level": 14,
+        "ownerTrusted": true,
+        "reparse": false,
+        "mutationRuleCount": 0
+      }
+    ]
+  },
+  "ciProbeInvestigation": {
+    "head": "b7819414f1bbf4530d6107d331f58597872995fe",
+    "run": "https://github.com/Jeruzael/krakinai/actions/runs/41318131401",
+    "linux": "success",
+    "windows": {
+      "conclusion": "failure",
+      "step": "Diagnose owned Windows configuration probe",
+      "elapsedMs": 10024,
+      "privateConfiguration": false,
+      "lastLevel": null,
+      "underlyingCause": "unestablished; first old marker follows identity/setup and file lookup",
+      "testsAndNativeBuild": "skipped"
+    },
+    "productionChanges": false,
+    "mergeAllowed": false
+  },
+  "ciInvocationComparison": {
+    "scope": "CI-only diagnostic; hosted A/B still required",
+    "cases": [
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 12,
+        "attempt": 1,
+        "mode": "production_open",
+        "privateConfiguration": true,
+        "elapsedMs": 547,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 14,
+        "spawnMs": 17,
+        "firstMarkerMs": 261,
+        "exitMs": 547,
+        "closeMs": 547,
+        "checkedFileAndAncestors": 14,
+        "untrustedOwnerCount": 0,
+        "reparseCount": 0,
+        "untrustedMutationRuleCount": 0
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 12,
+        "attempt": 1,
+        "mode": "experiment_eof",
+        "privateConfiguration": true,
+        "elapsedMs": 516,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 14,
+        "spawnMs": 7,
+        "firstMarkerMs": 230,
+        "exitMs": 516,
+        "closeMs": 516,
+        "checkedFileAndAncestors": 14,
+        "untrustedOwnerCount": 0,
+        "reparseCount": 0,
+        "untrustedMutationRuleCount": 0
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 12,
+        "attempt": 2,
+        "mode": "production_open",
+        "privateConfiguration": true,
+        "elapsedMs": 525,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 14,
+        "spawnMs": 7,
+        "firstMarkerMs": 224,
+        "exitMs": 525,
+        "closeMs": 525,
+        "checkedFileAndAncestors": 14,
+        "untrustedOwnerCount": 0,
+        "reparseCount": 0,
+        "untrustedMutationRuleCount": 0
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 12,
+        "attempt": 2,
+        "mode": "experiment_eof",
+        "privateConfiguration": true,
+        "elapsedMs": 504,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 14,
+        "spawnMs": 8,
+        "firstMarkerMs": 227,
+        "exitMs": 504,
+        "closeMs": 504,
+        "checkedFileAndAncestors": 14,
+        "untrustedOwnerCount": 0,
+        "reparseCount": 0,
+        "untrustedMutationRuleCount": 0
+      }
+    ],
+    "helperTests": {
+      "passed": 54,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "ci-ab-helpers-final.log",
+      "logSha256": "137adb3940c4a41751ba468d45b6c1468425a40b2717fdd100890100407c65ce"
+    },
+    "log": "ci-ab-local.log",
+    "logSha256": "e2ac37cc71950a14c62415852631843c1bd65c607ef6f5d2f0f3fd14c6e2d31f",
+    "review": "No Critical/Important findings. Minor coalesced BOOT marker timing issue corrected; split/large-chunk regression passes."
+  },
+  "clrCorrection": {
+    "hostedEvidence": {
+      "head": "9df4592eb016f5b3bd04142f3554f4270cbe9b3f",
+      "run": "https://github.com/Jeruzael/krakinai/actions/runs/41319722596",
+      "cases": [
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 1,
+          "mode": "production_open",
+          "privateConfiguration": false,
+          "elapsedMs": 10032,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 7,
+          "firstMarkerMs": 2710,
+          "exitMs": 10031,
+          "closeMs": 10031
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 1,
+          "mode": "experiment_eof",
+          "privateConfiguration": false,
+          "elapsedMs": 10018,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 2,
+          "firstMarkerMs": 153,
+          "exitMs": 10018,
+          "closeMs": 10018
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 2,
+          "mode": "production_open",
+          "privateConfiguration": false,
+          "elapsedMs": 10017,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 3,
+          "firstMarkerMs": 163,
+          "exitMs": 10017,
+          "closeMs": 10017
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 4,
+          "attempt": 2,
+          "mode": "experiment_eof",
+          "privateConfiguration": false,
+          "elapsedMs": 10028,
+          "failure": "timeout",
+          "exitCode": null,
+          "killed": true,
+          "signal": "SIGTERM",
+          "phase": "file_lookup",
+          "lastLevel": null,
+          "ancestors": [],
+          "spawnMs": 2,
+          "firstMarkerMs": 148,
+          "exitMs": 10028,
+          "closeMs": 10028
+        }
+      ],
+      "eofHypothesis": "falsified as remedy",
+      "observedBoundary": "Get-Item after identity/setup",
+      "moduleDiscoveryExplanation": "inference only"
+    },
+    "change": "Direct CLR metadata reads and success output; no policy/trust/environment/deadline/ACL-rule changes",
+    "local": {
+      "bridgeTests": {
+        "passed": 52,
+        "failed": 0
+      },
+      "helpers": {
+        "passed": 54,
+        "failed": 0
+      },
+      "diagnostics": [
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 1,
+          "mode": "production_open",
+          "privateConfiguration": true,
+          "elapsedMs": 352,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 18,
+          "firstMarkerMs": 270,
+          "exitMs": 352,
+          "closeMs": 352,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 1,
+          "mode": "experiment_eof",
+          "privateConfiguration": true,
+          "elapsedMs": 296,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 7,
+          "firstMarkerMs": 214,
+          "exitMs": 296,
+          "closeMs": 296,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 2,
+          "mode": "production_open",
+          "privateConfiguration": true,
+          "elapsedMs": 297,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 6,
+          "firstMarkerMs": 213,
+          "exitMs": 297,
+          "closeMs": 297,
+          "checkedFileAndAncestors": 14
+        },
+        {
+          "event": "KRAKINAI_CI_PRIVATE_PROBE",
+          "logicalProcessors": 12,
+          "attempt": 2,
+          "mode": "experiment_eof",
+          "privateConfiguration": true,
+          "elapsedMs": 318,
+          "failure": null,
+          "exitCode": 0,
+          "killed": false,
+          "signal": null,
+          "phase": "file_loaded",
+          "lastLevel": 14,
+          "spawnMs": 6,
+          "firstMarkerMs": 225,
+          "exitMs": 318,
+          "closeMs": 318,
+          "checkedFileAndAncestors": 14
+        }
+      ],
+      "logs": {
+        "no-autoload-red.log": {
+          "sha256": "f3f069105c173fc19c6a5fa01fb4f2d47b9c5f4be23c23e29b80022a8ec6a7c0",
+          "exitCode": 1
+        },
+        "no-autoload-green.log": {
+          "sha256": "21301af1d469ecb06e793c863ae637b4b4ccc755e1fd10bfdca23b4adcfd0e50",
+          "exitCode": 0
+        },
+        "clr-bridge-build.log": {
+          "sha256": "b76d3db229a02cab745e19f2089b0f845d69562e4ada4fcc3f183aefcf844fcc",
+          "exitCode": 0
+        },
+        "clr-bridge-typecheck.log": {
+          "sha256": "558e60ab5bd92d62515f99d34f19f25f859351ee7d9e36b164fcdb5ea494ce74",
+          "exitCode": 0
+        },
+        "clr-bridge-tests.log": {
+          "sha256": "7e18ad1a6708f83335300f8b604ffffa38ef372b17a0435c1faa95847cea9496",
+          "exitCode": 0
+        },
+        "clr-helpers.log": {
+          "sha256": "525047d8791034f5484fba48330f991cfe86bcda58d67e2fd94b9861efe7581d",
+          "exitCode": 0
+        },
+        "clr-probe-local.log": {
+          "sha256": "302576da908bc9798c686487191113e001c6d5f31b12e2443431d66d9d8c15bc",
+          "exitCode": 0
+        }
+      }
+    },
+    "review": "No substantive findings",
+    "hostedConfirmation": "not yet run at this commit",
+    "finalPackagedAcceptance": "pending; earlier full paired workflow belongs to R2"
+  },
+  "fixtureFollowup": {
+    "testedProductionHead": "0c27c943d62ff951ec00ec3e7ff655bc84c95c9a",
+    "run": "https://github.com/Jeruzael/krakinai/actions/runs/41321028094",
+    "hostedGuardCases": [
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 4,
+        "attempt": 1,
+        "mode": "production_open",
+        "privateConfiguration": true,
+        "elapsedMs": 2103,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 9,
+        "spawnMs": 5,
+        "firstMarkerMs": 1971,
+        "exitMs": 2102,
+        "closeMs": 2103,
+        "checkedFileAndAncestors": 9
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 4,
+        "attempt": 1,
+        "mode": "experiment_eof",
+        "privateConfiguration": true,
+        "elapsedMs": 242,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 9,
+        "spawnMs": 2,
+        "firstMarkerMs": 156,
+        "exitMs": 242,
+        "closeMs": 242,
+        "checkedFileAndAncestors": 9
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 4,
+        "attempt": 2,
+        "mode": "production_open",
+        "privateConfiguration": true,
+        "elapsedMs": 230,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 9,
+        "spawnMs": 3,
+        "firstMarkerMs": 151,
+        "exitMs": 230,
+        "closeMs": 230,
+        "checkedFileAndAncestors": 9
+      },
+      {
+        "event": "KRAKINAI_CI_PRIVATE_PROBE",
+        "logicalProcessors": 4,
+        "attempt": 2,
+        "mode": "experiment_eof",
+        "privateConfiguration": true,
+        "elapsedMs": 235,
+        "failure": null,
+        "exitCode": 0,
+        "killed": false,
+        "signal": null,
+        "phase": "file_loaded",
+        "lastLevel": 9,
+        "spawnMs": 2,
+        "firstMarkerMs": 156,
+        "exitMs": 235,
+        "closeMs": 235,
+        "checkedFileAndAncestors": 9
+      }
+    ],
+    "hostedBridgeTests": {
+      "passed": 51,
+      "failed": 1,
+      "exitCode": 1,
+      "failure": "Fixture Write-Output timeout after permissive write; restoration test not completed"
+    },
+    "change": "Fixture only: no autoload; original SDDL before mutation; try/finally for normal and forced failure; exact restored Access SDDL and guard acceptance",
+    "initialExactSddlFailure": "Windows auto-inheritance bookkeeping changed before fixture initialization was stabilized",
+    "interveningLocalFailure": {
+      "passed": 51,
+      "failed": 1,
+      "exitCode": 1,
+      "reason": "Original oversized-upload fetch ECONNRESET"
+    },
+    "declaredLengthTest": "Headers-only input; strict HTTP413 and PAYLOAD_TOO_LARGE; all network errors and timeouts fail; no claim of chunked streaming coverage",
+    "local": {
+      "passed": 52,
+      "failed": 0,
+      "exitCode": 0,
+      "log": "final-fixtures-tests.log",
+      "logSha256": "6a17ee0d7f70bc04918a9c5965d09c43db54324e9cec4d3db8eb7a6738cadbc7",
+      "typecheckExitCode": 0,
+      "finalFocusedExitCode": 0,
+      "finalFocusedLogSha256": "6305302974c5c9c7f53ebe48e677d3b137b1f8ce9cb1ea9926d2f4529597926f"
+    },
+    "review": "No substantive findings; declared-length coverage retained",
+    "productionCodeChanged": false,
+    "hostedConfirmation": "not yet run at this commit"
+  }
+}

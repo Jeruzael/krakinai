@@ -79,7 +79,7 @@ jobs:
           fi
 
       - name: Test installed-CLI evidence validation
-        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs
 
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium
@@ -112,3 +112,70 @@ jobs:
             qa-results/ai-connections/screenshots/*.png
           if-no-files-found: ignore
           retention-days: 7
+
+  native-windows:
+    name: Windows launcher core and transport
+    runs-on: windows-2025
+    timeout-minutes: 20
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+      DOTNET_ADD_GLOBAL_TOOLS_TO_PATH: 'false'
+      DOTNET_NOLOGO: 'true'
+    steps:
+      - name: Checkout exact revision
+        uses: actions/checkout@9f698171ed81b15d1823a05fc7211befd50c8ae0
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Set up Node.js 22
+        uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Set up .NET 10 SDK
+        # Official actions/setup-dotnet v5, resolved before adding this job.
+        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1
+        with:
+          dotnet-version: '10.0.402'
+      - name: Configure owned synthetic test directories
+        shell: pwsh
+        run: |
+          $qaRoot = Join-Path $env:LOCALAPPDATA ('KRAKINAI-Launcher-CI-' + [guid]::NewGuid().ToString('N'))
+          # Only this newly created disposable directory receives an ACL change.
+          if (Test-Path -LiteralPath $qaRoot) { throw 'Unexpected existing QA directory.' }
+          $qaDirectory = [IO.Directory]::CreateDirectory($qaRoot)
+          $qaUser = [Security.Principal.WindowsIdentity]::GetCurrent().User
+          $qaAcl = [Security.AccessControl.DirectorySecurity]::new()
+          $qaAcl.SetAccessRuleProtection($true, $false)
+          $qaAcl.SetOwner($qaUser)
+          $qaAcl.AddAccessRule([Security.AccessControl.FileSystemAccessRule]::new($qaUser, 'FullControl', 'ContainerInherit, ObjectInherit', 'None', 'Allow'))
+          [IO.FileSystemAclExtensions]::SetAccessControl($qaDirectory, $qaAcl)
+          "KRAKINAI_TEST_ROOT=$qaRoot\native" >> $env:GITHUB_ENV
+          "KRAKINAI_PRIVATE_CONFIG_TEST_ROOT=$qaRoot\bridge" >> $env:GITHUB_ENV
+          "KRAKINAI_TEST_NODE=$((Get-Command node).Source)" >> $env:GITHUB_ENV
+          "KRAKINAI_TEST_BRIDGE_DIST=qa-results/desktop-launcher-dist" >> $env:GITHUB_ENV
+          "DOTNET_CLI_HOME=$env:RUNNER_TEMP\krakinai-dotnet" >> $env:GITHUB_ENV
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Install locked bridge dependencies
+        run: npm --prefix bridge ci --ignore-scripts
+      - name: Build bridge transports
+        run: npm --prefix bridge run build -- --outdir qa-results/desktop-launcher-dist
+      - name: Build isolated transport fixtures
+        run: npm --prefix bridge run build:test
+      - name: Typecheck bridge
+        run: npm --prefix bridge run typecheck
+      - name: Diagnose owned Windows configuration probe
+        run: node scripts/qa/launcher-windows-probe.mjs
+      - name: Test bridge
+        # Keep the real ten-second ACL deadline; avoid concurrent cold PS/SDK starts.
+        run: npm --prefix bridge test -- --maxWorkers=1 --minWorkers=1
+      - name: Audit bridge production dependencies
+        run: npm --prefix bridge audit --omit=dev
+      - name: Verify Windows core
+        run: dotnet run --project launcher/tests/Krakinai.BridgeLauncher.Tests.csproj
+      - name: Build unsigned isolated GUI
+        run: dotnet publish launcher/Krakinai.BridgeLauncher.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=None -p:DebugSymbols=false -o qa-results/windows-ci-publish
+      - name: Verify release and lifecycle evidence guards
+        run: node --test scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs

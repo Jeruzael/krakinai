@@ -2,6 +2,17 @@ import { validateCliToolCalls } from './mcp-cli-replies.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { analyzeCliResults,createCliWorkflow } from './mcp-codex-cli.mjs';
+import * as cliModule from './mcp-codex-cli.mjs';
+import { resolve } from 'node:path';
+
+test('launcher CLI certification uses only the production adapter and the explicitly scoped origin',()=>{
+ const settings={formatVersion:1,appOrigin:'http://localhost:4173',relayPort:54184,bridgeDirectory:resolve('qa-results/reviewed/bridge')},path=resolve('qa-results/private/settings.json');
+ const launch=cliModule.resolveCliLaunch({appOrigin:settings.appOrigin,port:1,launcher:{settings,path}});
+ assert.equal(launch.entry,resolve(settings.bridgeDirectory,'krakinai-stdio-adapter.mjs'));assert.deepEqual(launch.args,[launch.entry,'--config',path]);assert.equal(launch.port,54184);
+ assert.throws(()=>cliModule.resolveCliLaunch({appOrigin:'http://127.0.0.1:4173',port:1,launcher:{settings,path}}));
+ assert.throws(()=>cliModule.resolveCliLaunch({appOrigin:settings.appOrigin,port:1,launcher:{settings:{...settings,relayPort:0},path}}));
+ const direct=cliModule.resolveCliLaunch({appOrigin:settings.appOrigin,port:4199});assert.deepEqual(direct.args,[direct.entry,'--app-origin',settings.appOrigin,'--port','4199']);
+});
 
 const project = { projectId: 'synthetic-selected', projectName: 'MIDORI', excludedProjectId: 'synthetic-private' };
 const plan = ['krakinai_connection_status', 'krakinai_list_projects', 'krakinai_get_project'].map(suffix => ({ suffix }));

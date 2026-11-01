@@ -1,0 +1,181 @@
+{
+  "applicationOrigin": "http://localhost:4173",
+  "cliVersion": "0.73.0",
+  "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+  "stdioEntry": "krakinai-stdio-adapter.mjs",
+  "stdioEntrySha256": "db822e4628f2fb8866a68cd67653d89496683886e788ff182e0a9f634c8d0fad",
+  "modelProvider": "loopback synthetic Chat Completions SSE; no external AI provider",
+  "exitCode": 0,
+  "requests": 12,
+  "workflowVerified": true,
+  "scopedReadsVerified": true,
+  "providerFailure": "",
+  "warning": null,
+  "noDatabaseWritesBeforeApprovalChecks": 3,
+  "changeSetId": "synthetic-launcher-r2-dc1a927b-b8c3-46e2-9070-e9f94447e41b",
+  "proposalId": "4118a03c-86bb-45b9-8a85-b63c4bc5b3ef",
+  "packageDigest": "0e1a92739d3de13e8dce9629af9a0a28fddff4433d2b23828ec583304c5ddbb0",
+  "approvedDigest": "94ea655a102408ef420f3a9a26c2e9fa741db1b16aa499342d53c2419741927c",
+  "oldSceneId": "scene_faf8db8ade9d",
+  "newSceneId": "scene_28b9381715ae",
+  "oldSceneSha256Before": "36f99c630ed486e63880f69550d9c205c98d33db400c3838d44e16ddaf535749",
+  "oldSceneSha256After": "36f99c630ed486e63880f69550d9c205c98d33db400c3838d44e16ddaf535749",
+  "newSceneSha256": "fb49a2f017c122c075506bf65332809d531f4af6e3518d79cac1a9b4da483a6e",
+  "preferredTakeBefore": "scene_faf8db8ade9d",
+  "preferredTakeAfter": "scene_faf8db8ade9d",
+  "mediaHashesBefore": [
+    {
+      "id": "media_c76d8e055828",
+      "bytes": 1509,
+      "sha256": "89e8c1c8d608ad333a302e7098e18fccfb7276ee61094c1ea86dd8c54ad4a48b"
+    }
+  ],
+  "mediaHashesAfter": [
+    {
+      "id": "media_c76d8e055828",
+      "bytes": 1509,
+      "sha256": "89e8c1c8d608ad333a302e7098e18fccfb7276ee61094c1ea86dd8c54ad4a48b"
+    }
+  ],
+  "other14ShotsUnchanged": true,
+  "referenceAssociationsUnchanged": true,
+  "exactPromptBytesPreserved": true,
+  "retrySnapshotUnchanged": true,
+  "applicationReloadSnapshotUnchanged": true,
+  "browserProcessRestartTested": false,
+  "otherOrigin": {
+    "origin": "http://127.0.0.1:4173",
+    "counts": {
+      "assets": 0,
+      "variants": 0,
+      "collections": 0,
+      "scenes": 0,
+      "media": 0,
+      "drafts": 0,
+      "templates": 0
+    },
+    "refused": "Unexpected library: no contents shown or writes permitted."
+  },
+  "clientExitPortProof": {
+    "port": 54184,
+    "listening": [
+      false,
+      false,
+      false
+    ],
+    "meaning": "Three explicit TCP refusals after actual installed CLI exit; timeouts would fail this test"
+  },
+  "nativeObservedWorkingBytes": 98144256,
+  "nativeObservedPeakWorkingBytes": 108519424,
+  "managedHostPairedPeakMemoryMeasured": false,
+  "durations": {
+    "submissionToApprovalObservationSeconds": 113.89898120117188,
+    "approvalObservationToCliFinishSeconds": 130.40174096679686,
+    "note": "Includes review/observation time; not an operation-performance benchmark."
+  },
+  "callAudit": [
+    {
+      "callId": "synthetic_cli_read_1",
+      "tool": "krakinai_connection_status",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "4734d19061063ce14afb392252c15850e34f0d489e76a454fa54796c60bbe689",
+      "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "callId": "synthetic_cli_read_2",
+      "tool": "krakinai_list_projects",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "db9fe7a0714f801ad973f731fe0e4886019eec2a4ef433dbc260229f37b86fce",
+      "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "callId": "synthetic_cli_read_3",
+      "tool": "krakinai_get_project",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "b03e7f60e951afcab15d02dd0e8517d70cb30deebc5356b41cc80a4a3a74e560",
+      "argumentsSha256": "5cc87195e0dc442b5816ba397426f6ff7807735dee97a29d76f4b6bbf4bcdc46"
+    },
+    {
+      "callId": "synthetic_cli_read_4",
+      "tool": "krakinai_submit_change_set",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "c06d179ec19fc6b3d6998af37f1c830095f811baa8f1671917cf648146f9ec76",
+      "argumentsSha256": "c99f421f2c39ff7822a60ecb1a042cb61e7693c8de28525212dfb786439be2c4"
+    },
+    {
+      "callId": "synthetic_cli_read_5",
+      "tool": "krakinai_get_proposal_status",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "abfaf976431f4d51961b0df8f42115bb43937ddbf61f1834b64c27565c0ba1c1",
+      "argumentsSha256": "856dbe2a85c60349e37dd695cefdc8053fe2345d40b957dfbdf741e14dffbce9"
+    },
+    {
+      "callId": "synthetic_cli_read_6",
+      "tool": "krakinai_get_import_receipt",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "1070866b57ae161e7ffb69cf42e581be8fe181f34d6e4504f0d7384da45f6140",
+      "argumentsSha256": "6a34e8ff44477808cd7f1212335005252d2aa4b287b46f8dbba90984259a132f"
+    },
+    {
+      "callId": "synthetic_cli_read_7",
+      "tool": "krakinai_submit_change_set",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "75a0367a63c6fd0e01d3c66732b2f2921c9ea6ca3553a2edf0391a4b7057bb66",
+      "argumentsSha256": "c99f421f2c39ff7822a60ecb1a042cb61e7693c8de28525212dfb786439be2c4"
+    },
+    {
+      "callId": "synthetic_cli_read_8",
+      "tool": "krakinai_connection_status",
+      "ok": true,
+      "errorCode": null,
+      "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+      "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "callId": "synthetic_cli_read_9",
+      "tool": "krakinai_get_project",
+      "ok": false,
+      "errorCode": "PAIRING_REQUIRED",
+      "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+      "argumentsSha256": "5cc87195e0dc442b5816ba397426f6ff7807735dee97a29d76f4b6bbf4bcdc46"
+    },
+    {
+      "callId": "synthetic_cli_read_10",
+      "tool": "krakinai_get_proposal_status",
+      "ok": false,
+      "errorCode": "PAIRING_REQUIRED",
+      "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+      "argumentsSha256": "856dbe2a85c60349e37dd695cefdc8053fe2345d40b957dfbdf741e14dffbce9"
+    },
+    {
+      "callId": "synthetic_cli_read_11",
+      "tool": "krakinai_submit_change_set",
+      "ok": false,
+      "errorCode": "PAIRING_REQUIRED",
+      "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+      "argumentsSha256": "c99f421f2c39ff7822a60ecb1a042cb61e7693c8de28525212dfb786439be2c4"
+    }
+  ],
+  "earlierAttempts": [
+    {
+      "result": "interrupted before native pairing",
+      "passed": false
+    },
+    {
+      "result": "manual observation wait expired before confirmation",
+      "passed": false
+    },
+    {
+      "result": "actual connected status had empty scope after disconnect reset",
+      "passed": false,
+      "toolCallId": "synthetic_cli_read_1"
+    }
+  ]
+}

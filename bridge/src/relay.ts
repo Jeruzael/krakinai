@@ -5,7 +5,7 @@ import { createOffer, decode64, deriveEpoch, deriveHandshake, checkProof, proof,
 
 export interface VerificationRequest { bridgePath: string; version: string; origin: string; relay: string; challengeId: string; secret: string; verificationCode: string }
 export interface NativeVerification { decision: Promise<boolean>; close(): void }
-export interface RelayOptions { port: number; appOrigin: string; bridgePath: string; verifyNative(info: VerificationRequest): NativeVerification; now?: () => number }
+export interface RelayOptions { port: number; appOrigin: string; bridgePath: string; verifyNative(info: VerificationRequest): NativeVerification; now?: () => number; onState?(state: { browser: 'not-paired' | 'pairing' | 'paired' | 'expired' }): void }
 export interface RelayHandle { url: string; dispatch(tool: McpToolName, args: unknown): Promise<McpResult>; close(): Promise<void> }
 interface Challenge { id: string; created: number; attempts: number; secret: string; keys: HandshakeKeys; transcript: unknown; native: NativeVerification; allowed: boolean }
 interface Session { id: string; epoch: number; nonce: string; master: CryptoKey; keys: EpochKeys; created: number; activity: number; seen: number; rotated: number; seq: number; confirmed: boolean; rotation?: { epoch: number; nonce: string } }
@@ -21,9 +21,10 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
   let nativeAt = -Infinity, burstAt = now(), burstTokens = 8; const pairingStarts: number[] = [], transportTimes: number[] = [], toolTimes: number[] = [];
   const pending = new Map<string, Pending>(), queue: string[] = [];
   let poll: { sessionId: string; finish(command: McpCommand | null): void } | undefined;
+  function notify(browser: 'not-paired' | 'pairing' | 'paired' | 'expired') { try { options.onState?.({ browser }); } catch { /* Status delivery must never alter authorization. */ } }
   function rate(times: number[], maximum: number, interval: number) { const cutoff = now() - interval; while (times.length && times[0] <= cutoff) times.shift(); if (times.length >= maximum) fail(429, 'RATE_LIMITED'); times.push(now()); }
-  function clearChallenge() { const old = challenge; challenge = undefined; old?.native.close(); if (old) old.secret = ''; }
-  function clearSession(code = 'DISCONNECTED') { session = undefined; for (const item of [...pending.values()]) item.finish(resultError(new McpError(code, 'The browser connection is no longer authorized. Pair again if needed.', true))); queue.length = 0; const old = poll; poll = undefined; old?.finish(null); }
+  function clearChallenge() { const old = challenge; challenge = undefined; old?.native.close(); if (old) { old.secret = ''; if (!session) notify('not-paired'); } }
+  function clearSession(code = 'DISCONNECTED') { session = undefined; for (const item of [...pending.values()]) item.finish(resultError(new McpError(code, 'The browser connection is no longer authorized. Pair again if needed.', true))); queue.length = 0; const old = poll; poll = undefined; old?.finish(null); notify(code === 'SESSION_EXPIRED' ? 'expired' : 'not-paired'); }
   function expire() {
     if (challenge && now() - challenge.created >= MCP_LIMITS.challengeMs) clearChallenge();
     if (session && (now() - session.created >= MCP_LIMITS.sessionMs || now() - session.activity >= MCP_LIMITS.idleMs)) clearSession('SESSION_EXPIRED');
@@ -74,7 +75,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
           const transcript = { version: BRIDGE_VERSION, instanceId, challengeId, origin: appOrigin, relay: url, client, server: server.offer };
           const keys = await deriveHandshake(secret, server.privateKey, client.publicKey, transcript);
           const native = options.verifyNative({ bridgePath: options.bridgePath, version: '1.0.0', origin: appOrigin, relay: url, challengeId, secret, verificationCode: keys.transcriptDigest.slice(0, 12) });
-          const current: Challenge = { id: challengeId, created: now(), attempts: 0, secret, keys, transcript, native, allowed: false }; challenge = current;
+          const current: Challenge = { id: challengeId, created: now(), attempts: 0, secret, keys, transcript, native, allowed: false }; challenge = current; notify('pairing');
           void native.decision.then(allowed => { if (challenge === current) { if (allowed) current.allowed = true; else clearChallenge(); } }, () => { if (challenge === current) clearChallenge(); });
           json(res, 200, { transcript, expiresAt: new Date(current.created + MCP_LIMITS.challengeMs).toISOString(), verificationCode: keys.transcriptDigest.slice(0, 12) });
         } finally { starting = false; }
@@ -95,7 +96,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
       }
       const { current, message } = await authenticate(value, path); record(message.body); let body: unknown;
       const responseKeys = current.keys;
-      if (path === '/v1/session/confirm') { exactKeys(message.body, []); current.confirmed = true; body = { connected: true, expiresAt: new Date(current.created + MCP_LIMITS.sessionMs).toISOString() }; }
+      if (path === '/v1/session/confirm') { exactKeys(message.body, []); current.confirmed = true; notify('paired'); body = { connected: true, expiresAt: new Date(current.created + MCP_LIMITS.sessionMs).toISOString() }; }
       else {
         if (!current.confirmed) fail(401, 'AUTH_FAILED');
         if (path === '/v1/session/revoke') { exactKeys(message.body, []); clearSession(); body = { disconnected: true }; }
@@ -141,6 +142,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
   await new Promise<void>((resolve, reject) => { server.once('error', reject); server.listen(options.port, '127.0.0.1', () => { server.off('error', reject); resolve(); }); });
   const address = server.address(); if (!address || typeof address === 'string') throw new McpError('STARTUP_FAILED');
   url = `http://127.0.0.1:${address.port}`;
+  notify('not-paired');
   const expiryTimer = setInterval(expire, 1000); expiryTimer.unref();
   return {
     url,
