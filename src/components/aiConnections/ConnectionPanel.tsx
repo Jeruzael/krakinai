@@ -8,7 +8,7 @@ import { StudioDialog } from '../StudioDialog';
 export function ConnectionPanel({ active, permissionChanges, onPermissions }: { active: boolean; permissionChanges: boolean; onPermissions(): void }) {
   const { snapshot } = useLibrary(), connection = useAiConnection();
   const { phase, pairing, view } = connection;
-  const [address, setAddress] = useState('http://127.0.0.1:4177'), [key, setKey] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState(''), [disconnectDialog, setDisconnectDialog] = useState(false);
+  const [address, setAddress] = useState(()=>connection.relayAddress??'http://127.0.0.1:4177'), [key, setKey] = useState(''), [busy, setBusy] = useState(false), [error, setError] = useState(''), [disconnectDialog, setDisconnectDialog] = useState(false);
   const disconnectRef = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (!active || !pairing) setKey(''); }, [active, pairing]);
   const run = async (action: () => Promise<void>) => {

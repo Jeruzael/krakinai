@@ -8,6 +8,7 @@ import { ProposalBroker, type BrokerView } from './proposalBroker';
 interface ConnectionValue {
   broker: ProposalBroker; view: BrokerView; scope: McpScope;
   phase: 'disconnected' | 'pairing' | 'connected' | 'error'; message: string; pairing?: PairingView; librarySession: string; sessionExpiresAt?: number;
+  relayAddress?: string;
   setPermissions(scope: McpScope): void; beginPairing(address: string): Promise<void>;
   finishPairing(secret: string): Promise<void>; disconnect(): Promise<void>;
 }
@@ -54,5 +55,5 @@ export function AiConnectionProvider({ children }: { children: React.ReactNode }
   }
   async function finishPairing(secret: string) { const client = transportRef.current; if (!client) throw Error('Start pairing first.'); await client.finishPairing(secret); }
   async function disconnect() { const client = transportRef.current; if (client) await client.disconnect(); else { broker.disconnect(); setSessionExpiresAt(undefined); setPhase('disconnected'); setPairing(undefined); setDraftScope(emptyMcpScope()); } }
-  return <Context.Provider value={{ broker, view, scope: view.connected ? view.scope : draftScope, phase, message, pairing, librarySession, sessionExpiresAt, setPermissions, beginPairing, finishPairing, disconnect }}>{children}</Context.Provider>;
+  return <Context.Provider value={{ broker, view, scope: view.connected ? view.scope : draftScope, phase, message, pairing, librarySession, sessionExpiresAt, relayAddress:transportRef.current?.relayAddress, setPermissions, beginPairing, finishPairing, disconnect }}>{children}</Context.Provider>;
 }
