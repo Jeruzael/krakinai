@@ -327,7 +327,7 @@ for (const [width, height] of [
     await page.setViewportSize({ width, height });
     await page.goto(route(ids));
     const before = await storedProof(page);
-    await page.locator('.cw-continuity-review > summary').click();
+    await page.getByRole('tab', { name: 'Continuity', exact: true }).click();
     const details = page.locator('.pc-wardrobe-details').first();
     await expect(details).not.toHaveAttribute('open', '');
     await details.locator('summary').click();
@@ -338,7 +338,7 @@ for (const [width, height] of [
       .getByRole('button', { name: 'Review wardrobe', exact: true })
       .first();
     await trigger.click();
-    const dialog = page.getByRole('dialog');
+    const dialog = width > 1000 ? page.getByRole('region', { name: /Wardrobe review|Transition —/ }) : page.getByRole('dialog');
     const assertStack = async () => {
       const bounds = await dialog
         .locator('.pc-form-field')
@@ -358,18 +358,15 @@ for (const [width, height] of [
         );
       for (let i = 0; i < bounds.length; i++) {
         expect(bounds[i].controlTop).toBeGreaterThan(bounds[i].top + 14);
-        expect(bounds[i].controlWidth).toBeGreaterThan(
-          bounds[i].labelWidth * 0.98
-        );
+        expect(bounds[i].controlWidth).toBeGreaterThan(bounds[i].labelWidth * 0.98);
         if (i) expect(bounds[i].top).toBeGreaterThan(bounds[i - 1].bottom + 8);
       }
       await noOverflow(page);
-      expect(
-        await dialog
-          .locator('.modal-body')
-          .evaluate((el) => el.scrollWidth <= el.clientWidth + 1)
-      ).toBe(true);
-      const footer = await dialog.locator('.modal-footer').boundingBox();
+      const scrollArea = width > 1000 ? page.locator('.pc-inspector') : dialog.locator('.modal-body');
+      expect(await scrollArea.evaluate(el => el.scrollWidth <= el.clientWidth + 1)).toBe(true);
+      const actions = width > 1000 ? dialog.locator('.pc-editor-actions') : dialog.locator('.modal-footer');
+      await actions.scrollIntoViewIfNeeded();
+      const footer = await actions.boundingBox();
       expect(footer.y + footer.height).toBeLessThanOrEqual(height + 1);
     };
     await assertStack();
@@ -377,7 +374,9 @@ for (const [width, height] of [
       .getByLabel('Continuity notes', { exact: true })
       .fill('Unsaved synthetic review');
     await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
     await expect(trigger).toBeFocused();
+    await page.getByRole('tab', { name: 'Transitions', exact: true }).click();
     await page
       .getByRole('button', { name: 'Add transition', exact: true })
       .first()
@@ -387,6 +386,7 @@ for (const [width, height] of [
       .getByLabel('Description', { exact: true })
       .fill('Unsaved transition');
     await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: 'Discard changes', exact: true }).click();
     expect(await storedProof(page)).toEqual(before);
     await page.goto(`/#/output/${ids.sceneIds[0]}`);
     await page.getByRole('button', { name: /Preflight ·/ }).click();
@@ -554,7 +554,7 @@ test('wardrobe and transition saves change only explicit project metadata, prese
   const ids = await seedStoryboardFixture(page);
   await page.goto(route(ids));
   const before = await storedProof(page);
-  await page.locator('.cw-continuity-review > summary').click();
+  await page.getByRole('tab', { name: 'Continuity', exact: true }).click();
   await page
     .getByRole('button', { name: 'Review wardrobe', exact: true })
     .first()
@@ -567,6 +567,7 @@ test('wardrobe and transition saves change only explicit project metadata, prese
     .fill('Intentional synthetic wardrobe review');
   await page.getByRole('button', { name: 'Save review', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
+  await page.getByRole('tab', { name: 'Transitions', exact: true }).click();
   await page
     .getByRole('button', { name: 'Add transition', exact: true })
     .first()

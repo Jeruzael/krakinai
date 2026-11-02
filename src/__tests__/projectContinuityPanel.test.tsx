@@ -1,6 +1,6 @@
 import React from 'react';
 import { afterEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Collection, MediaAsset, ProjectShot, SavedScene } from '../types/domain';
 import { ProjectContinuityPanel } from '../components/ProjectContinuityPanel';
@@ -16,12 +16,15 @@ const scene = (id: string, wardrobeId?: string): SavedScene => ({ id: `scene-${i
 const image = (id: string): MediaAsset => ({ id, filename: `${id}.png`, safeFilename: `${id}.png`, mimeType: 'image/png', byteSize: 2, blob: new Blob(['ok'], { type: 'image/png' }), createdAt: '' });
 const base = (shots = [shot('a', 0), shot('b', 1)]): Collection => ({ id: 'project', name: 'Film', description: '', members: [], createdAt: '', updatedAt: '', project: { version: 1, revision: 7, shots } });
 function setup(collection = base(), media: MediaAsset[] = []) {
+  Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
   library.snapshot = { scenes: [scene('a', 'coat'), scene('b', 'dress'), scene('c')], media };
   const onChanged = vi.fn().mockResolvedValue(undefined);
   render(<ProjectContinuityPanel collection={collection} onChanged={onChanged} />);
   return onChanged;
 }
-afterEach(() => { cleanup(); vi.clearAllMocks(); });
+const view = (name: string) => fireEvent.click(screen.getByRole('tab', { name }));
+const pick = (code: string) => fireEvent.click(within(screen.getByRole('navigation', { name: 'Continuity shot sequence' })).getByRole('button', { name: new RegExp(code + ' Shot') }));
+afterEach(() => { cleanup(); vi.clearAllMocks(); Object.defineProperty(window, 'innerWidth', { configurable: true, value: 1024 }); });
 
 it('labels every ensemble wardrobe from its own frozen snapshot, including secondary people', () => {
   const ensemble = { ...scene('a'), ...ensembleDraft(), id: 'scene-a' } as SavedScene;
@@ -32,7 +35,9 @@ it('labels every ensemble wardrobe from its own frozen snapshot, including secon
   const before = structuredClone(ensemble);
   library.snapshot = { scenes: [ensemble], media: [] };
   render(<ProjectContinuityPanel collection={collection} onChanged={vi.fn()} />);
-  const secondary = screen.getByText(second.character.sourceTitle).closest('article')!;
+  view('Wardrobe');
+  fireEvent.change(screen.getByRole('combobox', { name: 'Inspect participant' }), { target: { value: screen.getByRole('option', { name: new RegExp(second.character.sourceTitle) }).getAttribute('value') } });
+  const secondary = within(screen.getByRole('complementary', { name: 'Selected shot inspector' })).getByRole('heading', { name: second.character.sourceTitle }).closest('article')!;
   expect(secondary).toHaveTextContent('Wardrobe source: Synthetic groom suit');
   expect(secondary).not.toHaveTextContent('Synthetic bridal gown');
   expect(ensemble).toEqual(before);
@@ -59,9 +64,11 @@ it('shows advisory clothing changes and unknown wardrobe, and saves intentional 
   const collection = base([shot('a', 0), shot('b', 1, { continuityNotes: 'Keep scarf' }), shot('c', 2)]);
   const original = structuredClone(collection);
   setup(collection);
-  expect(screen.getByText('Clothing changed from previous appearance')).toBeInTheDocument();
+  pick('C');
   expect(screen.getByText('Wardrobe unknown')).toBeInTheDocument();
-  fireEvent.click(screen.getAllByRole('button', { name: 'Review wardrobe' })[1]);
+  pick('B');
+  expect(screen.getByText('Clothing changed from previous appearance')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: 'Review wardrobe' }));
   fireEvent.change(screen.getByRole('combobox', { name: 'Intentional change reason' }), { target: { value: 'costume_change' } });
   fireEvent.click(screen.getByRole('button', { name: 'Save review' }));
   await waitFor(() => expect(continuity.updateWardrobeIntent).toHaveBeenCalledWith({ collectionId: 'project', shotId: 'b', reason: 'costume_change', notes: undefined }));
@@ -73,7 +80,10 @@ it('selects, uploads, and clears the correct first or last frame ID', async () =
   const onChanged = setup(base([shot('a', 0), shot('b', 1, { lastFrameMediaId: 'missing' })]), [media]);
   vi.mocked(continuity.updateProjectFrames).mockResolvedValue(base());
   vi.mocked(continuity.uploadProjectFrame).mockResolvedValue(base());
+  view('Frames & Prompts');
+  pick('B');
   expect(screen.getByText('Missing image (missing)')).toBeInTheDocument();
+  pick('A');
   fireEvent.click(screen.getAllByRole('button', { name: 'Choose image' })[0]);
   fireEvent.click(screen.getByRole('button', { name: 'Use existing.png as first frame' }));
   await waitFor(() => expect(continuity.updateProjectFrames).toHaveBeenCalledWith({ collectionId: 'project', shotId: 'a', firstFrameMediaId: 'existing' }));
@@ -82,6 +92,7 @@ it('selects, uploads, and clears the correct first or last frame ID', async () =
   const file = new File(['abc'], 'new.png', { type: 'image/png' });
   fireEvent.change(screen.getByLabelText('Upload image'), { target: { files: [file] } });
   await waitFor(() => expect(continuity.uploadProjectFrame).toHaveBeenCalledWith({ collectionId: 'project', shotId: 'a', side: 'lastFrameMediaId', file }));
+  pick('B');
   fireEvent.click(screen.getByRole('button', { name: 'Clear' }));
   await waitFor(() => expect(continuity.updateProjectFrames).toHaveBeenCalledWith({ collectionId: 'project', shotId: 'b', lastFrameMediaId: null }));
 });
@@ -90,6 +101,7 @@ it('reuses exact-pair transition ID and revision, then confirms removal', async 
   const transition = { id: 'edge-1', fromShotId: 'a', toShotId: 'b', type: 'match_cut' as const, description: 'Match shape', notes: 'Keep timing' };
   const collection = base(); collection.project!.transitions = [transition];
   setup(collection);
+  view('Transitions');
   expect(screen.getByText(/Match shape/)).not.toBeVisible();
   fireEvent.click(screen.getByText(/Match shape/).closest('details')!.querySelector('summary')!);
   expect(screen.getByText(/Match shape/)).toBeVisible();
@@ -110,8 +122,11 @@ it('keeps detached pair metadata visible after reorder and restores focus on Esc
   const collection = base([shot('b', 0), shot('a', 1), shot('c', 2)]);
   collection.project!.transitions = [{ id: 'edge-1', fromShotId: 'a', toShotId: 'b', type: 'straight_cut', description: 'Old pair', notes: 'Do not retarget' }];
   setup(collection);
+  view('Transitions');
   expect(screen.getByText('Transitions to review after reorder')).toBeInTheDocument();
+  fireEvent.click(screen.getByRole('button', { name: /A → B.*detached/ }));
   expect(screen.getByText(/Old pair/)).toBeInTheDocument();
+  fireEvent.click(document.querySelector('.pc-transition-rail button')!);
   const open = screen.getAllByRole('button', { name: 'Add transition' })[0];
   open.focus();
   await userEvent.setup().click(open);
@@ -124,6 +139,7 @@ it('keeps detached pair metadata visible after reorder and restores focus on Esc
 it('swaps one original preview dialog and retains transition draft text', async () => {
   const collection = base([shot('a', 0, { lastFrameMediaId: 'existing' }), shot('b', 1, { firstFrameMediaId: 'existing' })]);
   setup(collection, [image('existing')]);
+  view('Transitions');
   fireEvent.click(screen.getByRole('button', { name: 'Add transition' }));
   fireEvent.change(screen.getByRole('textbox', { name: 'Description' }), { target: { value: 'Preserved draft' } });
   fireEvent.click(screen.getByRole('button', { name: 'Enlarge A Shot a last frame' }));

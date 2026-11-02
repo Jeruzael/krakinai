@@ -2,6 +2,8 @@
 
 This feature adds scoped context reads and proposed change sets over a local stdio MCP server. KRAKINAI remains the authority for preview, human approval and atomic saving. Manual AI Change Set import remains available.
 
+Authoring agents should prefer **Recipe / Build from Assets**, reuse authorized components, and propose missing reusable candidates for review. Direct Prompt remains available for an explicit user request or a documented representation limitation. These are [authoring instructions](agent-authoring-guide.md), not new permissions or schema restrictions. Updated descriptions are shared by the standalone and desktop-adapter registrations; an installed portable release needs a separately reviewed rebuild/activation. This repository update does not replace or activate your live bridge.
+
 For the Windows desktop/tray launcher, start with the [launcher setup and daily-use guide](desktop-bridge-launcher.md), including [one-time MCP registration](desktop-bridge-launcher.md#one-time-codex-mcp-registration). The launcher uses its generated `krakinai-stdio-adapter.mjs --config ...` configuration. The standalone stdio command below is an alternative development setup that starts its own bridge, not the adapter for a running tray launcher.
 
 ## Current certification limit

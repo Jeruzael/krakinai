@@ -47,6 +47,13 @@ beforeEach(() => {
 });
 
 describe('CollectionWorkspace storyboard', () => {
+  it('links outer tabs to the active named panel', () => {
+    render(<CollectionWorkspace collectionId="c" />);
+    const tab=screen.getByRole('tab',{name:'Storyboard'}),panel=screen.getByRole('tabpanel',{name:'Storyboard'});
+    expect(tab.id).not.toBe('');
+    expect(tab).toHaveAttribute('aria-controls',panel.id);
+    expect(panel).toHaveAttribute('aria-labelledby',tab.id);
+  });
   it('keeps secondary shot actions collapsed with keyboard access and a separate drag grip', () => {
     render(<CollectionWorkspace collectionId="c" />);
     expect(screen.getByRole('button',{name:'Edit Shot a'})).not.toBeVisible();
@@ -151,7 +158,7 @@ describe('CollectionWorkspace storyboard', () => {
       collectionId: 'c', shotId: 'b', patch: { plannedDurationSeconds: 12 },
     }));
     fireEvent.keyDown(screen.getByRole('tab', { name: 'Storyboard' }), { key: 'ArrowRight' });
-    expect(state.navigate).toHaveBeenCalledWith(expect.stringContaining('tab=characters'));
+    expect(state.navigate).toHaveBeenCalledWith(expect.stringContaining('tab=continuity'));
   });
 
   it('requires confirmation before removing a shot and keeps source scenes', async () => {

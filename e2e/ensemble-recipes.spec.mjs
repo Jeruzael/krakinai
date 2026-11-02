@@ -121,11 +121,9 @@ test("secondary wardrobe guides and historical templates survive production save
   }, ids);
   await page.goto(`/#/collections/${ids.projectId}?tab=storyboard`);
   await page.reload();
-  await page.locator(".cw-continuity-review > summary").click();
-  const row = page
-    .locator(".pc-row")
-    .filter({ hasText: "Lucas / Base Identity" })
-    .first();
+  await page.getByRole('tab', { name: 'Continuity', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Inspect participant', exact: true }).selectOption({label: 'Lucas / Base Identity · lucas'});
+  const row = page.getByRole('complementary', { name: 'Selected shot inspector' }).locator('article');
   await expect(row).toContainText(`Wardrobe source: ${prepared.title}`);
   await page
     .getByRole("button", { name: /Manage takes/i })

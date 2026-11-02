@@ -28,6 +28,10 @@ KRAKINAI manages reusable creative instructions, reference files, and sample res
 
 **AI Recipe Builder** maps a saved Direct Prompt into a new recipe alternate take on the same storyboard shot. Review components, participants, dialogue, uncertain mappings and complete assembled outputs before saving. The original and preferred take stay preserved; master-library edits and scene-only revisions have separate actions. [Workflow and v4 contract](docs/recipe-builder-b3-contract.md) · [QA evidence and limitations](docs/recipe-builder-b3-qa.md).
 
+**Continuity workspace:** Open a Collection's **Continuity** tab for a compact sequence Overview, Character wardrobe matrix, legacy First/Last images and exact transition pairs. Select a shot to inspect its frozen details; use explicit review/edit controls to save metadata. Long descriptions stay collapsed. Desktop uses scrollable content and inspector panels; mobile stacks them and opens editors in accessible dialogs. Blocking is reserved for Workstream B; ordered keyframes and image-frame prompts are reserved for C. Viewing this workspace does not create those records or change saved outputs. [QA and screenshots](docs/qa/continuity-workspace-a.md).
+
+**For Codex and other authoring agents:** Prefer **Recipe / Build from Assets** and reusable authorized components. Propose missing candidates for review, keep incomplete plans unresolved, and use Direct Prompt for an explicit request or documented representation limitation. Existing Direct Prompts and permissions remain supported. See the [authoring guide](docs/agent-authoring-guide.md) and [repository instructions](AGENTS.md).
+
 ### Core Workflow
 
 1. **Save a Character (`Characters`)**: Paste a character identity prompt (describing stable facial, hair, and body traits) and optionally attach up to 6 reference images or playable video samples.

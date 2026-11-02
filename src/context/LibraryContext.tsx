@@ -66,7 +66,7 @@ interface LibraryContextValue {
   // Hash Routing
   hashPath: string;
   navigate: (nextHash: string, skipDirtyCheck?: boolean) => void;
-  setDirtyFormGuard: (isDirty: boolean) => void;
+  setDirtyFormGuard: (isDirty: boolean, onDiscard?: () => void) => void;
 
   // Preserved Library Browse State
   browseState: LibraryBrowseState;
@@ -125,6 +125,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     normalizeHash(window.location.hash || '#/')
   );
   const isDirtyRef = useRef(false);
+  const discardDirtyRef = useRef<(() => void) | undefined>();
 
   const [browseState, setBrowseState] = useState<LibraryBrowseState>({
     query: '',
@@ -221,8 +222,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
     return () => window.removeEventListener('hashchange', onHashChange);
   }, []);
 
-  const setDirtyFormGuard = useCallback((isDirty: boolean) => {
+  const setDirtyFormGuard = useCallback((isDirty: boolean, onDiscard?: () => void) => {
     isDirtyRef.current = isDirty;
+    discardDirtyRef.current = isDirty ? onDiscard : undefined;
   }, []);
 
   const navigate = useCallback((nextHash: string, skipDirtyCheck = false) => {
@@ -236,7 +238,10 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({
         cancelLabel: 'Stay on Page',
         danger: true,
         onConfirm: () => {
+          const discard = discardDirtyRef.current;
+          discardDirtyRef.current = undefined;
           isDirtyRef.current = false;
+          discard?.();
           setConfirmDialog(null);
           window.location.hash = `#${normalized}`;
           setHashPath(normalized);
