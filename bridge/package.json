@@ -13,7 +13,8 @@
     "test": "node ../node_modules/vitest/vitest.mjs run --config vitest.config.ts"
   },
   "dependencies": {
-    "@modelcontextprotocol/server": "2.4.0"
+    "@modelcontextprotocol/server": "2.4.0",
+    "fflate": "0.8.3"
   },
   "devDependencies": {
     "@modelcontextprotocol/client": "2.4.0",

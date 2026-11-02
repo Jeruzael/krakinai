@@ -8,6 +8,8 @@ The first release is a **portable folder**, not an installer. Keep the executabl
 
 The repository contains source and release-building tools. It does not include the development machine's signed executable, certificate, desktop shortcut or ignored `qa-results` release folders. Obtain a reviewed signed portable folder from its maintainer, or follow [Signing and updates](#signing-and-updates) to prepare and sign a reviewed build locally. There is no automatic installer or certificate-trust setup. Signing and trust must be checked under the Windows account that will run the launcher and Codex; keep AllSigned enabled. See the [local signing guide](local-codex-mcp-signing.md) for certificate requirements and the scope of trusting a publisher.
 
+Release builders must install the bridge's own locked production dependencies, including `fflate`, into its adjacent `bridge/node_modules`. A successful run beneath the source checkout can accidentally use ancestor application dependencies. The release regression therefore verifies startup and shutdown from an external directory with only the declared bridge dependencies. A source-level correction does not update an existing copied portable folder automatically.
+
 Start KRAKINAI separately (`npm ci` followed by `npm run dev` from the repository folder for local development). In the browser/profile containing your records, open **AI Connections** and note **Current application origin**. Keep that exact origin, such as `http://localhost:5173`: `localhost`, `127.0.0.1`, different ports and different browser profiles have separate libraries. If your usual app port is unavailable, resolve that server conflict rather than moving an existing library to another URL. The launcher copies an address for you to paste; it does not choose a different default browser/profile.
 
 ## One-time launcher settings and shortcut
@@ -67,11 +69,25 @@ All admitted clients for one installation share the **current applied browser pe
 
 The count measures live MCP adapters, not visible chat tabs. In current Codex, switching away or `thread/unsubscribe` can leave a session and its adapter alive. End/archive an unused session or close its client host when you need to release that connection; verify the native count afterward. The last-client rule applies when the last initialized connection actually ends. Use browser Disconnect or native Stop for immediate global revocation.
 
+For example, **Connected (4)** means four initialized adapters are connected to this launcher. It does not mean four people are using your library, and the launcher does not display individual chat names. All four receive only the same applied browser permissions. To confirm access from a particular chat, ask it to check KRAKINAI's connection and read the selected project list. That check does not approve any library changes.
+
 The native channel authenticates the same Windows user, session, elevation and exact native executable. It does not attest a specific chat or application vendor: another configured local MCP client using this installation can share the same selected scope. Use a separate installation/configuration for independent consent. Selected project metadata does not automatically grant prompt text, Character identities, notes or filenames.
 
 Stop, Restart, browser Disconnect, pairing expiry and host failure revoke shared access under the existing session rules. Losing the **last initialized client** also stops the owned host and clears pairing; a new client cannot restart it or restore old consent. Press Start and pair again. Losing one of several clients cancels only that client's waiting responses. Already-authorized transactions may finish; check proposal status/confirmed receipts before retrying an uncertain write.
 
 The broker admits sixteen outstanding host calls in total, including dispatched work whose caller left. The ninth adapter receives `MCP_CLIENT_LIMIT`; queued work receives a correlated `QUEUE_FULL` error. Shared outgoing queues remain capped at eight MiB. Per-client readers and process overhead add memory beyond that queue allowance. A stalled client is removed without blocking healthy clients; genuinely unresponsive host work ends the shared session. No fairness guarantee or per-chat permissions are provided.
+
+## Switching to the shared release
+
+Use these steps when replacing an older single-client launcher. Keep the old release and settings so you can return to them if needed.
+
+1. In the old launcher, choose **Quit & stop bridge**. Keep KRAKINAI open in your usual browser/profile and exact application address.
+2. Place the complete reviewed shared-session portable folder in a stable location. Open its executable with a **new dedicated settings file** and configure the same application origin and relay port. Follow [launcher settings and shortcut](#one-time-launcher-settings-and-shortcut); point your shortcut at this executable and settings file together.
+3. In the new launcher, choose **Review MCP configuration**. Replace only the existing `krakinai` registration with this launcher's adapter and settings paths. Preserve other MCP servers.
+4. Save and reload the KRAKINAI MCP registration in Codex. In a desktop client with **Plugins → MCPs**, turn `krakinai` off, wait five seconds, then turn it on. If old adapters remain, fully quit and reopen Codex. Saving new paths alone does not replace already-running adapters.
+5. Click **Start bridge** if it is stopped. Confirm **MCP clients: Connected (N)**, then complete a fresh [browser pairing and permission review](#pair-the-browser-and-apply-permissions). Ask the intended Codex chat to check access.
+
+Repository updates do not replace a copied portable release or change these live settings automatically. Never mix an older R3 launcher with the shared release's adapter or settings. Switching releases ends the previous pairing; it does not move or replace browser records.
 
 ## Pair the browser and apply permissions
 
@@ -128,6 +144,7 @@ The approved helper signature can be reused by copying the exact signed file onl
 | `MCP_CLIENT_LIMIT` | Eight adapters are admitted. Close an unused chat/client and retry. Existing clients stay connected. |
 | `CLIENT_ALREADY_CONNECTED` | This message identifies an older single-client launcher. Keep that release intact; activate a reviewed shared-session release and its matching configuration explicitly. |
 | `HOST_REQUEST_TIMEOUT` | Unacknowledged forwarded work exceeded its health deadline. Start and pair again; check proposal status/receipts before retrying an uncertain write. |
+| `HOST_EXITED` | The Node bridge process stopped unexpectedly. This code alone does not identify the cause. Check the reviewed release's completeness, runtime and configured paths. A known incomplete-package case and its repair are described [below](#incomplete-portable-package-host_exited). |
 | Missing runtime/build | Check .NET Desktop Runtime, Node 22 and the complete packaged bridge directory. |
 | Bridge Running, Browser Paired, MCP client Not connected | Complete [one-time Codex MCP registration](#one-time-codex-mcp-registration), reload Codex, and check that its adapter uses the same settings file and release as the open launcher. Browser pairing alone cannot connect the MCP client. |
 | MCP client Connected, Browser Not paired | Complete native/browser pairing and apply the intended permissions. MCP initialization grants no browser access. |
@@ -135,6 +152,22 @@ The approved helper signature can be reused by copying the exact signed file onl
 | `PAIRING_KEY_FORMAT` | Use the revealed 43-character one-time key, without spaces or line breaks, rather than the short verification code. Start a fresh attempt if the native window has closed or the challenge expired. |
 | `NATIVE_PATH_MISMATCH` | Open the executable belonging to that settings file, or configure a new dedicated settings file for the new executable path. Regenerate the shortcut and MCP block from the same launcher/configuration. |
 | Library appears empty in another window | Check the exact hostname, port and browser profile. Return to the original library origin/profile; the bridge does not synchronize or move browser data. |
+
+### Incomplete portable package (`HOST_EXITED`)
+
+A shared-session package prepared before the dependency correction could start inside the source checkout but fail after being copied elsewhere. Its bridge was missing `fflate` 0.8.3. The application checkout supplied that dependency during the earlier tests; a portable folder needs its own copy. This was verified separately from certificate or port problems. Other failures can also produce `HOST_EXITED`, so do not assume every occurrence has this cause.
+
+The preferred fix is a complete reviewed portable folder built from the corrected bridge manifest and lockfile. A source pull or a valid native signature does not repair an existing copied folder. Keep your current release/settings for rollback and follow the switching steps above for a new release path.
+
+For an **existing package confirmed to be missing only `fflate`**, a maintainer can repair that package's own `bridge` directory. Quit its launcher first. From normal PowerShell with the configured Node/npm installation available, run the following with the actual portable bridge path, not the application source folder:
+
+```powershell
+npm --prefix 'C:\KRAKINAI\bridge' install fflate@0.8.3 --save-exact --omit=dev --ignore-scripts --no-fund
+```
+
+`C:\KRAKINAI\bridge` is an example path. This command adds the dependency and updates that folder's package manifest and lockfile; it does not update other copies. It may download the locked package from npm. If the package is already cached, adding `--offline` avoids the network; that exact offline repair was tested on an isolated failed package before the owner applied it manually. A failed offline install requires the reviewed complete package or an approved package download, not a policy bypass.
+
+The repair leaves executable/helper bytes, certificate trust, AllSigned and browser storage unchanged. Because the JavaScript dependency inventory changes, the maintainer must record the updated package hashes rather than claim the old release inventory still matches. Reopen the same launcher/settings and click **Start bridge**. Then verify MCP initialization and fresh browser pairing independently. This repair does not by itself register the new adapter in Codex.
 
 Diagnostics are limited to codes, statuses and configured addresses. Pairing keys, prompt text, proposals, receipts, private notes and library contents must not enter launcher logs. Same-user/administrator compromise, compromised same-origin scripts and malicious browser extensions remain outside these protections.
 
