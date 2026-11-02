@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Krakinai.BridgeLauncher.Core;
 
-public sealed record LauncherStatus(string Bridge, string Browser, bool Mcp, string Origin, string Relay, string Generation, string? ErrorCode = null, string Policy = "");
+public sealed record LauncherStatus(string Bridge, string Browser, bool Mcp, string Origin, string Relay, string Generation, string? ErrorCode = null, string Policy = "", int McpClients = 0);
 public sealed class LauncherFault(string code) : Exception(code) { public string Code { get; } = code; }
 public interface IManagedHost : IAsyncDisposable
 {
@@ -32,10 +32,12 @@ public sealed class BridgeController : IAsyncDisposable
     public event Action<LauncherStatus>? StatusChanged;
     public LauncherStatus Status => Volatile.Read(ref status);
     public LauncherSettings Settings => settings;
+    public FrameQueueBudget OutgoingBudget { get; }
 
-    public BridgeController(LauncherSettings settings, IReadinessProbe readiness, IManagedHostFactory factory)
+    public BridgeController(LauncherSettings settings, IReadinessProbe readiness, IManagedHostFactory factory, FrameQueueBudget? outgoingBudget = null)
     {
         this.settings = settings; this.readiness = readiness; this.factory = factory;
+        OutgoingBudget = outgoingBudget ?? new();
         status = new("stopped", "not-paired", false, settings.AppOrigin, settings.RelayAddress, "none");
     }
     public void UpdateSettings(LauncherSettings value, string? path = null)
@@ -79,10 +81,12 @@ public sealed class BridgeController : IAsyncDisposable
             return RunStopAsync(++ticket);
         }
     }
-    public async Task SetMcpConnectedAsync(bool connected)
+    public Task SetMcpConnectedAsync(bool connected) => SetMcpClientCountAsync(connected ? 1 : 0);
+    public async Task SetMcpClientCountAsync(int count)
     {
+        if (count is < 0 or > LauncherPipeServer.MaximumClients) throw new LauncherFault("MCP_CLIENT_LIMIT");
         bool lost;
-        lock (sync) { lost = Status.Mcp && !connected; Publish(current => current with { Mcp = connected }); }
+        lock (sync) { lost = Status.Mcp && count == 0; Publish(current => current with { Mcp = count > 0, McpClients = count }); }
         if (lost) await StopAsync();
     }
     public async Task<JsonElement> CallAsync(JsonElement frame, CancellationToken token)

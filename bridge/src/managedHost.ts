@@ -34,7 +34,10 @@ export function runManagedHost(options: RelayOptions & { generation: string }, i
     if (frame.kind === 'shutdown') { await close(); await io.send({ ...frame, kind: 'stopped' }); return; }
     if (frame.kind !== 'call') throw new McpError('LAUNCHER_PROTOCOL');
     const key = frame.connectionId + ':' + frame.requestId;
-    if (pending.has(key) || pending.size >= MCP_LIMITS.requests) throw new McpError('QUEUE_FULL');
+    if (pending.has(key)) throw new McpError('LAUNCHER_PROTOCOL');
+    if (pending.size >= MCP_LIMITS.requests) {
+      await io.send({ version: frame.version, generation: frame.generation, connectionId: frame.connectionId, requestId: frame.requestId, kind: 'result', result: resultError(new McpError('QUEUE_FULL', 'Wait for an outstanding request to finish, then retry.', true)) }); return;
+    }
     const current = relay;
     if (closing || !current) { await io.send({ version: frame.version, generation: frame.generation, connectionId: frame.connectionId, requestId: frame.requestId, kind: 'result', result: resultError(new McpError('DISCONNECTED', 'Start the bridge in the desktop launcher, then pair in KRAKINAI.', true)) }); return; }
     pending.add(key);

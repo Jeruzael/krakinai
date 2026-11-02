@@ -15,6 +15,16 @@ internal static class Program
     {
         try
         {
+            await Check("shared frame budget is bounded and releases exactly once", SharedSessionTests.QueueBudget);
+            await Check("independent writers share credits and release on cancellation and failure", SharedSessionTests.SharedWriters);
+            await Check("guarded writer skips abandoned frames and preserves bytes", SharedSessionTests.GuardedWriter);
+            await Check("host ledger retains dispatched work after caller cancellation", SharedSessionTests.LedgerLifetime);
+            await Check("host ledger isolates colliding and retired routes", SharedSessionTests.LedgerRoutes);
+            await Check("forwarded health deadline survives caller cancellation", SharedSessionTests.LedgerDeadline);
+            await Check("cancelling a large shared-host write preserves the other caller", SharedSessionTests.HostCancellation);
+            await Check("managed host retains sixteen dispatched reservations until terminal replies", SharedSessionTests.HostRetainedAdmission);
+            await Check("managed host fails orphaned work at its health deadline", SharedSessionTests.HostHealthDeadline);
+            await Check("malformed shared-host output still fails integrity checks", SharedSessionTests.HostMalformedResponse);
             await Check("settings reject remote origins, paths and invalid ports", SettingsValidation);
             await Check("settings preserve installation identity and contain no secrets", SettingsRoundTrip);
             await Check("settings persistence is serialized with Start and failed saves preserve active settings", AtomicSettings);
@@ -32,7 +42,12 @@ internal static class Program
             await Check("port conflict leaves an unrelated listener untouched", OwnedHostPortConflict);
             await Check("owned job cleanup releases a running host without a PID lookup", OwnedHostJobCleanup);
             await Check("protected pipe connects the same identity and keeps indicators independent", PrivatePipeConnection);
-            await Check("second pipe controller cannot replace the first", PrivatePipeSecondClient);
+            await Check("three initialized peers share one host and isolate colliding IDs", SharedPipeTests.MembershipAndRouting);
+            await Check("ninth peer receives a bounded capacity error", SharedPipeTests.Capacity);
+            await Check("new initialization waits for final-client Stop", SharedPipeTests.FinalLossRace);
+            await Check("stale and malformed peers are isolated, final loss revokes", SharedPipeTests.IsolatedPeerFailures);
+            await Check("status bursts coalesce without blocking healthy peers", SharedPipeTests.SlowStatusReader);
+            await Check("reconnect and duplicate external IDs cannot inherit old replies", SharedPipeTests.ReconnectAndDuplicate);
             await Check("invalid adapter control closes its session without starting a process", PrivatePipeControl);
             await Check("stale initialized client stops the host and revokes its session", PrivatePipeHeartbeat);
             await Check("native presentation separates indicators and explains actionable failures", Presentation);
@@ -281,26 +296,6 @@ internal static class Program
         await controller.StartAsync();
         Require(controller.Status.Mcp && controller.Status.Browser == "not-paired", "Start implied pairing");
     }
-    private static async Task PrivatePipeSecondClient()
-    {
-        var settings = Settings() with { InstallationId = Guid.NewGuid().ToString("N") };
-        await using var controller = new BridgeController(settings, new FakeReadiness(), new FakeHostFactory());
-        await using var server = new LauncherPipeServer(settings.PipeName, controller); await server.StartAsync();
-        var conflict = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
-        server.ConnectionRejected += code => conflict.TrySetResult(code);
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        await using var one = await ConnectPipe(settings.PipeName, deadline.Token);
-        using var firstReader = new FrameReader(one, FrameDirection.AdapterResponse); using var firstWriter = new FrameWriter(one, FrameDirection.AdapterRequest);
-        await firstWriter.WriteAsync(FrameCodec.Make("hello", "none", "one", "hello1"), deadline.Token); await ReadKind(firstReader, "status", deadline.Token);
-        await using var two = await ConnectPipe(settings.PipeName, deadline.Token);
-        using var secondReader = new FrameReader(two, FrameDirection.AdapterResponse); using var secondWriter = new FrameWriter(two, FrameDirection.AdapterRequest);
-        await secondWriter.WriteAsync(FrameCodec.Make("hello", "none", "two", "hello2"), deadline.Token);
-        var rejected = await ReadKind(secondReader, "error", deadline.Token);
-        Require(FrameCodec.Text(rejected, "code") == "CLIENT_ALREADY_CONNECTED", "second controller was accepted");
-        Require(await conflict.Task.WaitAsync(deadline.Token) == "CLIENT_ALREADY_CONNECTED", "second-client conflict was not surfaced to the operator");
-        await firstWriter.WriteAsync(FrameCodec.Make("initialized", "none", "one", "init1"), deadline.Token); await ReadKind(firstReader, "status", deadline.Token);
-        Require(controller.Status.Mcp, "second controller displaced first");
-    }
     private static async Task PrivatePipeControl()
     {
         var settings = Settings() with { InstallationId = Guid.NewGuid().ToString("N") }; var factory = new FakeHostFactory();
@@ -341,9 +336,12 @@ internal static class Program
     {
         var stopped = LauncherPresentation.From(new("stopped", "not-paired", false, "http://localhost:5173", "http://127.0.0.1:4180", "none"));
         Require(stopped.CanStart && !stopped.CanStop && !stopped.CanRestart && stopped.CanEditSettings, "stopped controls wrong");
-        var running = LauncherPresentation.From(new("running", "not-paired", true, "http://localhost:5173", "http://127.0.0.1:4180", "g1"));
+        var running = LauncherPresentation.From(new("running", "not-paired", true, "http://localhost:5173", "http://127.0.0.1:4180", "g1", McpClients: 1));
         Require(!running.CanStart && running.CanStop && running.CanRestart && !running.CanEditSettings, "running controls wrong");
-        Require(running.Browser == "Not paired" && running.Mcp == "Connected", "indicators conflated");
+        Require(running.Browser == "Not paired" && running.Mcp == "Connected (1)" && stopped.Mcp == "Not connected", "initialized count missing or indicators conflated");
+        var shared = LauncherPresentation.From(new("running", "paired", true, "http://localhost:5173", "http://127.0.0.1:4180", "g1", McpClients: 8));
+        Require(shared.Mcp == "Connected (8)" && shared.Message.Contains("share", StringComparison.OrdinalIgnoreCase), "shared scope not visible");
+        Require(LauncherPresentation.Explain("MCP_CLIENT_LIMIT").Contains("eight", StringComparison.OrdinalIgnoreCase), "capacity message missing actual limit");
         foreach (var code in new[] { "PORT_IN_USE", "HELPER_PUBLISHER_UNTRUSTED", "NATIVE_SIGNATURE_INVALID", "NODE_VERSION_UNSUPPORTED", "CLIENT_ALREADY_CONNECTED" })
             Require(LauncherPresentation.Explain(code).Length > code.Length && !LauncherPresentation.Explain(code).Contains("ExecutionPolicy Bypass"), "missing actionable safe message");
         Require(!LauncherPresentation.ShouldQuit(false) && LauncherPresentation.ShouldQuit(true), "window close should hide, explicit Quit should stop");

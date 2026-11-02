@@ -12,6 +12,7 @@ it('starts disconnected with no grants and does not write connection settings in
   expect(await screen.findByRole('heading', { name: 'AI Connections' })).toBeInTheDocument();
   expect(screen.getByText('Disconnected', { exact: true })).toBeInTheDocument();
   expect(screen.getByRole('button', { name: 'Connect Codex' })).toBeInTheDocument();
+  expect(screen.getByText(/Connected clients share these applied browser permissions/)).toBeInTheDocument();
   await userEvent.setup().click(screen.getByRole('tab', { name: 'Permissions' }));
   expect(screen.getByRole('checkbox', { name: 'Allow change-set proposals' })).not.toBeChecked();
   expect(screen.getByRole('checkbox', { name: 'Allow new project creation' })).not.toBeChecked();

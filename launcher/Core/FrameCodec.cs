@@ -125,22 +125,24 @@ public sealed class FrameReader(Stream stream, FrameDirection direction) : IDisp
     public void Dispose() { Array.Clear(frame); Array.Clear(input); }
 }
 
-public sealed class FrameWriter(Stream stream, FrameDirection direction) : IDisposable
+public sealed class FrameWriter(Stream stream, FrameDirection direction, FrameQueueBudget? sharedBudget = null) : IDisposable
 {
     private readonly SemaphoreSlim gate = new(1, 1);
-    private long queued;
-    public async Task WriteAsync(JsonElement frame, CancellationToken token)
+    private readonly FrameQueueBudget budget = sharedBudget ?? new();
+    public async Task<bool> WriteIfAsync(JsonElement frame, CancellationToken token, Func<bool> beginWrite)
     {
         FrameCodec.Validate(frame, direction);
         string text = frame.GetRawText() + "\n"; int count = FrameCodec.Utf8.GetByteCount(text);
-        if (Interlocked.Add(ref queued, count) > FrameCodec.QueueBytes) { Interlocked.Add(ref queued, -count); throw new LauncherFault("IPC_QUEUE_LIMIT"); }
+        using var credit = budget.Reserve(count);
+        await gate.WaitAsync(token);
         try
         {
-            await gate.WaitAsync(token);
-            try { await stream.WriteAsync(FrameCodec.Utf8.GetBytes(text), token); await stream.FlushAsync(token); }
-            finally { gate.Release(); }
+            token.ThrowIfCancellationRequested();
+            if (!beginWrite()) return false;
+            await stream.WriteAsync(FrameCodec.Utf8.GetBytes(text), token); await stream.FlushAsync(token); return true;
         }
-        finally { Interlocked.Add(ref queued, -count); }
+        finally { gate.Release(); }
     }
+    public async Task WriteAsync(JsonElement frame, CancellationToken token) => await WriteIfAsync(frame, token, () => true);
     public void Dispose() => gate.Dispose();
 }
