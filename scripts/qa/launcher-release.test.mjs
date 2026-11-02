@@ -33,7 +33,8 @@ test('production bridge starts and shuts down outside the repository with only i
   for (const file of ['package.json', 'package-lock.json']) await copyFile(join(root, 'bridge', file), join(bridge, file));
   const npm = [process.env.npm_execpath, join(dirname(process.execPath), 'node_modules/npm/bin/npm-cli.js'), resolve(dirname(process.execPath), '../lib/node_modules/npm/bin/npm-cli.js')].find(path => path && existsSync(path));
   assert(npm, 'Installed npm CLI not found');
-  await run(process.execPath, [npm, 'ci', '--omit=dev', '--offline', '--ignore-scripts', '--no-audit', '--no-fund'], { ...options, cwd: bridge });
+  // A portable build must also work with a cold cache on a fresh CI runner.
+  await run(process.execPath, [npm, 'ci', '--omit=dev', '--cache', join(fixture, 'npm-cache'), '--prefer-offline', '--ignore-scripts', '--no-audit', '--no-fund'], { ...options, cwd: bridge });
   const reservation = createServer(); await new Promise((yes, no) => { reservation.once('error', no); reservation.listen(0, '127.0.0.1', yes); });
   const port = reservation.address().port; await new Promise((yes, no) => reservation.close(error => error ? no(error) : yes()));
   const generation = randomUUID().replaceAll('-', ''), origin = 'http://localhost:5184', env = {};
