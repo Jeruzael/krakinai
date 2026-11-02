@@ -2,6 +2,20 @@
 
 **KRAKINAI** is a single-user, local-first visual prompt library and deterministic scene builder for saving, editing, organizing, and combining prompts used in external AI image and video tools.
 
+## Start here: local app and optional Codex connection
+
+From the repository folder, install dependencies with `npm ci`, then start the browser app with `npm run dev`. Open the local URL printed by Vite. If you already have a library, keep its exact hostname, port and browser profile: `localhost` and `127.0.0.1` have separate libraries. The bridge launcher does not start the browser app or its server.
+
+To use Codex with KRAKINAI, follow the [Windows desktop/tray launcher setup guide](docs/desktop-bridge-launcher.md). It covers the signed portable release, Node.js 22 and .NET 10 Desktop Runtime prerequisites, settings, a reusable shortcut, browser pairing, permissions and troubleshooting. A source checkout does not include a ready-to-run signed launcher or an installer; the guide explains the release preparation requirement.
+
+The connection has three separate steps:
+
+1. **Start bridge** in the launcher.
+2. **Register the MCP client once:** choose **Review MCP configuration → Copy configuration**, add the generated block to your Codex configuration while preserving existing entries, then reload Codex. See the [exact registration steps and example](docs/desktop-bridge-launcher.md#one-time-codex-mcp-registration).
+3. **Pair your browser:** in KRAKINAI's **AI Connections**, apply the intended permissions, connect to the launcher's relay address, and complete the separate signed Windows verification window and browser confirmation. Pair again after a session ends; the MCP configuration and shortcut do not need to be pasted each time.
+
+**Bridge: Running**, **Browser: Paired**, and **MCP client: Connected** are independent indicators. Browser pairing alone does not connect Codex. Every proposed library change still requires your review and approval in KRAKINAI. The [daily-use checklist](docs/desktop-bridge-launcher.md#daily-use) explains reopening and stopping the launcher. The [direct stdio setup](docs/local-codex-mcp.md) is an alternative for development; use the launcher's generated adapter configuration when using the tray launcher.
+
 ---
 
 ## 1. Product Boundaries & External-Generation Workflow
