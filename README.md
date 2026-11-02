@@ -16,6 +16,10 @@ The connection has three separate steps:
 
 **Bridge: Running**, **Browser: Paired**, and **MCP clients: Connected (N)** are independent indicators. The shared launcher supports up to eight initialized adapters using the same browser-approved scope across chats. Browser pairing alone does not connect Codex. Every proposed library change still requires your review and approval in KRAKINAI. Closing one chat leaves other connected clients available; Stop, browser Disconnect, or loss of the last initialized client revokes shared access. See [shared-session consent and limits](docs/desktop-bridge-launcher.md#shared-clients-and-consent), the [daily-use checklist](docs/desktop-bridge-launcher.md#daily-use), and the alternative [direct stdio setup](docs/local-codex-mcp.md).
 
+For example, **Running / Paired / Connected (4)** means the bridge is running, your browser has paired, and four MCP adapters have connected. That count is not a list of people or a guarantee of four visible chats. Ask Codex to check the connection to confirm access from the chat you intend to use.
+
+Updating this repository does not update an existing portable launcher folder, shortcut or Codex registration. Follow [switching to the shared release](docs/desktop-bridge-launcher.md#switching-to-the-shared-release) when upgrading. If a copied bridge exits immediately with `HOST_EXITED`, see the [portable-package repair guidance](docs/desktop-bridge-launcher.md#incomplete-portable-package-host_exited).
+
 ---
 
 ## 1. Product Boundaries & External-Generation Workflow
