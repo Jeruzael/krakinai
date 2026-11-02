@@ -14,6 +14,11 @@ describe('actual compiled SDK stdio process', () => {
     try {
       await client.connect(transport);
       const tools = await client.listTools(); expect(tools.tools).toHaveLength(13);
+      const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
+      expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
+      expect(authoring.description).toContain('explicit user request');
+      expect(authoring.description).toContain('Never expand permissions');
+      expect(authoring.annotations).toMatchObject({readOnlyHint:false,destructiveHint:false,openWorldHint:false,idempotentHint:true});
       const versions=(tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema.properties!.changeSet as any).oneOf;
       expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4']);
       for(const version of versions)expect(version.properties.operations.maxItems).toBe(250);

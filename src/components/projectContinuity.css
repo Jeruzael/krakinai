@@ -28,3 +28,58 @@
 .pc-form-field select, .pc-form-field textarea, .pc-form-field input { width: 100%; min-width: 0; box-sizing: border-box; padding: 10px 12px; min-height: 42px; border: 1px solid var(--border-subtle); border-radius: 8px; background: white; color: var(--text-primary); font: inherit; font-weight: 400; }
 .pc-form-field textarea { resize: vertical; line-height: 1.55; }
 @media (max-width: 600px) { .pc-frame-pair { grid-template-columns: 1fr; } }
+
+/* Continuity is a focused workspace. Existing editors keep their storage APIs. */
+.pc-panel { gap: 12px; padding: 0; }
+.pc-panel [hidden] { display: none !important; }
+.pc-workspace-tools { display:grid;grid-template-columns:minmax(0,1fr) minmax(150px,200px);gap:12px; }
+.pc-workspace-tools label,.pc-inspector-summary > label { display:grid;gap:5px;min-width:0;font-size:.82rem;font-weight:600; }
+.pc-workspace-tools input,.pc-workspace-tools select,.pc-inspector-summary select { width:100%;min-width:0;min-height:40px;padding:8px 10px;border:1px solid var(--border-subtle);border-radius:7px;background:var(--bg-surface);color:var(--text-primary);font:inherit; }
+.pc-shot-strip { display:flex;gap:8px;overflow-x:auto;max-width:100%;padding:3px 2px 8px; }
+.pc-shot-choice { display:flex;flex-direction:column;align-items:start;gap:5px;flex:0 0 175px;min-width:0;padding:10px 12px;border:1px solid var(--border-subtle);border-radius:9px;background:var(--bg-surface);color:var(--text-primary);text-align:left;cursor:pointer; }
+.pc-shot-choice strong { display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;font-size:.85rem; }
+.pc-shot-choice span { max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.75rem;color:var(--text-muted); }
+.pc-shot-choice[aria-pressed="true"],.pc-pair-choice[aria-pressed="true"] { border-color:var(--primary);background:var(--primary-light,#eff6ff); }
+.pc-view-tabs { display:flex;flex-wrap:wrap;gap:6px; }
+.pc-view-tabs button { border:1px solid var(--border-subtle);border-radius:7px;padding:8px 11px;background:var(--bg-surface);color:var(--text-primary);font:inherit;font-size:.84rem;cursor:pointer; }
+.pc-view-tabs button[aria-selected="true"] { color:var(--primary);background:var(--primary-light,#eff6ff);border-color:var(--primary); }
+.pc-workspace-grid { display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,310px);gap:16px;min-width:0;min-height:0;height:var(--pc-work-height,clamp(320px,calc(100dvh - 465px),650px)); }
+.pc-content-scroll,.pc-inspector { min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain; }
+.pc-content.card,.pc-inspector.card { margin:0;padding:16px; }
+.pc-content { display:grid;align-content:start;gap:14px;min-width:0;overflow-wrap:anywhere; }
+.pc-content h3,.pc-inspector h3 { font-size:1rem;margin:0;overflow-wrap:anywhere; }
+.pc-content h4,.pc-inspector h4 { font-size:.9rem;margin:0;overflow-wrap:anywhere; }
+.pc-content-heading { display:flex;align-items:baseline;justify-content:space-between;gap:8px;flex-wrap:wrap; }
+.pc-content-heading > span { font-size:.78rem; }
+.pc-summary { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:0; }
+.pc-summary > div { display:flex;flex-direction:column-reverse;gap:2px; }
+.pc-summary dt { font-size:.8rem;color:var(--text-muted); }
+.pc-summary dd { margin:0;font-size:1.55rem;font-weight:600; }
+.pc-table-scroll { min-width:0;max-width:100%;overflow-x:auto; }
+.pc-table-scroll table { width:100%;border-collapse:collapse;font-size:.8rem; }
+.pc-table-scroll th,.pc-table-scroll td { text-align:left;vertical-align:top;padding:9px 7px;border-bottom:1px solid var(--border-subtle);overflow-wrap:anywhere; }
+.pc-table-scroll th { font-weight:600; }
+.pc-table-scroll th span,.pc-cell-secondary { display:block;margin-top:3px;font-weight:400;font-size:.75rem;color:var(--text-muted); }
+.pc-table-scroll table[aria-label="Character wardrobe continuity"] { table-layout:auto; }
+.pc-table-scroll table[aria-label="Character wardrobe continuity"] th,.pc-table-scroll table[aria-label="Character wardrobe continuity"] td { min-width:105px; }
+.pc-text-choice { padding:3px 0;border:0;background:none;color:var(--primary);font:inherit;text-align:left;cursor:pointer; }
+.pc-matrix-cell { display:flex;flex-direction:column;gap:4px;width:100%;min-width:90px;padding:8px;background:var(--bg-surface);color:var(--text-primary);border:1px solid var(--border-subtle);border-radius:6px;font:inherit;text-align:left;cursor:pointer;overflow-wrap:anywhere; }
+.pc-matrix-cell span { font-size:.72rem;color:var(--text-muted); }
+.pc-inspector-summary { display:grid;gap:10px;align-content:start;min-width:0; }
+.pc-inspector-summary article { display:grid;gap:8px;min-width:0; }
+.pc-inspector-summary > .btn { justify-self:start;white-space:normal; }
+.pc-eyebrow { text-transform:uppercase;font-size:.7rem;letter-spacing:.08em;color:var(--text-muted); }
+.pc-inspector-summary > p { overflow-wrap:anywhere; }
+.pc-inline-editor { display:grid;gap:12px;min-width:0; }
+.pc-editor-actions { display:flex;flex-wrap:wrap;gap:8px;position:sticky;bottom:-16px;background:var(--bg-surface);border-top:1px solid var(--border-subtle);padding:12px 0;z-index:1; }
+.pc-transition-rail { display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:8px; }
+.pc-pair-choice { display:grid;gap:6px;min-width:0;border:1px solid var(--border-subtle);border-radius:7px;background:var(--bg-surface);color:var(--text-primary);padding:10px;text-align:left;cursor:pointer;font:inherit;font-size:.82rem;overflow-wrap:anywhere; }
+.pc-pair-choice span { color:var(--text-muted);font-size:.75rem; }
+.pc-future-note { font-size:.78rem;color:var(--text-muted);border-left:3px solid var(--border-subtle);padding-left:10px; }
+@media(max-width:1000px) {
+ .pc-workspace-grid { grid-template-columns:minmax(0,1fr);height:auto; }
+ .pc-content-scroll,.pc-inspector { overflow:visible; }
+ .pc-workspace-tools { grid-template-columns:minmax(0,1fr); }
+ .pc-shot-choice { flex-basis:150px; }
+}
+@media(pointer:coarse) { .pc-view-tabs button,.pc-shot-choice,.pc-matrix-cell,.pc-text-choice { min-height:44px; } .pc-workspace-tools input,.pc-workspace-tools select,.pc-form-field input,.pc-form-field textarea,.pc-form-field select { font-size:16px; } }

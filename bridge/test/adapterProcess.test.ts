@@ -15,6 +15,13 @@ describe('compiled persistent adapter SDK process', () => {
     const client = new Client({ name: 'synthetic-launcher-sdk', version: '1.0.0' });
     try {
       await client.connect(transport); const tools = await client.listTools(); expect(tools.tools).toHaveLength(13);
+      const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
+      expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
+      expect(authoring.description).toContain('explicit user request');
+      expect(authoring.description).toContain('Never expand permissions');
+      expect(authoring.annotations).toMatchObject({readOnlyHint:false,destructiveHint:false,openWorldHint:false,idempotentHint:true});
+      const versions=(authoring.inputSchema.properties!.changeSet as any).oneOf;
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4']);
       expect(tools.tools.some(tool => /start|stop|approve|shell|filesystem/.test(tool.name))).toBe(false);
       const status = await client.callTool({ name: 'krakinai_connection_status', arguments: {} });
       expect(JSON.parse((status.content![0] as { text: string }).text)).toMatchObject({ ok: true, data: { connected: false } });

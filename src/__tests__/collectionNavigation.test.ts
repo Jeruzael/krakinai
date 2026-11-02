@@ -1,7 +1,17 @@
 import { describe, it, expect } from 'vitest';
-import { collectionSceneRoute, resolveCollectionContext, rememberCollectionScroll, getCollectionScroll } from '../domain/collectionNavigation';
+import { collectionRoute, collectionViewState, collectionSceneRoute, resolveCollectionContext, rememberCollectionScroll, getCollectionScroll } from '../domain/collectionNavigation';
 const collections = [{id:'one',name:'One',members:[{type:'scene',id:'s'}]}, {id:'two',name:'Two',members:[{type:'scene',id:'s'}]}] as any;
 describe('collection navigation', () => {
+ it('retains an allowlisted Continuity subview and exact legacy shot through output and return', () => {
+  const route=collectionSceneRoute('s','one',{tab:'continuity',continuity:'transitions',shot:'one:legacy:s'});
+  const restored=resolveCollectionContext(route,'s',collections)!;
+  expect(restored.state).toMatchObject({tab:'continuity',continuity:'transitions',shot:'one:legacy:s'});
+  expect(collectionViewState(restored.route)).toEqual(restored.state);
+  expect(collectionViewState('/collections/one?tab=continuity&continuity=untrusted').continuity).toBe('overview');
+ });
+ it('does not add Continuity query data to historical routes without that context', () => {
+  expect(collectionRoute('one',{tab:'storyboard'})).toBe('/collections/one?tab=storyboard&view=grid&sort=updated&filter=');
+ });
  it('returns to a lazy legacy storyboard shot without materializing or accepting an unrelated shot', () => {
   const route=collectionSceneRoute('s','one',{tab:'storyboard',shot:'one:legacy:s'});
   expect(resolveCollectionContext(route,'s',collections)?.state.shot).toBe('one:legacy:s');

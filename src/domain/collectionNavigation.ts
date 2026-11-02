@@ -1,18 +1,19 @@
 import type { Collection } from '../types/domain';
-export interface CollectionViewState { tab: string; view: 'grid'|'list'; sort: string; filter: string; shot?: string }
-const tabs = ['assets','variants','scenes','storyboard','characters','results','details'];
+import { CONTINUITY_VIEWS, type ContinuityView } from './continuityWorkspace';
+export interface CollectionViewState { tab: string; view: 'grid'|'list'; sort: string; filter: string; shot?: string; continuity?: ContinuityView }
+const tabs = ['assets','variants','scenes','storyboard','characters','continuity','results','details'];
 const sorts = ['updated','created','title','name','order','newest','oldest','updated-desc','created-desc','title-asc'];
 export function collectionViewState(path: string): CollectionViewState {
  const q = new URLSearchParams(path.split('?')[1] || '');
- return {tab: tabs.includes(q.get('tab') || '') ? q.get('tab')! : 'assets', view:q.get('view') === 'list' ? 'list':'grid', sort:sorts.includes(q.get('sort') || '') ? q.get('sort')!:'updated', filter:(q.get('filter') || '').slice(0,500), ...(q.get('shot') ? {shot:q.get('shot')!}:{})};
+ return {tab: tabs.includes(q.get('tab') || '') ? q.get('tab')! : 'assets', view:q.get('view') === 'list' ? 'list':'grid', sort:sorts.includes(q.get('sort') || '') ? q.get('sort')!:'updated', filter:(q.get('filter') || '').slice(0,500), ...(q.get('shot') ? {shot:q.get('shot')!}:{}), ...((q.has('continuity')||q.get('tab')==='continuity')?{continuity:CONTINUITY_VIEWS.includes(q.get('continuity') as ContinuityView)?q.get('continuity') as ContinuityView:'overview' as const}:{})};
 }
 export function collectionRoute(id: string, state: Partial<CollectionViewState> = {}): string {
  const s = collectionViewState('?' + new URLSearchParams(state as Record<string,string>).toString());
- return `/collections/${encodeURIComponent(id)}?${new URLSearchParams({tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{})}).toString()}`;
+ return `/collections/${encodeURIComponent(id)}?${new URLSearchParams({tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{}),...(s.continuity?{continuity:s.continuity}:{})}).toString()}`;
 }
 export function collectionSceneRoute(sceneId: string, collectionId: string, state: Partial<CollectionViewState> = {}): string {
  const s = collectionViewState('?' + new URLSearchParams(state as Record<string,string>).toString());
- return `/output/${encodeURIComponent(sceneId)}?${new URLSearchParams({collection:collectionId,tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{})}).toString()}`;
+ return `/output/${encodeURIComponent(sceneId)}?${new URLSearchParams({collection:collectionId,tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{}),...(s.continuity?{continuity:s.continuity}:{})}).toString()}`;
 }
 export function resolveCollectionContext(path: string, sceneId: string, collections: Collection[]) {
  const q = new URLSearchParams(path.split('?')[1] || '');

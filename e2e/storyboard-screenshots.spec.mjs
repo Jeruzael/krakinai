@@ -46,9 +46,10 @@ for (const [width, height] of [
       4
     );
     await shot('storyboard');
-    await page.locator('.cw-continuity-review > summary').click();
+    await page.getByRole('tab', {name:'Continuity',exact:true}).click();
+    await page.getByRole('tab', {name:'Wardrobe',exact:true}).click();
     await page
-      .getByRole('heading', { name: 'Wardrobe continuity', exact: true })
+      .getByRole('heading', { name: 'Character wardrobe matrix', exact: true })
       .evaluate(element=>element.scrollIntoView({block:'start'}));
     await shot('continuity');
     await page
@@ -57,6 +58,7 @@ for (const [width, height] of [
       .click();
     await shot('wardrobe');
     await page.keyboard.press('Escape');
+    await page.getByRole('tab', {name:'Transitions',exact:true}).click();
     await page
       .getByRole('button', { name: 'Add transition', exact: true })
       .first()
