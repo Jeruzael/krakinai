@@ -8,7 +8,7 @@ internal sealed class LauncherForm : Form
     private readonly string configPath;
     private readonly NotifyIcon tray;
     private readonly Button start = ActionButton("&Start bridge"), stop = ActionButton("S&top bridge"), restart = ActionButton("&Restart bridge"), settings = ActionButton("S&ettings");
-    private readonly Label bridge = StatusLabel("Bridge status"), browser = StatusLabel("Browser pairing status"), mcp = StatusLabel("MCP client status"), origin = StatusLabel("Application origin"), relay = StatusLabel("Local relay address");
+    private readonly Label bridge = StatusLabel("Bridge status"), browser = StatusLabel("Browser pairing status"), mcp = StatusLabel("MCP clients status"), origin = StatusLabel("Application origin"), relay = StatusLabel("Local relay address");
     private readonly Label message = new() { AutoSize = true, Dock = DockStyle.Fill, MaximumSize = new(730, 0), AccessibleName = "Connection guidance", Padding = new(10), Margin = new(0, 15, 0, 12) };
     private readonly ToolStripMenuItem trayStart = new("Start bridge"), trayStop = new("Stop bridge"), trayRestart = new("Restart bridge");
     private readonly ToolStripMenuItem trayQuit = new("Quit & Stop Bridge");
@@ -26,7 +26,7 @@ internal sealed class LauncherForm : Form
         layout.Controls.Add(title, 0, 0); layout.SetColumnSpan(title, 2);
         var subtitle = new Label { Text = "Manual control. Browser-owned permissions. Human-reviewed proposals.", AutoSize = true, MaximumSize = new(730, 0), Margin = new(0, 0, 0, 22) };
         layout.Controls.Add(subtitle, 0, 1); layout.SetColumnSpan(subtitle, 2);
-        AddRow(layout, 2, "Bridge", bridge); AddRow(layout, 3, "Browser", browser); AddRow(layout, 4, "MCP client", mcp);
+        AddRow(layout, 2, "Bridge", bridge); AddRow(layout, 3, "Browser", browser); AddRow(layout, 4, "MCP clients", mcp);
         var actions = new FlowLayoutPanel { AutoSize = true, Dock = DockStyle.Fill, Margin = new(0, 14, 0, 20) };
         actions.Controls.AddRange([start, stop, restart]); layout.Controls.Add(actions, 0, 5); layout.SetColumnSpan(actions, 2);
         AddRow(layout, 6, "Application origin", origin); AddRow(layout, 7, "Local bridge address", relay);
@@ -66,7 +66,7 @@ internal sealed class LauncherForm : Form
     {
         var view = LauncherPresentation.From(status);
         bridge.Text = view.Bridge; browser.Text = view.Browser; mcp.Text = view.Mcp; origin.Text = status.Origin; relay.Text = status.Relay; message.Text = view.Message;
-        bridge.AccessibleName = "Bridge: " + view.Bridge; browser.AccessibleName = "Browser: " + view.Browser; mcp.AccessibleName = "MCP client: " + view.Mcp;
+        bridge.AccessibleName = "Bridge: " + view.Bridge; browser.AccessibleName = "Browser: " + view.Browser; mcp.AccessibleName = "MCP clients: " + view.Mcp;
         origin.AccessibleName = "Application origin: " + status.Origin; relay.AccessibleName = "Local bridge address: " + status.Relay; message.AccessibleName = "Connection guidance: " + view.Message;
         start.Enabled = trayStart.Enabled = view.CanStart && !quitting && !editingSettings; stop.Enabled = trayStop.Enabled = view.CanStop && !quitting && !editingSettings; restart.Enabled = trayRestart.Enabled = view.CanRestart && !quitting && !editingSettings; settings.Enabled = view.CanEditSettings && !quitting && !editingSettings;
         trayQuit.Enabled = !quitting && !editingSettings;

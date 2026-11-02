@@ -4,14 +4,33 @@ import { describe, expect, it } from 'vitest';
 import { LAUNCHER_VERSION, validateLauncherFrame, type LauncherFrame } from '../src/launcherProtocol';
 
 const header = { version: LAUNCHER_VERSION, generation: 'synthetic_generation', connectionId: 'host', requestId: 'request_1' };
-async function setup() {
+async function setup(send?: (frame: LauncherFrame) => void | Promise<void>, now?: () => number) {
   expect(existsSync(resolve('src/managedHost.ts')), 'managed host is implemented').toBe(true);
   const { runManagedHost } = await import('../src/managedHost');
   const sent: LauncherFrame[] = []; let nativeCalls = 0;
-  const host = runManagedHost({ generation: header.generation, port: 0, appOrigin: 'http://localhost:4183', bridgePath: 'synthetic', verifyNative() { nativeCalls++; return { decision: Promise.resolve(false), close() {} }; } }, { send(frame) { sent.push(frame); } });
+  const host = runManagedHost({ now, generation: header.generation, port: 0, appOrigin: 'http://localhost:4183', bridgePath: 'synthetic', verifyNative() { nativeCalls++; return { decision: Promise.resolve(false), close() {} }; } }, { send(frame) { sent.push(frame); return send?.(frame); } });
   return { host, sent, nativeCalls: () => nativeCalls };
 }
 describe('managed bridge host uses the existing relay', () => {
+  it('returns correlated capacity errors and keeps serving other clients afterward', async () => {
+    let release!: () => void;
+    let now = 0;
+    const held = new Promise<void>(resolve => { release = resolve; });
+    const env = await setup(frame => {
+      if (frame.kind === 'result' && !(frame.result.ok === false && frame.result.error.code === 'QUEUE_FULL')) return held;
+    }, () => now);
+    try {
+      await env.host.receive({ ...header, kind: 'activate' });
+      const calls = Array.from({ length: 16 }, (_, i) => env.host.receive({ ...header, connectionId: 'client_' + i, requestId: 'same', kind: 'call', tool: 'krakinai_get_project', args: { projectId: 'synthetic' } }));
+      await Promise.resolve();
+      await expect(env.host.receive({ ...header, connectionId: 'overflow', requestId: 'same', kind: 'call', tool: 'krakinai_get_project', args: { projectId: 'synthetic' } })).resolves.toBeUndefined();
+      expect(env.sent.at(-1)).toMatchObject({ kind: 'result', connectionId: 'overflow', requestId: 'same', result: { ok: false, error: { code: 'QUEUE_FULL' } } });
+      release(); await Promise.all(calls);
+      now = 60001;
+      await env.host.receive({ ...header, connectionId: 'healthy', requestId: 'next', kind: 'call', tool: 'krakinai_connection_status', args: {} });
+      expect(env.sent.at(-1)).toMatchObject({ kind: 'result', connectionId: 'healthy', requestId: 'next', result: { ok: true } });
+    } finally { release(); await env.host.close(); }
+  });
   it('does not activate a relay/native helper merely because a tool arrives', async () => {
     const env = await setup();
     try {

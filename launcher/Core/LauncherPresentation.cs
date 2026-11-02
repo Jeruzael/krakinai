@@ -8,11 +8,11 @@ public sealed record LauncherPresentation(bool CanStart, bool CanStop, bool CanR
         status.Bridge is "stopped" or "error", status.Bridge is "starting" or "running", status.Bridge == "running", status.Bridge is "stopped" or "error",
         status.Bridge switch { "running" => "Running", "starting" => "Starting", "stopping" => "Stopping", "error" => "Needs attention", _ => "Stopped" },
         status.Browser switch { "paired" => "Paired", "pairing" => "Awaiting your verification", "expired" => "Expired — pair again", _ => "Not paired" },
-        status.Mcp ? "Connected" : "Not connected", Explain(status.ErrorCode));
+        status.Mcp ? $"Connected ({status.McpClients})" : "Not connected", Explain(status.ErrorCode));
     public static bool ShouldQuit(bool explicitQuit) => explicitQuit;
     public static string Explain(string? code) => code switch
     {
-        null or "" => "Start the bridge, then connect in your existing KRAKINAI browser/profile. Each proposal still requires your browser review.",
+        null or "" => "Connected clients share applied browser permissions. Start the bridge, then pair in your existing browser/profile. Every proposal needs browser review. Stop or loss of the last client revokes the shared session.",
         "PORT_IN_USE" => "That relay port is already occupied. Stop your other bridge in its own terminal, or choose a different explicit port in Settings. No other process was stopped.",
         "PUBLISHER_NOT_TRUSTED" or "HELPER_PUBLISHER_UNTRUSTED" => "The signature is valid but Windows does not trust its publisher for this account. Review the exact public certificate in your normal Windows account. This launcher never installs trust or changes AllSigned.",
         "SIGNATURE_INVALID" or "NATIVE_SIGNATURE_INVALID" => "The launcher or verification helper is unsigned or its signature is invalid. Use the reviewed signed release; rebuilds need signing again. Do not weaken your execution policy.",
@@ -21,6 +21,8 @@ public sealed record LauncherPresentation(bool CanStart, bool CanStop, bool CanR
         "FILE_MISSING" => "A configured runtime, bridge build, adapter or verification helper is missing. Check the exact local paths in Settings and the release folder.",
         "SIGNER_NOT_CONFIGURED" => "Set the approved public code-signing thumbprint in Settings. No private key is needed here.",
         "CLIENT_ALREADY_CONNECTED" => "Another MCP adapter already controls this launcher. Close that client before connecting this one; the existing client was preserved.",
+        "MCP_CLIENT_LIMIT" => "This launcher supports eight initialized MCP clients. Close an unused client or chat, then retry. Existing clients and browser permissions were preserved.",
+        "HOST_REQUEST_TIMEOUT" => "The shared host did not finish an outstanding request within its health deadline. Access was revoked. Start the bridge and pair again; check proposal status or receipts before retrying a write.",
         "CONFIGURATION_ACCESS_UNSAFE" => "The settings file or its folder can be controlled by another Windows account. Use a dedicated private configuration directory owned by your account. Existing folder permissions were not changed.",
         "POLICY_BLOCKED" => "The effective Windows PowerShell policy blocks script files, including the signed verification helper. Ask your administrator for an approved policy; this launcher will not change it.",
         "IPC_IDENTITY_MISMATCH" or "IPC_REMOTE_DENIED" => "The channel identity did not match. Run Codex and this launcher normally under the same Windows account, session and elevation; use the same installed launcher executable.",

@@ -27,7 +27,8 @@ internal static class Program
             if (!Path.GetFullPath(settings.NativeExecutable).Equals(executable, StringComparison.OrdinalIgnoreCase)) throw new LauncherFault("NATIVE_PATH_MISMATCH");
             using var instance = new SingleInstance(settings.InstallationId);
             if (!instance.Primary) return 0;
-            var controller = new BridgeController(settings, new ReadinessProbe(new WindowsPlatformProbe()), new ManagedNodeHostFactory());
+            var outgoingBudget = new FrameQueueBudget();
+            var controller = new BridgeController(settings, new ReadinessProbe(new WindowsPlatformProbe()), new ManagedNodeHostFactory(outgoingBudget), outgoingBudget);
             var pipe = new LauncherPipeServer(settings.PipeName, controller);
             try
             {

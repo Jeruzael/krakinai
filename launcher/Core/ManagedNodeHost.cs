@@ -4,22 +4,25 @@ using System.Text.Json;
 
 namespace Krakinai.BridgeLauncher.Core;
 
-public sealed class ManagedNodeHostFactory : IManagedHostFactory { public IManagedHost Create() => new ManagedNodeHost(); }
+public sealed class ManagedNodeHostFactory(FrameQueueBudget? budget = null) : IManagedHostFactory { public IManagedHost Create() => new ManagedNodeHost(outgoingBudget: budget); }
 public sealed class ManagedNodeHost : IManagedHost
 {
+    private readonly HostRequestLedger requests;
+    private readonly FrameQueueBudget outgoingBudget;
+    public ManagedNodeHost(TimeProvider? clock = null, FrameQueueBudget? outgoingBudget = null)
+    { requests = new(clock); this.outgoingBudget = outgoingBudget ?? new(); }
     private readonly CancellationTokenSource lifetime = new();
-    private readonly ConcurrentDictionary<(string, string), TaskCompletionSource<JsonElement>> pending = new();
-    private readonly ConcurrentDictionary<(string, string), bool> retired = new();
-    private readonly ConcurrentQueue<(string, string)> retirementOrder = new();
+    private readonly ConcurrentDictionary<long, Task> writes = new();
+    private long writeSerial;
     private readonly TaskCompletionSource ready = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private readonly TaskCompletionSource stopped = new(TaskCreationOptions.RunContinuationsAsynchronously);
     private Process? process;
     private OwnedJobProcess? job;
     private FrameReader? reader;
     private FrameWriter? writer;
-    private Task? reading, draining;
+    private Task? reading, draining, monitoring;
     private string generation = "none", activationId = "none", origin = "", relay = "";
-    private int failed, pendingCount;
+    private int failed;
     private volatile bool closing;
     private bool disposed;
     public long PeakWorkingSetBytes { get; private set; }
@@ -48,34 +51,51 @@ public sealed class ManagedNodeHost : IManagedHost
             throw;
         }
         reader = new(process.StandardOutput.BaseStream, FrameDirection.HostResponse);
-        writer = new(process.StandardInput.BaseStream, FrameDirection.HostRequest);
-        reading = ReadAsync(); draining = DrainDiagnosticsAsync(process.StandardError.BaseStream);
+        writer = new(process.StandardInput.BaseStream, FrameDirection.HostRequest, outgoingBudget);
+        reading = ReadAsync(); draining = DrainDiagnosticsAsync(process.StandardError.BaseStream); monitoring = MonitorAsync();
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token); deadline.CancelAfter(TimeSpan.FromSeconds(10));
         await writer.WriteAsync(FrameCodec.Make("activate", generation, "host", activationId), deadline.Token);
-        await ready.Task.WaitAsync(deadline.Token);
+        try { await ready.Task.WaitAsync(deadline.Token); }
+        catch (OperationCanceledException) when (ready.Task.IsFaulted) { await ready.Task; throw; }
     }
     public async Task<JsonElement> CallAsync(JsonElement frame, CancellationToken token)
     {
         if (closing || writer is null || !ready.Task.IsCompletedSuccessfully) throw new LauncherFault("DISCONNECTED");
         FrameCodec.Validate(frame, FrameDirection.HostRequest);
         if (FrameCodec.Text(frame, "kind") != "call" || FrameCodec.Text(frame, "generation") != generation) throw new LauncherFault("HOST_CHANGED");
-        var key = (FrameCodec.Text(frame, "connectionId"), FrameCodec.Text(frame, "requestId"));
-        if (Interlocked.Increment(ref pendingCount) > 16) { Interlocked.Decrement(ref pendingCount); throw new LauncherFault("QUEUE_FULL"); }
-        var completion = new TaskCompletionSource<JsonElement>(TaskCreationOptions.RunContinuationsAsynchronously);
-        bool completed = false;
-        if (!pending.TryAdd(key, completion)) { Interlocked.Decrement(ref pendingCount); throw new LauncherFault("IPC_DUPLICATE_REQUEST"); }
+        token.ThrowIfCancellationRequested();
+        var pending = requests.Reserve(frame);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token, lifetime.Token); deadline.CancelAfter(TimeSpan.FromSeconds(15));
+        using var registration = deadline.Token.Register(() => requests.CancelCaller(pending, deadline.Token));
+        long id = Interlocked.Increment(ref writeSerial); var send = SendCallAsync(frame, pending); writes.TryAdd(id, send);
+        _ = send.ContinueWith(_ => { writes.TryRemove(id, out var removed); }, TaskScheduler.Default);
+        return await pending.Completion;
+    }
+    private async Task SendCallAsync(JsonElement frame, HostRequestLedger.Pending pending)
+    {
         try
         {
-            await writer.WriteAsync(frame, deadline.Token);
-            var result = await completion.Task.WaitAsync(deadline.Token); completed = true; return result;
+            // Once the guard admits a write, only host shutdown may interrupt it.
+            // Caller cancellation still cancels its wait, never a partial shared frame.
+            await writer!.WriteIfAsync(frame, lifetime.Token, () => requests.TryBeginWrite(pending));
         }
-        finally
+        catch (Exception error)
         {
-            pending.TryRemove(key, out _); Interlocked.Decrement(ref pendingCount);
-            retired[key] = completed; retirementOrder.Enqueue(key);
-            while (retirementOrder.Count > 128 && retirementOrder.TryDequeue(out var old)) retired.TryRemove(old, out _);
+            if (pending.WritingBegan) { if (!closing) Fail("HOST_WRITE_FAILED"); }
+            else requests.RejectUnsent(pending, error is LauncherFault { Code: "IPC_QUEUE_LIMIT" } ? new LauncherFault("QUEUE_FULL") : error);
         }
+    }
+    private async Task MonitorAsync()
+    {
+        try
+        {
+            while (!lifetime.IsCancellationRequested)
+            {
+                await Task.Delay(250, lifetime.Token);
+                if (requests.HasExpired()) { Fail("HOST_REQUEST_TIMEOUT"); return; }
+            }
+        }
+        catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
     }
     private async Task ReadAsync()
     {
@@ -87,9 +107,7 @@ public sealed class ManagedNodeHost : IManagedHost
                 var kind = FrameCodec.Text(frame, "kind");
                 if (kind == "result")
                 {
-                    var key = (FrameCodec.Text(frame, "connectionId"), FrameCodec.Text(frame, "requestId"));
-                    if (pending.TryRemove(key, out var completion)) completion.TrySetResult(frame);
-                    else if (!retired.TryGetValue(key, out var wasCompleted) || wasCompleted) throw new LauncherFault("IPC_UNEXPECTED_RESULT");
+                    requests.Complete(frame);
                     continue;
                 }
                 if (FrameCodec.Text(frame, "connectionId") != "host") throw new LauncherFault("IPC_IDENTITY_MISMATCH");
@@ -128,13 +146,13 @@ public sealed class ManagedNodeHost : IManagedHost
     {
         if (closing || Interlocked.Exchange(ref failed, 1) != 0) return;
         var error = new LauncherFault(code); ready.TrySetException(error); stopped.TrySetException(error);
-        foreach (var item in pending.Values) item.TrySetException(error);
+        requests.Close(error); lifetime.Cancel();
         try { Failed?.Invoke(code); } catch { }
     }
     public async Task StopAsync(CancellationToken token)
     {
         if (closing) return; CapturePeak(); closing = true;
-        foreach (var item in pending.Values) item.TrySetException(new LauncherFault("DISCONNECTED"));
+        requests.Close(new LauncherFault("DISCONNECTED"));
         if (process is null || process.HasExited) return;
         if (writer is not null)
         {
@@ -147,7 +165,7 @@ public sealed class ManagedNodeHost : IManagedHost
     public async ValueTask DisposeAsync()
     {
         if (disposed) return; disposed = true; closing = true; lifetime.Cancel();
-        foreach (var item in pending.Values) item.TrySetException(new LauncherFault("DISCONNECTED"));
+        requests.Close(new LauncherFault("DISCONNECTED"));
         CapturePeak(); job?.Dispose();
         if (process is not null)
         {
@@ -157,6 +175,8 @@ public sealed class ManagedNodeHost : IManagedHost
         }
         if (reading is not null) await reading;
         if (draining is not null) await draining;
+        if (monitoring is not null) await monitoring;
+        await Task.WhenAll(writes.Values);
         reader?.Dispose(); writer?.Dispose(); process?.Dispose(); lifetime.Dispose();
     }
 }

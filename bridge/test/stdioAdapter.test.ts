@@ -18,6 +18,17 @@ async function implementation() {
   return import('../src/stdioAdapter');
 }
 describe('persistent launcher MCP adapter', () => {
+  it('reports a correlated eight-client capacity diagnostic without granting access', async () => {
+    const { PersistentAdapter } = await implementation(); const channel = new SyntheticChannel(), onDiagnostic = vi.fn();
+    const adapter = new PersistentAdapter({ origin: 'http://localhost:5173', relay: 'http://127.0.0.1:4180', openChannel: async () => channel, onDiagnostic });
+    try {
+      adapter.start(); adapter.initialized(); await vi.waitFor(() => expect(channel.sent).toHaveLength(1));
+      const hello = channel.sent[0];
+      channel.emit('frame', { version: LAUNCHER_VERSION, kind: 'error', generation: hello.generation, connectionId: hello.connectionId, requestId: hello.requestId, code: 'MCP_CLIENT_LIMIT' });
+      expect(onDiagnostic).toHaveBeenCalledTimes(1); expect(onDiagnostic).toHaveBeenCalledWith('MCP_CLIENT_LIMIT'); expect(channel.closed).toBe(true);
+      expect(await adapter.dispatch('krakinai_get_project', { projectId: 'synthetic' })).toMatchObject({ ok: false, error: { code: 'PAIRING_REQUIRED' } });
+    } finally { adapter.close(); }
+  });
   it('correlates hello rejection and reports a safe conflict diagnostic without changing tool envelopes', async () => {
     const { PersistentAdapter } = await implementation(); const channel = new SyntheticChannel(), onDiagnostic = vi.fn();
     const adapter = new PersistentAdapter({ origin: 'http://localhost:5173', relay: 'http://127.0.0.1:4180', openChannel: async () => channel, onDiagnostic });

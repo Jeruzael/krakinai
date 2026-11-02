@@ -25,15 +25,17 @@ Run the launcher and Codex normally under the same Windows account, session and 
 Click **Save settings**. Settings can only be edited while stopped. Their default location is `%LOCALAPPDATA%\KRAKINAI\BridgeLauncher\launcher-settings.json`. A custom settings file can be selected explicitly:
 
 ```powershell
-& 'C:\KRAKINAI\Krakinai.BridgeLauncher.exe' --config 'C:\Users\YOUR_USER\AppData\Local\KRAKINAI\BridgeLauncher\launcher-settings-custom.json'
+& 'C:\KRAKINAI\Krakinai.BridgeLauncher.exe' --config 'C:\Users\YOUR_USER\.codex\krakinai-bridge\launcher-settings-custom.json'
 ```
 
 These are example paths: replace them with your actual release and settings paths. The settings file must be in an owner-controlled local directory. Shared or redirected configuration paths are refused without changing existing folder permissions. The saved settings bind to the executable's exact path. If switching to a new release path, use a new dedicated settings file and configure it in that launcher; using an older release's settings can produce `NATIVE_PATH_MISMATCH`.
 
+The adapter checks the settings file **and its ancestors**. A private-looking child folder cannot compensate for an unsafe parent ACL. If the default LocalAppData path is rejected, prepare a new dedicated private location, for example `%USERPROFILE%\.codex\krakinai-bridge`, and select it explicitly with `--config`. It must pass the same ownership, ACL and reparse-point checks; the example path is not an exemption. Keep the old settings and use the identical new path in the shortcut and MCP registration. Do not weaken an existing parent ACL or disable the check to resolve this error.
+
 For a desktop shortcut, right-click the executable and choose **Show more options → Send to → Desktop (create shortcut)**. If using a custom settings file, open the shortcut's **Properties** and set **Target** to the following, using your real paths:
 
 ```text
-"C:\KRAKINAI\Krakinai.BridgeLauncher.exe" --config "C:\Users\YOUR_USER\AppData\Local\KRAKINAI\BridgeLauncher\launcher-settings-custom.json"
+"C:\KRAKINAI\Krakinai.BridgeLauncher.exe" --config "C:\Users\YOUR_USER\.codex\krakinai-bridge\launcher-settings-custom.json"
 ```
 
 The shortcut and MCP registration must use the **same settings file and release**. You do not need to paste the launch command for each session. No shortcut, global Codex configuration, startup task, Windows service, certificate trust or execution-policy change is installed automatically. A normal installer and automatic startup are outside this release.
@@ -45,19 +47,31 @@ Starting the launcher or pairing the browser does not register a server in Codex
 1. In the configured launcher, click **Review MCP configuration**. Check the Node executable, adapter and settings paths, then choose **Copy configuration**. This button only copies text; it does not edit Codex settings or connect the client.
 2. Open your Codex configuration, normally `%USERPROFILE%\.codex\config.toml`. Preserve all existing settings and other MCP servers. Add the generated `[mcp_servers.krakinai]` block at the end. If that table already exists, replace only that server's definition instead of creating a duplicate. Use your actual Codex configuration location if it has been customized.
 3. Save, then reload the Codex client; fully quit and reopen the desktop app if necessary. Keep the launcher open. Run both under the same normal Windows account.
-4. Confirm the launcher shows **MCP client: Connected**. Ask Codex to check KRAKINAI connection status to verify tools are available in the intended chat. A configuration entry alone does not prove a successful client connection. If reloading ended browser consent, pair again using the next section.
+4. Confirm the launcher shows **MCP clients: Connected (N)**. Ask Codex to check KRAKINAI connection status to verify tools are available in the intended chat. A configuration entry alone does not prove a successful client connection. If reloading ended browser consent, pair again using the next section.
 
 The copied block has this shape; **copy the real values from your launcher**, rather than pasting these placeholders:
 
 ```toml
 [mcp_servers.krakinai]
 command = 'C:\Program Files\nodejs\node.exe'
-args = ['C:\KRAKINAI\bridge\krakinai-stdio-adapter.mjs', '--config', 'C:\Users\YOUR_USER\AppData\Local\KRAKINAI\BridgeLauncher\launcher-settings-custom.json']
+args = ['C:\KRAKINAI\bridge\krakinai-stdio-adapter.mjs', '--config', 'C:\Users\YOUR_USER\.codex\krakinai-bridge\launcher-settings-custom.json']
 ```
 
 The relay address such as `http://127.0.0.1:4180` belongs in **KRAKINAI's browser connection form**. It is not a Streamable HTTP MCP endpoint. The launcher-managed configuration uses `krakinai-stdio-adapter.mjs` with `--config`; the standalone `krakinai-mcp.mjs --app-origin ... --port ...` command in the [direct stdio guide](local-codex-mcp.md) starts a separate bridge and must not be substituted for this adapter.
 
-Codex stores MCP registrations in its configuration file; see [official MCP configuration documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli). Registration is repeated only when the relevant paths/settings file change or you configure another client host. The persistent adapter registers the existing 13 tools while the bridge is stopped and reconnects to its private channel without starting a bridge. Only one adapter can control a launcher at a time; close a separate CLI test client before using the desktop client with that launcher.
+Codex stores MCP registrations in its configuration file; see [official MCP configuration documentation](https://learn.chatgpt.com/docs/extend/mcp?surface=cli). Registration is repeated only when the relevant paths/settings file change or you configure another client host. The persistent adapter registers the existing 13 tools while the bridge is stopped and reconnects to its private channel without starting a bridge. This shared-session release accepts up to eight adapters; older R3 releases remain single-client and must not be mixed with the new adapter/settings.
+
+## Shared clients and consent
+
+All admitted clients for one installation share the **current applied browser permissions**. Closing one chat leaves other initialized clients connected. A submitted proposal remains reviewable while the shared browser session continues, even if its originating chat closes. Closing a chat is not proposal withdrawal. Every write still needs explicit browser review and the existing Stage B atomic save.
+
+The count measures live MCP adapters, not visible chat tabs. In current Codex, switching away or `thread/unsubscribe` can leave a session and its adapter alive. End/archive an unused session or close its client host when you need to release that connection; verify the native count afterward. The last-client rule applies when the last initialized connection actually ends. Use browser Disconnect or native Stop for immediate global revocation.
+
+The native channel authenticates the same Windows user, session, elevation and exact native executable. It does not attest a specific chat or application vendor: another configured local MCP client using this installation can share the same selected scope. Use a separate installation/configuration for independent consent. Selected project metadata does not automatically grant prompt text, Character identities, notes or filenames.
+
+Stop, Restart, browser Disconnect, pairing expiry and host failure revoke shared access under the existing session rules. Losing the **last initialized client** also stops the owned host and clears pairing; a new client cannot restart it or restore old consent. Press Start and pair again. Losing one of several clients cancels only that client's waiting responses. Already-authorized transactions may finish; check proposal status/confirmed receipts before retrying an uncertain write.
+
+The broker admits sixteen outstanding host calls in total, including dispatched work whose caller left. The ninth adapter receives `MCP_CLIENT_LIMIT`; queued work receives a correlated `QUEUE_FULL` error. Shared outgoing queues remain capped at eight MiB. Per-client readers and process overhead add memory beyond that queue allowance. A stalled client is removed without blocking healthy clients; genuinely unresponsive host work ends the shared session. No fairness guarantee or per-chat permissions are provided.
 
 ## Pair the browser and apply permissions
 
@@ -67,7 +81,7 @@ Codex stores MCP registrations in its configuration file; see [official MCP conf
 4. A separate **KRAKINAI Local Bridge Verification** Windows window should appear. It is not a browser pop-up. Compare its application origin, verification code and compiled bridge path with the intended app and release.
 5. While that window is open, click **Show pairing key**. Copy its long **43-character one-time key** only into KRAKINAI's **One-time pairing key** field. The shorter verification code is for comparison, not this field. Check the entered-character count. Never send the key in chat or put it in configuration, screenshots or logs.
 6. Check **I verified the origin, code and bridge path** and click **Allow pairing** in Windows, then **Confirm pairing** in the browser. Allow closes the native window, so copy the key first. The challenge expires in two minutes; if it expires, cancel the old attempt and start a fresh one with a new code/key.
-7. Confirm **Browser: Paired** in the launcher and **Connected** in KRAKINAI. Confirm **MCP client: Connected** separately. Project selection alone does not share full prompts or Character identity text. Selected text may reach Codex's configured model provider; local transport does not mean the model runs locally.
+7. Confirm **Browser: Paired** in the launcher and **Connected** in KRAKINAI. Confirm **MCP clients: Connected (N)** separately. Project selection alone does not share full prompts or Character identity text. Selected text may reach Codex's configured model provider; local transport does not mean the model runs locally.
 
 Incoming proposals appear in **AI Connections → Incoming Proposals**. Open **Review proposal**, inspect its complete changes, select the appropriate approval categories, confirm the exact reviewed proposal, then choose **Apply reviewed batch**. Neither pairing nor permissions approve a library write; the existing Stage B transaction saves the approved changes and receipt.
 
@@ -87,11 +101,11 @@ The indicators have different meanings:
 | --- | --- |
 | Bridge running | The owned Node host acknowledged activation. An occupied port is insufficient. |
 | Browser paired | The existing relay completed browser/native verification and session confirmation. |
-| MCP client connected | The SDK received client initialization and the protected native channel remains live. |
+| MCP clients connected (N) | N adapters completed SDK initialization and their protected native channels remain live. Hello-only clients do not count. |
 
 An MCP client can be connected while the bridge is stopped and browser is not paired. Neither Start nor MCP initialization grants browser permissions. Select context and permissions in KRAKINAI, compare the signed Windows verification window, and complete its manual confirmation. Proposals still require the existing browser review and Stage B atomic save. The launcher never approves them.
 
-Client loss, stale heartbeat, Stop, Restart or an owned-host failure clears the session. Reconnection does not restore consent or pending requests. An already-authorized browser transaction may finish under existing Stage B semantics; Stop does not undo committed records.
+Last-client loss or its stale heartbeat, Stop, Restart or an owned-host failure clears the session. One client's departure leaves surviving clients connected. Reconnection after global revocation does not restore consent or pending requests. An already-authorized browser transaction may finish under existing Stage B semantics; Stop does not undo committed records.
 
 ## Signing and updates
 
@@ -110,7 +124,10 @@ The approved helper signature can be reused by copying the exact signed file onl
 | Invalid signature / signer mismatch | Use the reviewed signed release and verify its public signer. Do not bypass policy. |
 | Policy blocked | The effective Windows PowerShell policy prevents script execution. Ask the administrator for an approved policy; the launcher does not change it. |
 | Configuration access unsafe | Use a dedicated local directory controlled by your account. Existing shared folders are not silently secured or modified. |
-| Identity/client conflict | Run both components normally under the same account, session and elevation with the same installed executable. Close the other adapter rather than replacing it. |
+| Identity mismatch | Run both components normally under the same account, session and elevation with the same installed executable. |
+| `MCP_CLIENT_LIMIT` | Eight adapters are admitted. Close an unused chat/client and retry. Existing clients stay connected. |
+| `CLIENT_ALREADY_CONNECTED` | This message identifies an older single-client launcher. Keep that release intact; activate a reviewed shared-session release and its matching configuration explicitly. |
+| `HOST_REQUEST_TIMEOUT` | Unacknowledged forwarded work exceeded its health deadline. Start and pair again; check proposal status/receipts before retrying an uncertain write. |
 | Missing runtime/build | Check .NET Desktop Runtime, Node 22 and the complete packaged bridge directory. |
 | Bridge Running, Browser Paired, MCP client Not connected | Complete [one-time Codex MCP registration](#one-time-codex-mcp-registration), reload Codex, and check that its adapter uses the same settings file and release as the open launcher. Browser pairing alone cannot connect the MCP client. |
 | MCP client Connected, Browser Not paired | Complete native/browser pairing and apply the intended permissions. MCP initialization grants no browser access. |

@@ -12,7 +12,7 @@ export interface AdapterChannel {
   onClose(callback: () => void): void;
   close(): void;
 }
-export interface AdapterOptions { origin: string; relay: string; openChannel(): Promise<AdapterChannel>; onDiagnostic?(code: 'CLIENT_ALREADY_CONNECTED' | 'IPC_HANDSHAKE_REJECTED'): void }
+export interface AdapterOptions { origin: string; relay: string; openChannel(): Promise<AdapterChannel>; onDiagnostic?(code: 'MCP_CLIENT_LIMIT' | 'CLIENT_ALREADY_CONNECTED' | 'IPC_HANDSHAKE_REJECTED'): void }
 interface Pending { generation: string; resolve(result: McpResult): void; timer: ReturnType<typeof setTimeout> }
 const failure = (code: string) => resultError(new McpError(code, 'Check the KRAKINAI launcher and reconnect with fresh browser pairing when needed.', true));
 
@@ -70,7 +70,7 @@ export class PersistentAdapter {
     if (frame.connectionId !== this.connectionId) throw Error('identity');
     if (frame.kind === 'error' && !this.helloComplete && frame.requestId === this.helloRequestId) {
       if (frame.generation !== this.generation) throw Error('generation');
-      try { this.options.onDiagnostic?.(frame.code === 'CLIENT_ALREADY_CONNECTED' ? frame.code : 'IPC_HANDSHAKE_REJECTED'); }
+      try { this.options.onDiagnostic?.(frame.code === 'CLIENT_ALREADY_CONNECTED' || frame.code === 'MCP_CLIENT_LIMIT' ? frame.code : 'IPC_HANDSHAKE_REJECTED'); }
       finally { this.disconnect(); }
       return;
     }
@@ -124,7 +124,9 @@ export class PersistentAdapter {
 
 export function startStdioAdapter(options: AdapterOptions) {
   const adapter = new PersistentAdapter({ ...options, onDiagnostic: code => {
-    console.error(code === 'CLIENT_ALREADY_CONNECTED'
+    console.error(code === 'MCP_CLIENT_LIMIT'
+      ? 'KRAKINAI_MCP_CLIENT_LIMIT: Eight MCP clients are already admitted. Close an unused client and retry; existing clients were preserved.'
+      : code === 'CLIENT_ALREADY_CONNECTED'
       ? 'KRAKINAI_CLIENT_ALREADY_CONNECTED: Close the other Codex MCP client before connecting this client.'
       : 'KRAKINAI_IPC_HANDSHAKE_REJECTED: Check the launcher identity and configuration.');
     options.onDiagnostic?.(code);
