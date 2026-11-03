@@ -4,6 +4,8 @@ JSON is a locally derived KRAKINAI document, identified by `"schema": "krakinai.
 
 `buildSceneDocument(source)` and `serializeSceneJson(source)` in `src/domain/sceneDocument.ts` read the selected draft or saved scene's preserved snapshots. They never look up newer library prompts, infer scene attributes, or translate free-form manual output edits. Serialization uses `JSON.stringify(document, null, 2)` with stable insertion order, no timestamps, no network request, and no binary embedding.
 
+Blocking-bearing recipes use `krakinai.scene-prompt.v3` and `krakinai.generation-prompt.v3`; the shared validated Blocking document contains exact authored fields and frozen participant titles. Full, Structured and Compact use the same canonical formatter without truncation. Invalid Blocking prevents complete assembly/export. Without Blocking, existing v1/v2 documents and saved output bytes remain unchanged. JSON describes canonical recipe content; a deliberately retained manual video buffer is separately labelled unverified. See [Blocking workflow](blocking-and-spatial-continuity.md) and [v5 proposal review](change-set-v5.md). Ordered keyframes and image-frame prompt generation are excluded.
+
 ## Document contract
 
 The table below describes the legacy Character Scene contract, whose bytes are preserved. New non-character scenes add optional `scene.shotType`; source-based scenes also add `scene.sourceFidelity` and root `sourceMedia`. Inactive components are `null` and original input references remain separate from results. See the [complete optional Shot Type metadata contract](context-aware-shot-types.md#optional-record-and-json-metadata). These extensions retain `scene.type: "single_shot"` and do not change historical saved strings.

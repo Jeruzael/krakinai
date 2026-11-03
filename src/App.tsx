@@ -1,4 +1,5 @@
 import React from 'react';
+import { LibraryCompatibilityGate } from './components/LibraryCompatibilityGate';
 import { LibraryProvider, useLibrary } from './context/LibraryContext';
 import { AppShell } from './components/AppShell';
 import { HomeScreen } from './screens/HomeScreen';
@@ -200,11 +201,11 @@ const RouteDispatcher: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <LibraryProvider>
+    <LibraryCompatibilityGate><LibraryProvider>
       <AiConnectionProvider><AppShell>
         <RouteDispatcher />
       </AppShell></AiConnectionProvider>
-    </LibraryProvider>
+    </LibraryProvider></LibraryCompatibilityGate>
   );
 };
 

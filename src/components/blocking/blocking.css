@@ -1,0 +1,40 @@
+.blocking-editor{width:min(1120px,96vw)}
+.blocking-editor-layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,1fr);gap:20px;align-items:start}
+.blocking-editor-layout>*{min-width:0}
+.blocking-board-wrap{margin:0;min-width:0}
+.blocking-board-wrap figcaption{font-weight:700;font-size:16px}
+.blocking-board{position:relative;min-height:330px;border:1px solid #b8c9e8;border-radius:14px;background:#eff5ff;overflow:hidden;margin-top:12px}
+.blocking-board-grid{position:absolute;inset:0;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr)}
+.blocking-board-grid button{border:1px dashed #d0dcf0;background:transparent;min-width:0;text-align:left;color:#556a8c;font-size:10px;padding:8px;display:flex;align-items:flex-start}
+.blocking-board-grid button:disabled{opacity:1;cursor:default}
+.blocking-board-grid button:focus-visible{outline:3px solid #245fe7;outline-offset:-4px}
+.blocking-marker{position:absolute;z-index:2;border:1px solid #93b1ed;background:#fff;color:#16376d;border-radius:9px;padding:5px 8px;max-width:43%;font-size:11px;box-shadow:0 2px 5px #14346c12;overflow-wrap:anywhere}
+.blocking-marker:disabled{opacity:1;cursor:default}
+.blocking-marker[aria-pressed=true]{border:2px solid #255ff1;background:#e2ecff}
+.blocking-marker strong,.blocking-marker span{display:block}
+.blocking-marker strong{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.blocking-marker span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.blocking-landmark{position:absolute;transform:translate(-50%,-50%);border:1px dashed #91a5bd;background:#f8fbff;padding:4px 6px;border-radius:4px;font-size:10px;color:#516781;max-width:40%;overflow-wrap:anywhere;pointer-events:none}
+.blocking-field{display:flex;flex-direction:column;gap:5px;margin:10px 0;min-width:0;font-size:13px;font-weight:600}
+.blocking-field input,.blocking-field select,.blocking-field textarea{width:100%;min-width:0;font-weight:400}
+.blocking-fields-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}
+.blocking-section{padding:12px 0;border-top:1px solid #dfe6f2;margin-top:12px}
+.blocking-section summary{font-weight:600;cursor:pointer;padding:6px 0}
+.blocking-item{padding:12px;border:1px solid #dfe6f2;border-radius:10px;margin:12px 0;min-width:0}
+.blocking-item h4{margin:0;overflow-wrap:anywhere}
+.blocking-check{display:flex;align-items:flex-start;gap:8px;margin:8px 0;font-size:13px;font-weight:400}
+.blocking-controls,.blocking-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.blocking-tabs button[aria-selected=true]{background:#245ff0;color:#fff;border-color:#245ff0}
+.blocking-warning{padding:12px;background:#fff7e8;border:1px solid #f0d296;border-radius:10px;margin:12px 0;overflow-wrap:anywhere}
+.blocking-warning ul{padding-left:18px;font-size:12px}
+.blocking-findings{font-size:12px;max-height:160px;overflow:auto;padding:10px;background:#f5f8fd;border-radius:8px}
+.blocking-findings ul{padding-left:18px}
+.blocking-outputs pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:220px;overflow:auto;font:12px/1.5 ui-monospace,monospace;padding:12px;background:#f5f8fd;border:1px solid #dce5f3;border-radius:8px}
+.blocking-outputs summary{font-weight:600;cursor:pointer;padding:10px 0}
+.blocking-proposal-review{min-width:0;margin-block:16px;overflow-wrap:anywhere}
+.blocking-proposal-review pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:260px;overflow:auto;padding:12px;background:#f5f8fd;border:1px solid #dce5f3;border-radius:8px;font:12px/1.5 ui-monospace,monospace}
+.blocking-proposal-review fieldset{min-width:0;margin-block:12px;border:0;padding:0}
+.ai-blocking-permissions{margin-block:16px}
+.blocking-position-list{font-size:12px;padding-left:18px}
+@media(max-width:800px){.blocking-editor-layout{grid-template-columns:minmax(0,1fr)}.blocking-board{min-height:300px}.blocking-editor{width:100%}}
+@media(max-width:420px){.blocking-fields-grid{grid-template-columns:minmax(0,1fr)}.blocking-board{min-height:270px}.blocking-marker{font-size:10px;padding:3px;max-width:46%}.blocking-board-grid button{font-size:9px;padding:4px}}

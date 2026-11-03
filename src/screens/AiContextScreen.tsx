@@ -159,7 +159,7 @@ export function AiContextScreen() {
             selected={selection.projectIds ?? []}
             prefix="Select project"
             onChange={(ids) =>
-              update({ projectIds: ids, fullPromptSceneIds: [] })
+              update({ projectIds: ids, fullPromptSceneIds: [],blockingSceneIds:undefined })
             }
           />
           <Choices
@@ -168,7 +168,7 @@ export function AiContextScreen() {
             selected={selection.sceneIds ?? []}
             prefix="Select scene metadata"
             onChange={(ids) =>
-              update({ sceneIds: ids, fullPromptSceneIds: [] })
+              update({ sceneIds: ids, fullPromptSceneIds: [],blockingSceneIds:undefined })
             }
           />
           <Choices
@@ -227,6 +227,7 @@ export function AiContextScreen() {
               <p>Select project or scene metadata first.</p>
             )}
           </details>
+          <details className="import-group"><summary>Blocking authoring text ({selection.blockingSceneIds?.length??0})</summary><p>Positions, movement, prop labels and interactions may be private. Select exact scenes explicitly. Sharing a complete prompt on a Blocking scene requires both selections.</p><Choices label="Blocking authoring text" prefix="Include Blocking" items={selectedScenes.map(s=>({id:s.id,label:s.title}))} selected={selection.blockingSceneIds??[]} onChange={ids=>update({blockingSceneIds:ids.length?ids:undefined})}/></details>
           {controls.map(([key, label]) => (
             <label className="import-check" key={key}>
               <input
@@ -246,7 +247,7 @@ export function AiContextScreen() {
                 sceneIds: [],
                 assetIds: [],
                 templateIds: [],
-                fullPromptSceneIds: [],
+                fullPromptSceneIds: [],blockingSceneIds:undefined,
               })
             }
           >

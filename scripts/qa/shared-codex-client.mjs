@@ -8,6 +8,11 @@ import {randomUUID,createHash} from 'node:crypto';
 import {assertSyntheticTarget} from './shared-mcp-workflow.mjs';
 
 const deferred=()=>{let resolve,reject;const promise=new Promise((yes,no)=>{resolve=yes;reject=no});return{promise,resolve,reject};};
+export function blockedDestination(request){
+  const method=['CONNECT','GET','POST','PUT','DELETE','HEAD','OPTIONS'].includes(request.method)?request.method:'OTHER';
+  try{const url=new URL(method==='CONNECT'?'https://'+request.url:request.url);if(!['http:','https:'].includes(url.protocol))throw Error();return{method,hostname:url.hostname,port:url.port||(url.protocol==='https:'?'443':'80'),blocked:true,forwarded:false};}
+  catch{return{method,hostname:'[invalid]',port:'',blocked:true,forwarded:false};}
+}
 export async function endInstalledThread(rpc,threadId){
   // Unsubscribe only removes notifications in current Codex; archive ends the
   // owned synthetic session and releases its MCP resources.
@@ -65,11 +70,12 @@ export async function startInstalledCodexClient({executable,directory,target,lau
   const home=join(directory,'codex-home'),workspace=join(directory,'workspace');
   await mkdir(directory,{recursive:false});await mkdir(home);await mkdir(workspace);
   const pending=new Map(),turns=new Map(),threads=new Map(),calls=new Map(),notifications=[],exited=deferred();
-  let child,sequence=0,buffer='',stderrBytes=0,fixtureRequests=0,blockedExternalAttempts=0,closed=false;
+  let child,sequence=0,buffer='',stderrBytes=0,fixtureRequests=0,blockedExternalAttempts=0,closed=false;const blockedDestinations=[];
+  const noteBlocked=request=>{blockedExternalAttempts++;if(blockedDestinations.length<32)blockedDestinations.push(blockedDestination(request));};
   const fail=error=>{for(const p of pending.values())p.reject(error);pending.clear();for(const p of turns.values())p.reject(error);};
   const fixture=createServer(async(request,response)=>{
     try {
-      if(request.url?.startsWith('http://')||request.url?.startsWith('https://')){blockedExternalAttempts++;response.writeHead(403);response.end();return;}
+      if(request.url?.startsWith('http://')||request.url?.startsWith('https://')){noteBlocked(request);response.writeHead(403);response.end();return;}
       assert.equal(request.method,'POST');assert.equal(request.url,'/v1/responses','Unexpected model endpoint');
       let text='';for await(const bytes of request){text+=String(bytes);assert(text.length<=8388608,'Synthetic request size limit');}
       const body=JSON.parse(text);fixtureRequests++;
@@ -89,7 +95,7 @@ export async function startInstalledCodexClient({executable,directory,target,lau
       for(const event of events)response.write(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`);response.end();
     }catch(error){fail(error);if(!response.headersSent)response.writeHead(400);response.end('{}');}
   });
-  fixture.on('connect',(_request,socket)=>{blockedExternalAttempts++;socket.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n');});
+  fixture.on('connect',(request,socket)=>{noteBlocked(request);socket.end('HTTP/1.1 403 Forbidden\r\nContent-Length: 0\r\n\r\n');});
   async function close() {
     if(closed)return;closed=true;
     try{
@@ -172,7 +178,7 @@ export async function startInstalledCodexClient({executable,directory,target,lau
     },
     async unsubscribe(label){const id=threads.get(label);assert(id);const value=await rpc('thread/unsubscribe',{threadId:id});assert.equal(value.status,'unsubscribed');threads.delete(label);return value;},
     async closeThread(label){const id=threads.get(label);assert(id);await endInstalledThread(rpc,id);threads.delete(label);},
-    summary(){return{...metadata,fixtureRequests,blockedExternalAttempts,stderrBytes,notifications:structuredClone(notifications),advertisedToolNames:[...new Set([...calls.values()].flatMap(c=>c.advertised??[]))],actualCallIds:[...calls.values()].filter(c=>c.message).map(c=>c.callId)};},
+    summary(){return{...metadata,fixtureRequests,blockedExternalAttempts,blockedDestinations:structuredClone(blockedDestinations),stderrBytes,notifications:structuredClone(notifications),advertisedToolNames:[...new Set([...calls.values()].flatMap(c=>c.advertised??[]))],actualCallIds:[...calls.values()].filter(c=>c.message).map(c=>c.callId)};},
     close,
   };
   }catch(error){await close();throw error;}

@@ -88,6 +88,17 @@ it('reports unavailable clipboard access instead of crashing the workspace',asyn
  await setup();const user=userEvent.setup();Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});
  await user.click(screen.getByRole('button',{name:'Prepare Codex mapping request'}));expect(await screen.findByRole('alert')).toHaveTextContent('Copy failed');expect(screen.getByRole('button',{name:'Download mapping package'})).toBeEnabled();
 });
+it('retains a user copy error when an earlier background preview succeeds',async()=>{
+ const realPreview=changeSetStorage.previewChangeSet;let release!:()=>void;
+ const pending=new Promise<void>(resolve=>{release=resolve});
+ vi.spyOn(changeSetStorage,'previewChangeSet').mockImplementation(async(...args)=>{await pending;return realPreview(...args)});
+ await setup();const user=userEvent.setup();Object.defineProperty(navigator,'clipboard',{configurable:true,value:undefined});
+ await screen.findByText('Computing a read-only recipe preview…',{exact:true});
+ await user.click(screen.getByRole('button',{name:'Prepare Codex mapping request'}));expect(await screen.findByRole('alert')).toHaveTextContent('Copy failed');
+ await act(async()=>{release();await pending;});
+ await waitFor(()=>expect(screen.queryByText('Computing a read-only recipe preview…',{exact:true})).not.toBeInTheDocument());
+ expect(screen.getByRole('alert')).toHaveTextContent('Copy failed');
+});
 it('guards a mapping against browser unload until it is saved or deliberately discarded',async()=>{
  await setup();const event=new Event('beforeunload',{cancelable:true});window.dispatchEvent(event);expect(event.defaultPrevented).toBe(true);
  cleanup();const after=new Event('beforeunload',{cancelable:true});window.dispatchEvent(after);expect(after.defaultPrevented).toBe(false);

@@ -1,0 +1,27 @@
+import {it,expect} from 'vitest';
+import {blockingChangeScenario} from './fixtures/blockingChangeSetFixture';
+import {prepareBlockingSources} from '../domain/blockingPatch';
+import {emptyMcpScopeV2} from '../domain/mcpScope';
+import {MCP_BLOCKING_CAPABILITIES} from '../domain/mcpCapabilities';
+import {ProposalBroker} from '../connections/proposalBroker';
+import {planChangeSet} from '../domain/changeSetPlanner';
+import {allocationFor} from './fixtures/changeSetFixture';
+import {parseChangeSet} from '../domain/changeSetValidation';
+import {emptyChangeSetApproval} from '../types/changeSet';
+import {changeSetDigest} from '../domain/changeSetCanonical';
+import {getSceneSnapshotEntries} from '../domain/ensembleReferences';
+it.each(['role','performanceNotes'] as const)('protects inherited ensemble %s in both actual broker preview and pending status when saved Full is sanitized',async field=>{
+ const f=await blockingChangeScenario(),canary='PRIVATE_ENSEMBLE_'+field;
+ delete f.parent.settings.toolNotes;delete f.parent.claimNotes;f.parent.references=[];f.parent.referencePack={version:1,entries:[]};
+ for(const entry of getSceneSnapshotEntries(f.parent))entry.snapshot.mediaLinks=[];
+ for(const p of f.parent.ensemble!.participants){delete p.role;delete p.performanceNotes;}f.parent.ensemble!.participants[1][field]=canary;
+ f.parent.outputs.full='Approved sanitized manual output.';f.parent.manualOutputs.full={text:f.parent.outputs.full,basedOnInputRevision:1,updatedAt:f.parent.updatedAt};
+ f.proofs=await prepareBlockingSources(f.state.scenes);f.op.expectedSourceRecipeDigest=f.proofs.get(f.parent.id)!.recipeDigest;
+ const input=parseChangeSet(f.input),allocation=allocationFor(input),makePreview=async(_input:any,approval=emptyChangeSetApproval())=>({version:1 as const,changeSet:input,approval,allocation,plan:planChangeSet(input,approval,f.state,allocation,new Map(),f.proofs),packageDigest:await changeSetDigest(input),approvedDigest:'b'.repeat(64)});
+ const scope={...emptyMcpScopeV2(),projectIds:[f.projectId],blockingSceneIds:[f.parent.id],fullPromptSceneIds:[f.parent.id],assetIds:f.state.assets.map(a=>a.id),variantIds:f.state.variants.map(v=>v.id),includeCharacterIdentity:true,includeAssetText:true,includeMediaFilenames:true,includeNotes:false,allowProposals:true,allowBlockingProposals:true};
+ const broker=new ProposalBroker({readState:async()=>f.state,preview:makePreview as any});broker.connect('notes-test',scope,Date.now()+60000,MCP_BLOCKING_CAPABILITIES);
+ const call=(tool:any,args:any)=>broker.handle({requestId:crypto.randomUUID(),tool,args},'notes-test');
+ const preview=await call('krakinai_preview_change_set',{changeSet:input});expect(preview.ok).toBe(true);expect(JSON.stringify(preview)).not.toContain(canary);expect((preview as any).data.blocking[0]).toMatchObject({outputDisclosure:'withheld',missingDisclosures:['includeNotes']});
+ const submitted=await call('krakinai_submit_change_set',{changeSet:input});expect(submitted.ok).toBe(true);const pending=await call('krakinai_get_proposal_status',{proposalId:(submitted as any).data.proposalId});expect(pending.ok).toBe(true);expect(JSON.stringify(pending)).not.toContain(canary);expect((pending as any).data.blocking[0].outputDisclosure).toBe('withheld');
+ broker.setScope({...scope,includeNotes:true});const allowed=await call('krakinai_preview_change_set',{changeSet:input});expect(allowed.ok).toBe(true);expect(JSON.stringify(allowed)).toContain(canary);broker.disconnect();
+});

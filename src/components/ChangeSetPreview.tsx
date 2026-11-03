@@ -14,6 +14,7 @@ import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 import {RecipeConversionReview}from'./RecipeConversionReview';
 import {canonicalStringify}from'../domain/changeSetCanonical';
+import {BlockingProposalReview} from './blocking/BlockingProposalReview';
 export function ChangeSetPreview({
   preview,
   snapshot,
@@ -31,6 +32,7 @@ export function ChangeSetPreview({
   const [downloadStatus, setDownloadStatus] = useState("");
   const { plan, approval, changeSet } = preview;
   const onApproval=(next:ChangeSetApproval)=>{
+    if(changeSet.schema==='krakinai.change-set.v5'&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,blocking:false,blockingOutputDecisions:{}};
     if(changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,conversionDecisions:{}};
     supplyApproval(next);
   };
@@ -149,6 +151,7 @@ export function ChangeSetPreview({
           </div>
         )}
       </section>
+      <BlockingProposalReview preview={preview} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
       <div className="import-preview-grid">
         <section
           className="card import-operations"
@@ -226,6 +229,7 @@ export function ChangeSetPreview({
           aria-label="Explicit import approvals"
         >
           <h3>Approve separately</h3>
+          {changeSet.schema==='krakinai.change-set.v5'&&changeSet.operations.some(isRecipeOperation)&&<label className="import-check"><input type="checkbox" disabled={disabled} checked={approval.blocking??false} onChange={e=>onApproval({...approval,blocking:e.target.checked})}/>Approve blocking changes</label>}
           <p className="muted-text">
             These choices come from you. New prompts and library assets remain
             unreviewed.

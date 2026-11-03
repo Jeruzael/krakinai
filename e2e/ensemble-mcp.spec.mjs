@@ -141,6 +141,7 @@ for (const mode of [
         "krakinai.change-set.v2",
         "krakinai.change-set.v3",
         "krakinai.change-set.v4",
+        "krakinai.change-set.v5",
       ]);
       const metadata = await ask("krakinai_get_scene", {
         sceneId: ids.parentId,

@@ -9,6 +9,8 @@ import { MCP_LIMITS, McpError, resultData, resultError, validateToolArgs, type M
 import { emptyChangeSetApproval, type ChangeSetApproval, type ChangeSetState } from '../types/changeSet';
 import type { McpProposalView, McpScope, ReceiptGrant } from '../types/mcp';
 import {conversionMcpPreview}from'../domain/recipeConversionMcp';
+import {requireBlockingCapabilities} from '../domain/mcpCapabilities';
+import {blockingMcpPreview} from '../domain/blockingMcp';
 
 interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void> }
 interface Consent { digest: string; packageDigest: string; sessionId: string; scopeEpoch: number; expiresAt: number; used: boolean }
@@ -18,7 +20,7 @@ const pendingStates = new Set(['received', 'review_required', 'approved', 'confl
 
 /** Application authority; no serialized command can mint or redeem human consent. */
 export class ProposalBroker {
-  #deps: Dependencies; #session?: string; #deadline = 0; #activity = 0; #scope = emptyMcpScope();
+  #deps: Dependencies; #session?: string; #deadline = 0; #activity = 0; #scope:McpScope = emptyMcpScope();#capabilities:readonly string[]=[];
   #proposals = new Map<string, McpProposalView>(); #reviewed = new Map<string, string>();
   #consents = new Map<string, Consent>(); #reuse = new Map<string, Set<string>>(); #receiptGrants = new Map<string, ReceiptGrant>();
   #versions = new Map<string, number>(); #listeners = new Set<() => void>();
@@ -33,18 +35,23 @@ export class ProposalBroker {
     if (current.epoch !== this.#scope.epoch) throw new McpError('PERMISSION_DENIED', 'Permissions changed. Review this request again.');
   }
   #effectiveScope(): McpScope { return { ...this.#scope, receiptGrants: [...this.#scope.receiptGrants, ...this.#receiptGrants.values()] }; }
-  connect(sessionId: string, scope: McpScope, expiresAt = this.#deps.now() + MCP_LIMITS.sessionMs) {
+  connect(sessionId: string, scope: McpScope, expiresAt = this.#deps.now() + MCP_LIMITS.sessionMs,capabilities:readonly string[]=[]) {
     const checked = validateMcpScope(scope);
+    if(checked.version===2)requireBlockingCapabilities(capabilities);
     this.disconnect(); this.#session = sessionId; this.#deadline = Math.min(expiresAt, this.#deps.now() + MCP_LIMITS.sessionMs); this.#activity = this.#deps.now();
+    this.#capabilities=[...capabilities];
     this.#scope = { ...checked, epoch: this.#scope.epoch + 1 }; this.#emit();
   }
   setScope(scope: McpScope) {
     const checked = validateMcpScope(scope);
+    if(this.#session&&checked.version!==this.#scope.version)throw new McpError('CAPABILITY_REQUIRED','Disconnect and make a fresh native pairing before changing the permission format.');
+    if(checked.version===2)requireBlockingCapabilities(this.#capabilities);
     this.#scope = { ...checked, epoch: this.#scope.epoch + 1 }; this.#reviewed.clear(); this.#consents.clear(); this.#receiptGrants.clear(); this.#reuse.clear();
     for (const p of this.#proposals.values()) if (pendingStates.has(p.status)) { p.status = 'conflict'; p.error = 'Permissions changed. Preview and review again.'; }
     this.#emit();
   }
   disconnect() {
+    this.#capabilities=[];
     this.#session = undefined; this.#scope = { ...emptyMcpScope(), epoch: this.#scope.epoch + 1 }; this.#reviewed.clear(); this.#consents.clear(); this.#receiptGrants.clear(); this.#reuse.clear();
     for (const p of this.#proposals.values()) if (pendingStates.has(p.status)) { p.status = 'disconnected'; p.error = 'Session ended. Request a fresh submission after pairing.'; }
     this.#emit();
@@ -66,6 +73,10 @@ export class ProposalBroker {
         const p = this.#proposal(String(args.proposalId));
         if (p.scopeEpoch !== this.#scope.epoch) throw new McpError('PERMISSION_DENIED');
         const data = this.#status(p);
+        if(p.preview?.changeSet.schema==='krakinai.change-set.v5'&&p.status!=='applied'){
+          const state=await this.#deps.readState();this.#assert(context);assertProposalScope(p.preview.changeSet,this.#scope,state,this.#reuse.get(p.id));
+          return resultData({...data,previewIsSnapshot:true,previewPreparedAt:p.preview.allocation.preparedAt,previewDigest:p.preview.approvedDigest,blocking:blockingMcpPreview(p.preview,this.#scope,state)});
+        }
         if(p.preview?.changeSet.schema==='krakinai.change-set.v4'&&p.status!=='applied'){
           const state=await this.#deps.readState();this.#assert(context);assertProposalScope(p.preview.changeSet,this.#scope,state,this.#reuse.get(p.id));
           return resultData({...data,previewIsSnapshot:true,previewPreparedAt:p.preview.allocation.preparedAt,previewDigest:p.preview.approvedDigest,conversions:conversionMcpPreview(p.preview,this.#scope)});
@@ -79,7 +90,8 @@ export class ProposalBroker {
         const digest = await changeSetDigest(pkg); this.#assert(context);
         if (command.tool === 'krakinai_preview_change_set') {
           const preview=await this.#deps.preview(pkg); this.#assert(context);
-          return resultData({ changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}) });
+          const current=pkg.schema==='krakinai.change-set.v5'?await this.#deps.readState():state;this.#assert(context);if(pkg.schema==='krakinai.change-set.v5')assertProposalScope(pkg,this.#scope,current);
+          return resultData({ changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}),...(pkg.schema==='krakinai.change-set.v5'?{blocking:blockingMcpPreview(preview,this.#scope,current)}:{}) });
         }
         const existing = [...this.#proposals.values()].find(p => p.sessionId === sessionId && p.changeSetId === pkg.changeSetId);
         if (existing) { if (existing.packageDigest !== digest) throw new McpError('CONFLICT', 'This change-set ID already identifies different content.'); return resultData(this.#status(existing)); }
@@ -89,6 +101,7 @@ export class ProposalBroker {
           this.#proposals.delete(discard.id); this.#reviewed.delete(discard.id); this.#consents.delete(discard.id); this.#versions.delete(discard.id); this.#reuse.delete(discard.id);
         }
         const preview = await this.#deps.preview(pkg); this.#assert(context);
+        if(pkg.schema==='krakinai.change-set.v5'){const current=await this.#deps.readState();this.#assert(context);assertProposalScope(pkg,this.#scope,current);}
         const p: McpProposalView = { id: crypto.randomUUID(), changeSetId: pkg.changeSetId, packageDigest: digest, sessionId, scopeEpoch: context.epoch, receivedAt: this.#deps.now(), expiresAt: this.#deps.now() + MCP_LIMITS.proposalMs, status: 'review_required', preview: structuredClone(preview) };
         if (preview.replay && canReadReceipt(preview.replay, this.#effectiveScope(), state)) { p.status = 'applied'; p.receipt = structuredClone(preview.replay); }
         this.#proposals.set(p.id, p); this.#emit(); return resultData(p.receipt ? { ...this.#status(p), receipt: receiptProjection(p.receipt, state) } : this.#status(p));

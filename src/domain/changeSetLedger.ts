@@ -15,6 +15,7 @@ import {
   type JsonRule,
 } from "./changeSetSchema";
 import { parseChangeSet, validateJsonRule } from "./changeSetValidation";
+import {canonicalStringify} from './changeSetCanonical';
 export const MAX_IMPORT_LEDGER_BYTES = 4 * 1024 * 1024;
 const text = (max: number): JsonRule => ({ type: "string", maxLength: max });
 const obj = (
@@ -53,7 +54,8 @@ const decisionRule = obj(
 );
 export function validateChangeSetApproval(
   value: unknown,
-  operations: Pick<ChangeSet["operations"][number], "operationId" | "type">[],
+  operations: readonly Pick<ChangeSet["operations"][number], "operationId" | "type">[],
+  schema?:ChangeSet['schema'],
 ): asserts value is ChangeSetApproval {
   validateJsonRule(
     obj(
@@ -65,6 +67,7 @@ export function validateChangeSetApproval(
         assetDecisions: { type: "object" },
         variantDecisions:{type:'object'},
         conversionDecisions:{type:'object'},
+        ...(schema==='krakinai.change-set.v5'?{blocking:{type:'boolean'} as JsonRule,blockingOutputDecisions:{type:'object'} as JsonRule}:{}),
         allowDuplicateSceneOperations: {
           type: "array",
           items: id,
@@ -90,6 +93,15 @@ export function validateChangeSetApproval(
   );
   const approval = value as ChangeSetApproval,
     known = new Map(operations.map((o) => [o.operationId, o.type]));
+  if(schema==='krakinai.change-set.v5'){
+    const decisions=Object.entries(approval.blockingOutputDecisions??{});
+    if(decisions.length>100)throw Error('Too many blocking output decisions.');
+    for(const [operationId,modes]of decisions){
+      if(!['scene.create_recipe','scene.revise_recipe','scene.create_recipe_take','scene.convert_direct_to_recipe'].includes(known.get(operationId)??''))throw Error('Blocking output decision targets an unknown recipe operation.');
+      validateJsonRule(obj({full:enumRule('canonical','keep_manual_unverified'),structured:enumRule('canonical','keep_manual_unverified'),compact:enumRule('canonical','keep_manual_unverified')},[]),modes,'blocking output decisions');
+    }
+    if(approval.discardManualOutputOperations?.length)throw Error('Use explicit per-mode output decisions for v5; legacy discard consent cannot replace them.');
+  }
   const conversions=Object.entries(approval.conversionDecisions??{});
   if(conversions.length>100)throw Error('Too many conversion approval decisions.');
   for(const [operationId,decision]of conversions){
@@ -168,7 +180,7 @@ export function validateImportLedger(
     );
   validateJsonRule(
     obj({
-      version: { const: 1 },
+      version: { enum: [1,2] },
       receipts: { type: "array", maxItems: 1000 },
       candidates: { type: "array", maxItems: 250 },
       variantCandidates:{type:'array',maxItems:250},
@@ -180,10 +192,12 @@ export function validateImportLedger(
     seen = new Set<string>();
   if(ledger.candidates.length+(ledger.variantCandidates?.length??0)>250)throw Error('Combined import candidate capacity limit is 250; no candidates were dropped.');
   for (const receipt of ledger.receipts) {
+    if(receipt.version===2&&ledger.version!==2)throw Error('Receipt v2 requires ledger v2.');
     validateJsonRule(
       obj(
         {
-          version: { const: 1 },
+          version: { const: receipt.version===2?2:1 },
+          ...(receipt.version===2?{changeSetSchema:{const:'krakinai.change-set.v5'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES)}:{}),
           changeSetId: id,
           packageDigest: sha,
           approvedDigest: sha,
@@ -207,6 +221,7 @@ export function validateImportLedger(
           "idMappings",
           "operations",
           "projectRevisions",
+          ...(receipt.version===2?['changeSetSchema','reviewedContent']:[]),
         ],
       ),
       receipt,
@@ -246,7 +261,14 @@ export function validateImportLedger(
         throw Error("Duplicate receipt operation.");
       opIds.add(op.operationId);
     }
-    validateChangeSetApproval(receipt.approval, receipt.operations);
+    validateChangeSetApproval(receipt.approval, receipt.operations,receipt.version===2?receipt.changeSetSchema:undefined);
+    if(receipt.version===2){
+      // Evidence is never reconstructed into writes. Replay still requires exact
+      // package and approval digests, with live authorization at the boundary.
+      let reviewed:unknown;try{reviewed=JSON.parse(receipt.reviewedContent);}catch{throw Error('Invalid reviewed receipt evidence.');}
+      validateJsonRule(obj({review:{type:'object'},blockingScenes:{type:'array',maxItems:100},blockingContinuity:{type:'array',maxItems:10}}),reviewed,'reviewed receipt evidence');
+      if(canonicalStringify(reviewed)!==receipt.reviewedContent)throw Error('Receipt evidence must be canonical JSON.');
+    }
     if (
       Object.keys(receipt.idMappings).length > 250 ||
       Object.keys(receipt.projectRevisions).length > 10
@@ -391,6 +413,7 @@ export function appendImportReceipt(
   receipt: ChangeSetReceipt,
 ): ImportLedger {
   const next = structuredClone(previous);
+  if(receipt.version===2)next.version=2;
   for (const candidate of plan.candidates) {
     const i = next.candidates.findIndex((c) => c.id === candidate.id);
     if (i < 0) next.candidates.push(structuredClone(candidate));

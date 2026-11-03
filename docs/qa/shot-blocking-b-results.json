@@ -1,0 +1,2527 @@
+{
+  "schema": "krakinai.qa.shot-blocking-b.v1",
+  "status": "local_verified_awaiting_signed_delivery",
+  "date": "2026-11-03",
+  "base": "c3866116c5299cda4e0049b941ddabc17f569066",
+  "branch": "codex/shot-blocking-spatial-continuity",
+  "syntheticOnly": true,
+  "committed": false,
+  "hostedCi": null,
+  "nativeCertificationComplete": true,
+  "completeBrowserCertification": {
+    "command": "npm run test:e2e",
+    "passed": 214,
+    "failed": 0,
+    "skipped": 14,
+    "flaky": 0,
+    "declared": 228,
+    "durationMs": 905790.772,
+    "exitCode": 0,
+    "runtimeSourceDigest": "69aa494fbc525e280ae204ed8cf73d3b7f799c241c732dfb6351a556dd7e9ab9",
+    "localLog": "browser-regression-b-03.log",
+    "localMachineResults": "browser-regression-b-03.json",
+    "subsequentChanges": "test-only touch regression and screenshot capture stabilization; production runtime unchanged"
+  },
+  "independentReview": {
+    "reviewedTree": "651d0d19b5827d48e026554949f957693255b58c",
+    "reviewer": "one independent fresh-context reviewer",
+    "requiredFindings": 3,
+    "deferredMinors": 0,
+    "fixes": "all3 RED->GREEN; focused28 and affected browser15 passed",
+    "secondReview": false,
+    "rulings": [
+      "extend existing guided conversion with an explicit transient working Recipe/Blocking draft retained in a strict v5 download/resume package — this is the reviewer-approved alternative and existing guided workflow, supports incomplete inputs without an extra DB writer or premature immutable scene — cost if wrong: unfinished conversion planning requires Download mapping package for durable recovery; clearly disclose this. Persisted ordinary builder drafts remain unchanged. V4 loading/behavior stays supported, v5 source proofs/binding tokens preserve exact source/shot and explicit relationship repair.",
+      "prevent opening Blocking while an own builder autosave is pending rather than relaxing the entire-source stale guard — avoids stranding edits and preserves fail-closed foreign state protection — cost if wrong: the button is temporarily disabled until the normal autosave finishes; actionable Saving status remains visible. Verify subsequent explicit Blocking edit saves correctly.",
+      "C/keyframes/Image Prompt Studio remain excluded — B authors structured Blocking only, as approved — cost: no middle-frame/image-prompt certification is claimed.",
+      "external media generation/provider execution stays manual — no provider tool was added — cost: creation of actual images/videos remains outside this feature.",
+      "real-library migration/live bridge activation/global registration remain excluded from development; owner Git signing is a separate delivery step — respects explicit real-data/security boundaries — cost: source completion does not activate the feature in the live library.",
+      "ZIP64/PR12 capacity remains uncertified and untouched — small synthetic restore tests prove compatibility only — cost: no near-limit restore claim.",
+      "network evidence is limited to denied proxy CONNECTs and correlated loopback model calls — no OS-wide capture exists and encrypted request purpose was not observed — cost: no claim that the installed process made zero other direct-egress attempts.",
+      "executor must finish final browser/screenshots/signed-head hosted CI after review, never treat the review as those results — the reviewer deliberately did not rerun them — cost: delivery remains pending until actual gates complete.",
+      "executor owns the complete four-viewport keyboard/touch/label/focus checks and PNG inspection; no manual assistive-technology certification is inferred — automated ARIA checks are narrower — cost: NVDA/JAWS behavior is not independently certified.",
+      "strict v5 schema producer/generator plus frozen-v1-v4/parity checks are the artifact authority instead of a separate human review of21605 generated lines — avoids treating generated duplicates as independent logic — cost: relies on the checked generator and schema tests.",
+      "unfinished editor recovery remains current-tab memory; unfinished conversion recovery requires explicit planning-package download — matches documented durability boundaries — cost: browser crash/reload can lose work not saved/downloaded.",
+      "no extra invalid off-camera marker rendering fix without a normal reachable reproduction — persisted planning/saved validation already rejects the injected invalid state and assembly fails closed — cost: manually corrupted browser records are outside normal authoring guarantees.",
+      "deleting a source does not broaden MCP resubmission permissions — exact receipt-grant reads and storage receipt replay remain supported — cost: retrying a write after its required source disappears may be denied even though historical receipt recovery works.",
+      "no new Structured/Compact permission categories — v5 uses exact parent Full plus all contributing grants, with the Notes leak corrected — cost: callers need those existing complete-output grants instead of narrower per-mode grants.",
+      "compressed-format cleanup, broad unchanged-code audit and separate storage-limit edits remain excluded — no unrelated feature/refactor or validation.ts change — cost: existing technical debt/dev dependency advisories remain separately disclosed."
+    ],
+    "requiredFindingsDisposition": [
+      {
+        "priority": "P1",
+        "issue": "Notes disclosure via ensemble role/performanceNotes",
+        "fixed": true,
+        "regression": "src/__tests__/blockingReviewPrivacy.test.ts",
+        "evidence": "actual broker preview/pending status canaries RED->GREEN; Notes grant restores full output"
+      },
+      {
+        "priority": "P2",
+        "issue": "Own pending autosave strands Blocking editor",
+        "fixed": true,
+        "regression": "src/__tests__/builderSaveRace.test.tsx",
+        "evidence": "delayed own save RED->GREEN, following Blocking edit persists current stored revision"
+      },
+      {
+        "priority": "P2",
+        "issue": "Incomplete Direct Prompt conversion has no Blocking planning",
+        "fixed": true,
+        "regressions": [
+          "src/__tests__/blockingConversionMapping.test.ts",
+          "src/__tests__/blockingConversionWorkspace.test.tsx",
+          "e2e/blocking-conversion.spec.mjs"
+        ],
+        "evidence": "strict v5 planning download/reload/resume, exact source tokens, missing inputs retained and all-content approval still cannot save"
+      }
+    ]
+  },
+  "verifiedRootTests": {
+    "passed": 1343,
+    "failed": 0,
+    "files": 155,
+    "exitCode": 0,
+    "phase": "final_standalone_after_complete_browser",
+    "durationSeconds": 99.8005766
+  },
+  "verifiedBridgeTests": {
+    "passed": 67,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "verifiedQaHelpers": {
+    "passed": 87,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "historicalQaLedger": {
+    "checks": 207,
+    "screenshots": 45,
+    "separateFromThisSuite": true
+  },
+  "failedAttempts": [
+    {
+      "kind": "root02",
+      "passed": 1335,
+      "failed": 1,
+      "reason": "Earlier draft save completion replaced newer typing; deterministic regression and fix followed."
+    },
+    {
+      "kind": "browser01",
+      "passed": 201,
+      "failed": 8,
+      "skipped": 13,
+      "finalSourceStable": false,
+      "exitCode": 1
+    },
+    {
+      "kind": "native-ipv4-01",
+      "completed": false,
+      "paired": true,
+      "applied": false,
+      "exitCode": 1,
+      "reason": "Harness label selector failed before browser Apply; not certified."
+    },
+    {
+      "kind": "native-shared-01",
+      "exitCode": 1,
+      "completed": false,
+      "reason": "All three reads and departure/revocation assertions completed; zero-outbound-attempt harness assertion failed at four blocked startup CONNECTs. New zero-model-turn diagnostic classified destinations before retry."
+    },
+    {
+      "kind": "overlapping-delivery-root",
+      "passed": 1340,
+      "failed": 3,
+      "files": 155,
+      "exitCode": 1,
+      "reason": "Two unchanged five-second UI timeouts and a subsequent camera assertion while full browser overlapped. The two files passed 33 focused tests, then the standard full unit command passed1343/1343 alone without timeout/retry changes. Resource contention remains a hypothesis."
+    },
+    {
+      "kind": "manual-review-screenshot",
+      "testPassed": true,
+      "visualEvidenceAccepted": false,
+      "reason": "Mobile full-page capture caught responsive sidebar transition halfway through. Capture now waits for actual animation and verifies closed drawer right<=0; focused workflow passed and images replaced."
+    }
+  ],
+  "pending": [
+    "owner-signed Git commit",
+    "feature-branch push and separate unmerged PR",
+    "exact-signed-head hosted Linux/Windows CI"
+  ],
+  "nativeOriginCases": [
+    {
+      "syntheticOnly": true,
+      "origin": "http://127.0.0.1:4173",
+      "manualNativeVerification": true,
+      "implementation": "actual installed Codex CLI / production SDK stdio server",
+      "cliVersionOutput": "codex-cli 0.73.0",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "stdioEntrySha256": "43e53febd298aff7bab32c8ac22b1147964ec098742b07f038d247c319387eab",
+      "exitCode": 0,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4059288cf7880df7909ac993bd095bd70c1fc892bde0540fc44e4eaec986d18a",
+          "elapsedMs": 75266
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "4326ef8f2475ffc7e1cbc920652355ab15b8a21f62e1945c4bd81e7939dba8ad",
+          "replySha256": "584014cf5c52440db5346e314fd53887510e85289f722d959b3eb272d4bc6bc4",
+          "elapsedMs": 77386
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "5e8ab6008207bf48d40eb836528f31fbbb7f38675b17a58fa745a94d57093a6d",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 79818
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "f2d1ae043076552dee2d2cc6e0889636c70791130b3ffe397b8bf13b615fd721",
+          "elapsedMs": 81568
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "5e8ab6008207bf48d40eb836528f31fbbb7f38675b17a58fa745a94d57093a6d",
+          "replySha256": "e1e0d759eac97fa3a4e4985005ca9843cd8ecb714819c88315b550211b1117ce",
+          "elapsedMs": 84063
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "5e8ab6008207bf48d40eb836528f31fbbb7f38675b17a58fa745a94d57093a6d",
+          "replySha256": "771036e34b34bd39f46d3ce5b9a6c08dc313d76eec91964099e06d6eec84d8e7",
+          "elapsedMs": 85838
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "21ad3613ab200d1be021eb8791c5d68eb35fef028c1a1c210236ba8de1caae68",
+          "replySha256": "ade1a8515ed7f48203f3ef6ac0bd51da459c1be86dca1fb283a042ef1dada4c0",
+          "elapsedMs": 87907
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "21ad3613ab200d1be021eb8791c5d68eb35fef028c1a1c210236ba8de1caae68",
+          "replySha256": "dfcfdb97bfeb8bb4179c3857887d72fbc8f2720429c7f265bda1c01f466364aa",
+          "elapsedMs": 90000
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "ec1887219fffa0f8f549e8c465ab9cbf5943f83f6adc1688c05ac07a1a30c07a",
+          "replySha256": "738a6ba0680b6a106239bcdecf4374ea64a3eebdcf0afdccd9986bc0595be63b",
+          "elapsedMs": 92123
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "5e8ab6008207bf48d40eb836528f31fbbb7f38675b17a58fa745a94d57093a6d",
+          "replySha256": "47d3b5a92c8cc5d1495ed7ee1f20aacaa573bd94654308fd11f67d6606a8b7b4",
+          "elapsedMs": 94299
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "0361ac6475c0ff2c16fd3236699ad0b9944672ebf90c3a52b68f29b725e50740",
+          "replySha256": "a4f8bf12a2a69a570b5c401a88f338e9bab8b4ff911b800c6af16879824bdd20",
+          "elapsedMs": 96316
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-full-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "0361ac6475c0ff2c16fd3236699ad0b9944672ebf90c3a52b68f29b725e50740",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 98437
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 100507
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "4326ef8f2475ffc7e1cbc920652355ab15b8a21f62e1945c4bd81e7939dba8ad",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 102620
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "5e8ab6008207bf48d40eb836528f31fbbb7f38675b17a58fa745a94d57093a6d",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 104836
+        }
+      ],
+      "sourceSceneId": "scene_f631d0c88571",
+      "newSceneIds": [
+        "scene_4d8ae54629cf"
+      ],
+      "packageDigest": "db8bf7e78d046228f6a8e67136bfcaa2ec4293a71e6d5e1a2da49a502a794887",
+      "approvedDigest": "37a875678e9ce9e7e43e6278ac3b81778950757bd1ce60147cc5a2ff7e3e36c8",
+      "noWriteChecks": 8,
+      "oldSceneHashes": {
+        "blocking-after": "9b83db6881d2aa9f79ac9f14e61b6f3a0064554e98b441b65e361e424e064063",
+        "blocking-before": "ec8f071af60cc4f24bcb761816514cc07e0c8302dc7e1f4451918ce8b84ff3d1",
+        "ensemble-parent": "bbf5d406b0a2cd430c39c1e5fd688a2d03c8f8f3cb80f5cebcd97fa5e6739720",
+        "scene_3b072c39d584": "524e1f921dbfe34f42ca04fa58610b0293d18c19db1307ddbfb78bedb8569991",
+        "scene_f631d0c88571": "3ce91428ef66f3e345d522905c1beb914758f0680053a5b22f421b71760c030d"
+      },
+      "mediaHashes": [
+        {
+          "id": "blocking-media",
+          "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+        }
+      ],
+      "immutableSourcePreserved": true,
+      "preferredPreserved": true,
+      "manualChoice": "canonical explicitly selected in browser",
+      "otherParticipantsPreserved": true,
+      "crossOriginEmpty": true,
+      "fullBrowserRestartVerified": true,
+      "revoked": true,
+      "warning": null
+    },
+    {
+      "syntheticOnly": true,
+      "origin": "http://localhost:4173",
+      "manualNativeVerification": true,
+      "implementation": "actual installed Codex CLI / production SDK stdio server",
+      "cliVersionOutput": "codex-cli 0.73.0",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "stdioEntrySha256": "43e53febd298aff7bab32c8ac22b1147964ec098742b07f038d247c319387eab",
+      "exitCode": 0,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "412168e684adc6110021a655a05abd4646e6ae8f8a77775ef2fb8717aeee055e",
+          "elapsedMs": 51716
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "4ed66c2bc3c71f58f8240451a1bb49be52d318b861581a070b0b5a6a776fe876",
+          "replySha256": "7da7a1b089ad54314f588da7d69e62f362c484abc3b9838ea4771d176fc453c1",
+          "elapsedMs": 53813
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "c151f38e591fbe75b674314b2e8499cab84f989fc8a6f86c851644e2831e1f68",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 56263
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "f97145a474bc0759f6acc5b39a152e4e21eef8a8698e15774190a2c0a1cc30f0",
+          "elapsedMs": 58024
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "c151f38e591fbe75b674314b2e8499cab84f989fc8a6f86c851644e2831e1f68",
+          "replySha256": "1afad462044e6b0820b11aedb21409efbc0e189e80340cf99c9bb0cccd45688b",
+          "elapsedMs": 60482
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "c151f38e591fbe75b674314b2e8499cab84f989fc8a6f86c851644e2831e1f68",
+          "replySha256": "4f073fb151555089bf635af4e5a6c8cfc111510845c89a2e103ae066f0ebb596",
+          "elapsedMs": 62240
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "e07d60310260134b910404d008b37de2e29d5f43a9184d005134f113d267c853",
+          "replySha256": "6d15127250ab7cc43d253d85adfeaf0d0c7a2d94b9dbff86919b102e8f9c8bed",
+          "elapsedMs": 64319
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "e07d60310260134b910404d008b37de2e29d5f43a9184d005134f113d267c853",
+          "replySha256": "1b255448b2f81b05eb8144e9f0c1f25a9f1b1e3b965400ff6e1b3957ea3ca9cf",
+          "elapsedMs": 66418
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "2dd54cb9e984f3610a9ed6bf9a32c7b203f689476e9fed2738f8ee7986890e32",
+          "replySha256": "6a3da74fdd04bb627d58acb8065bca2ef513ad729e36b500aa98c563968a908f",
+          "elapsedMs": 68526
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "c151f38e591fbe75b674314b2e8499cab84f989fc8a6f86c851644e2831e1f68",
+          "replySha256": "890614c1730f90cb854ecca896d11b880ebdbb63e64ec3abc4fbf558156a8bb8",
+          "elapsedMs": 70628
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "af0753e7bc319c937e2aebf04d4b0809ed5b7c506aadf1cb7f52aa80617bf98f",
+          "replySha256": "fc082d0ed537112ced24486e4189ce1717da09c52a31335f69ebc9d073f5e43d",
+          "elapsedMs": 72740
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-full-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "af0753e7bc319c937e2aebf04d4b0809ed5b7c506aadf1cb7f52aa80617bf98f",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 74842
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 76935
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "4ed66c2bc3c71f58f8240451a1bb49be52d318b861581a070b0b5a6a776fe876",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 79035
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "c151f38e591fbe75b674314b2e8499cab84f989fc8a6f86c851644e2831e1f68",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 81432
+        }
+      ],
+      "sourceSceneId": "scene_da70239651a5",
+      "newSceneIds": [
+        "scene_8d8e1ea8e3ae"
+      ],
+      "packageDigest": "3e061f77c60efd0e07de06d121963b5fd76ec09881bff2c0da7e6b99ad44044a",
+      "approvedDigest": "f0872645773c3087c158260900b2424975dc18983c5bcc948b413be1d7062f35",
+      "noWriteChecks": 8,
+      "oldSceneHashes": {
+        "blocking-after": "9b83db6881d2aa9f79ac9f14e61b6f3a0064554e98b441b65e361e424e064063",
+        "blocking-before": "ec8f071af60cc4f24bcb761816514cc07e0c8302dc7e1f4451918ce8b84ff3d1",
+        "ensemble-parent": "bbf5d406b0a2cd430c39c1e5fd688a2d03c8f8f3cb80f5cebcd97fa5e6739720",
+        "scene_110188c0697a": "40cc8d74a216396a77cefbc72e151e4299304bffe455f2004bec04e8417c2512",
+        "scene_da70239651a5": "f393dce0d0a6d089e710697fc45bcc7d76897e5100b7a63aaa6bb32e8d06e089"
+      },
+      "mediaHashes": [
+        {
+          "id": "blocking-media",
+          "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+        }
+      ],
+      "immutableSourcePreserved": true,
+      "preferredPreserved": true,
+      "manualChoice": "canonical explicitly selected in browser",
+      "otherParticipantsPreserved": true,
+      "crossOriginEmpty": true,
+      "fullBrowserRestartVerified": true,
+      "revoked": true,
+      "warning": null
+    }
+  ],
+  "verificationCommands": [
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\typecheck-final.log",
+      "durationSeconds": 15.0587938,
+      "command": "npm run typecheck",
+      "startedAt": "2026-11-02T23:59:53.4415820+00:00",
+      "name": "typecheck-final",
+      "exitCode": 2
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\build-final.log",
+      "durationSeconds": 13.5234103,
+      "command": "npm run build",
+      "startedAt": "2026-11-03T00:00:08.5503848+00:00",
+      "name": "build-final",
+      "exitCode": 1
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\audit-final.log",
+      "durationSeconds": 1.8947413,
+      "command": "npm audit --omit=dev",
+      "startedAt": "2026-11-03T00:00:22.0896331+00:00",
+      "name": "audit-final",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\bridge-typecheck-final.log",
+      "durationSeconds": 4.4682587,
+      "command": "npm --prefix bridge run typecheck",
+      "startedAt": "2026-11-03T00:00:23.9952396+00:00",
+      "name": "bridge-typecheck-final",
+      "exitCode": 2
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\bridge-test-final.log",
+      "durationSeconds": 19.9501853,
+      "command": "npm --prefix bridge test",
+      "startedAt": "2026-11-03T00:00:28.4784477+00:00",
+      "name": "bridge-test-final",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\bridge-audit-final.log",
+      "durationSeconds": 2.4044516,
+      "command": "npm --prefix bridge audit --omit=dev",
+      "startedAt": "2026-11-03T00:00:48.4572375+00:00",
+      "name": "bridge-audit-final",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\test-qa-final.log",
+      "durationSeconds": 0.76729,
+      "command": "npm run test:qa",
+      "startedAt": "2026-11-03T00:00:50.8681609+00:00",
+      "name": "test-qa-final",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run typecheck",
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\typecheck-final-02.log",
+      "exitCode": 0,
+      "name": "typecheck-final-02"
+    },
+    {
+      "command": "npm run build",
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\build-final-02.log",
+      "exitCode": 0,
+      "name": "build-final-02"
+    },
+    {
+      "command": "npm --prefix bridge run typecheck",
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\bridge-typecheck-final-02.log",
+      "exitCode": 0,
+      "name": "bridge-typecheck-final-02"
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-root.log",
+      "name": "root",
+      "startedAt": "2026-11-03T00:58:29.3572677+00:00",
+      "durationSeconds": 115.761136,
+      "command": "npm test",
+      "exitCode": 1
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-typecheck.log",
+      "name": "typecheck",
+      "startedAt": "2026-11-03T01:00:25.1871199+00:00",
+      "durationSeconds": 16.1619492,
+      "command": "npm run typecheck",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-build.log",
+      "name": "build",
+      "startedAt": "2026-11-03T01:00:41.3682661+00:00",
+      "durationSeconds": 20.181663,
+      "command": "npm run build",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-audit.log",
+      "name": "audit",
+      "startedAt": "2026-11-03T01:01:01.5648443+00:00",
+      "durationSeconds": 2.0549867,
+      "command": "npm audit --omit=dev",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-bridge-typecheck.log",
+      "name": "bridge-typecheck",
+      "startedAt": "2026-11-03T01:01:03.6298472+00:00",
+      "durationSeconds": 3.5533367,
+      "command": "npm --prefix bridge run typecheck",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-bridge-test.log",
+      "name": "bridge-test",
+      "startedAt": "2026-11-03T01:01:07.1948918+00:00",
+      "durationSeconds": 15.5069548,
+      "command": "npm --prefix bridge test",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-bridge-audit.log",
+      "name": "bridge-audit",
+      "startedAt": "2026-11-03T01:01:22.7262402+00:00",
+      "durationSeconds": 1.7152549,
+      "command": "npm --prefix bridge audit --omit=dev",
+      "exitCode": 0
+    },
+    {
+      "log": ".superpowers\\sdd\\2026-11-03-shot-blocking-spatial-continuity-b\\delivery-qa-ledger.log",
+      "name": "qa-ledger",
+      "startedAt": "2026-11-03T01:01:24.4482328+00:00",
+      "durationSeconds": 0.6727053,
+      "command": "npm run test:qa",
+      "exitCode": 0
+    },
+    {
+      "command": "npm test",
+      "exitCode": 0,
+      "startedAt": "2026-11-03T01:13:40.3277560+00:00",
+      "durationSeconds": 99.8005766,
+      "log": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/delivery-root-sequential-retry.log"
+    },
+    {
+      "command": "npm run test:e2e -- e2e/blocking-authoring.spec.mjs --grep 'touch blocking authoring'",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:e2e -- e2e/blocking-mcp.spec.mjs --grep 'native acceptance review controls'",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:e2e -- e2e/blocking-continuity.spec.mjs --grep 'selected-take board'",
+      "exitCode": 0
+    },
+    {
+      "command": "npm run test:e2e",
+      "exitCode": 0,
+      "log": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/browser-regression-b-03.log"
+    },
+    {
+      "command": "dotnet run --project launcher/tests/Krakinai.BridgeLauncher.Tests.csproj",
+      "exitCode": 0,
+      "log": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/native-launcher-final.log"
+    },
+    {
+      "command": "node --test scripts/qa/*.test.mjs",
+      "exitCode": 0,
+      "log": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/helpers-final-02.log"
+    },
+    {
+      "command": "node scripts/export-change-set-schema.mjs --check",
+      "exitCode": 0,
+      "log": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/schema-final.log"
+    }
+  ],
+  "screenshots": [
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/builder-1440-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-1440-dpr1.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 130622,
+      "sha256": "d8d78f76907ca934ee37250e23772f096fd7308f99433d0ba0330e784d84d8fe",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/continuity-1440-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-1440-dpr1.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 100114,
+      "sha256": "a8c491ce1d922525535b1a0205d8f47c1b2abbd4ab83b19b175a1265bc5a9ed2",
+      "pngWidth": 1440,
+      "pngHeight": 924
+    },
+    {
+      "source": "qa-results/blocking-authoring/builder-1440-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-1440-dpr1.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 134606,
+      "sha256": "894aa2e75917faa2dfec80eddffb10381f24346636e2841f7018426b9e208c95",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-authoring/editor-1440-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-1440-dpr1.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 131146,
+      "sha256": "fe74e91633fe68942dacd5e1af7caaf86aec5b2816570225f1b1c47151dec922",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-continuity/continuity-1440-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-1440-dpr1.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 106117,
+      "sha256": "a2d589376d02a87bec51a89a747470a14fea4bb2b797e2790ad6b5a39115b729",
+      "pngWidth": 1440,
+      "pngHeight": 924
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/builder-768-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-768-dpr1.png",
+      "width": 768,
+      "height": 1024,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 159862,
+      "sha256": "6cbe004a97917538bd4bc85b403c512ec65f454d19a5f9a0b01b0438cebc7e69",
+      "pngWidth": 768,
+      "pngHeight": 2106
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/continuity-768-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-768-dpr1.png",
+      "width": 768,
+      "height": 1024,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 103785,
+      "sha256": "5f2601ee5e681e495b5b18c455c7f8c08fb3a9f2dc33830fc789a3fd241004dd",
+      "pngWidth": 768,
+      "pngHeight": 1272
+    },
+    {
+      "source": "qa-results/blocking-authoring/builder-768-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-768-dpr1.png",
+      "width": 768,
+      "height": 1024,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 165809,
+      "sha256": "5e9b945eacb55fcc9f69ccb4eca1e933eb4bd4c1b2c117ea8d90d4d1614f7fd9",
+      "pngWidth": 768,
+      "pngHeight": 2351
+    },
+    {
+      "source": "qa-results/blocking-authoring/editor-768-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-768-dpr1.png",
+      "width": 768,
+      "height": 1024,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 67600,
+      "sha256": "2ef1c0c580cab5b39e738ba2dec946af2c44a69382676594c5bf90c7007c57f1",
+      "pngWidth": 768,
+      "pngHeight": 1024
+    },
+    {
+      "source": "qa-results/blocking-continuity/continuity-768-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-768-dpr1.png",
+      "width": 768,
+      "height": 1024,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 193658,
+      "sha256": "c385bf0f50624370471b215aaf3883ea97eed94d0a7526564ca12267688b90ac",
+      "pngWidth": 768,
+      "pngHeight": 2638
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/builder-390-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-390-dpr1.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 111281,
+      "sha256": "f0faec81407e6b94aba86f246fb82e6ae2c387a1be230d87be871955eb22514e",
+      "pngWidth": 390,
+      "pngHeight": 2184
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/continuity-390-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-390-dpr1.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "before",
+      "bytes": 60684,
+      "sha256": "7376bd3a65d258bd9fb4dad2bd9f591ba888ca7478b475335f381acb02df4a3d",
+      "pngWidth": 390,
+      "pngHeight": 1354
+    },
+    {
+      "source": "qa-results/blocking-authoring/builder-390-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-390-dpr1.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 111613,
+      "sha256": "31de4a8abd67f50075633cf1b7ab6d51773c05f5eb40ec5b47a6c6b11337c792",
+      "pngWidth": 390,
+      "pngHeight": 2346
+    },
+    {
+      "source": "qa-results/blocking-authoring/editor-390-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-390-dpr1.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 45726,
+      "sha256": "6ce08446c1de983471e5428488a481868d5b69113ccc76b0e84ee695c957e671",
+      "pngWidth": 390,
+      "pngHeight": 844
+    },
+    {
+      "source": "qa-results/blocking-continuity/continuity-390-dpr1.png",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-390-dpr1.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 137150,
+      "sha256": "66d0ac5c1e9feeea2004c5c105c8b758cb7662f5362adede25c0592763278d41",
+      "pngWidth": 390,
+      "pngHeight": 2802
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/builder-720-dpr2.png",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-720-dpr2.png",
+      "width": 720,
+      "height": 450,
+      "dpr": 2,
+      "stage": "before",
+      "bytes": 319539,
+      "sha256": "06571bdee6c68fc6d0dfa6b8c6003e43acb61a558eae27d076df6fc2350ed21f",
+      "pngWidth": 1440,
+      "pngHeight": 4002
+    },
+    {
+      "source": ".superpowers/sdd/2026-11-03-shot-blocking-spatial-continuity-b/before/continuity-720-dpr2.png",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-720-dpr2.png",
+      "width": 720,
+      "height": 450,
+      "dpr": 2,
+      "stage": "before",
+      "bytes": 193844,
+      "sha256": "7eca551f296447496958616700eb51168c9729cabac303551a0d2102880134a8",
+      "pngWidth": 1440,
+      "pngHeight": 2394
+    },
+    {
+      "source": "qa-results/blocking-authoring/builder-720-dpr2.png",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-720-dpr2.png",
+      "width": 720,
+      "height": 450,
+      "dpr": 2,
+      "stage": "after",
+      "bytes": 337887,
+      "sha256": "cfebd2ec94e981c3f6fea5a2af644ed4d6a22d17d69ab11b27994067d1cae5b5",
+      "pngWidth": 1440,
+      "pngHeight": 4822
+    },
+    {
+      "source": "qa-results/blocking-authoring/editor-720-dpr2.png",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-720-dpr2.png",
+      "width": 720,
+      "height": 450,
+      "dpr": 2,
+      "stage": "after",
+      "bytes": 81962,
+      "sha256": "02b65abe9e9af63c6de19e5dbe6f3678efaa7d0ef78ef8a072641e76622a30b7",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-continuity/continuity-720-dpr2.png",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-720-dpr2.png",
+      "width": 720,
+      "height": 450,
+      "dpr": 2,
+      "stage": "after",
+      "bytes": 446499,
+      "sha256": "035bb334b38c1bf7399a5d6cd9637e8242d6edacd621cefb401a411e25e37d9c",
+      "pngWidth": 1440,
+      "pngHeight": 4756
+    },
+    {
+      "source": "qa-results/blocking-authoring/empty-1440.png",
+      "path": "docs/screenshots/shot-blocking-b/after/empty-1440.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 118776,
+      "sha256": "fa1a3e60f9995453a321b184831f459b7a13a198b515a33fb82a0d16de688083",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-authoring/empty-390.png",
+      "path": "docs/screenshots/shot-blocking-b/after/empty-390.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 40131,
+      "sha256": "ffa7ff3b724bd7e48b1ac9e63fedb6ac3a9d05091e1f28587aac2ee058b3a021",
+      "pngWidth": 390,
+      "pngHeight": 844
+    },
+    {
+      "source": "qa-results/blocking-authoring/off-camera-1440.png",
+      "path": "docs/screenshots/shot-blocking-b/after/off-camera-1440.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 134542,
+      "sha256": "d218fe2c133b6b5722218e77779cac026ba31e6cda8ffa78ea51286b71dafe08",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-authoring/off-camera-390.png",
+      "path": "docs/screenshots/shot-blocking-b/after/off-camera-390.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 40313,
+      "sha256": "f2aa6c7f62d8ca0e34f8427dc2fe67f3ca8f3b74814af91001cc508b7415cd31",
+      "pngWidth": 390,
+      "pngHeight": 844
+    },
+    {
+      "source": "qa-results/blocking-mcp/screenshots/manual-review-1440.png",
+      "path": "docs/screenshots/shot-blocking-b/after/manual-review-1440.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 216915,
+      "sha256": "caaf29e7259916230aa9e0a47559a1c0230a01391a87fba6636090fc65c2ac9d",
+      "pngWidth": 1440,
+      "pngHeight": 2230
+    },
+    {
+      "source": "qa-results/blocking-mcp/screenshots/manual-review-390.png",
+      "path": "docs/screenshots/shot-blocking-b/after/manual-review-390.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 163322,
+      "sha256": "abff0fa6170a663b0732d56eb269483bed4857e13819f640c90267df7c0b7409",
+      "pngWidth": 390,
+      "pngHeight": 3163
+    },
+    {
+      "source": "qa-results/blocking-conversion/planning-1440.png",
+      "path": "docs/screenshots/shot-blocking-b/after/planning-1440.png",
+      "width": 1440,
+      "height": 900,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 103600,
+      "sha256": "8581063d11de8c503a09c6d5f9679952ebd652583fb6e0e39e9cf3dbf8cc126f",
+      "pngWidth": 1440,
+      "pngHeight": 900
+    },
+    {
+      "source": "qa-results/blocking-conversion/planning-390.png",
+      "path": "docs/screenshots/shot-blocking-b/after/planning-390.png",
+      "width": 390,
+      "height": 844,
+      "dpr": 1,
+      "stage": "after",
+      "bytes": 45980,
+      "sha256": "0408bde89041149dc608d861a05b835153b910ff76ac5fecac252d62edf13894",
+      "pngWidth": 390,
+      "pngHeight": 844
+    }
+  ],
+  "productionAudit": {
+    "root": {
+      "vulnerabilities": 0,
+      "exitCode": 0
+    },
+    "bridge": {
+      "vulnerabilities": 0,
+      "exitCode": 0
+    }
+  },
+  "docLinks": {
+    "checked": 110,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "nativeSharedCase": {
+    "syntheticOnly": true,
+    "origin": "http://localhost:4173",
+    "installedDesktopClient": "codex-cli 0.166.0-alpha.5.1",
+    "installedDesktopExecutableSha256": "3097c909fb6d5cd63510d44aceb1d42df9f6e85722a3e447e477def1ecf60e16",
+    "implementation": "actual installed Codex app-server / production persistent adapter / unchanged signed native launcher",
+    "callAudit": [
+      {
+        "client": "alpha",
+        "callId": "blocking_alpha_source",
+        "tool": "krakinai_get_scene",
+        "argumentsSha256": "75a777313b4eb63af02cc73300ccc13b7db6b9c176588242ca3f46ebe3403925",
+        "responseSha256": "6f9e6986b254b713c3ac66cdd1c6f85b98171565cabe9e398a282a7dc80a2160",
+        "ok": true
+      },
+      {
+        "client": "beta",
+        "callId": "blocking_beta_before",
+        "tool": "krakinai_connection_status",
+        "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "responseSha256": "c163571d6c6bba3ebb945ef0c9622100de1313a5ebbba07f19c3265ac6535c41",
+        "ok": true
+      },
+      {
+        "client": "beta",
+        "callId": "blocking_beta_after_alpha_left",
+        "tool": "krakinai_get_scene",
+        "argumentsSha256": "75a777313b4eb63af02cc73300ccc13b7db6b9c176588242ca3f46ebe3403925",
+        "responseSha256": "0304f1be3cb254ce097ea1851ef64a1dad4a7ea801e8d7032fd3f48506186f3b",
+        "ok": true
+      }
+    ],
+    "twoInitializedClients": true,
+    "oneClientDeparturePreservedAccess": true,
+    "lastClientLossRevokedBrowserAndStoppedRelay": true,
+    "libraryUnchanged": true,
+    "mediaHashes": [
+      {
+        "id": "blocking-media",
+        "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+      }
+    ],
+    "modelFixtureRequests": 6,
+    "blockedExternalAttempts": 4,
+    "blockedDestinations": [
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "api.github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      }
+    ],
+    "networkObservationLimit": "Only fixture/proxy traffic observed; no system-wide direct-egress capture.",
+    "launcherSha256": "a19be3e0a8392f605dbf9ec1dbaaef15e4a374d4ec8fd2b19ce8011e9554c8e3"
+  },
+  "bootstrapDiagnostic": {
+    "syntheticOnly": true,
+    "browserPaired": false,
+    "modelTurnsRequested": 0,
+    "modelFixtureRequests": 0,
+    "blockedAttempts": 4,
+    "blockedDestinations": [
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "api.github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      }
+    ],
+    "version": "codex-cli 0.166.0-alpha.5.1"
+  },
+  "postReviewNativeOriginCases": [
+    {
+      "syntheticOnly": true,
+      "origin": "http://localhost:4173",
+      "manualNativeVerification": false,
+      "implementation": "actual installed Codex CLI / production SDK stdio server",
+      "cliVersionOutput": "codex-cli 0.73.0",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "stdioEntrySha256": "43e53febd298aff7bab32c8ac22b1147964ec098742b07f038d247c319387eab",
+      "exitCode": 0,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "c98254da9ab2ce0327d1c753825d07c5b5fef1b37f1b45b9837c0da463b20f73",
+          "elapsedMs": 7697
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "5fb72a1e06c0e71182691ab95cec1e7479c220d60e096e3c425e63d2dc03a5a3",
+          "replySha256": "4f351aed309cb0ec295eb1534e834e4bc09a8dfea3850ae56561e51956b9d6fc",
+          "elapsedMs": 9792
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "1d64d5867cd32a8c70110b8b5532aa296f0416639259ff0f6c4eb34b6f7055ee",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 12319
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "52aa1104f1e8a04a04a8b48c63a8e52b759f18d64a7a7d15d79e4c94209bd160",
+          "elapsedMs": 14000
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1d64d5867cd32a8c70110b8b5532aa296f0416639259ff0f6c4eb34b6f7055ee",
+          "replySha256": "df79b03b8e1f703a64ab052abca66d3c4659a8bbfc202e5dccde3262727d35ab",
+          "elapsedMs": 16489
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1d64d5867cd32a8c70110b8b5532aa296f0416639259ff0f6c4eb34b6f7055ee",
+          "replySha256": "165f3afd6093e6f31c2f481fd630d98fef6ad6ef21fc47de3dd0658ac281c58d",
+          "elapsedMs": 18260
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1ecec6edd33800ce745604fc7a27791701e650d7f0aa955060d477e25ee5a804",
+          "replySha256": "bb34080e22f45a51bc0963499c158f6fe1079015ab85063e123596cedb4bd731",
+          "elapsedMs": 20333
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1ecec6edd33800ce745604fc7a27791701e650d7f0aa955060d477e25ee5a804",
+          "replySha256": "c96994ea880834b50245e996684871ae8a32fd13c6fb2b503656b829f37344db",
+          "elapsedMs": 22438
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "691f0a0b86a19c2572f0e10b3c57a952948eb676f8d34320de57c727d2bef1a0",
+          "replySha256": "d33054b8bce749456e5a32c2e69b97b6fd40b7792aadd657400559d6a25a68ec",
+          "elapsedMs": 24555
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1d64d5867cd32a8c70110b8b5532aa296f0416639259ff0f6c4eb34b6f7055ee",
+          "replySha256": "e870a2d718ff420e5b6737161656a576361a4488cfb7e1da6974615990ba8f95",
+          "elapsedMs": 26682
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "bffd152ba880d74a83f8b29ad0e8a1112065f204a71c3ef0e51d14cf9da75f77",
+          "replySha256": "473a1a1f49384290289ec60d23eec3fe97a54caefef4769f6031a2c2fae321dc",
+          "elapsedMs": 28767
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-full-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "bffd152ba880d74a83f8b29ad0e8a1112065f204a71c3ef0e51d14cf9da75f77",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 30870
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 32965
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "5fb72a1e06c0e71182691ab95cec1e7479c220d60e096e3c425e63d2dc03a5a3",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 35078
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "1d64d5867cd32a8c70110b8b5532aa296f0416639259ff0f6c4eb34b6f7055ee",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 37292
+        }
+      ],
+      "sourceSceneId": "scene_54f06b57008f",
+      "newSceneIds": [
+        "scene_6c9a4e6fd4d0"
+      ],
+      "packageDigest": "4f75d6d758b0b4965dc8ad3c7a9a290988d69e6f502e074a22c4eb480e6a89c8",
+      "approvedDigest": "6c289cfe5af437a1b51c22451724535adc82bb9a5f0ad5715616c486d69a2cf5",
+      "noWriteChecks": 8,
+      "oldSceneHashes": {
+        "blocking-after": "9b83db6881d2aa9f79ac9f14e61b6f3a0064554e98b441b65e361e424e064063",
+        "blocking-before": "ec8f071af60cc4f24bcb761816514cc07e0c8302dc7e1f4451918ce8b84ff3d1",
+        "ensemble-parent": "bbf5d406b0a2cd430c39c1e5fd688a2d03c8f8f3cb80f5cebcd97fa5e6739720",
+        "scene_54f06b57008f": "ae7f17f1c1a1da0fcf92149f091c3285dbc48b01437528958507c2298b401cca",
+        "scene_e4da2582acbc": "56a176134ab9bb2df8ce07ed41e79eedee1aff711a76c6525e95326cc45043d3"
+      },
+      "mediaHashes": [
+        {
+          "id": "blocking-media",
+          "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+        }
+      ],
+      "immutableSourcePreserved": true,
+      "preferredPreserved": true,
+      "manualChoice": "canonical explicitly selected in browser",
+      "otherParticipantsPreserved": true,
+      "crossOriginEmpty": true,
+      "fullBrowserRestartVerified": true,
+      "revoked": true,
+      "warning": null
+    },
+    {
+      "syntheticOnly": true,
+      "origin": "http://127.0.0.1:4173",
+      "manualNativeVerification": false,
+      "implementation": "actual installed Codex CLI / production SDK stdio server",
+      "cliVersionOutput": "codex-cli 0.73.0",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "stdioEntrySha256": "43e53febd298aff7bab32c8ac22b1147964ec098742b07f038d247c319387eab",
+      "exitCode": 0,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4cc58aeb3b0fc80b406316c42450047639d027993b24c14be0ce0c2a3dd4eacd",
+          "elapsedMs": 7541
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "3600fe8363a2cdc9d0bfffdccb388512f0e8c4021760e323f1689001d3f16f4b",
+          "replySha256": "54d00b0936ac3c8e187d2752a8733c18d5736d098a769f676cd60b99e8926fdb",
+          "elapsedMs": 9631
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "542ba46a5eed8c562c544fa943da5d4780bde4246725b720c0c1bb96877e82a1",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 12093
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "9e76c6ff76531ed41f38ca0da2e5d8dd8c39d2ea3a06ca741229ced4893bc598",
+          "elapsedMs": 13843
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "542ba46a5eed8c562c544fa943da5d4780bde4246725b720c0c1bb96877e82a1",
+          "replySha256": "6addf9ec39e52e6dd52969790c072ea53181bbe9e1ee135ac08287d0d21a39d3",
+          "elapsedMs": 16321
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "542ba46a5eed8c562c544fa943da5d4780bde4246725b720c0c1bb96877e82a1",
+          "replySha256": "399fe484a73a03799d0b3d57256edad62c358b25b1b6bfe62c65579bbf275444",
+          "elapsedMs": 18079
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "66f094d42a971c00c8505ae17a9d639568dc469ce2a6490a1366f04b52827f5c",
+          "replySha256": "273b26a83bd125c534d72d14096d9ec977ea8fd9d9047f1a6c0951c1fdf4520d",
+          "elapsedMs": 20169
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "66f094d42a971c00c8505ae17a9d639568dc469ce2a6490a1366f04b52827f5c",
+          "replySha256": "9c25428b7d99a2fccd04f7f17c0659b119e40d9d71047f062a643db945b28518",
+          "elapsedMs": 22280
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f87d8649f02ec419183e34c62fbe2ed0ee10e33da7afc9164978ac2a92e5ac41",
+          "replySha256": "1060ff165b0b232af04f47b739dd22185e8a54b655d0ef0936ff59ea5612d21e",
+          "elapsedMs": 24383
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "542ba46a5eed8c562c544fa943da5d4780bde4246725b720c0c1bb96877e82a1",
+          "replySha256": "115a93d07616e1a2b0a052ffbb11e7133c1631092244db33bba58d20f33701aa",
+          "elapsedMs": 26493
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f5e41c686ea9e5be778cc0b0f3045baed948cce0126194193ccde5b0674f9a31",
+          "replySha256": "09972609086d1592c83549d7ee3b363eb2f40331bcde0a97324c783d4b79b675",
+          "elapsedMs": 28595
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-full-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "f5e41c686ea9e5be778cc0b0f3045baed948cce0126194193ccde5b0674f9a31",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 30689
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 32789
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "3600fe8363a2cdc9d0bfffdccb388512f0e8c4021760e323f1689001d3f16f4b",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 34901
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "542ba46a5eed8c562c544fa943da5d4780bde4246725b720c0c1bb96877e82a1",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 37112
+        }
+      ],
+      "sourceSceneId": "scene_dce4de6357ac",
+      "newSceneIds": [
+        "scene_50b78baa038b"
+      ],
+      "packageDigest": "c4f7ae3cbb1b815b5d49cbf0bdc66b6badb85f139ab08f9d0bcb3c4515a0626f",
+      "approvedDigest": "b762c43a5e35adcb7b95361d5c9fc38914d0bcf2309dfb90c449f84ec80608cd",
+      "noWriteChecks": 8,
+      "oldSceneHashes": {
+        "blocking-after": "9b83db6881d2aa9f79ac9f14e61b6f3a0064554e98b441b65e361e424e064063",
+        "blocking-before": "ec8f071af60cc4f24bcb761816514cc07e0c8302dc7e1f4451918ce8b84ff3d1",
+        "ensemble-parent": "bbf5d406b0a2cd430c39c1e5fd688a2d03c8f8f3cb80f5cebcd97fa5e6739720",
+        "scene_0635cee45c6f": "ada4857bacb41d22013b09530e2e18352fbc8c0c9cfa52598130b10fe252fa50",
+        "scene_dce4de6357ac": "9a8078c7fd1782746befda1ac7785e00bf3ae5de5a0d99eeec54bb96f520bb35"
+      },
+      "mediaHashes": [
+        {
+          "id": "blocking-media",
+          "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+        }
+      ],
+      "immutableSourcePreserved": true,
+      "preferredPreserved": true,
+      "manualChoice": "canonical explicitly selected in browser",
+      "otherParticipantsPreserved": true,
+      "crossOriginEmpty": true,
+      "fullBrowserRestartVerified": true,
+      "revoked": true,
+      "warning": null
+    }
+  ],
+  "runtimeSourceDigest": "69aa494fbc525e280ae204ed8cf73d3b7f799c241c732dfb6351a556dd7e9ab9",
+  "developmentAudit": {
+    "exitCode": 1,
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 3,
+      "high": 1,
+      "critical": 2,
+      "total": 6
+    },
+    "dependencyLockfilesUnchanged": true
+  },
+  "reportSnapshot": "Pre-commit evidence. Final signed SHA and hosted runs will be reported on the pull request, not inferred by this snapshot.",
+  "supplementalBrowserCases": [
+    {
+      "command": "npm run test:e2e -- e2e/blocking-authoring.spec.mjs --grep 'touch blocking authoring'",
+      "passed": 1,
+      "exitCode": 0,
+      "kind": "emulated touch, not physical device certification"
+    },
+    {
+      "command": "npm run test:e2e -- e2e/blocking-mcp.spec.mjs --grep 'native acceptance review controls'",
+      "passed": 1,
+      "exitCode": 0,
+      "kind": "actual SDK synthetic-verifier browser apply; not native signing certification"
+    },
+    {
+      "command": "npm run test:e2e -- e2e/blocking-continuity.spec.mjs --grep 'selected-take board'",
+      "passed": 4,
+      "exitCode": 0,
+      "kind": "four viewport recaptures"
+    }
+  ],
+  "currentBrowserDiscovery": {
+    "cases": 229,
+    "note": "Includes the added touch test; whole-suite result above was 228 declared cases. Exact-head hosted CI remains pending."
+  },
+  "acceptanceCoverage": [
+    {
+      "case": 1,
+      "requirement": "Legacy exact outputs/contracts/receipts",
+      "tests": [
+        "src/__tests__/blockingLegacy.test.ts",
+        "src/__tests__/dialogueCompatibility.test.tsx",
+        "e2e/blocking-authoring.spec.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 2,
+      "requirement": "Single/ensemble/off-camera/unknown optional data",
+      "tests": [
+        "src/__tests__/blockingAssembly.test.ts",
+        "src/__tests__/blockingModel.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 3,
+      "requirement": "Independent facing/eyelines/props/camera basis",
+      "tests": [
+        "src/__tests__/blockingModel.test.ts",
+        "src/__tests__/blockingAssembly.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 4,
+      "requirement": "Stable IDs/relationships/bindings/bounds/incomplete planning",
+      "tests": [
+        "src/__tests__/blockingModel.test.ts",
+        "src/__tests__/blockingConversionMapping.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 5,
+      "requirement": "Advisory comparisons/ambiguity/unknown basis",
+      "tests": [
+        "src/__tests__/blockingContinuity.test.ts",
+        "e2e/blocking-continuity.spec.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 6,
+      "requirement": "Shared per-mode manual decisions and unchanged original bytes",
+      "tests": [
+        "src/__tests__/blockingOutputReview.test.ts",
+        "e2e/blocking-mcp.spec.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 7,
+      "requirement": "Real v1 header-only upgrade/restart and media hashes",
+      "tests": [
+        "e2e/blocking-upgrade.spec.mjs",
+        "src/__tests__/libraryCompatibility.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 8,
+      "requirement": "Cancel/blocked/old-tab writes/downgrade VersionError",
+      "tests": [
+        "e2e/blocking-upgrade.spec.mjs",
+        "src/__tests__/libraryCompatibilityGate.test.tsx"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 9,
+      "requirement": "Legacy/B backups/ledger-only history/Project Export128MiB",
+      "tests": [
+        "src/__tests__/blockingBackup.test.ts",
+        "src/__tests__/blockingProjectExport.test.ts",
+        "scripts/qa/verify-blocking-backup-browser.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 10,
+      "requirement": "Draft/revision/copy/preferred/template/reference/rollback",
+      "tests": [
+        "src/__tests__/blockingStorage.test.ts",
+        "src/__tests__/blockingChangeSetStorage.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 11,
+      "requirement": "Builder/Continuity history/stale targets/save recovery",
+      "tests": [
+        "e2e/blocking-continuity.spec.mjs",
+        "src/__tests__/blockingContinuityWorkspace.test.tsx",
+        "src/__tests__/builderSaveRace.test.tsx"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 12,
+      "requirement": "Keyboard labels/focus/copy/download/emulated taps",
+      "tests": [
+        "e2e/blocking-authoring.spec.mjs",
+        "src/__tests__/blockingEditor.test.tsx"
+      ],
+      "status": "covered by observed local tests",
+      "limits": "Touch emulation only; no NVDA/JAWS certification"
+    },
+    {
+      "case": 13,
+      "requirement": "Four actual before/after viewports and supplemental states",
+      "tests": [
+        "e2e/blocking-authoring.spec.mjs",
+        "e2e/blocking-continuity.spec.mjs",
+        "e2e/blocking-conversion.spec.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 14,
+      "requirement": "Actual installed CLI/native origins/shared transport",
+      "tests": [
+        "e2e/blocking-native.spec.mjs",
+        "e2e/blocking-shared-native.spec.mjs"
+      ],
+      "status": "covered by observed local tests",
+      "limits": "Owner-manual and automated signed-native evidence are separate"
+    },
+    {
+      "case": 15,
+      "requirement": "Exact synthetic Aya Shot09 B scenario preserving others",
+      "tests": [
+        "e2e/blocking-native-fixture.mjs",
+        "scripts/qa/blocking-mcp-workflow.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 16,
+      "requirement": "Correlated request/receipt/replay/browser approval/no writes",
+      "tests": [
+        "e2e/blocking-native.spec.mjs",
+        "scripts/qa/blocking-mcp-workflow.test.mjs"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 17,
+      "requirement": "Independent permission matrix/no secret expansion",
+      "tests": [
+        "src/__tests__/blockingMcpPrivacy.test.ts",
+        "src/__tests__/blockingReviewPrivacy.test.ts",
+        "bridge/test/blockingCapabilities.test.ts"
+      ],
+      "status": "covered by observed local tests"
+    },
+    {
+      "case": 18,
+      "requirement": "Stale/changed content/quota rollback/scope/shared revocation",
+      "tests": [
+        "src/__tests__/blockingChangeSetStorage.test.ts",
+        "e2e/blocking-mcp.spec.mjs",
+        "e2e/blocking-shared-native.spec.mjs"
+      ],
+      "status": "covered by observed local tests"
+    }
+  ],
+  "warnings": [
+    "React act warnings in component tests",
+    "Vite bundle chunk over500kB: index1166.69kB/gzip302.91kB",
+    "Playwright NO_COLOR ignored with FORCE_COLOR",
+    "Installed legacy CLI deprecation warning",
+    "Full dev-inclusive audit:6 advisories (3moderate,1high,2critical); production0",
+    "One overlapping unit run failed and was retained; standalone unchanged run passed"
+  ],
+  "preservation": {
+    "realBrowserLibraryUsed": false,
+    "realLibraryWrites": false,
+    "liveBridgeActivation": false,
+    "globalMcpEdits": false,
+    "executionPolicyChanged": false,
+    "certificateTrustChanged": false,
+    "privateKeyExported": false,
+    "validationTsChanged": false,
+    "projectExportLimitMiB": 128,
+    "zip64CapacityClaim": false,
+    "testProfilesDeleted": false,
+    "temporaryArtifactsIncludedInGit": false
+  },
+  "securityAssumptions": [
+    "Trusted browser/Windows account; direct external IndexedDB mutation is outside the authorization boundary",
+    "Proxy-level CONNECT refusal and loopback fixture correlation are not OS-wide direct-egress monitoring",
+    "Atomic/source/approval guarantees are bounded by the tested application transaction path"
+  ],
+  "remainingRisks": [
+    "Header upgrade prevents older builds opening this library; keep a validated backup",
+    "Unsaved editor recovery is current-tab memory; conversion planning needs an explicit downloaded package for durable recovery",
+    "Spatial findings are advisory, not a physical simulation",
+    "Physical touch and assistive technology not independently certified",
+    "No near-limit ZIP64 certification; PR12 unchanged",
+    "Live portable release/registration not activated",
+    "Development-only dependency advisories remain",
+    "Exact-head hosted CI and signed delivery pending"
+  ],
+  "changedFiles": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": "AGENTS.md"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "bridge/src/relay.ts"
+    },
+    {
+      "status": "M",
+      "path": "bridge/test/adapterProcess.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "bridge/test/blockingCapabilities.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "bridge/test/stdio.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/agent-authoring-guide.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/blocking-and-spatial-continuity.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/change-set-contract.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/change-set-v5.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/change-set-v5.schema.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/local-codex-mcp.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/shot-blocking-b-results.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/shot-blocking-b.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/scene-prompt-schema.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-1440-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-390-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-720-dpr2.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/builder-768-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-1440-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-390-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-720-dpr2.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/continuity-768-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-1440-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-390-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-720-dpr2.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/editor-768-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/empty-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/empty-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/manual-review-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/manual-review-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/off-camera-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/off-camera-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/planning-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/after/planning-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-1440-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-390-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-720-dpr2.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/builder-768-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-1440-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-390-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-720-dpr2.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/screenshots/shot-blocking-b/before/continuity-768-dpr1.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/plans/2026-11-03-shot-blocking-spatial-continuity-b.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/specs/2026-11-03-shot-blocking-spatial-continuity-b-design.md"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-authoring.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-continuity.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-conversion.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-fixture.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-mcp.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-native-fixture.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-native.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-shared-native.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/blocking-upgrade.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "e2e/ensemble-mcp.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "e2e/local-mcp-fixture.mjs"
+    },
+    {
+      "status": "M",
+      "path": "e2e/recipe-mcp.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/export-change-set-schema.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/blocking-mcp-workflow.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/blocking-mcp-workflow.test.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/capture-blocking-baseline.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/capture-blocking-before.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/qa/mcp-codex-cli.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/qa/shared-codex-client.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/qa/shared-codex-client.test.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/verify-blocking-backup-browser.mjs"
+    },
+    {
+      "status": "M",
+      "path": "src/App.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingAssembly.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingAuthoringWorkspace.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingBackup.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingChangeSetContract.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingChangeSetPlanning.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingChangeSetStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingContinuity.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingContinuityWorkspace.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingConversionMapping.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingConversionWorkspace.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingEditor.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingLedger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingLegacy.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingMcpCapabilities.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingMcpPrivacy.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingModel.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingOutputReview.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingPermissionDraft.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingProjectExport.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingProposalReview.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingReviewPrivacy.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/blockingStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/builderSaveRace.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/continuityWorkspacePanel.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/dialogueCompatibility.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/blocking-legacy-baseline.json"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/blockingChangeSetFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/blockingFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/blockingSequenceFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/blockingStorageFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/libraryCompatibility.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/libraryCompatibilityGate.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/projectContinuity.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/projects.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/recipeConversionWorkspace.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ChangeSetPreview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ContinuityViews.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/DirectPromptWorkspace.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/LibraryCompatibilityGate.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ProjectContinuityPanel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/SharedModals.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/aiConnections/PermissionsWorkspace.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingBoard.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingContinuityView.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingEditor.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingFields.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingOutputReview.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/BlockingProposalReview.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/blocking.css"
+    },
+    {
+      "status": "A",
+      "path": "src/components/blocking/blockingRecovery.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/connections/AiConnectionContext.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/connections/browserTransport.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/connections/proposalBroker.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/aiContext.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/backupFeatures.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingChangeSetSchema.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingContinuity.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingConversionMapping.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingDocument.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingMcp.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingOutputReview.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingPatch.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingReview.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/blockingValidation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetLedger.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetPlanner.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetRecipe.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetSchema.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetState.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetValidation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/collectionNavigation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/continuityWorkspace.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/ensemblePersistence.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/exportPresets.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/generationDocument.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/mcpCapabilities.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpPermissionDraft.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpReads.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpScope.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/phase4Validation.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectExport.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/projectRoutes.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/promptAssembler.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/recipeConversionRequest.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDocument.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/sceneDuplicates.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/scenePreflight.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/AiContextScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/AiRecipeBuilderScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/PromptOutputScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/screens/SceneBuilderScreen.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/backup.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/changeSets.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/db.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/storage/libraryCompatibility.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/sceneAuthoring.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/aiContext.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/types/blocking.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/types/blockingChangeSet.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/changeSet.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/domain.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/mcp.ts"
+    }
+  ],
+  "changedFileCount": 170,
+  "gitHygiene": {
+    "allStagedPathsReviewed": true,
+    "onlySyntheticPngFiles": 28,
+    "excluded": [
+      "real user-library data",
+      "browser profiles",
+      "test ZIP archives",
+      "compiled releases",
+      "keys/certificates",
+      "credentials/private launcher settings",
+      "temporary QA artifacts",
+      "separate validation.ts work"
+    ],
+    "ownerSignatureRequired": true
+  },
+  "gitVerification": [
+    {
+      "command": "git status --short",
+      "exitCode": 0,
+      "outputLines": 170
+    },
+    {
+      "command": "git diff --name-status",
+      "exitCode": 0,
+      "outputLines": 0
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "outputLines": 0
+    },
+    {
+      "command": "git diff --cached --check",
+      "exitCode": 0,
+      "outputLines": 0
+    }
+  ]
+}

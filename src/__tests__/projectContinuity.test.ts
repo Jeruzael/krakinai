@@ -186,7 +186,7 @@ it('rolls back both records on asynchronous transaction abort',async()=>{
 
 it('checks the current transaction media total before writing an uploaded frame',async()=>{
   const collection=await createCollection({name:'Film'});const added=await addProjectShot({collectionId:collection.id});const shotId=added.project!.shots[0].id;
-  const db=await new Promise<IDBDatabase>((resolve,reject)=>{const req=indexedDB.open('krakinai_prompt_library_db',1);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
+  const db=await new Promise<IDBDatabase>((resolve,reject)=>{const req=indexedDB.open('krakinai_prompt_library_db',2);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});
   try{
     const tx=db.transaction('media','readwrite');tx.objectStore('media').put({id:'synthetic-full',filename:'tiny.png',safeFilename:'tiny.png',mimeType:'image/png',byteSize:5000*1024*1024,blob:new Blob(['x'],{type:'image/png'}),createdAt:'now'});
     await new Promise<void>((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error);});

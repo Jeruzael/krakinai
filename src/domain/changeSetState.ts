@@ -56,6 +56,7 @@ export function changeSetStateSignature(
     if (decision?.assetId) assetIds.add(decision.assetId);
   }
   // Recipe restoration consults the live character to validate an approved anchor.
+  if(input.schema==='krakinai.change-set.v5')for(const collection of state.collections)if(projectIds.has(collection.id))for(const shot of collection.project?.shots??[])if(shot.selectedSceneId)sceneIds.add(shot.selectedSceneId);
   // Bind that read (including disappearance), while retaining the frozen source scene.
   for (const op of input.operations)
     if (isRecipeOperation(op) && "sceneId" in op) {
@@ -122,7 +123,7 @@ export function changeSetStateSignature(
     variants,
     templates,
     candidates,
-    ...(['krakinai.change-set.v3','krakinai.change-set.v4'].includes(input.schema)?{variantCandidates,variantMatches}:{}),
+    ...(['krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5'].includes(input.schema)?{variantCandidates,variantMatches}:{}),
     heads: state.scenes
       .filter((s) => roots.has(revisionRoot(s)))
       .map((s) => ({

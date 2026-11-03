@@ -299,6 +299,7 @@ export const DirectPromptWorkspace: React.FC<{
   return (
     <div className="direct-workspace">
       <header className="direct-heading">
+        {saved&&<p className="muted-text">For editable blocking and spatial continuity, use Convert to Recipe and map reusable assets. Your original Direct Prompt stays preserved.</p>}
         {saved&&<button type="button" className="btn btn-secondary btn-sm" onClick={()=>navigate('/recipes/ai?'+new URLSearchParams({scene:saved.id,...(target?.collectionId&&target.shotId?{collection:target.collectionId,shot:target.shotId}:{})}).toString())}>Convert to Recipe</button>}
         <div>
           <span className="studio-eyebrow">

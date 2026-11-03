@@ -8,6 +8,7 @@ import type { Collection, ProjectShot, MediaAsset, IdentityAnchor, MediaLink } f
 import { getProjectShots } from "./projectStoryboard";
 import { getRevisionHead, revisionRoot } from "./sceneRevisions";
 import{projectEnsembleContext}from'./ensembleAiContext';
+import {blockingDisclosure} from './blockingMcp';
 export const MAX_AI_CONTEXT_BYTES = 5 * 1024 * 1024;
 /** Shared disclosure policy for manual context exports and scoped MCP metadata. */
 export function projectAiContextLink(l: MediaLink, mediaMap: ReadonlyMap<string, MediaAsset>, notes: boolean, filenames: boolean) {
@@ -41,7 +42,7 @@ export function buildAiContext(
       | "assetIds"
       | "variantIds"
       | "templateIds"
-      | "fullPromptSceneIds",
+      | "fullPromptSceneIds" | 'blockingSceneIds',
     max: number,
   ) => {
     const list = selection[key] ?? [];
@@ -64,6 +65,7 @@ export function buildAiContext(
     templateIds = selected("templateIds", 500),
     promptIds = new Set(selected("fullPromptSceneIds", 250));
   const variantIds = selected("variantIds", 500);
+  const blockingIds=new Set(selected('blockingSceneIds',250));
   if (assetIds.length + variantIds.length + templateIds.length > 500)
     throw Error(
       "AI context reusable-record limit is 500 assets/variants/templates together.",
@@ -107,6 +109,8 @@ export function buildAiContext(
   for (const id of promptIds)
     if (!sceneIds.includes(id))
       throw Error("Full-prompt target is outside the selected scene scope.");
+  for(const id of blockingIds)if(!sceneIds.includes(id)||!state.scenes.some(s=>s.id===id))throw Error('Blocking target is outside the selected scene scope.');
+  for(const id of promptIds)if(state.scenes.find(s=>s.id===id)?.blocking&&!blockingIds.has(id))throw Error('Select Blocking authoring text for this exact scene before sharing its complete prompt.');
   const mediaMap = new Map(state.media.map((m) => [m.id, m]));
   const link = (l: MediaLink) => projectAiContextLink(l, mediaMap, notes, filenames);
   const anchor = (a: IdentityAnchor | undefined) =>
@@ -134,6 +138,7 @@ export function buildAiContext(
       characterIdentity: identities,
       notes,
       mediaFilenames: filenames,
+      ...(selection.blockingSceneIds!==undefined?{blockingAuthoringText:blockingIds.size>0}:{}),
     },
     projects: projects.map((c, i) => projectAiContextProject(c, shots[i], notes)),
     scenes: sceneIds.map((id): AiContextScene => {
@@ -151,6 +156,7 @@ export function buildAiContext(
         rootSceneId: revisionRoot(s),
         expectedHeadId: getRevisionHead(s, state.scenes).id,
         sequence: s.sceneRevision?.sequence ?? 1,
+        ...(s.blocking?{blocking:blockingDisclosure(s,blockingIds.has(id))}:{}),
         ...(s.ensemble?{ensemble:projectEnsembleContext(s,state,{notes,fullPrompt:promptIds.has(id)},link)}:{}),
         componentContext: Object.fromEntries(
           Object.entries(s.slots).map(([slot, snapshot]) => {

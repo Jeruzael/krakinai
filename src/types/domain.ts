@@ -1,6 +1,7 @@
 import type {CameraComposition} from './cinematography';
 import type {SceneEnsembleV1,EnsembleTemplateDefaultV1} from './ensemble';
 import type {ImportLedger} from './changeSet';
+import type {SceneBlockingV1} from './blocking';
 import type {DirectPromptContent, SceneAuthoringFields, SceneProjectTarget, SceneRevision, SceneRevisionIntent} from './sceneAuthoring';
 export const SCHEMA_VERSION = 1;
 
@@ -225,6 +226,7 @@ export interface ManualOutputOverride {
 }
 
 export interface SceneDraft extends SceneAuthoringFields {
+  blocking?:SceneBlockingV1;
   ensemble?:SceneEnsembleV1;
   revisionIntent?: SceneRevisionIntent;
   authoredProjectTarget?: SceneProjectTarget;
@@ -252,6 +254,7 @@ export interface SceneDraft extends SceneAuthoringFields {
 }
 
 interface SavedSceneBase extends Omit<SceneAuthoringFields, 'authoringMode' | 'directPrompt'> {
+  blocking?:SceneBlockingV1;
   ensemble?:SceneEnsembleV1;
   sceneRevision?: SceneRevision;
   authoredSaveFingerprint?: string;

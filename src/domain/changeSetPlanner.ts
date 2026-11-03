@@ -51,6 +51,10 @@ import {
 import { changeSetStateSignature } from "./changeSetState";
 import { getDirectPromptReadiness } from "./directPrompt";
 import{conversionReviewFindings,type ConversionSourceProofs}from'./recipeConversion';
+import type {BlockingSourceProofs} from './blockingPatch';
+import {blockingDifferences,buildBlockingFinalReview,blockingReviewedProjection} from './blockingReview';
+import {assembleScenePrompt} from './promptAssembler';
+import {resolveBlockingOutputs} from './blockingOutputReview';
 const copy = <T>(v: T): T => structuredClone(v);
 class PlanningError extends Error {
   constructor(
@@ -69,6 +73,7 @@ export function planChangeSet(
   initial: ChangeSetState,
   allocation: ChangeSetAllocation,
   conversionProofs:ConversionSourceProofs=new Map(),
+  blockingProofs:BlockingSourceProofs=new Map(),
 ): ChangeSetPlan {
   const state: ChangeSetState = {
     ...initial,
@@ -194,7 +199,8 @@ export function planChangeSet(
     };
     plan.operations.push(row);
     try {
-      if('sceneId'in op&&!['krakinai.change-set.v3','krakinai.change-set.v4'].includes(input.schema)&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 or v4 to reconstruct it; the old scene is unchanged.');
+      if(('sceneId'in op&&state.scenes.some(s=>s.id===op.sceneId&&s.blocking)||'restoreFromSceneId'in op&&state.scenes.some(s=>s.id===op.restoreFromSceneId&&s.blocking))&&(input.schema!=='krakinai.change-set.v5'||!isRecipeOperation(op)))fail('BLOCKING_VERSION','This source contains blocking. Use an exact v5 recipe operation to preserve and review it; the old scene is unchanged.');
+      if('sceneId'in op&&!['krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5'].includes(input.schema)&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 or later to reconstruct it; the old scene is unchanged.');
       if (requiresStoryboardApproval(op) && !approval.storyboard)
         finding(
           op.operationId,
@@ -566,15 +572,25 @@ export function planChangeSet(
           },
           target=>{if('id'in target)return target.id;const mapped=mappings[target.ref];if(mapped?.kind!=='variant_candidate'||!mapped.variantId)fail('DEPENDENCY_BLOCKED','A recipe depends on a deferred Outfit candidate. Approve creation/reuse or remove that binding. Download this package to complete it later.');return mapped.variantId;},
           conversionProofs,
+          input.schema==='krakinai.change-set.v5'?{proofs:blockingProofs}:undefined,
         );
         const resolved = recipeDraftPreview(draft, parent);
         row.resolved = { recipe: resolved };
+        const v5=input.schema==='krakinai.change-set.v5',blockingReview=!!draft.blocking||!!parent?.blocking||Object.hasOwn(op,'blocking');
+        if(v5)resolved.manualOutputsDiscarded=false;
+        if(v5){
+          const canonical=assembleScenePrompt(draft),choices=approval.blockingOutputDecisions?.[op.operationId],resolution=resolveBlockingOutputs(draft,canonical.outputs,choices,!!parent?.blocking);
+          Object.assign(row.resolved as object,{blocking:{sourceSceneId:parent?.id,sourceRevision:parent?.revision,expectedSourceRecipeDigest:op.expectedSourceRecipeDigest,expectedBlockingDigest:op.expectedBlockingDigest,before:copy(parent?.blocking??null),after:copy(draft.blocking??null),changedPaths:blockingDifferences(parent?.blocking,draft.blocking),manualOutputs:copy(draft.manualOutputs),canonicalOutputs:copy(canonical.outputs),effectiveOutputs:copy(resolution.outputs),outputDecisions:copy(choices??{}),outputChanges:Object.fromEntries((['full','structured','compact'] as const).map(mode=>[mode,{canonical:parent?.outputs[mode]!==canonical.outputs[mode],effective:parent?.outputs[mode]!==resolution.outputs[mode]}])),findings:copy(resolution.findings)}});
+          if(blockingReview&&!approval.blocking)finding(op.operationId,'APPROVAL_BLOCKING','Explicit approval of the exact blocking changes is required.');
+          for(const issue of resolution.findings)finding(op.operationId,issue.code,issue.message,issue.severity==='advisory'?'advisory':'blocking');
+          if(!resolution.valid)continue;
+        }
         const conversionFindings=op.type==='scene.convert_direct_to_recipe'?conversionReviewFindings(op,approval,parent!,draft):[];
         plan.findings.push(...conversionFindings);
         const advice = recipeAdvisories(op.operationId, draft, state);
         plan.findings.push(...advice);
         const manualConsent =
-          op.type!=='scene.convert_direct_to_recipe'&&resolved.manualOutputsDiscarded &&
+          !v5&&op.type!=='scene.convert_direct_to_recipe'&&resolved.manualOutputsDiscarded &&
           !approval.discardManualOutputOperations?.includes(op.operationId);
         if (manualConsent)
           finding(
@@ -587,6 +603,7 @@ export function planChangeSet(
           {
             requestId: `import:${input.changeSetId}:${op.operationId}`,
             expectedInputRevision: 1,
+            ...(v5?{blockingOutputDecisions:approval.blockingOutputDecisions?.[op.operationId]}:{}),
             target,
             allowDuplicate: approval.allowDuplicateSceneOperations.includes(
               op.operationId,
@@ -920,10 +937,12 @@ export function planChangeSet(
   if(newVariantIds.size)plan.variants=state.variants!.filter(v=>newVariantIds.has(v.id));
   if(changedVariantCandidates.size)plan.variantCandidates=variantCandidates.filter(c=>changedVariantCandidates.has(c.id));
   plan.candidates = candidates.filter((c) => changedCandidates.has(c.id));
+  if(input.schema==='krakinai.change-set.v5')plan.blockingContinuity=buildBlockingFinalReview(plan.collections,state.scenes,plan.scenes);
   plan.stateSignature = changeSetStateSignature(input, approval, initial, [
     ...duplicateScenes,
   ]);
-  if(input.schema==='krakinai.change-set.v4')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v4Review:ensembleReviewedProjection(plan)});
+  if(input.schema==='krakinai.change-set.v5')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v5Review:blockingReviewedProjection(plan)});
+  else if(input.schema==='krakinai.change-set.v4')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v4Review:ensembleReviewedProjection(plan)});
   else if(input.schema==='krakinai.change-set.v3')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v3Review:ensembleReviewedProjection(plan)});
   else if (
     input.schema === "krakinai.change-set.v2" &&

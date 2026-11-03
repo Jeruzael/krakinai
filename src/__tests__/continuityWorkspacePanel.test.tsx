@@ -18,11 +18,12 @@ function setup() {
  return {collection,scenes,user:userEvent.setup(),mounted};
 }
 afterEach(()=>{cleanup();vi.clearAllMocks();});
-it('opens a focused Overview with unavailable future capabilities and no writes',async()=>{
+it('opens focused Overview and optional saved blocking inspection without writes',async()=>{
  const {user}=setup();
  expect(screen.getByRole('tab',{name:'Overview'})).toHaveAttribute('aria-selected','true');
  await user.click(screen.getByRole('tab',{name:'Blocking'}));
- expect(within(screen.getByRole('tabpanel')).getByText(/Structured staging and spatial continuity are Workstream B/)).toBeVisible();
+ expect(within(screen.getByRole('tabpanel')).getByText(/No authored blocking.*optional/)).toBeVisible();
+ expect(screen.getByRole('button',{name:'Edit a recipe copy'})).toBeVisible();
  expect(screen.queryByRole('button',{name:/Save blocking/})).not.toBeInTheDocument();
  expect(writes.updateProjectFrames).not.toHaveBeenCalled();
 });

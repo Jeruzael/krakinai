@@ -9,7 +9,7 @@ export type FrameSide = 'firstFrameMediaId' | 'lastFrameMediaId';
 export interface ContinuityFrame { id?: string; media?: MediaAsset; state: 'unassigned' | 'missing' | 'invalid' | 'available' }
 export interface ContinuityAppearance extends WardrobeContinuityRow { key: string; offCamera: boolean; unbound: boolean; sameAsPrevious: boolean }
 export interface ContinuityMatrixRow { key: string; characterId: string; characterName: string; appearances: ContinuityAppearance[] }
-export interface ContinuityShotRow { shot: ProjectShot; scene?: SavedScene; wardrobe: ContinuityAppearance[]; frames: {first: ContinuityFrame; last: ContinuityFrame}; attention: boolean }
+export interface ContinuityShotRow { shot: ProjectShot; scene?: SavedScene; wardrobe: ContinuityAppearance[]; frames: {first: ContinuityFrame; last: ContinuityFrame}; attention: boolean; blockingAvailable:boolean }
 
 /** Derived display state only. Inspection never establishes a project or assembles outputs. */
 export function buildContinuityWorkspace(collection: Collection, scenes: SavedScene[], media: MediaAsset[]) {
@@ -42,13 +42,13 @@ export function buildContinuityWorkspace(collection: Collection, scenes: SavedSc
       group.appearances.push(value); matrix.set(groupKey,group); return value;
     });
     const frames = {first:frame(shot.firstFrameMediaId),last:frame(shot.lastFrameMediaId)};
-    return {shot,scene,wardrobe,frames,attention:!scene || wardrobe.some(a=>!a.offCamera&&(a.changed||!a.wardrobeSourceId||a.unbound)) || Object.values(frames).some(f=>f.state==='missing'||f.state==='invalid')};
+    return {shot,scene,wardrobe,frames,blockingAvailable:scene?.blocking!==undefined,attention:!scene || wardrobe.some(a=>!a.offCamera&&(a.changed||!a.wardrobeSourceId||a.unbound)) || Object.values(frames).some(f=>f.state==='missing'||f.state==='invalid')};
   });
   const transitions = collection.project?.transitions ?? [];
   const pairs = shots.slice(0,-1).map((from,index) => ({from,to:shots[index+1],transition:transitions.find(t=>t.fromShotId===from.id&&t.toShotId===shots[index+1].id)}));
   const detached = transitions.filter(t=>!pairs.some(p=>p.from.id===t.fromShotId&&p.to.id===t.toShotId));
   const frames = rows.flatMap(r=>Object.values(r.frames));
-  return { rows, matrix:[...matrix.values()], pairs, detached, summary:{
+  return {projectId:collection.id,projectRevision:collection.project?.revision??0,rows, matrix:[...matrix.values()], pairs, detached, summary:{
     shots:rows.length,selectedTakes:rows.filter(r=>r.scene).length,
     missingSelectedTakes:rows.filter(r=>r.shot.selectedSceneId&&!r.scene).length,
     unselectedTakes:rows.filter(r=>!r.shot.selectedSceneId).length,

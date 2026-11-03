@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { readCliReply,validateCliToolCalls } from './mcp-cli-replies.mjs';
 import { createRevisionWorkflow } from './mcp-cli-workflow.mjs';
 import { createRecipeWorkflow } from './mcp-recipe-workflow.mjs';
+import {createBlockingWorkflow} from './blocking-mcp-workflow.mjs';
 export function resolveCliLaunch({appOrigin,port,launcher}) {
   if(launcher){
     const s=launcher.settings;
@@ -22,6 +23,7 @@ export function resolveCliLaunch({appOrigin,port,launcher}) {
 export function createCliWorkflow({workflow,projectId,projectName,excludedProjectId}){
   if(!workflow)return undefined;
   if(workflow.kind==='recipe_conversion')return createRecipeWorkflow({projectId,excludedProjectId,...workflow});
+  if(workflow.kind==='blocking')return createBlockingWorkflow(workflow);
   if(workflow.kind!==undefined)throw Error('Unknown synthetic CLI workflow');
   return createRevisionWorkflow({projectId,projectName,excludedProjectId,...workflow});
 }
@@ -102,7 +104,7 @@ export async function certifyInstalledCli({ projectId, projectName, excludedProj
     'mcp_servers.krakinai.startup_timeout_sec': 20, 'mcp_servers.krakinai.tool_timeout_sec': 20,
     // This owned fixture must receive all ten complete three-mode previews.
     // No user configuration, application byte limit or production permission is changed.
-    ...(workflow?.kind==='recipe_conversion'?{tool_output_token_limit:100000}:{}),
+    ...(['recipe_conversion','blocking'].includes(workflow?.kind)?{tool_output_token_limit:100000}:{}),
   };
   const args = Object.entries(config).flatMap(([key, value]) => ['-c', `${key}=${JSON.stringify(value)}`]);
   args.push('exec','--skip-git-repo-check','--sandbox','read-only','--json','--cd',cwd,workflow?'Follow the finite synthetic KRAKINAI revision scenario using only the specified MCP calls. Browser approval is separate. Do not use shell, files or external network tools.':paired ? 'Read KRAKINAI connection status, list selected projects, then read the selected synthetic project. Do not use shell, files, network tools or any mutation tool. Then finish.' : 'Call only the KRAKINAI connection status tool once. Do not use shell, files, network tools or any mutation tool. Then finish.');

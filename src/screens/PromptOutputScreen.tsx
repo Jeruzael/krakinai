@@ -64,6 +64,8 @@ import { CollectionReturnControl } from '../components/CollectionReturnControl';
 import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
 import { collectionSceneRoute } from '../domain/collectionNavigation';
 import './promptOutput.css';
+import {BlockingOutputReview} from '../components/blocking/BlockingOutputReview';
+import {resolveBlockingOutputs,type BlockingOutputDecisions} from '../domain/blockingOutputReview';
 
 const OUTPUT_TABS = [
   { value: 'prompt', label: 'Prompt' },
@@ -143,6 +145,10 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const saveToken = useRef<{binding:string;id:string} | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [blockingDecisions,setBlockingDecisions]=useState<BlockingOutputDecisions>({});
+  const reviewedDraft=snapshot?.drafts.find(d=>d.id===id);
+  const blockingDecisionKey=JSON.stringify([id,reviewedDraft?.inputRevision,reviewedDraft?.blocking,reviewedDraft?.manualOutputs]);
+  useEffect(()=>{setBlockingDecisions({});},[blockingDecisionKey]);
   const [similarScenes, setSimilarScenes] = useState<import('../types/domain').SavedScene[]>([]);
   const [duplicateTarget, setDuplicateTarget] = useState('');
   const [mode, setMode] = useState<ViewMode>(
@@ -259,6 +265,8 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   }
 
   const assembled = draft ? assembleScenePrompt(draft) : null;
+  const needsBlockingReview=!!draft&&(!!draft.blocking||!!snapshot.scenes.find(s=>s.id===draft.sourceSceneId)?.blocking);
+  const blockingResolution=draft&&assembled?resolveBlockingOutputs(draft,assembled.outputs,blockingDecisions,needsBlockingReview):undefined;
   const rawSource = savedScene ?? draft!;
   const source = {...rawSource, avoidText:getSceneLevelAvoidText(rawSource), slots:getActiveSceneSlots(rawSource),
     sourceMediaLinks:getActiveSourceMediaLinks(rawSource),referencePack:getActiveReferencePack(rawSource)};
@@ -292,7 +300,9 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     !derivedView &&
     !acknowledgedStaleModes[canonicalMode];
 
-  const activeText =
+  let outputError='';
+  let activeText='';
+  try{activeText =
     mode === 'json'
       ? serializeSceneJson(savedScene ?? draft!)
       : mode === 'generation_json'
@@ -302,8 +312,11 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       : savedScene
         ? savedScene.outputs[canonicalMode]
         : (manualOverride?.text ?? assembled?.outputs[canonicalMode] ?? '');
+  }catch(cause){outputError=cause instanceof Error?cause.message:String(cause);}
+  const outputUnavailable=!!outputError||needsBlockingReview&&assembled?.valid===false;
 
   const handleCopyActivePrompt = async () => {
+    if(outputUnavailable){showToast('Repair the draft in Scene Builder before copying a complete output.','error');return;}
     if (isStale) {
       openConfirmDialog({
         title: 'Stale Manual Edit Warning',
@@ -372,6 +385,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   };
 
   const handleDownloadTxt = () => {
+    if(outputUnavailable){showToast('Repair the draft in Scene Builder before downloading a complete specification.','error');return;}
     const txt = formatSceneExportTxt({
       title,
       mode: derivedView ? 'structured' : canonicalMode,
@@ -397,6 +411,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   };
 
   const handleDownloadSelected = () => {
+    if(outputUnavailable){showToast('Repair the draft in Scene Builder before downloading a complete output.','error');return;}
     const json = jsonMode;
     const safeName =
       title.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 50) || 'scene_prompt';
@@ -413,13 +428,14 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
 
   const handleSaveScene = async (decision?: 'version' | 'take') => {
     if (!draft || saveGuard.current) return;
+    if(outputUnavailable||blockingResolution?.valid===false){setSaveError('Repair blocking and choose each active manual-output decision before saving. Your planning draft is preserved.');return;}
     if (projectContext.error) { setSaveError(projectContext.error); return; }
     saveGuard.current = true;
     setSaveBusy(true);
     setSaveError('');
-    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target]);
+    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target,blockingDecisions]);
     if (saveToken.current?.binding !== binding) saveToken.current = {binding, id: crypto.randomUUID()};
-    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(draft.revisionIntent?{expectedInputRevision:draft.inputRevision,...(projectContext.target?{expectedProjectRevision:draft.authoredProjectTarget?.expectedProjectRevision??snapshot.collections.find(c=>c.id===projectContext.target!.collectionId)?.project?.revision??0}:{})}:{}), ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
+    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(draft.revisionIntent||needsBlockingReview?{expectedInputRevision:draft.inputRevision,...(projectContext.target?{expectedProjectRevision:draft.authoredProjectTarget?.expectedProjectRevision??snapshot.collections.find(c=>c.id===projectContext.target!.collectionId)?.project?.revision??0}:{})}:{}),...(needsBlockingReview?{blockingOutputDecisions:blockingDecisions}:{}), ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
     try {
       const saved = await saveSceneFromDraft(draft.id, options);
       await refreshSnapshot();
@@ -569,7 +585,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     savedScene?.resultMediaLinks ?? draft?.resultMediaLinks ?? [];
   const reviewNotes = reviewNotesBuffer ?? record.reviewNotes;
   const preflightFindings = runScenePreflight(record, mediaMap);
-  const providerNotices = !jsonMode && workflow !== 'canonical'
+  const providerNotices = !outputUnavailable && !jsonMode && workflow !== 'canonical'
     ? getProviderNotices(record, workflow as ExportPresetId, generationOptions) : [];
   const editPreflightSource = () => {
     setShowPreflight(false);
@@ -666,7 +682,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     <>
       <div className="output-edit-actions">
         {manualOverride && (
-          <span className="badge badge-warning">Edited output</span>
+          <span className="badge badge-warning">{rawSource.blocking?'Manual · blocking correspondence unverified':'Edited output'}</span>
         )}
         {!isSavedScene && !derivedView && !isEditingManual && (
           <button
@@ -846,6 +862,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           type="button"
           className="btn btn-primary"
           onClick={() => setPromptSection('')}
+          disabled={outputUnavailable}
         >
           Show Prompt
         </button>
@@ -853,6 +870,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           type="button"
           className="btn btn-secondary"
           onClick={handleCopyActivePrompt}
+          disabled={outputUnavailable}
         >
           <Copy size={15} aria-hidden="true" />{' '}
           {jsonMode ? 'Copy JSON' : 'Copy Prompt'}
@@ -862,6 +880,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           className="btn btn-secondary"
           aria-label={jsonMode ? 'Download .json' : 'Download selected .txt'}
           onClick={handleDownloadSelected}
+          disabled={outputUnavailable}
         >
           <Download size={15} aria-hidden="true" /> Download Selected
         </button>
@@ -874,6 +893,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
               : 'Download full specification .txt'
           }
           onClick={handleDownloadTxt}
+          disabled={outputUnavailable}
         >
           <Download size={14} aria-hidden="true" /> Full Specification
         </button>
@@ -1269,6 +1289,8 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
         </section>
       </div>
 
+      {outputUnavailable&&<section className="card" role="alert"><h3>Complete output unavailable</h3><p>{outputError||assembled?.errors.join(' ')}</p>{draft&&<button type="button" className="btn btn-secondary" onClick={()=>navigate(carryProjectTarget(`/builder/${draft.id}`,hashPath))}>Repair blocking in Scene Builder</button>}</section>}
+      {draft&&assembled&&needsBlockingReview&&<div className="card"><BlockingOutputReview source={draft} canonical={assembled.outputs} decisions={blockingDecisions} onChange={setBlockingDecisions} requireReview/></div>}
       {activeTab !== 'prompt' && promptActions}
       <footer
         className="card output-action-footer"
@@ -1317,7 +1339,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={saveBusy}
+                disabled={saveBusy||outputUnavailable||blockingResolution?.valid===false}
                 onClick={() => void handleSaveScene()}
               >
                 <BookmarkCheck size={16} />{' '}
@@ -1490,9 +1512,11 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
                 ? JSON.stringify(record.settings, null, 2)
                 : preflightSource === 'instructions'
                   ? record.sceneInstructions
+                  : preflightSource === 'blocking'
+                    ? JSON.stringify(record.blocking ?? {}, null, 2)
                   : preflightSource === 'references'
                     ? JSON.stringify(references, null, 2)
-                    : (buildSceneDocument(record).components[preflightSource]
+                    : (buildSceneDocument({...record,blocking:undefined}).components[preflightSource]
                         ?.prompt ?? '(empty source)')}
           </pre>
         </StudioDialog>

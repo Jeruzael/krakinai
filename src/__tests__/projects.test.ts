@@ -52,7 +52,7 @@ it('removing one association keeps a shared scene member until its final shot is
 
 it('preserves a status write from a second IndexedDB connection during shot insertion',async()=>{
   const c=await createCollection({name:'Film'});const initial=await addProjectShot({collectionId:c.id});const shotId=initial.project!.shots[0].id;
-  const second=await new Promise<IDBDatabase>((resolve,reject)=>{const r=indexedDB.open('krakinai_prompt_library_db',1);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
+  const second=await new Promise<IDBDatabase>((resolve,reject)=>{const r=indexedDB.open('krakinai_prompt_library_db',2);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});
   try{
     const independent=(async()=>{
       const tx=second.transaction('collections','readwrite');const store=tx.objectStore('collections');

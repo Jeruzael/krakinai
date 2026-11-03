@@ -5,7 +5,8 @@ import { assembleScenePrompt } from './promptAssembler';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
 import {getDirectPromptReadiness,isDirectPrompt,validateSceneAuthoring,validateDirectAttachments} from './directPrompt';
 import{validateSceneEnsemble}from './ensembleValidation';
-export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references';
+import{validateSceneBlocking}from './blockingValidation';
+export type PreflightComponent = BuilderSlot | 'dialogue' | 'settings' | 'instructions' | 'references' | 'blocking';
 export interface PreflightFinding {
   participantId?:string;
   cueId?:string;
@@ -48,6 +49,10 @@ function speakerMatchesCharacter(speaker: string, title: string): boolean {
   return name === fullTitle || (identityName.length > 0 && name === identityName);
 }
 export function runScenePreflight(input: SceneDocumentSource & {extraRequiredSlots?: BuilderSlot[]; referencePack?: SceneDraft['referencePack']}, availableMediaIds?: ReadonlySet<string>|ReadonlyMap<string,MediaAsset>): PreflightFinding[] {
+  if(input.blocking!==undefined){
+    const blocking:PreflightFinding[]=validateSceneBlocking(input.blocking,input,'assembly').map(f=>({id:JSON.stringify(['P000','blocking',f.code,f.path]),ruleId:'P000',severity:f.severity==='blocking'?'blocking':f.severity==='advisory'?'review':'blocking',title:f.message,components:['blocking'],evidence:[{component:'blocking',text:f.path+': '+f.message}],explanation:'Authored blocking must resolve against this exact recipe before assembly.',suggestedActions:['Open Blocking to repair the referenced source or relationship. Save Draft can retain incomplete planning.']}));
+    return [...blocking,...runScenePreflight({...input,blocking:undefined},availableMediaIds)];
+  }
   if(input.ensemble)return runEnsemblePreflight(input,availableMediaIds);
   if(isDirectPrompt(input)){
     const error=validateSceneAuthoring({...input,outputs:{full:input.directPrompt.text}},true);

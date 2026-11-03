@@ -62,6 +62,10 @@ import { EnsembleControls } from '../components/EnsembleControls';
 import { EnsembleTemplateChoice } from '../components/EnsembleTemplateChoice';
 import { getSceneSnapshotEntries } from '../domain/ensembleReferences';
 import { validateSceneEnsemble } from '../domain/ensembleValidation';
+import {BlockingEditor} from '../components/blocking/BlockingEditor';
+import {validateSceneBlocking} from '../domain/blockingValidation';
+import {recoverBlockingEdit} from '../components/blocking/blockingRecovery';
+import {collectionRoute,collectionViewState} from '../domain/collectionNavigation';
 
 export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   draftId,
@@ -75,6 +79,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     openConfirmDialog,
     closeConfirmDialog,
     showToast,
+    setDirtyFormGuard,
   } = useLibrary();
 
   const [draft, setDraft] = useState<SceneDraft | null>(null);
@@ -91,6 +96,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
   const [pickerSlot, setPickerSlot] = useState<BuilderSlot | null>(null);
   const [showCameraComposer, setShowCameraComposer] = useState(false);
+  const [showBlocking,setShowBlocking]=useState(false);
+  const blockingTriggerRef=useRef<HTMLButtonElement>(null);
+  const [tplBlockingConfirmed,setTplBlockingConfirmed]=useState(false);
   const cameraRowRef = useRef<HTMLButtonElement>(null);
   const cameraComposerReturnRef = useRef<HTMLElement | null>(null);
   const [overrideTextBuf, setOverrideTextBuf] = useState('');
@@ -105,6 +113,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [ensembleRequest,setEnsembleRequest]=useState<{kind:'participants'|'cues';id?:string;token:number}>();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(()=>{if(draft&&recoverBlockingEdit(draft))setShowBlocking(true);},[draft?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -136,19 +145,31 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const persistDraftImmediate = async (
     nextDraft: SceneDraft,
     bumpRevision = true,
-    reportFailure = false
+    reportFailure = false,
+    confirmBlockingRemoval = false
   ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    const displayedAtStart = latestDraft.current;
     setSaveState('saving');
     setSaveError(null);
     try {
       const saved = await saveSceneDraft({
         ...nextDraft,
-        ...(nextDraft.revisionIntent||nextDraft.ensemble?{expectedInputRevision:nextDraft.inputRevision}:{}),
+        ...(nextDraft.revisionIntent||nextDraft.ensemble||nextDraft.blocking?{expectedInputRevision:nextDraft.inputRevision}:{}),
+        ...(confirmBlockingRemoval?{confirmBlockingRemoval:true}:{}),
         bumpInputRevision: bumpRevision,
       });
-      setDraft(saved);
-      setSaveState('saved');
+      // A completed autosave must not replace edits made while it was pending.
+      // Carry only its stored revision metadata into those newer local edits.
+      const hasNewerEdits = latestDraft.current !== displayedAtStart;
+      setDraft(current => {
+        if (current === displayedAtStart || current === nextDraft) return saved;
+        if (current?.id === saved.id && current.inputRevision === nextDraft.inputRevision) {
+          return {...current, inputRevision:saved.inputRevision, updatedAt:saved.updatedAt};
+        }
+        return current;
+      });
+      if (!hasNewerEdits) setSaveState('saved');
       await refreshSnapshot();
       return saved;
     } catch (err) {
@@ -166,7 +187,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     setSaveState('saving');
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      persistDraftImmediate(nextDraft, true);
+      const current = latestDraft.current;
+      persistDraftImmediate(current?.id === nextDraft.id ? current : nextDraft, true);
     }, 800);
   };
 
@@ -463,6 +485,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         description: tplDesc,
         includeCharacterIdentity: tplIncludeChar && !getShotTypeRules(draft).inapplicableSlots.includes('character'),
         ...(draft.ensemble?{ensembleMode:tplEnsembleMode,confirmEnsembleOmissions:tplEnsembleConfirmed}:{}),
+        ...(draft.blocking?{confirmBlockingOmission:tplBlockingConfirmed}:{}),
       });
       await refreshSnapshot();
       setShowTemplateModal(false);
@@ -509,8 +532,10 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     setDetailSlot(slot);
   };
   const preflightFindings = runScenePreflight(draft, mediaMap);
+  const blockingFindings=validateSceneBlocking(draft.blocking,draft,'assembly');
   const openPreflightComponent = (component: PreflightFinding['components'][number]) => {
     setShowPreflight(false);
+    if(component==='blocking'){setShowBlocking(true);return;}
     if(draft.ensemble&&component==='dialogue'){openEnsemble('cues');return;}
     if (ORDERED_BUILDER_SLOTS.includes(component as BuilderSlot)) openDetails(component as BuilderSlot);
     else requestAnimationFrame(() => {
@@ -533,6 +558,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           </p>
         </div>
         <div className="studio-inline">
+          {collectionViewState(hashPath).tab==='continuity'&&getProjectSaveTarget(hashPath,snapshot.collections).target&&<button type="button" className="btn btn-secondary btn-sm" onClick={()=>{const target=getProjectSaveTarget(hashPath,snapshot.collections).target!;navigate(collectionRoute(target.collectionId,{...collectionViewState(hashPath),tab:'continuity',shot:target.shotId}));}}>Back to Continuity</button>}
           <button type="button" className="btn btn-secondary btn-sm" onClick={()=>navigate(carryProjectTarget('/direct/new',hashPath))}>Import Full Prompt</button>
           <span
             className={`badge ${saveState === 'saved' ? 'badge-success' : saveState === 'error' ? 'badge-error' : 'badge-warning'}`}
@@ -554,6 +580,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
             onClick={() => {
               setTplName(draft.title || 'Custom Arrangement');
               setTplEnsembleMode(undefined);setTplEnsembleConfirmed(false);
+              setTplBlockingConfirmed(false);
               setShowTemplateModal(true);
             }}
           >
@@ -785,6 +812,10 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
               })}
             </div>
             <EnsembleControls draft={draft} assets={snapshot.assets} variants={snapshot.variants} request={ensembleRequest} onChange={async next=>!!(await persistDraftImmediate(next,true,true))}/>
+            <div className="blocking-controls" data-preflight="blocking" tabIndex={-1}>
+              <button type="button" className="btn btn-secondary btn-sm" ref={blockingTriggerRef} disabled={saveState==='saving'} onClick={()=>setShowBlocking(true)}>Edit blocking</button>
+              <span className="muted-text">{!draft.blocking?'Optional · no plan':blockingFindings.some(f=>f.severity==='blocking')?'Incomplete · review bindings':'Authored · Start → Action → End'}</span>
+            </div>
             <div className="recipe-options">
               <button
                 type="button"
@@ -1126,6 +1157,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         if (!saved) throw new Error('Reference Pack could not be saved. Your selection remains available here.');
         setShowReferencePack(false);
       }} />}
+      {showBlocking&&<BlockingEditor source={draft} value={draft.blocking} onDirtyChange={setDirtyFormGuard} returnFocusRef={blockingTriggerRef} spatialSetups={snapshot.scenes.filter(scene=>scene.blocking?.space).map(scene=>({sceneId:scene.id,title:scene.title,blocking:scene.blocking!}))} onClose={()=>setShowBlocking(false)} onChange={async blocking=>{const current=latestDraft.current??draft;const saved=await persistDraftImmediate({...current,blocking},true,true,!blocking&&!!current.blocking);if(!saved)throw Error('Blocking draft was not saved. Keep these controls open and retry.');}}/>}
       {showCameraComposer && (
         <CameraComposer
           snapshot={draft.slots.camera}
@@ -1356,7 +1388,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 type="submit"
                 form="studio-template-form"
                 className="btn btn-primary"
-                disabled={!!draft.ensemble&&(!tplEnsembleMode||(tplEnsembleMode==='shared_only'&&!tplEnsembleConfirmed))}
+                disabled={!!draft.blocking&&!tplBlockingConfirmed||!!draft.ensemble&&(!tplEnsembleMode||(tplEnsembleMode==='shared_only'&&!tplEnsembleConfirmed))}
               >
                 Save Template
               </button>
@@ -1364,6 +1396,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           }
         >
           <form id="studio-template-form" onSubmit={handleSaveAsTemplate}>
+            {draft.blocking&&<label className="blocking-check"><input type="checkbox" checked={tplBlockingConfirmed} onChange={e=>setTplBlockingConfirmed(e.target.checked)}/>I understand scene-specific blocking is not included in this template</label>}
             <div className="form-group">
               <label htmlFor="tpl-name" className="form-label">
                 Template Name *

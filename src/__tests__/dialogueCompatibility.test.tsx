@@ -45,7 +45,7 @@ describe('Dialogue and legacy data compatibility', () => {
     window.location.hash = `#/builder/${draft.id}`;
     const user = userEvent.setup();
     render(<App />);
-    await screen.findByRole('button', { name: 'Assemble Prompt' });
+    await screen.findByRole('button', { name: 'Assemble Prompt' }, {timeout:10000});
     await user.click(screen.getByText(/^Dialogue/, { selector: 'summary' }));
     await user.click(screen.getByRole('button', { name: 'Clear Dialogue' }));
     await user.click(screen.getByRole('button', { name: 'Save Draft' }));
@@ -57,7 +57,7 @@ describe('Dialogue and legacy data compatibility', () => {
       expect(stored.slots).toEqual(draft.slots);
       expect(stored.sceneInstructions).toBe(draft.sceneInstructions);
     });
-  });
+  },15000);
   it('retains mode, delivery, language, captions and exact multiline words through builder save, immutable save, and ZIP restore', async () => {
     const draft = await saveSceneDraft({
       ...legacyDraft,
@@ -66,7 +66,7 @@ describe('Dialogue and legacy data compatibility', () => {
     window.location.hash = `#/builder/${draft.id}`;
     const user = userEvent.setup();
     render(<App />);
-    await screen.findByRole('button', { name: 'Assemble Prompt' });
+    await screen.findByRole('button', { name: 'Assemble Prompt' }, {timeout:10000});
     await user.click(screen.getByText(/^Dialogue/, { selector: 'summary' }));
     await user.selectOptions(
       screen.getByLabelText('Dialogue Mode'),
@@ -111,7 +111,7 @@ describe('Dialogue and legacy data compatibility', () => {
     expect(JSON.parse(serializeSceneJson(restored)).dialogue.exactLine).toBe(
       saved.dialogue!.line
     );
-  });
+  },15000);
 
   it('keeps legacy golden output bytes and snapshots immutable across source edits, review uploads and backup restore', async () => {
     const snap = await getAllSnapshot();

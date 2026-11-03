@@ -1,0 +1,17 @@
+import type {BlockingSource,SceneBlockingV1,ParticipantRef,ScreenZone,BlockingDepth} from '../../types/blocking';
+import {blockingParticipantSources,blockingParticipantKey} from '../../domain/blockingValidation';
+import {human} from './BlockingFields';
+import './blocking.css';
+export type BlockingPhaseName='start'|'action'|'end';
+export interface BlockingBoardProps{source:BlockingSource;blocking:SceneBlockingV1;phase:BlockingPhaseName;participant?:ParticipantRef;onSelect?:(ref:ParticipantRef)=>void;onScreenPlacement?:(zone:ScreenZone,depth:BlockingDepth)=>void}
+export function BlockingBoard({source,blocking,phase,participant,onSelect,onScreenPlacement}:BlockingBoardProps){
+ const sources=blockingParticipantSources(source),phaseKey=phase==='end'?'end':'start';
+ const markers=blocking.participants.map(track=>{const person=sources.find(s=>blockingParticipantKey(s.ref)===blockingParticipantKey(track.participant));return{track,person,position:track[phaseKey]};});
+ const positioned=markers.filter(p=>p.position?.visibility==='on_screen'&&p.position.zone&&p.position.zone!=='unspecified'&&p.position.depth&&p.position.depth!=='unspecified');
+ const x=(zone:string|undefined)=>zone==='left'?18:zone==='right'?82:50,y=(depth:string|undefined)=>depth==='background'?18:depth==='foreground'?82:50;
+ return <figure className="blocking-board-wrap" aria-label="Editorial staging board"><figcaption>{human(phase)} · screen arrangement</figcaption><p className="muted-text">Screen zones and depth are editorial instructions. Scene-relative placement uses your declared landmarks.</p><div className="blocking-board">
+  <div className="blocking-board-grid">{(['background','midground','foreground'] as const).flatMap(depth=>(['left','center','right'] as const).map(zone=><button key={zone+depth} type="button" disabled={!onScreenPlacement} aria-label={`Place selected participant ${zone} ${depth}`} onClick={()=>onScreenPlacement?.(zone,depth)}><span>{human(zone)} · {depth}</span></button>))}</div>
+  {blocking.landmarks.filter(l=>l.screen?.zone&&l.screen.zone!=='unspecified'&&l.screen.depth&&l.screen.depth!=='unspecified').map(l=><span key={l.id} className="blocking-landmark" style={{left:`${x(l.screen!.zone)}%`,top:`${y(l.screen!.depth)}%`}}>{l.label}</span>)}
+  {positioned.map(({track,person,position},i)=><button key={blockingParticipantKey(track.participant)} className="blocking-marker" type="button" aria-pressed={!!participant&&blockingParticipantKey(participant)===blockingParticipantKey(track.participant)} aria-label={`Select ${person?.character.sourceTitle??blockingParticipantKey(track.participant)} blocking track`} disabled={!onSelect} onClick={()=>onSelect?.(track.participant)} style={{left:`${x(position!.zone)}%`,top:`${y(position!.depth)}%`,transform:`translate(-50%,calc(-50% + ${(i%3)*23-23}px))`}}><strong>{person?.character.sourceTitle??'Unresolved participant'}</strong><span>{position!.zone} · {position!.depth}</span></button>)}
+ </div><ul className="blocking-position-list">{markers.filter(marker=>!positioned.includes(marker)).map(({track,person,position})=><li key={blockingParticipantKey(track.participant)}>{person?.character.sourceTitle??blockingParticipantKey(track.participant)}: {position?.visibility==='out_of_frame'?'Out of frame':person?.presence==='off_camera'?'Off camera':'Screen position unspecified'}</li>)}</ul>{phase==='action'&&<p>Action uses the authored movement and waypoint order. The board shows Start positions; it does not calculate motion.</p>}</figure>;
+}

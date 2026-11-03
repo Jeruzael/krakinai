@@ -1,14 +1,16 @@
 import { canonicalStringify } from '../domain/changeSetCanonical';
 import { BRIDGE_VERSION, MCP_LIMITS, McpError, exactKeys, record, resultError, validateOrigin, validateRelayAddress, validateToolArgs, type McpCommand, type McpResult } from '../domain/mcpProtocol';
 import { createOffer, deriveHandshake, checkProof, proof, decode64, deriveEpoch, signMessage, verifyMessage, type AuthMessage, type EpochKeys, type KeyOffer } from '../domain/mcpCrypto';
+import {BLOCKING_BRIDGE_VERSION,MCP_BLOCKING_CAPABILITIES,validateCapabilityTranscript,requireBlockingCapabilities} from '../domain/mcpCapabilities';
 
-export interface PairingView { verificationCode: string; expiresAt: string; origin: string; relay: string }
+export interface PairingView { verificationCode: string; expiresAt: string; origin: string; relay: string;capabilities?:string[] }
 interface BrowserTransportOptions {
   relayAddress: string; appOrigin: string; fetcher?: typeof fetch; now?: () => number;
-  onConnected(sessionId: string, grant: { expiresAt: number }): void; onDisconnected(reason: string): void;
+  pairingVersion?:1|2;requireBlocking?:boolean;
+  onConnected(sessionId: string, grant: { expiresAt: number;capabilities?:string[] }): void; onDisconnected(reason: string): void;
   onCommand(command: McpCommand, sessionId: string): Promise<McpResult>;
 }
-interface Credentials { id: string; epoch: number; seq: number; master: CryptoKey; keys: EpochKeys; expiresAt: number }
+interface Credentials { id: string; epoch: number; seq: number; master: CryptoKey; keys: EpochKeys; expiresAt: number;capabilities?:string[] }
 interface PendingPair { privateKey: CryptoKey; transcript: Record<string, unknown>; view: PairingView }
 
 /** Owns ephemeral credentials; nothing is stored in preferences, storage or URLs. */
@@ -21,6 +23,7 @@ export class BrowserTransport {
     if (typeof window !== 'undefined' && window.location.origin !== this.appOrigin) throw new McpError('ORIGIN_MISMATCH', 'Keep KRAKINAI open at its existing browser origin.');
   }
   isSessionLive(sessionId: string): boolean { return this.#auth?.id === sessionId && (this.options.now ?? Date.now)() < this.#auth.expiresAt; }
+  getCapabilities():string[]{return this.#auth&&this.isSessionLive(this.#auth.id)?[...(this.#auth.capabilities??[])]:[];}
   async #json(path: string, body: unknown, timeout = 25000): Promise<Record<string, unknown>> {
     const controller = new AbortController(); this.#requests.add(controller);
     const timer = setTimeout(() => controller.abort(), timeout);
@@ -33,6 +36,7 @@ export class BrowserTransport {
       const data: unknown = JSON.parse(text); record(data);
       if (!response.ok) {
         const error = data.error as { code?: unknown } | undefined;
+        if((response.status===404&&error?.code==='UNKNOWN_ROUTE')||(response.status===400&&error?.code==='PROTOCOL_VERSION'))throw new McpError('UNSUPPORTED_PAIRING_VERSION','This bridge does not support the requested pairing version. Update it to use Blocking.');
         if (error?.code === 'NATIVE_APPROVAL_PENDING') throw new McpError('NATIVE_APPROVAL_PENDING', 'Allow the matching native verification window, then confirm pairing again.');
         if (response.status === 409) throw new McpError('PAIRING_BUSY', 'A connection or pairing is already active. Disconnect it or deny its native window before pairing again.');
         if (response.status === 429) throw new McpError('RATE_LIMITED', 'The local connection limit was reached. Wait briefly and retry.');
@@ -47,15 +51,23 @@ export class BrowserTransport {
     this.#working = true; const generation = ++this.#generation;
     try {
       const local = await createOffer();
-      const response = await this.#json('/v1/pair/start', { version: BRIDGE_VERSION, client: local.offer });
+      let v2=this.options.pairingVersion===2,response:Record<string,unknown>;
+      try{response=await this.#json(v2?'/v2/pair/start':'/v1/pair/start',v2?{version:BLOCKING_BRIDGE_VERSION,client:local.offer,capabilities:[...MCP_BLOCKING_CAPABILITIES]}:{version:BRIDGE_VERSION,client:local.offer});}
+      catch(error){
+        if(!v2||!(error instanceof McpError)||error.code!=='UNSUPPORTED_PAIRING_VERSION')throw error;
+        if(this.options.requireBlocking)requireBlockingCapabilities([]);
+        v2=false;response=await this.#json('/v1/pair/start',{version:BRIDGE_VERSION,client:local.offer});
+      }
       exactKeys(response, ['transcript', 'expiresAt', 'verificationCode'], ['transcript', 'expiresAt', 'verificationCode']); record(response.transcript);
       const transcript = response.transcript;
-      exactKeys(transcript, ['version', 'instanceId', 'challengeId', 'origin', 'relay', 'client', 'server'], ['version', 'instanceId', 'challengeId', 'origin', 'relay', 'client', 'server']);
-      if (generation !== this.#generation || transcript.version !== BRIDGE_VERSION || transcript.origin !== this.appOrigin || transcript.relay !== this.relayAddress || canonicalStringify(transcript.client) !== canonicalStringify(local.offer) || typeof transcript.challengeId !== 'string' || typeof transcript.instanceId !== 'string' || typeof response.expiresAt !== 'string' || typeof response.verificationCode !== 'string') throw new McpError('AUTH_FAILED');
+      const fields=['version','instanceId','challengeId','origin','relay','client','server',...(v2?['clientCapabilities','serverCapabilities','capabilities']:[])];exactKeys(transcript,fields,fields);
+      if (generation !== this.#generation || transcript.version !== (v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION) || transcript.origin !== this.appOrigin || transcript.relay !== this.relayAddress || canonicalStringify(transcript.client) !== canonicalStringify(local.offer) || typeof transcript.challengeId !== 'string' || typeof transcript.instanceId !== 'string' || typeof response.expiresAt !== 'string' || typeof response.verificationCode !== 'string') throw new McpError('AUTH_FAILED');
+      const capabilities=v2?validateCapabilityTranscript(transcript,MCP_BLOCKING_CAPABILITIES):undefined;
+      if(this.options.requireBlocking)requireBlockingCapabilities(capabilities??[]);
       record(transcript.server); exactKeys(transcript.server, ['publicKey', 'nonce'], ['publicKey', 'nonce']);
       decode64(String(transcript.server.publicKey), 65); decode64(String(transcript.server.nonce), 32);
-      const view = { verificationCode: response.verificationCode, expiresAt: response.expiresAt, origin: this.appOrigin, relay: this.relayAddress };
-      this.#pair = { privateKey: local.privateKey, transcript, view }; return view;
+      const view = { verificationCode: response.verificationCode, expiresAt: response.expiresAt, origin: this.appOrigin, relay: this.relayAddress,...(capabilities?{capabilities}:{}) };
+      this.#pair = { privateKey: local.privateKey, transcript, view:structuredClone(view) }; return structuredClone(view);
     } finally { this.#working = false; }
   }
   async finishPairing(secret: string): Promise<string> {
@@ -70,14 +82,14 @@ export class BrowserTransport {
       decode64(response.epochNonce, 32);
       const keys = await deriveEpoch(handshake.master, response.sessionId, 0, response.epochNonce);
       if (generation !== this.#generation) throw new McpError('DISCONNECTED');
-      const auth: Credentials = { id: response.sessionId, epoch: 0, seq: 0, master: handshake.master, keys, expiresAt: (this.options.now ?? Date.now)() + MCP_LIMITS.sessionMs }; this.#auth = auth;
+      const auth: Credentials = { id: response.sessionId, epoch: 0, seq: 0, master: handshake.master, keys, expiresAt: (this.options.now ?? Date.now)() + MCP_LIMITS.sessionMs,...(pending.view.capabilities?{capabilities:[...pending.view.capabilities]}:{}) }; this.#auth = auth;
       const confirmation = await this.#request(auth, '/v1/session/confirm', {});
       exactKeys(confirmation, ['connected', 'expiresAt'], ['connected', 'expiresAt']);
       const expiresAt = typeof confirmation.expiresAt === 'string' ? Date.parse(confirmation.expiresAt) : NaN;
       if (confirmation.connected !== true || !Number.isFinite(expiresAt) || expiresAt <= (this.options.now ?? Date.now)() || expiresAt > (this.options.now ?? Date.now)() + MCP_LIMITS.sessionMs + 1000) throw new McpError('AUTH_FAILED');
       auth.expiresAt = expiresAt;
       if (this.#auth !== auth || generation !== this.#generation) throw new McpError('DISCONNECTED');
-      this.#pair = undefined; this.options.onConnected(auth.id, { expiresAt }); void this.#loop(auth); return auth.id;
+      this.#pair = undefined; this.options.onConnected(auth.id, { expiresAt,...(auth.capabilities?{capabilities:[...auth.capabilities]}:{}) }); void this.#loop(auth); return auth.id;
     } catch (error) { if (this.#auth) await this.disconnect('Pairing could not be confirmed.'); throw error; }
     finally { this.#working = false; }
   }

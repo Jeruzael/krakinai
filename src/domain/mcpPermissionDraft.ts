@@ -1,6 +1,6 @@
 import type { ChangeSetState } from '../types/changeSet';
 import type { McpScope, ReceiptGrant } from '../types/mcp';
-import { authorizedSceneIds, emptyMcpScope, MCP_SCOPE_LIMITS, validateMcpScope } from './mcpScope';
+import { authorizedSceneIds, emptyMcpScope,emptyMcpScopeV2, MCP_SCOPE_LIMITS, validateMcpScope } from './mcpScope';
 import { getProjectShots } from './projectStoryboard';
 
 export const PERMISSION_FIELDS = [
@@ -21,14 +21,14 @@ export const CAPABILITY_FIELDS = [
   { field: 'allowProposals', label: 'Allow change-set proposals', description: 'Codex may submit proposals. Every database change still needs your separate browser review.' },
   { field: 'allowNewProjects', label: 'Allow new project creation', description: 'Proposals may request a new project. This does not approve or save the project.' },
 ] as const;
-export type PermissionField = typeof PERMISSION_FIELDS[number]['field'];
-export type PermissionFlag = typeof DISCLOSURE_FIELDS[number]['field'] | typeof CAPABILITY_FIELDS[number]['field'];
+export type PermissionField = typeof PERMISSION_FIELDS[number]['field']|'blockingSceneIds';
+export type PermissionFlag = typeof DISCLOSURE_FIELDS[number]['field'] | typeof CAPABILITY_FIELDS[number]['field']|'allowBlockingProposals';
 export interface PermissionRecord { id: string; label: string; category?: string }
 export type PermissionInventory = Record<PermissionField, PermissionRecord[]>;
 export const receiptKey = (grant: ReceiptGrant) => grant.changeSetId + ':' + grant.packageDigest;
-export const permissionIds = (scope: McpScope, field: PermissionField): string[] => field === 'receiptGrants' ? scope.receiptGrants.map(receiptKey) : scope[field];
+export const permissionIds = (scope: McpScope, field: PermissionField): string[] =>field==='blockingSceneIds'?scope.version===2?scope.blockingSceneIds:[]: field === 'receiptGrants' ? scope.receiptGrants.map(receiptKey) : scope[field];
 
-export function buildPermissionInventory(state: ChangeSetState, scope = emptyMcpScope()): PermissionInventory {
+export function buildPermissionInventory(state: ChangeSetState, scope:McpScope = emptyMcpScope()): PermissionInventory {
   const authorized = authorizedSceneIds(scope, state);
   return {
     projectIds: state.collections.map(p => ({ id: p.id, label: p.name })),
@@ -40,6 +40,7 @@ export function buildPermissionInventory(state: ChangeSetState, scope = emptyMcp
     candidateIds: [...(state.preferences.aiImports?.candidates ?? []).filter(c => c.status === 'pending' || scope.candidateIds.includes(c.id)).map(c => ({ id: c.id, label: c.title, category: c.kind })),...(state.preferences.aiImports?.variantCandidates??[]).filter(c=>c.status==='pending'||scope.candidateIds.includes(c.id)).map(c=>({id:c.id,label:c.title,category:'Outfit'}))],
     fullPromptSceneIds: state.scenes.filter(s => authorized.has(s.id)).map(s => ({ id: s.id, label: s.title })),
     receiptGrants: (state.preferences.aiImports?.receipts ?? []).map(r => ({ id: receiptKey(r), label: r.title ?? r.changeSetId })),
+    blockingSceneIds:state.scenes.filter(s=>authorized.has(s.id)).map(s=>({id:s.id,label:s.title})),
   };
 }
 function checked(scope: McpScope): McpScope {
@@ -54,6 +55,7 @@ function checked(scope: McpScope): McpScope {
 function withIds(scope: McpScope, field: PermissionField, ids: string[]): McpScope {
   const copy = structuredClone(scope);
   if (field === 'receiptGrants') copy.receiptGrants = ids.map(key => ({ changeSetId: key.slice(0, -65), packageDigest: key.slice(-64) }));
+  else if(field==='blockingSceneIds'){if(copy.version!==2)throw Error('Enable the Blocking permission format and make a fresh pairing first.');copy.blockingSceneIds=ids;}
   else copy[field] = ids;
   return copy;
 }
@@ -64,7 +66,7 @@ export function changeSelection(scope: McpScope, field: PermissionField, ids: st
 }
 export function normalizePermissionDraft(scope: McpScope, state: ChangeSetState): McpScope {
   const authorized = authorizedSceneIds(scope, state);
-  return { ...structuredClone(scope), fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorized.has(id)) };
+  return { ...structuredClone(scope), fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorized.has(id)),...(scope.version===2?{blockingSceneIds:scope.blockingSceneIds.filter(id=>authorized.has(id)&&state.scenes.some(s=>s.id===id))}:{}) };
 }
 export function validatePermissionDraft(scope: McpScope, state: ChangeSetState): McpScope {
   const checkedScope = checked(scope), inventory = buildPermissionInventory(state, checkedScope);
@@ -72,6 +74,7 @@ export function validatePermissionDraft(scope: McpScope, state: ChangeSetState):
     const known = new Set(inventory[field].map(r => r.id));
     if (permissionIds(checkedScope, field).some(id => !known.has(id))) throw Error(label + ': a selected record is unavailable or no longer authorized. Remove it or refresh your selection before applying.');
   }
+  if(checkedScope.version===2&&checkedScope.blockingSceneIds.some(id=>!inventory.blockingSceneIds.some(r=>r.id===id)))throw Error('Blocking authoring text: a selected scene is unavailable or outside the selected metadata scope.');
   return checkedScope;
 }
 export function selectAllRecords(scope: McpScope, state: ChangeSetState): McpScope {
@@ -83,10 +86,11 @@ export function selectAllRecords(scope: McpScope, state: ChangeSetState): McpSco
 export function clearAllRecords(scope: McpScope): McpScope {
   let next = structuredClone(scope);
   for (const { field } of PERMISSION_FIELDS) next = withIds(next, field, []);
+  if(next.version===2)next.blockingSceneIds=[];
   return next;
 }
 export function presetPermissionDraft(preset: 'minimal' | 'creative' | 'full', scope: McpScope, state: ChangeSetState): McpScope {
-  let next = { ...emptyMcpScope(), epoch: scope.epoch, projectIds: [...scope.projectIds] };
+  let next:McpScope = { ...(scope.version===2?emptyMcpScopeV2():emptyMcpScope()), epoch: scope.epoch, projectIds: [...scope.projectIds] };
   if (preset === 'creative') next = { ...next, assetIds: [...scope.assetIds], variantIds: [...scope.variantIds], templateIds: [...scope.templateIds], allowProposals: true };
   if (preset === 'full') {
     next = selectAllRecords(next, state);
@@ -107,10 +111,15 @@ export function scopeDiff(before: McpScope, after: McpScope, inventory: Permissi
     return { field, label: item.label, kind: field === 'fullPromptSceneIds' || field === 'receiptGrants' ? 'sensitive' : 'read', before: oldIds.length, after: newIds.length, added: newIds.filter(id => !oldIds.includes(id)).map(label), removed: oldIds.filter(id => !newIds.includes(id)).map(label) };
   });
   for (const item of [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS]) rows.push({ field: item.field, label: item.label, kind: item.field.startsWith('allow') ? 'capability' : 'sensitive', before: before[item.field], after: after[item.field], added: [], removed: [] });
+  if(before.version===2||after.version===2){
+    const oldIds=permissionIds(before,'blockingSceneIds'),newIds=permissionIds(after,'blockingSceneIds'),label=(id:string)=>({id,label:inventory.blockingSceneIds.find(r=>r.id===id)?.label??id});
+    rows.push({field:'blockingSceneIds',label:'Blocking authoring text',kind:'sensitive',before:oldIds.length,after:newIds.length,added:newIds.filter(id=>!oldIds.includes(id)).map(label),removed:oldIds.filter(id=>!newIds.includes(id)).map(label)});
+    rows.push({field:'allowBlockingProposals',label:'Allow blocking proposals',kind:'capability',before:before.version===2&&before.allowBlockingProposals,after:after.version===2&&after.allowBlockingProposals,added:[],removed:[]});
+  }
   return rows;
 }
 export function permissionFingerprint(scope: McpScope): string {
-  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field])]);
+  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field]),...(scope.version===2?[{version:2,blockingSceneIds:[...scope.blockingSceneIds].sort(),allowBlockingProposals:scope.allowBlockingProposals}]:[])]);
 }
 export function permissionInventoryStamp(state: ChangeSetState): string {
   return JSON.stringify([state.collections.map(p => [p.id, p.project?.revision]), state.scenes.map(s => [s.id, s.revision]), state.assets.map(a => [a.id, a.revision]), (state.variants ?? []).map(v => [v.id, v.revision]), state.templates.map(t => [t.id, t.revision]), state.media.map(m => m.id), (state.preferences.aiImports?.candidates ?? []).map(c => [c.id, c.status]), ...((state.preferences.aiImports?.variantCandidates?.length??0)?[(state.preferences.aiImports!.variantCandidates!).map(c=>[c.id,c.status,c.revision])]:[]), (state.preferences.aiImports?.receipts ?? []).map(receiptKey)]);
