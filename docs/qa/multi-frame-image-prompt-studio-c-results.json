@@ -1,0 +1,4521 @@
+{
+  "schema": "krakinai.qa.keyframes.v1",
+  "localDate": "2026-11-04",
+  "status": "local-acceptance-and-review-verified-awaiting-signed-head-CI",
+  "source": {
+    "baseCommit": "e3012123647d9989a923936090102fadd58378a5",
+    "branch": "codex/multi-frame-prompt-studio-c",
+    "uncommitted": true,
+    "validationTsChanged": false,
+    "productionAndTestSourceTreeSha256": "f6318f9739c0bf27f118aea9301a4fd3b2c634a9c05008cbd2c5bf227ff3796d",
+    "treeDigestAlgorithm": "SHA-256 over sorted local production/test paths + NUL + per-file SHA-256 bytes; excludes docs and generated outputs. Local raw bytes, not a Git tree OID."
+  },
+  "commands": [
+    {
+      "command": "npm test -- --maxWorkers=2 --minWorkers=1",
+      "exitCode": 0,
+      "files": 193,
+      "passed": 1556,
+      "failed": 0,
+      "skipped": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-unit-attempt1.log",
+      "logSha256": "ed85c8adf202c2e401859e850254462b3bec162521ad636a01d21e6454d30f0b"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/review-typecheck.log",
+      "logSha256": "5adf8d20709638df757ec99acbb68cf2d7263b0df6fdf6916af125d6cc5ad35d"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "warning": "Vite chunk advisory; largest minified chunk 1352.91 kB",
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-build.log",
+      "logSha256": "b17d8f837393f7b00b1a8387332543d7b1259f5970097642895556915dadd559"
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "exitCode": 0,
+      "vulnerabilities": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-audit.log",
+      "logSha256": "4b02d4a3c23d969c46bd2041360f80bfcb1fe760d9db864009acdd710f9de601"
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "historicalLedgerChecks": 207,
+      "historicalScreenshots": 45,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-test-qa.log",
+      "logSha256": "9d4b833065517ec6977a02d8d3e159ff23d32f663c018aac61478501289f1947"
+    },
+    {
+      "command": "npm --prefix bridge run build",
+      "exitCode": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-bridge-build.log",
+      "logSha256": "a53d972668fe8f1949b541c3722ccaf827c9391935e590f1da1543b8d496a4f3"
+    },
+    {
+      "command": "npm --prefix bridge run build:test",
+      "exitCode": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-bridge-build-test.log",
+      "logSha256": "8329cebd8266c04caccc94b72687576fb1e7c9539d1a683676f978a8915e02d6"
+    },
+    {
+      "command": "npm --prefix bridge run typecheck",
+      "exitCode": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-bridge-typecheck.log",
+      "logSha256": "558e60ab5bd92d62515f99d34f19f25f859351ee7d9e36b164fcdb5ea494ce74"
+    },
+    {
+      "command": "npm --prefix bridge test",
+      "exitCode": 0,
+      "files": 14,
+      "passed": 74,
+      "failed": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-bridge-test-green.log",
+      "logSha256": "b01864dbb5fbaca0ee136087716b8abd089c7163c21b5e10360ba1cf434279b3"
+    },
+    {
+      "command": "npm --prefix bridge audit --omit=dev",
+      "exitCode": 0,
+      "vulnerabilities": 0,
+      "evidence": "Execution tool returned exit0 and found 0 vulnerabilities."
+    },
+    {
+      "command": "dotnet run --project launcher/tests/Krakinai.BridgeLauncher.Tests.csproj",
+      "exitCode": 0,
+      "passed": 38,
+      "failed": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-launcher-attempt2.log",
+      "logSha256": "8f1008c52f8e30d0ca97a861c559715dace1facdc9202a6e37fb578b1699fdad"
+    },
+    {
+      "command": "node --test <the 10 helper files in .github/workflows/ci.yml>",
+      "exitCode": 0,
+      "passed": 87,
+      "failed": 0,
+      "skipped": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-ci-helpers.log",
+      "logSha256": "530bd36280ad88de81cd03312e291fa28f262da5d944ac34a6ee18228a1e31bd"
+    },
+    {
+      "command": "npm run test:e2e",
+      "exitCode": 1,
+      "passed": 235,
+      "failed": 7,
+      "skipped": 18,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-browser-attempt1.log",
+      "logSha256": "14b3b49a724895f8e8e09d860aaba80b7694738a9289fe27a66c51968206e775"
+    },
+    {
+      "command": "node node_modules/@playwright/test/cli.js test e2e/continuity-workspace.spec.mjs e2e/keyframe-review.spec.mjs e2e/output-workspace-screenshots.spec.mjs e2e/ensemble-mcp.spec.mjs e2e/recipe-mcp.spec.mjs e2e/keyframe-backup.spec.mjs --grep-invert signed-native",
+      "exitCode": 0,
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0,
+      "retainedLog": ".superpowers/sdd/2026-11-03-multi-frame-image-prompt-studio-c/final-browser-corrected.log",
+      "logSha256": "14de7519747ed0f1d656b28ccc57a37024e23188870fbfd73b4f9f6eafa9e1de",
+      "environment": {
+        "KRAKINAI_NATIVE_QA": "0",
+        "KRAKINAI_NATIVE_QA_MANUAL": "0",
+        "KRAKINAI_FROZEN_C_BASE_BUILD": "<retained pre-C build of e301212>"
+      }
+    }
+  ],
+  "native": [
+    {
+      "kind": "actual-installed-CLI-signed-native",
+      "origin": "http://127.0.0.1:4173",
+      "cliVersion": "0.73.0",
+      "exitCode": 0,
+      "scopeOfEvidence": "Pre-review-fix browser source; unchanged final production bridge bytes. Final fixes separately covered by localhost native, both-origin SDK, unit and final browser runs.",
+      "actualCallCount": 17,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "dcfb431457b073aefbce36310c714d9e693f740e382bd466842b1fe364ccec1a",
+          "elapsedMs": 233431
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f1fc9f07117c6ae213c9430a3ec8d8eab810597e9cf399ec2c9df6909f2a73c8",
+          "replySha256": "0cea57ad4591313f6c5d767699474d003375f82f575e76ba70319b77e1a3c5ea",
+          "elapsedMs": 235646
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "b6d2d3981dbb0d3d25097915efdffc31771146dff15d3bc46db2d78d8efc3019",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 237846
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "d3644b7099e163c3573d6ca8d1ad5d4fadc2a4f8143869082df613c9b65cb658",
+          "elapsedMs": 239757
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "61b6601e4c6e545c40d6175c8d779d27a0b392e3618860f23d184d781481f709",
+          "replySha256": "68b02b1cdcaaac8540daec05baf6eebaf49321e134a5850960140ac706ee6c64",
+          "elapsedMs": 242040
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "b6d2d3981dbb0d3d25097915efdffc31771146dff15d3bc46db2d78d8efc3019",
+          "replySha256": "895bff9f9562eebb182a4ecb3c91178becc0721807ac497627e0b879ebb0d983",
+          "elapsedMs": 244070
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f0f5495c68405ba5f73285149799c444ef3d14e238f9797add19db0de457fb6d",
+          "replySha256": "051b12e89077c33569797e6fa5aee708f03b14fbe281ca0d0e8436dc6bac895f",
+          "elapsedMs": 246085
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f0f5495c68405ba5f73285149799c444ef3d14e238f9797add19db0de457fb6d",
+          "replySha256": "197f97352c94e94674ad780b877b1cb6f2a74685c190403553906a5ee49d8240",
+          "elapsedMs": 248188
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "e2ebc4c917960f78754fdf8719c782123989038ade36a66fc31ab3b6974883b8",
+          "replySha256": "bc5520536c8e5f219084ee78b30a3514fe0ad0e50f7ced974f2b5bdeed9ff1b7",
+          "elapsedMs": 250303
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "b6d2d3981dbb0d3d25097915efdffc31771146dff15d3bc46db2d78d8efc3019",
+          "replySha256": "566f968c83a14cb835d9dee19bea78f0136025493ce1c3de1184ab8ebb1f77ff",
+          "elapsedMs": 252419
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "recovered-receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "e2ebc4c917960f78754fdf8719c782123989038ade36a66fc31ab3b6974883b8",
+          "replySha256": "bc5520536c8e5f219084ee78b30a3514fe0ad0e50f7ced974f2b5bdeed9ff1b7",
+          "elapsedMs": 321605
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "48b457246321423aeb72e233d98ebd837947444fdd32b05499aca880fa62aeac",
+          "replySha256": "172724eab8d57c4d6f4c66b326187b33228fffb6bd3ad81ffb2f98fc6c065cae",
+          "elapsedMs": 323703
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "new-image-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "31b086c4d7b0115c0a1d958c2ccd10148e6180c851048f740cb5932dcf9fcc02",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 325802
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "new-image",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "31b086c4d7b0115c0a1d958c2ccd10148e6180c851048f740cb5932dcf9fcc02",
+          "replySha256": "84fad4288b8666410da09be98dc34bd329f45556d2551f1215391881724acc5e",
+          "elapsedMs": 327905
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 330002
+        },
+        {
+          "callId": "synthetic_cli_read_16",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "d9403e70cb33eb1dce005194dcb3beec10133fd1b5b421c34d898faf69c7d30d",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 332100
+        },
+        {
+          "callId": "synthetic_cli_read_17",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "b6d2d3981dbb0d3d25097915efdffc31771146dff15d3bc46db2d78d8efc3019",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 334236
+        }
+      ],
+      "state": {
+        "oldScenesPreserved": true,
+        "preferredTakePreserved": true,
+        "mediaHashesPreserved": true,
+        "otherFramesPreserved": true,
+        "newSceneId": "scene_6e37f6a66383"
+      },
+      "packageDigest": "65f78a2306b3ad49ea2d63026a88fe1cfb1bc2e37ea8b7c7ed68f934aa34c21e",
+      "approvedDigest": "519d80de128549e0a9509fa22eeb03e34343848b5973eaf07849a38b745f68cd",
+      "noWritesBeforeApproval": true,
+      "fullBrowserRestartVerified": true,
+      "explicitNewFrameGrant": true,
+      "revoked": true,
+      "productionEntrySha256": "5ba3dda590fada14ddcdd61f466fe1e6937fc6346d111ad3cf92b9f8901400c5",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "modelProvider": "loopback synthetic Chat Completions SSE; no external AI provider",
+      "warning": null,
+      "rawEvidenceSha256": "38b0fa9a086c77a37ded6c068d35ff2975546a6d0cb85d970796c6b8242d430b",
+      "independentValidatorExitCode": 0,
+      "elapsedMsMeaning": "Cumulative workflow elapsed time from the actual run, including manual pairing/restart waits; not individual tool latency or verifier replay timing."
+    },
+    {
+      "kind": "actual-installed-CLI-signed-native",
+      "origin": "http://localhost:4173",
+      "cliVersion": "0.73.0",
+      "exitCode": 0,
+      "scopeOfEvidence": "Post-review-fix production source.",
+      "actualCallCount": 17,
+      "callAudit": [
+        {
+          "callId": "synthetic_cli_read_1",
+          "step": "connected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "dcfb431457b073aefbce36310c714d9e693f740e382bd466842b1fe364ccec1a",
+          "elapsedMs": 93029
+        },
+        {
+          "callId": "synthetic_cli_read_2",
+          "step": "source",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "f1fc9f07117c6ae213c9430a3ec8d8eab810597e9cf399ec2c9df6909f2a73c8",
+          "replySha256": "0cea57ad4591313f6c5d767699474d003375f82f575e76ba70319b77e1a3c5ea",
+          "elapsedMs": 95138
+        },
+        {
+          "callId": "synthetic_cli_read_3",
+          "step": "permission-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "ac16e8dbfc79f0a2c1691ef1906a4b195a2c40f43fa31d9fdf554e8a51ac7ce5",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 97314
+        },
+        {
+          "callId": "synthetic_cli_read_4",
+          "step": "permissions-enabled",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "d3644b7099e163c3573d6ca8d1ad5d4fadc2a4f8143869082df613c9b65cb658",
+          "elapsedMs": 99339
+        },
+        {
+          "callId": "synthetic_cli_read_5",
+          "step": "preview",
+          "tool": "krakinai_preview_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1acdab9366f8149e53ea528994edadb2bdda6f92fd16bb4099e961f4724c8f7c",
+          "replySha256": "64e00f91ef1d54c505f8872ccc626e25757b7471f55a4d532990b9622e821001",
+          "elapsedMs": 102320
+        },
+        {
+          "callId": "synthetic_cli_read_6",
+          "step": "submitted",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "ac16e8dbfc79f0a2c1691ef1906a4b195a2c40f43fa31d9fdf554e8a51ac7ce5",
+          "replySha256": "03f307db0f35304effc9066418ed038eb442ae838fa04e6dc1529d3bce9a9632",
+          "elapsedMs": 103637
+        },
+        {
+          "callId": "synthetic_cli_read_7",
+          "step": "pending",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "a23a9ae6ee14bc5f1689f6378653b9865c07556d3e3c9536ca9340c4db3c94cc",
+          "replySha256": "068a84737c36c529f91d6ed7cd3283eff0354e8451b68cb57ed66e6f71e7579f",
+          "elapsedMs": 105730
+        },
+        {
+          "callId": "synthetic_cli_read_8",
+          "step": "applied",
+          "tool": "krakinai_get_proposal_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "a23a9ae6ee14bc5f1689f6378653b9865c07556d3e3c9536ca9340c4db3c94cc",
+          "replySha256": "e7b1b9ff07d825badd81163b4149c7f3ed651f8c32416208bfcc5f27e3a565b7",
+          "elapsedMs": 107812
+        },
+        {
+          "callId": "synthetic_cli_read_9",
+          "step": "receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1779bc672de919bccd716d4a75bdaaa11ab9c21d3f2d8a5934ecaa95d5917b43",
+          "replySha256": "456ee5c86dec3272b4f49e98d9ccc0336b7e08840b5c940414242bb284ffc816",
+          "elapsedMs": 109866
+        },
+        {
+          "callId": "synthetic_cli_read_10",
+          "step": "retried",
+          "tool": "krakinai_submit_change_set",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "ac16e8dbfc79f0a2c1691ef1906a4b195a2c40f43fa31d9fdf554e8a51ac7ce5",
+          "replySha256": "32b24286f1732f5b4fd8e6d5e95efb5aa03852de771d18d95b49be1cb2003557",
+          "elapsedMs": 111970
+        },
+        {
+          "callId": "synthetic_cli_read_11",
+          "step": "recovered-receipt",
+          "tool": "krakinai_get_import_receipt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "1779bc672de919bccd716d4a75bdaaa11ab9c21d3f2d8a5934ecaa95d5917b43",
+          "replySha256": "456ee5c86dec3272b4f49e98d9ccc0336b7e08840b5c940414242bb284ffc816",
+          "elapsedMs": 167395
+        },
+        {
+          "callId": "synthetic_cli_read_12",
+          "step": "new-metadata",
+          "tool": "krakinai_get_scene",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "686c8b6e1759fee389a781eaadf79a66c2f047f34372737045be27c9ba4434cf",
+          "replySha256": "ec40838568bff848ab1d5b3a7dbf7ac7738114d8d3d0576a6e269f2281ad4eed",
+          "elapsedMs": 169469
+        },
+        {
+          "callId": "synthetic_cli_read_13",
+          "step": "new-image-denied",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED",
+          "argumentsSha256": "27321e560133607869701494d57e75ca33316967c6899cedd047d2bba40235fe",
+          "replySha256": "d200c503cfa58be23b56caea409723c7825258a4f22a13bea5cd3dd8bda514eb",
+          "elapsedMs": 171627
+        },
+        {
+          "callId": "synthetic_cli_read_14",
+          "step": "new-image",
+          "tool": "krakinai_get_generation_prompt",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "27321e560133607869701494d57e75ca33316967c6899cedd047d2bba40235fe",
+          "replySha256": "66a9a810f6cfbd5bff6338d1a0f1492f6a8513a8a949e7eb579910e79c9bf0ad",
+          "elapsedMs": 173701
+        },
+        {
+          "callId": "synthetic_cli_read_15",
+          "step": "disconnected",
+          "tool": "krakinai_connection_status",
+          "ok": true,
+          "errorCode": null,
+          "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+          "replySha256": "4e51fa165a2698731c220536db918aa1298f3437827faf82162de71fbd2f231a",
+          "elapsedMs": 175803
+        },
+        {
+          "callId": "synthetic_cli_read_16",
+          "step": "read-denied",
+          "tool": "krakinai_get_scene",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "d9403e70cb33eb1dce005194dcb3beec10133fd1b5b421c34d898faf69c7d30d",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 177882
+        },
+        {
+          "callId": "synthetic_cli_read_17",
+          "step": "submit-denied",
+          "tool": "krakinai_submit_change_set",
+          "ok": false,
+          "errorCode": "PAIRING_REQUIRED",
+          "argumentsSha256": "ac16e8dbfc79f0a2c1691ef1906a4b195a2c40f43fa31d9fdf554e8a51ac7ce5",
+          "replySha256": "9e4262dffd2b4f0cb2ca2aa458f068fe8ca98ad23c7de5e82bd3e5977374ba26",
+          "elapsedMs": 180002
+        }
+      ],
+      "state": {
+        "oldScenesPreserved": true,
+        "preferredTakePreserved": true,
+        "mediaHashesPreserved": true,
+        "otherFramesPreserved": true,
+        "newSceneId": "scene_561a9043b00b"
+      },
+      "packageDigest": "188a4063a1caf9b8c08629352c63e21d88eaf5043fa3a6a54fa427d0765b761e",
+      "approvedDigest": "3fb1b7cc7edad1244d0128e08e19ed13dba1acb56ea53ced76e8456c3b516793",
+      "noWritesBeforeApproval": true,
+      "fullBrowserRestartVerified": true,
+      "explicitNewFrameGrant": true,
+      "revoked": true,
+      "productionEntrySha256": "5ba3dda590fada14ddcdd61f466fe1e6937fc6346d111ad3cf92b9f8901400c5",
+      "cliExecutableSha256": "4ebe7095f789c08fd431dee18156e6f7d1b448db9a4091586db25e5b52aa3ad5",
+      "modelProvider": "loopback synthetic Chat Completions SSE; no external AI provider",
+      "warning": null,
+      "rawEvidenceSha256": "63470534cfa1499795059a5aaeda02151ab6d1b407ef38c80ba1abb9b1bba48d",
+      "independentValidatorExitCode": 0,
+      "elapsedMsMeaning": "Cumulative workflow elapsed time from the actual run, including manual pairing/restart waits; not individual tool latency or verifier replay timing."
+    }
+  ],
+  "archives": [
+    {
+      "file": "full.zip",
+      "sha256": "b2d2afbc8cc0decee1c6af9dfbd39d0150dd70a3e2ff1fb9d104388d8e559c78",
+      "entries": 3,
+      "compressedBytes": 13675,
+      "uncompressedBytes": 130675,
+      "verified": true,
+      "independentReader": "Python zipfile: CRC, SHA-256, original media and exact UTF-8 prompts",
+      "exitCode": 0
+    },
+    {
+      "file": "project.zip",
+      "sha256": "a6a9417a9cb497229023b6761f4eec22207acd891d5a84e8a8565b2323a00fc5",
+      "entries": 31,
+      "compressedBytes": 48586,
+      "uncompressedBytes": 214897,
+      "verified": true,
+      "independentReader": "Python zipfile: CRC, SHA-256, original media and exact UTF-8 prompts",
+      "exitCode": 0
+    },
+    {
+      "file": "flow.zip",
+      "sha256": "1052a7bf2409e25739d001ed659612848b3dfbbff63e9d89c91167802aac8964",
+      "entries": 8,
+      "compressedBytes": 8261,
+      "uncompressedBytes": 19055,
+      "verified": true,
+      "independentReader": "Python zipfile; CRC, SHA-256, original media and exact UTF-8 prompt checks",
+      "exitCode": 0
+    }
+  ],
+  "screenshots": [
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-1440-dpr1.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 924,
+      "bytes": 105491,
+      "sha256": "0f85ccbd9a55d45a2aeb1177ca54b70d472fb6bb204e1392a5bba04e359e6d7f"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-1440-dpr1.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 900,
+      "bytes": 139917,
+      "sha256": "cf216551f38dd61e2d2fb743ad63ce47148c3fe7296baf34132dc2ee2a255dee"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-768-dpr1.png",
+      "viewport": {
+        "width": 768,
+        "height": 1024,
+        "dpr": 1
+      },
+      "pixelWidth": 768,
+      "pixelHeight": 1522,
+      "bytes": 119264,
+      "sha256": "6ccbae98897d35c70005a002a4bb57f881749176d7c0b4a960ec90205061ac08"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-768-dpr1.png",
+      "viewport": {
+        "width": 768,
+        "height": 1024,
+        "dpr": 1
+      },
+      "pixelWidth": 768,
+      "pixelHeight": 1355,
+      "bytes": 119146,
+      "sha256": "42521950b275c0348899e6db7913968bb01cfe01802e2cb3ad98e20f606a67db"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-390-dpr1.png",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "pixelWidth": 390,
+      "pixelHeight": 1662,
+      "bytes": 74058,
+      "sha256": "05c16ed835739f632f898d468f054582c323c6bf1fa7ae3b5c88e0ec9f283d15"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-390-dpr1.png",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "pixelWidth": 390,
+      "pixelHeight": 1391,
+      "bytes": 75289,
+      "sha256": "9761993a0dd917b670ac086fe196d96aaac6a6c4ae82490ff0c584ee73c54bdb"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-720-dpr2.png",
+      "viewport": {
+        "width": 720,
+        "height": 450,
+        "dpr": 2
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 2860,
+      "bytes": 237816,
+      "sha256": "9df6b3413aa6766f308556a3191dd1d1fd8a5307bd50aa7c63bb9539d19c3776"
+    },
+    {
+      "kind": "before",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-720-dpr2.png",
+      "viewport": {
+        "width": 720,
+        "height": 450,
+        "dpr": 2
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 2252,
+      "bytes": 201143,
+      "sha256": "57dd4ed9f72f48162af6dba96c72024edc6fedc7de4ed4913d5bc32e48f7fc9f"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-1440-dpr1.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 924,
+      "bytes": 108142,
+      "sha256": "81f1887f18524c7e19fa17c24e2c4ff6daf6937e0a31d2811fa862c8fa69f48a"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-390-dpr1.png",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "pixelWidth": 390,
+      "pixelHeight": 1514,
+      "bytes": 74889,
+      "sha256": "d60a7e53861670dfb2c6702947cb419e75a8405770cf211062f6fa03ff463143"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-720-dpr2.png",
+      "viewport": {
+        "width": 720,
+        "height": 450,
+        "dpr": 2
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 2800,
+      "bytes": 237153,
+      "sha256": "a83b84b29588e24a8400756fdb3ff69a68f313884649a51628ebf6e99c7d4e75"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-768-dpr1.png",
+      "viewport": {
+        "width": 768,
+        "height": 1024,
+        "dpr": 1
+      },
+      "pixelWidth": 768,
+      "pixelHeight": 1476,
+      "bytes": 118829,
+      "sha256": "38b5de322bfbb735894d6d5525b63a3a3dd1538355d4513c04d4160ef7fd38e9"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-1440-dpr1.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 900,
+      "bytes": 117931,
+      "sha256": "9fd95425462f614357f6f06fa82ff9bfde8e68d7def1dbed59464ed417920d6d"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-390-dpr1.png",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "pixelWidth": 390,
+      "pixelHeight": 2341,
+      "bytes": 125193,
+      "sha256": "97fe1281abcb822e489c23549019fc8d88b13abe62ccd672f8279bf39f0a2031"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-720-dpr2.png",
+      "viewport": {
+        "width": 720,
+        "height": 450,
+        "dpr": 2
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 3784,
+      "bytes": 372745,
+      "sha256": "6a387eb3077ce1a197a5455ef3e63c9a94e76caf3845f57f54b0bfef2b0bc065"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-768-dpr1.png",
+      "viewport": {
+        "width": 768,
+        "height": 1024,
+        "dpr": 1
+      },
+      "pixelWidth": 768,
+      "pixelHeight": 2210,
+      "bytes": 173036,
+      "sha256": "81034922f36fc9733eda31d2dc856517bd159dfc8db19fbeabde92465b4086e0"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-1440-dpr1.png",
+      "viewport": {
+        "width": 1440,
+        "height": 900,
+        "dpr": 1
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 900,
+      "bytes": 124453,
+      "sha256": "5e5da7b9474268179dd5c1519fba1d8359825377f2521d101e489328677caac2"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-390-dpr1.png",
+      "viewport": {
+        "width": 390,
+        "height": 844,
+        "dpr": 1
+      },
+      "pixelWidth": 390,
+      "pixelHeight": 1272,
+      "bytes": 75744,
+      "sha256": "7ef3bd3fd68c7b02ad1c0191de768cadd9ca989a4411249b866bdf9fbec6838f"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-720-dpr2.png",
+      "viewport": {
+        "width": 720,
+        "height": 450,
+        "dpr": 2
+      },
+      "pixelWidth": 1440,
+      "pixelHeight": 2126,
+      "bytes": 194437,
+      "sha256": "5f90c130058fbba99891228e62f546d7de032a69d6a7656d4f44f7f77c198fda"
+    },
+    {
+      "kind": "after",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-768-dpr1.png",
+      "viewport": {
+        "width": 768,
+        "height": 1024,
+        "dpr": 1
+      },
+      "pixelWidth": 768,
+      "pixelHeight": 1261,
+      "bytes": 119285,
+      "sha256": "90b3125073e900ecde6a1f22923239b5bbb6a7bfd03cac93915140c7c1b582e4"
+    }
+  ],
+  "hostedCi": {
+    "status": "not-run-uncommitted"
+  },
+  "pullRequest": null,
+  "sharedClients": {
+    "syntheticOnly": true,
+    "origin": "http://localhost:4173",
+    "installedDesktopClient": "codex-cli 0.166.0-alpha.5.1",
+    "installedDesktopExecutableSha256": "9cbcc600be53a3aa18c1d55b36b462ebd2844ac16e24b991654774b0819599d5",
+    "implementation": "actual installed Codex app-server / production persistent adapter / unchanged signed native launcher",
+    "callAudit": [
+      {
+        "client": "alpha",
+        "callId": "keyframe_alpha_source",
+        "tool": "krakinai_get_scene",
+        "argumentsSha256": "f1fc9f07117c6ae213c9430a3ec8d8eab810597e9cf399ec2c9df6909f2a73c8",
+        "responseSha256": "8deea7c381ab93ae4c79b0a552e31daabd40e8f8ee7dbed1ed4c8fcfd78567a2",
+        "ok": true
+      },
+      {
+        "client": "beta",
+        "callId": "keyframe_beta_before",
+        "tool": "krakinai_connection_status",
+        "argumentsSha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+        "responseSha256": "9652ec188ea1bf55bce75a87b71bd9a02e27367bdd28c3065559d9ed093a105e",
+        "ok": true
+      },
+      {
+        "client": "beta",
+        "callId": "keyframe_beta_after_alpha_left",
+        "tool": "krakinai_get_scene",
+        "argumentsSha256": "f1fc9f07117c6ae213c9430a3ec8d8eab810597e9cf399ec2c9df6909f2a73c8",
+        "responseSha256": "6d1a902dcc8c0009f88991bde95d5ac5d2d1b43eb018ba28863b5dcfe7a03566",
+        "ok": true
+      }
+    ],
+    "twoInitializedClients": true,
+    "oneClientDeparturePreservedAccess": true,
+    "lastClientLossRevokedBrowserAndStoppedRelay": true,
+    "libraryUnchanged": true,
+    "mediaHashes": [
+      {
+        "id": "blocking-media",
+        "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+      }
+    ],
+    "modelFixtureRequests": 6,
+    "blockedExternalAttempts": 4,
+    "blockedDestinations": [
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "api.github.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      },
+      {
+        "method": "CONNECT",
+        "hostname": "chatgpt.com",
+        "port": "443",
+        "blocked": true,
+        "forwarded": false
+      }
+    ],
+    "networkObservationLimit": "Only fixture/proxy traffic observed; no system-wide direct-egress capture.",
+    "launcherSha256": "a19be3e0a8392f605dbf9ec1dbaaef15e4a374d4ec8fd2b19ce8011e9554c8e3",
+    "exitCode": 0,
+    "rawEvidenceSha256": "260639246d31674c14e00c14f68c937bfc175a38de77f9d905224e7e90c28a56"
+  },
+  "signedCandidate": {
+    "effectiveWindowsPowerShellPolicy": "AllSigned",
+    "signatures": [
+      {
+        "file": "Krakinai.BridgeLauncher.exe",
+        "status": "Valid",
+        "sha256": "A19BE3E0A8392F605DBF9EC1DBAAEF15E4A374D4EC8FD2B19CE8011E9554C8E3"
+      },
+      {
+        "file": "bridge\\native\\verify.ps1",
+        "status": "Valid",
+        "sha256": "9DA3E09687E6D95761513BE7E61C8B07B6D114924D8852EA407A5FB694B97390"
+      }
+    ],
+    "productionEntries": [
+      {
+        "file": "crypto.mjs",
+        "sha256": "779320f98815ff61e491f8cd71752e15e67d3c3a1405dab94fb7c5eaa99c2384",
+        "matchesFinalBuiltDist": true
+      },
+      {
+        "file": "krakinai-managed-host.mjs",
+        "sha256": "7560de95f91653da519d74d0dc8a0da9633346239c25dddefa8355dbf35be248",
+        "matchesFinalBuiltDist": true
+      },
+      {
+        "file": "krakinai-mcp.mjs",
+        "sha256": "5ba3dda590fada14ddcdd61f466fe1e6937fc6346d111ad3cf92b9f8901400c5",
+        "matchesFinalBuiltDist": true
+      },
+      {
+        "file": "krakinai-stdio-adapter.mjs",
+        "sha256": "7607baca052652cea21a565e232872d58adadb1b9e3bc825747370444d8ad991",
+        "matchesFinalBuiltDist": true
+      },
+      {
+        "file": "protocol.mjs",
+        "sha256": "761682208077b809658bd73dd4eabe85cd2244fc60f20ddd82efc90ed1cd6f97",
+        "matchesFinalBuiltDist": true
+      }
+    ]
+  },
+  "legacyBaseline": {
+    "fixture": "src/__tests__/fixtures/keyframe-legacy-baseline.json",
+    "fileSha256": "8c9890ade887d877ec795a5bac2c31ee41a55490c5740aa656ab3a8f3a26f7b8",
+    "covered": "Frozen pre-C B outputs/documents/v1-v5 schemas/actual v5 receipt and replay; keyframeLegacy.test.ts passed in final app suite."
+  },
+  "knownFailedAttempts": [
+    {
+      "case": "Task14 browser attempt1",
+      "passed": 10,
+      "failed": 8
+    },
+    {
+      "case": "Task14 browser attempt2",
+      "passed": 12,
+      "failed": 6
+    },
+    {
+      "case": "Task14 layout attempt3",
+      "passed": 2,
+      "failed": 4
+    },
+    {
+      "case": "Independent review regressions before fixes",
+      "passed": 0,
+      "failed": 7
+    },
+    {
+      "case": "Bridge full suite initial",
+      "passed": 73,
+      "failed": 1,
+      "cause": "Old expected schema list omitted new v6; exact list corrected, complete suite passed."
+    },
+    {
+      "case": "Launcher first run",
+      "passed": 25,
+      "failed": 1,
+      "cause": "SocketException: port address already in use. No production edit; full rerun38 passed."
+    },
+    {
+      "case": "Localhost native attempt1",
+      "result": "failed",
+      "cause": "First real status returned legacy/empty scope; zero proposals or scene writes."
+    },
+    {
+      "case": "Localhost native attempt2",
+      "result": "failed",
+      "actualCallsPassedBeforeFailure": 10,
+      "cause": "One valid synthetic scene saved; restart harness looked for bridge address on Home route. No overall pass claimed."
+    },
+    {
+      "case": "Complete browser attempt",
+      "passed": 235,
+      "failed": 7,
+      "skipped": 18,
+      "cause": "Old v5-only schema lists, renamed Prompt panel, collapsed legacy images and label-vs-role locator. All seven passed corrected recheck."
+    },
+    {
+      "case": "First focused recheck sharing full-run server",
+      "passed": 14,
+      "failed": 5,
+      "cause": "Full runner shut down its shared server. Owned-server rerun21/21 passed."
+    }
+  ],
+  "limitsAndRisks": [
+    "Actual browser/native runs use isolated synthetic profiles; real localhost:5173 and live settings excluded.",
+    "No external media generation/Flow automation tested. Account/region/model guidance remains manual and can become stale.",
+    "Cooperating origin Web Locks protect app writers; hostile same-origin code/DevTools/compromised OS is outside that boundary.",
+    "SHA-256 backup checks detect payload corruption, not archive authenticity. Large legacy file native hashing memory remains unmeasured; no ZIP64 maximum-capacity certification.",
+    "Windows clipboard readback normalizes LF to CRLF; exact writeText input and UTF-8 downloads are checked separately.",
+    "Chromium local acceptance does not certify every browser, OS, assistive technology or external provider.",
+    "Shared installed client attempted four denied CONNECTs; no forwarded requests observed, but no system-wide direct-egress capture.",
+    "Profiles, raw logs, ZIPs, keys, certificates and local settings remain ignored; no QA file cleanup authorized or performed."
+  ],
+  "documentation": {
+    "checkedLocalLinks": 78,
+    "checkedLocalAnchors": 8,
+    "failures": 0
+  },
+  "nativeHarnessObservations": {
+    "ownedNodePeakWorkingSetBytes": 68567040,
+    "eightClientNativePeakWorkingSetBytes": 85803008,
+    "scope": "Synthetic launcher harness samples; not whole-app/large-archive peak memory."
+  },
+  "localAutomatedBrowser": {
+    "syntheticOnly": true,
+    "reconciledBy": "exact file/complete title path/project key; no duplicate addition",
+    "counts": {
+      "tests": 260,
+      "passed": 243,
+      "failed": 0,
+      "skipped": 17
+    },
+    "completeAttempt": {
+      "stats": {
+        "startTime": "2026-11-03T20:48:22.184Z",
+        "duration": 1192007.8790000002,
+        "expected": 235,
+        "skipped": 18,
+        "unexpected": 7,
+        "flaky": 0
+      },
+      "exitCode": 1,
+      "sha256": "8277a2544dd94cba3a4c843877ba80ef0231cdea1eee436ce87c60100d2e4e61"
+    },
+    "correctedRecheck": {
+      "stats": {
+        "startTime": "2026-11-03T21:09:31.190Z",
+        "duration": 123458.277,
+        "expected": 21,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "exitCode": 0,
+      "sha256": "be8f248826b37bfdb2333291967bfa1e35d1d7e37d2ee0102708dadd59a8d9ab"
+    },
+    "cases": [
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "permission workspace bulk selection covers hidden pages, preserves search selections and reflows"
+        ],
+        "name": "permission workspace bulk selection covers hidden pages, preserves search selections and reflows",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "oversized global and Full Access selections fail without a partial grant"
+        ],
+        "name": "oversized global and Full Access selections fail without a partial grant",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "actual SDK observes no draft grants, then all 65 matches only after one explicit Apply"
+        ],
+        "name": "actual SDK observes no draft grants, then all 65 matches only after one explicit Apply",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "proposal arrival preserves permission focus and reviewed receipt grants are visible and revocable"
+        ],
+        "name": "proposal arrival preserves permission focus and reviewed receipt grants are visible and revocable",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "permissions remain readable at 200-percent-equivalent reflow with DPR2"
+        ],
+        "name": "permissions remain readable at 200-percent-equivalent reflow with DPR2",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ai-connections-workspace.spec.mjs",
+        "titlePath": [
+          "ai-connections-workspace.spec.mjs",
+          "delayed connection startup locks permission changes before the native challenge arrives"
+        ],
+        "name": "delayed connection startup locks permission changes before the native challenge arrives",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking keyboard edits preserve saved records and copy/download complete canonical outputs"
+        ],
+        "name": "blocking keyboard edits preserve saved records and copy/download complete canonical outputs",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking preflight blocks assembly until the exact stale binding is explicitly repaired"
+        ],
+        "name": "blocking preflight blocks assembly until the exact stale binding is explicitly repaired",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "manual output choice creates one immutable take and retains its exact unverified text"
+        ],
+        "name": "manual output choice creates one immutable take and retains its exact unverified text",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "legacy Character scene behavior and output bytes remain unchanged without blocking"
+        ],
+        "name": "legacy Character scene behavior and output bytes remain unchanged without blocking",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "touch blocking authoring",
+          "places a participant with taps and saves only the explicit draft"
+        ],
+        "name": "places a participant with taps and saves only the explicit draft",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking authoring 1440 dpr1",
+          "board, forms, focus and long-text reflow"
+        ],
+        "name": "board, forms, focus and long-text reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking authoring 768 dpr1",
+          "board, forms, focus and long-text reflow"
+        ],
+        "name": "board, forms, focus and long-text reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking authoring 390 dpr1",
+          "board, forms, focus and long-text reflow"
+        ],
+        "name": "board, forms, focus and long-text reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-authoring.spec.mjs",
+        "titlePath": [
+          "blocking-authoring.spec.mjs",
+          "blocking authoring 720 dpr2",
+          "board, forms, focus and long-text reflow"
+        ],
+        "name": "board, forms, focus and long-text reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "saved blocking and captured comparisons are read-only, including filtered selection and legacy frames"
+        ],
+        "name": "saved blocking and captured comparisons are read-only, including filtered selection and legacy frames",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "a reordered project marks a captured pair stale instead of retargeting saved take IDs"
+        ],
+        "name": "a reordered project marks a captured pair stale instead of retargeting saved take IDs",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "managed copy keeps exact source context and recovers dirty blocking after browser Back/Forward"
+        ],
+        "name": "managed copy keeps exact source context and recovers dirty blocking after browser Back/Forward",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "stale draft save retains local blocking text and the other tab record"
+        ],
+        "name": "stale draft save retains local blocking text and the other tab record",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "saved blocking 1440 dpr1",
+          "selected-take board and advisory pair reflow"
+        ],
+        "name": "selected-take board and advisory pair reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "saved blocking 768 dpr1",
+          "selected-take board and advisory pair reflow"
+        ],
+        "name": "selected-take board and advisory pair reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "saved blocking 390 dpr1",
+          "selected-take board and advisory pair reflow"
+        ],
+        "name": "selected-take board and advisory pair reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-continuity.spec.mjs",
+        "titlePath": [
+          "blocking-continuity.spec.mjs",
+          "saved blocking 720 dpr2",
+          "selected-take board and advisory pair reflow"
+        ],
+        "name": "selected-take board and advisory pair reflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-conversion.spec.mjs",
+        "titlePath": [
+          "blocking-conversion.spec.mjs",
+          "Direct Prompt keeps incomplete Blocking in a v5 planning download and resumes it without database writes"
+        ],
+        "name": "Direct Prompt keeps incomplete Blocking in a v5 planning download and resumes it without database writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: exact proposal, no preapproval writes, browser approval, immutable receipt/replay and revocation"
+        ],
+        "name": "Blocking SDK: exact proposal, no preapproval writes, browser approval, immutable receipt/replay and revocation",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: explicit permission denial, stale source and a foreign write survive failed browser apply"
+        ],
+        "name": "Blocking SDK: explicit permission denial, stale source and a foreign write survive failed browser apply",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: quota rejects an already reviewed batch and preserves current records"
+        ],
+        "name": "Blocking SDK: quota rejects an already reviewed batch and preserves current records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: order rejects an already reviewed batch and preserves current records"
+        ],
+        "name": "Blocking SDK: order rejects an already reviewed batch and preserves current records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: scope rejects an already reviewed batch and preserves current records"
+        ],
+        "name": "Blocking SDK: scope rejects an already reviewed batch and preserves current records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-mcp.spec.mjs",
+        "titlePath": [
+          "blocking-mcp.spec.mjs",
+          "Blocking SDK: native acceptance review controls resolve a real inherited manual buffer before atomic save"
+        ],
+        "name": "Blocking SDK: native acceptance review controls resolve a real inherited manual buffer before atomic save",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-native.spec.mjs",
+        "titlePath": [
+          "blocking-native.spec.mjs",
+          "Blocking actual installed CLI and signed Windows pairing at http://127.0.0.1:4173"
+        ],
+        "name": "Blocking actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-native.spec.mjs",
+        "titlePath": [
+          "blocking-native.spec.mjs",
+          "Blocking actual installed CLI and signed Windows pairing at http://localhost:4173"
+        ],
+        "name": "Blocking actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-shared-native.spec.mjs",
+        "titlePath": [
+          "blocking-shared-native.spec.mjs",
+          "Blocking shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing"
+        ],
+        "name": "Blocking shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-upgrade.spec.mjs",
+        "titlePath": [
+          "blocking-upgrade.spec.mjs",
+          "explicit header upgrade preserves real legacy records, late old-tab writes and media hashes"
+        ],
+        "name": "explicit header upgrade preserves real legacy records, late old-tab writes and media hashes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "blocking-upgrade.spec.mjs",
+        "titlePath": [
+          "blocking-upgrade.spec.mjs",
+          "Cancel before consent and during blocked enable leaves version 1 writable and never upgrades later"
+        ],
+        "name": "Cancel before consent and during blocked enable leaves version 1 writable and never upgrades later",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-candidate-review.spec.mjs",
+        "titlePath": [
+          "change-set-candidate-review.spec.mjs",
+          "deferred candidate review after reload exposes exact content before creating one unreviewed asset"
+        ],
+        "name": "deferred candidate review after reload exposes exact content before creating one unreviewed asset",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a shared scene revision changes only the explicitly chosen project and shot"
+        ],
+        "name": "a shared scene revision changes only the explicitly chosen project and shot",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a pending original is linked later as a new immutable version without replacing its pending snapshot"
+        ],
+        "name": "a pending original is linked later as a new immutable version without replacing its pending snapshot",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "200 percent desktop reflow retains readable controls at 720 CSS pixels and DPR 2"
+        ],
+        "name": "200 percent desktop reflow retains readable controls at 720 CSS pixels and DPR 2",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "append to an existing project preserves every prior shot,scene,draft and unrelated project"
+        ],
+        "name": "append to an existing project preserves every prior shot,scene,draft and unrelated project",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "revision,restore and alternate take keep old snapshots and require separate preference and status approval"
+        ],
+        "name": "revision,restore and alternate take keep old snapshots and require separate preference and status approval",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "mismatched project,shot and source scene blocks the complete batch"
+        ],
+        "name": "mismatched project,shot and source scene blocks the complete batch",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a second tab write invalidates an approved preview without losing the foreign write"
+        ],
+        "name": "a second tab write invalidates an approved preview without losing the foreign write",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a quota failure after queued writes rolls back the entire import"
+        ],
+        "name": "a quota failure after queued writes rolls back the entire import",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a abort failure after queued writes rolls back the entire import"
+        ],
+        "name": "a abort failure after queued writes rolls back the entire import",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "current media disappearance or MIME metadata mismatch blocks the batch without fabricated replacements"
+        ],
+        "name": "current media disappearance or MIME metadata mismatch blocks the batch without fabricated replacements",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "duplicate character and camera proposals need explicit reuse or separate-create acknowledgement"
+        ],
+        "name": "duplicate character and camera proposals need explicit reuse or separate-create acknowledgement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "a JSON file imports exact text and preserves it through clipboard,TXT and selected-take project ZIP"
+        ],
+        "name": "a JSON file imports exact text and preserves it through clipboard,TXT and selected-take project ZIP",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "context export remains read-only and independently protects full prompts,identity,notes and filenames"
+        ],
+        "name": "context export remains read-only and independently protects full prompts,identity,notes and filenames",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "maximum operation count and long exact prompt previews remain collapsed,scrollable and keyboard accessible"
+        ],
+        "name": "maximum operation count and long exact prompt previews remain collapsed,scrollable and keyboard accessible",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-regressions.spec.mjs",
+        "titlePath": [
+          "change-set-regressions.spec.mjs",
+          "full backup restores receipts,candidates,scenes and media hashes,and replays after a whole browser restart"
+        ],
+        "name": "full backup restores receipts,candidates,scenes and media hashes,and replays after a whole browser restart",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "titlePath": [
+          "change-set-screenshots.spec.mjs",
+          "change-set after workspace screenshots 1440"
+        ],
+        "name": "change-set after workspace screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "titlePath": [
+          "change-set-screenshots.spec.mjs",
+          "change-set after workspace screenshots 1366"
+        ],
+        "name": "change-set after workspace screenshots 1366",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "titlePath": [
+          "change-set-screenshots.spec.mjs",
+          "change-set after workspace screenshots 768"
+        ],
+        "name": "change-set after workspace screenshots 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set-screenshots.spec.mjs",
+        "titlePath": [
+          "change-set-screenshots.spec.mjs",
+          "change-set after workspace screenshots 390"
+        ],
+        "name": "change-set after workspace screenshots 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "titlePath": [
+          "change-set.spec.mjs",
+          "canonical package preview and cancel do not write or install proposed assets"
+        ],
+        "name": "canonical package preview and cancel do not write or install proposed assets",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "change-set.spec.mjs",
+        "titlePath": [
+          "change-set.spec.mjs",
+          "MIDORI creates exactly fifteen ordered shots,60seconds,types2/9/4 and pending4,then replays without duplication"
+        ],
+        "name": "MIDORI creates exactly fifteen ordered shots,60seconds,types2/9/4 and pending4,then replays without duplication",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "titlePath": [
+          "cinematography-screenshots.spec.mjs",
+          "cinematography after responsive screenshots 1440"
+        ],
+        "name": "cinematography after responsive screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "titlePath": [
+          "cinematography-screenshots.spec.mjs",
+          "cinematography after responsive screenshots 768"
+        ],
+        "name": "cinematography after responsive screenshots 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography-screenshots.spec.mjs",
+        "titlePath": [
+          "cinematography-screenshots.spec.mjs",
+          "cinematography after responsive screenshots 390"
+        ],
+        "name": "cinematography after responsive screenshots 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners"
+        ],
+        "name": "explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets"
+        ],
+        "name": "composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds"
+        ],
+        "name": "explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "source graphics and footage use editing choices and retain original-media assembly safeguards"
+        ],
+        "name": "source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media"
+        ],
+        "name": "complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent"
+        ],
+        "name": "core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "library-first composition previews the existing fallback source draft before updating it"
+        ],
+        "name": "library-first composition previews the existing fallback source draft before updating it",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "cinematography.spec.mjs",
+        "titlePath": [
+          "cinematography.spec.mjs",
+          "manual scene-only Camera survives composing again and Reset without losing its authored text"
+        ],
+        "name": "manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "focused continuity views inspect frozen records and restore exact return context without writes"
+        ],
+        "name": "focused continuity views inspect frozen records and restore exact return context without writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "dirty desktop edits retain text on cancelled discard and only change explicit shot review metadata"
+        ],
+        "name": "dirty desktop edits retain text on cancelled discard and only change explicit shot review metadata",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "refresh, browser history and explicit global discard preserve exact context and source records"
+        ],
+        "name": "refresh, browser history and explicit global discard preserve exact context and source records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "frame Clear after browser Back requires explicit discard of a dirty wardrobe review"
+        ],
+        "name": "frame Clear after browser Back requires explicit discard of a dirty wardrobe review",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "continuity workspace keyboard, original preview and reflow at 1440"
+        ],
+        "name": "continuity workspace keyboard, original preview and reflow at 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "continuity workspace keyboard, original preview and reflow at 768"
+        ],
+        "name": "continuity workspace keyboard, original preview and reflow at 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "continuity workspace keyboard, original preview and reflow at 390"
+        ],
+        "name": "continuity workspace keyboard, original preview and reflow at 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "continuity workspace keyboard, original preview and reflow at 720"
+        ],
+        "name": "continuity workspace keyboard, original preview and reflow at 720",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "continuity-workspace.spec.mjs",
+        "titlePath": [
+          "continuity-workspace.spec.mjs",
+          "continuity at DPR2 reflow",
+          "outer and inner tab keys stay scoped at 720 CSS pixels"
+        ],
+        "name": "outer and inner tab keys stay scoped at 720 CSS pixels",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "titlePath": [
+          "dialogue-cover-screenshots.spec.mjs",
+          "dialogue and cover visual evidence 1440"
+        ],
+        "name": "dialogue and cover visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "titlePath": [
+          "dialogue-cover-screenshots.spec.mjs",
+          "dialogue and cover visual evidence 768"
+        ],
+        "name": "dialogue and cover visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "titlePath": [
+          "dialogue-cover-screenshots.spec.mjs",
+          "dialogue and cover visual evidence 390"
+        ],
+        "name": "dialogue and cover visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "titlePath": [
+          "dialogue-cover.spec.mjs",
+          "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes"
+        ],
+        "name": "delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "titlePath": [
+          "dialogue-cover.spec.mjs",
+          "custom-only, presets-only and clear performance keep spoken text exact and impose no default style"
+        ],
+        "name": "custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "titlePath": [
+          "dialogue-cover.spec.mjs",
+          "cover search, relationship filtering, staged Use and both cancellation paths preserve originals"
+        ],
+        "name": "cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "titlePath": [
+          "dialogue-cover.spec.mjs",
+          "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations"
+        ],
+        "name": "bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "dialogue-cover.spec.mjs",
+        "titlePath": [
+          "dialogue-cover.spec.mjs",
+          "overview cover editor supplies project context and missing covers stay explicit on Escape"
+        ],
+        "name": "overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "titlePath": [
+          "direct-prompt-screenshots.spec.mjs",
+          "direct prompt after responsive screenshots 1440"
+        ],
+        "name": "direct prompt after responsive screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "titlePath": [
+          "direct-prompt-screenshots.spec.mjs",
+          "direct prompt after responsive screenshots 1366"
+        ],
+        "name": "direct prompt after responsive screenshots 1366",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "titlePath": [
+          "direct-prompt-screenshots.spec.mjs",
+          "direct prompt after responsive screenshots 768"
+        ],
+        "name": "direct prompt after responsive screenshots 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "titlePath": [
+          "direct-prompt-screenshots.spec.mjs",
+          "direct prompt after responsive screenshots 390"
+        ],
+        "name": "direct prompt after responsive screenshots 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "a shared saved scene revises the explicit project being viewed, preserving its original project"
+        ],
+        "name": "a shared saved scene revises the explicit project being viewed, preserving its original project",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "managed recipe editor and reviewed output reject another tab changes without replacing its draft"
+        ],
+        "name": "managed recipe editor and reviewed output reject another tab changes without replacing its draft",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "direct prompt import saves without components and copies/downloads the exact complete original"
+        ],
+        "name": "direct prompt import saves without components and copies/downloads the exact complete original",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "storyboard revision comparison preserves original text, fifteen planned shots, and preferred take"
+        ],
+        "name": "storyboard revision comparison preserves original text, fifteen planned shots, and preferred take",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "restoring an earlier prompt creates version three and never silently selects it"
+        ],
+        "name": "restoring an earlier prompt creates version three and never silently selects it",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "saved direct scenes expose a distinct alternate take workflow"
+        ],
+        "name": "saved direct scenes expose a distinct alternate take workflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement"
+        ],
+        "name": "source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "stale browser tab cannot overwrite a changed direct draft"
+        ],
+        "name": "stale browser tab cannot overwrite a changed direct draft",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "quota and interrupted transactions roll back new scene and storyboard shot together"
+        ],
+        "name": "quota and interrupted transactions roll back new scene and storyboard shot together",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "same-request saves are idempotent and cross-project revisions are rejected"
+        ],
+        "name": "same-request saves are idempotent and cross-project revisions are rejected",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "mixed library backup restores exact versions and original media into another isolated browser context"
+        ],
+        "name": "mixed library backup restores exact versions and original media into another isolated browser context",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "project destination creates a new planned shot atomically without selecting it"
+        ],
+        "name": "project destination creates a new planned shot atomically without selecting it",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "mode changes and saved-draft reload preserve earlier recipe and direct data"
+        ],
+        "name": "mode changes and saved-draft reload preserve earlier recipe and direct data",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "legacy recipe output hashes remain identical to the captured master baseline"
+        ],
+        "name": "legacy recipe output hashes remain identical to the captured master baseline",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "direct-prompt.spec.mjs",
+        "titlePath": [
+          "direct-prompt.spec.mjs",
+          "direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible"
+        ],
+        "name": "direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "titlePath": [
+          "ensemble-mcp.spec.mjs",
+          "B2 sdk-synthetic: actual stdio SDK revision, Outfit, browser approval, receipt and revocation"
+        ],
+        "name": "B2 sdk-synthetic: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "titlePath": [
+          "ensemble-mcp.spec.mjs",
+          "B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation"
+        ],
+        "name": "B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-mcp.spec.mjs",
+        "titlePath": [
+          "ensemble-mcp.spec.mjs",
+          "B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation"
+        ],
+        "name": "B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "secondary wardrobe guides and historical templates survive production save, export and take comparison"
+        ],
+        "name": "secondary wardrobe guides and historical templates survive production save, export and take comparison",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "deferred Outfit candidates can be reviewed later and reused without duplicating records"
+        ],
+        "name": "deferred Outfit candidates can be reviewed later and reused without duplicating records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "a removed original blocks an ensemble narration draft and an explicit valid replacement permits assembly"
+        ],
+        "name": "a removed original blocks an ensemble narration draft and an explicit valid replacement permits assembly",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "shared-file participant reference associations have distinct accessible controls"
+        ],
+        "name": "shared-file participant reference associations have distinct accessible controls",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "mixed legacy, v2 and ensemble backups survive UI restore, browser restart, exact replay and Project Export"
+        ],
+        "name": "mixed legacy, v2 and ensemble backups survive UI restore, browser restart, exact replay and Project Export",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "ensemble recipe copies complete outputs and commits a new immutable revision with a parent-bound Outfit"
+        ],
+        "name": "ensemble recipe copies complete outputs and commits a new immutable revision with a parent-bound Outfit",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "all recipe rows and ensemble controls fit with alternate native button font metrics"
+        ],
+        "name": "all recipe rows and ensemble controls fit with alternate native button font metrics",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "ensemble workspace reflows, locks identities and keeps focus at 1440px"
+        ],
+        "name": "ensemble workspace reflows, locks identities and keeps focus at 1440px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "ensemble workspace reflows, locks identities and keeps focus at 768px"
+        ],
+        "name": "ensemble workspace reflows, locks identities and keeps focus at 768px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "ensemble workspace reflows, locks identities and keeps focus at 390px"
+        ],
+        "name": "ensemble workspace reflows, locks identities and keeps focus at 390px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "ensemble-recipes.spec.mjs",
+        "titlePath": [
+          "ensemble-recipes.spec.mjs",
+          "ensemble workspace reflows, locks identities and keeps focus at 720px"
+        ],
+        "name": "ensemble workspace reflows, locks identities and keeps focus at 720px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-authoring.spec.mjs",
+        "titlePath": [
+          "keyframe-authoring.spec.mjs",
+          "same shared editor adds an incomplete middle planning frame without changing saved Start/End, media or references"
+        ],
+        "name": "same shared editor adds an incomplete middle planning frame without changing saved Start/End, media or references",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-authoring.spec.mjs",
+        "titlePath": [
+          "keyframe-authoring.spec.mjs",
+          "actual draft upload and explicit carry save a new take atomically with native image decode"
+        ],
+        "name": "actual draft upload and explicit carry save a new take atomically with native image decode",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-authoring.spec.mjs",
+        "titlePath": [
+          "keyframe-authoring.spec.mjs",
+          "frame drawer contains focus, cancels dirty dismissal, and returns focus after explicit discard"
+        ],
+        "name": "frame drawer contains focus, cancels dirty dismissal, and returns focus after explicit discard",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-backup.spec.mjs",
+        "titlePath": [
+          "keyframe-backup.spec.mjs",
+          "C backup restores through actual confirmation controls with exact records, hashes and frame files"
+        ],
+        "name": "C backup restores through actual confirmation controls with exact records, hashes and frame files",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-backup.spec.mjs",
+        "titlePath": [
+          "keyframe-backup.spec.mjs",
+          "frozen pre-C production build rejects actual C archive through its restore input before writes"
+        ],
+        "name": "frozen pre-C production build rejects actual C archive through its restore input before writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-flow.spec.mjs",
+        "titlePath": [
+          "keyframe-flow.spec.mjs",
+          "actual selected-file Flow preview/download preserves exact prompts/hashes and makes no provider request"
+        ],
+        "name": "actual selected-file Flow preview/download preserves exact prompts/hashes and makes no provider request",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-flow.spec.mjs",
+        "titlePath": [
+          "keyframe-flow.spec.mjs",
+          "native file input rejects corruption and preserves originals through upload, review and clear history"
+        ],
+        "name": "native file input rejects corruption and preserves originals through upload, review and clear history",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-mcp.spec.mjs",
+        "titlePath": [
+          "keyframe-mcp.spec.mjs",
+          "v6 SDK: exact Aya middle frame, withheld text, zero preapproval writes, atomic browser approval, replay and revocation"
+        ],
+        "name": "v6 SDK: exact Aya middle frame, withheld text, zero preapproval writes, atomic browser approval, replay and revocation",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-mcp.spec.mjs",
+        "titlePath": [
+          "keyframe-mcp.spec.mjs",
+          "v6 SDK: explicit frame proposal denial and stale-source rejection preserve foreign edits and original take"
+        ],
+        "name": "v6 SDK: explicit frame proposal denial and stale-source rejection preserve foreign edits and original take",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-mcp.spec.mjs",
+        "titlePath": [
+          "keyframe-mcp.spec.mjs",
+          "v6 browser atomic apply rejects same-ID media drift without partial scenes, image events or receipt"
+        ],
+        "name": "v6 browser atomic apply rejects same-ID media drift without partial scenes, image events or receipt",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-mcp.spec.mjs",
+        "titlePath": [
+          "keyframe-mcp.spec.mjs",
+          "v6 browser atomic apply rejects injected quota failure without partial scenes, image events or receipt"
+        ],
+        "name": "v6 browser atomic apply rejects injected quota failure without partial scenes, image events or receipt",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-media-races.spec.mjs",
+        "titlePath": [
+          "keyframe-media-races.spec.mjs",
+          "native Chromium decodes original PNG/JPEG/WebP and commits exact hashes and history"
+        ],
+        "name": "native Chromium decodes original PNG/JPEG/WebP and commits exact hashes and history",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-media-races.spec.mjs",
+        "titlePath": [
+          "keyframe-media-races.spec.mjs",
+          "two tabs retain an unsaved upload, draft image, cleared history and immutable scenes during an unrelated save/delete"
+        ],
+        "name": "two tabs retain an unsaved upload, draft image, cleared history and immutable scenes during an unrelated save/delete",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-media-races.spec.mjs",
+        "titlePath": [
+          "keyframe-media-races.spec.mjs",
+          "native cross-tab Web Lock prevents same-ID same-size replacement during canonical preparation and commit"
+        ],
+        "name": "native cross-tab Web Lock prevents same-ID same-size replacement during canonical preparation and commit",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-native.spec.mjs",
+        "titlePath": [
+          "keyframe-native.spec.mjs",
+          "C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://127.0.0.1:4173"
+        ],
+        "name": "C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://127.0.0.1:4173",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-native.spec.mjs",
+        "titlePath": [
+          "keyframe-native.spec.mjs",
+          "C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://localhost:4173"
+        ],
+        "name": "C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://localhost:4173",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-native.spec.mjs",
+        "titlePath": [
+          "keyframe-native.spec.mjs",
+          "Keyframes actual installed CLI and signed Windows pairing at http://127.0.0.1:4173"
+        ],
+        "name": "Keyframes actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-native.spec.mjs",
+        "titlePath": [
+          "keyframe-native.spec.mjs",
+          "Keyframes actual installed CLI and signed Windows pairing at http://localhost:4173"
+        ],
+        "name": "Keyframes actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-output.spec.mjs",
+        "titlePath": [
+          "keyframe-output.spec.mjs",
+          "frame/video workspace keyboard, complete clipboard and layout 1440px DPR1"
+        ],
+        "name": "frame/video workspace keyboard, complete clipboard and layout 1440px DPR1",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-output.spec.mjs",
+        "titlePath": [
+          "keyframe-output.spec.mjs",
+          "frame/video workspace keyboard, complete clipboard and layout 768px DPR1"
+        ],
+        "name": "frame/video workspace keyboard, complete clipboard and layout 768px DPR1",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-output.spec.mjs",
+        "titlePath": [
+          "keyframe-output.spec.mjs",
+          "frame/video workspace keyboard, complete clipboard and layout 390px DPR1"
+        ],
+        "name": "frame/video workspace keyboard, complete clipboard and layout 390px DPR1",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-output.spec.mjs",
+        "titlePath": [
+          "keyframe-output.spec.mjs",
+          "frame/video workspace keyboard, complete clipboard and layout 720px DPR2"
+        ],
+        "name": "frame/video workspace keyboard, complete clipboard and layout 720px DPR2",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-review.spec.mjs",
+        "titlePath": [
+          "keyframe-review.spec.mjs",
+          "Output manual rejects an intervening draft write and preserves local work"
+        ],
+        "name": "Output manual rejects an intervening draft write and preserves local work",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-review.spec.mjs",
+        "titlePath": [
+          "keyframe-review.spec.mjs",
+          "Output clear rejects an intervening draft write and preserves local work"
+        ],
+        "name": "Output clear rejects an intervening draft write and preserves local work",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-review.spec.mjs",
+        "titlePath": [
+          "keyframe-review.spec.mjs",
+          "Output plan rejects an intervening draft write and preserves local work"
+        ],
+        "name": "Output plan rejects an intervening draft write and preserves local work",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-review.spec.mjs",
+        "titlePath": [
+          "keyframe-review.spec.mjs",
+          "Output explicitly removes the optional plan while retaining immutable scenes, references and media"
+        ],
+        "name": "Output explicitly removes the optional plan while retaining immutable scenes, references and media",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "keyframe-shared-native.spec.mjs",
+        "titlePath": [
+          "keyframe-shared-native.spec.mjs",
+          "Keyframes shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing"
+        ],
+        "name": "Keyframes shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-upgrade.spec.mjs",
+        "titlePath": [
+          "keyframe-upgrade.spec.mjs",
+          "C explicit header-only upgrade preserves version1 data and late writes"
+        ],
+        "name": "C explicit header-only upgrade preserves version1 data and late writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-upgrade.spec.mjs",
+        "titlePath": [
+          "keyframe-upgrade.spec.mjs",
+          "Cancel never upgrades version1, including a blocked request released later"
+        ],
+        "name": "Cancel never upgrades version1, including a blocked request released later",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-upgrade.spec.mjs",
+        "titlePath": [
+          "keyframe-upgrade.spec.mjs",
+          "C explicit header-only upgrade preserves version2 data and late writes"
+        ],
+        "name": "C explicit header-only upgrade preserves version2 data and late writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "keyframe-upgrade.spec.mjs",
+        "titlePath": [
+          "keyframe-upgrade.spec.mjs",
+          "Cancel never upgrades version2, including a blocked request released later"
+        ],
+        "name": "Cancel never upgrades version2, including a blocked request released later",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "titlePath": [
+          "local-mcp-failures.spec.mjs",
+          "revoking permissions while the apply digest is paused prevents every write"
+        ],
+        "name": "revoking permissions while the apply digest is paused prevents every write",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "titlePath": [
+          "local-mcp-failures.spec.mjs",
+          "an injected quota error after initial writes rolls back the complete MCP batch and receipt"
+        ],
+        "name": "an injected quota error after initial writes rolls back the complete MCP batch and receipt",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-failures.spec.mjs",
+        "titlePath": [
+          "local-mcp-failures.spec.mjs",
+          "background arrival preserves the active draft and focus; disconnect restores dialog focus and revokes reads"
+        ],
+        "name": "background arrival preserves the active draft and focus; disconnect restores dialog focus and revokes reads",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "titlePath": [
+          "local-mcp-native.spec.mjs",
+          "Windows production launcher pairs only after the real owned WPF verification window allows it"
+        ],
+        "name": "Windows production launcher pairs only after the real owned WPF verification window allows it",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Opt-in real WPF certification: KRAKINAI_NATIVE_QA=1 on Windows, with scripts trusted under the existing execution policy.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "titlePath": [
+          "local-mcp-native.spec.mjs",
+          "native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged"
+        ],
+        "name": "native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-native.spec.mjs",
+        "titlePath": [
+          "local-mcp-native.spec.mjs",
+          "actual installed Codex CLI pairs through the signed Windows window and reads only the selected project"
+        ],
+        "name": "actual installed Codex CLI pairs through the signed Windows window and reads only the selected project",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-screenshots.spec.mjs",
+        "titlePath": [
+          "local-mcp-screenshots.spec.mjs",
+          "AI Connections retains readable controls at four viewports in disconnected, connected, review and applied states"
+        ],
+        "name": "AI Connections retains readable controls at four viewports in disconnected, connected, review and applied states",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-screenshots.spec.mjs",
+        "titlePath": [
+          "local-mcp-screenshots.spec.mjs",
+          "200 percent equivalent reflow and keyboard focus remain usable at 720 CSS pixels and DPR2"
+        ],
+        "name": "200 percent equivalent reflow and keyboard focus remain usable at 720 CSS pixels and DPR2",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "titlePath": [
+          "local-mcp-workflow-native.spec.mjs",
+          "actual CLI complete revision workflow at http://127.0.0.1:4173"
+        ],
+        "name": "actual CLI complete revision workflow at http://127.0.0.1:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "titlePath": [
+          "local-mcp-workflow-native.spec.mjs",
+          "actual CLI complete revision workflow at http://localhost:4173"
+        ],
+        "name": "actual CLI complete revision workflow at http://localhost:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp.spec.mjs",
+        "titlePath": [
+          "local-mcp.spec.mjs",
+          "SDK proposal requires trusted browser review and creates exact MIDORI records without widening scope"
+        ],
+        "name": "SDK proposal requires trusted browser review and creates exact MIDORI records without widening scope",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "local-mcp.spec.mjs",
+        "titlePath": [
+          "local-mcp.spec.mjs",
+          "only the human-selected camera candidate is created and confirmed; Character proposal stays pending"
+        ],
+        "name": "only the human-selected camera candidate is created and confirmed; Character proposal stays pending",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "titlePath": [
+          "media-inspection-screenshots.spec.mjs",
+          "media inspection visual evidence 1440"
+        ],
+        "name": "media inspection visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "titlePath": [
+          "media-inspection-screenshots.spec.mjs",
+          "media inspection visual evidence 768"
+        ],
+        "name": "media inspection visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection-screenshots.spec.mjs",
+        "titlePath": [
+          "media-inspection-screenshots.spec.mjs",
+          "media inspection visual evidence 390"
+        ],
+        "name": "media inspection visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "camera and variant previews coordinate hover and explicit playback without selecting or writing"
+        ],
+        "name": "camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes"
+        ],
+        "name": "image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item"
+        ],
+        "name": "fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "repeated image/video previews release URLs and pause detached players with heap observations"
+        ],
+        "name": "repeated image/video previews release URLs and pause detached players with heap observations",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "eleven-shot List/Grid layout stays bounded at 1440x900"
+        ],
+        "name": "eleven-shot List/Grid layout stays bounded at 1440x900",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "eleven-shot List/Grid layout stays bounded at 768x1024"
+        ],
+        "name": "eleven-shot List/Grid layout stays bounded at 768x1024",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "eleven-shot List/Grid layout stays bounded at 390x844"
+        ],
+        "name": "eleven-shot List/Grid layout stays bounded at 390x844",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "eleven-shot List/Grid layout stays bounded at 720x450"
+        ],
+        "name": "eleven-shot List/Grid layout stays bounded at 720x450",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "media-inspection.spec.mjs",
+        "titlePath": [
+          "media-inspection.spec.mjs",
+          "touch and reduced motion",
+          "camera media has explicit touch Preview with no hover playback"
+        ],
+        "name": "camera media has explicit touch Preview with no hover playback",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "titlePath": [
+          "output-workspace-screenshots.spec.mjs",
+          "output workspace after screenshots 1440"
+        ],
+        "name": "output workspace after screenshots 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "titlePath": [
+          "output-workspace-screenshots.spec.mjs",
+          "output workspace after screenshots 768"
+        ],
+        "name": "output workspace after screenshots 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "output-workspace-screenshots.spec.mjs",
+        "titlePath": [
+          "output-workspace-screenshots.spec.mjs",
+          "output workspace after screenshots 390"
+        ],
+        "name": "output workspace after screenshots 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "laptop dialog keeps the final prompt line and every section link above its fixed footer"
+        ],
+        "name": "laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output"
+        ],
+        "name": "draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output"
+        ],
+        "name": "draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output"
+        ],
+        "name": "saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output"
+        ],
+        "name": "saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "viewer keyboard navigation, section positioning and scroll lock preserve the scene context"
+        ],
+        "name": "viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "small-screen default, manual layout choice and mobile section selector reflow without overflow"
+        ],
+        "name": "small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers"
+        ],
+        "name": "stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "reference and sample previews use the existing associations without reassigning media"
+        ],
+        "name": "reference and sample previews use the existing associations without reassigning media",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "complete long raw output and missing-media/empty states do not invent scene details"
+        ],
+        "name": "complete long raw output and missing-media/empty states do not invent scene details",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "an associated decodable result video is labeled Result and opens the existing explicit player"
+        ],
+        "name": "an associated decodable result video is labeled Result and opens the existing explicit player",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "output-workspace.spec.mjs",
+        "titlePath": [
+          "output-workspace.spec.mjs",
+          "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene"
+        ],
+        "name": "saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "titlePath": [
+          "performance-studio-screenshots.spec.mjs",
+          "Performance Studio after visual evidence 1440"
+        ],
+        "name": "Performance Studio after visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "titlePath": [
+          "performance-studio-screenshots.spec.mjs",
+          "Performance Studio after visual evidence 768"
+        ],
+        "name": "Performance Studio after visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio-screenshots.spec.mjs",
+        "titlePath": [
+          "performance-studio-screenshots.spec.mjs",
+          "Performance Studio after visual evidence 390"
+        ],
+        "name": "Performance Studio after visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "titlePath": [
+          "performance-studio.spec.mjs",
+          "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data"
+        ],
+        "name": "version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "titlePath": [
+          "performance-studio.spec.mjs",
+          "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults"
+        ],
+        "name": "keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "performance-studio.spec.mjs",
+        "titlePath": [
+          "performance-studio.spec.mjs",
+          "legacy selection bytes survive reload and UI search requires explicit replacement before new directions"
+        ],
+        "name": "legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "recipe preview copies complete outputs, saves an immutable take and reopens as an editable recipe"
+        ],
+        "name": "recipe preview copies complete outputs, saves an immutable take and reopens as an editable recipe",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "blocked recipe downloads preserve the full planning package with zero partial writes"
+        ],
+        "name": "blocked recipe downloads preserve the full planning package with zero partial writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "recipe revisions preserve frozen components and create alternate takes through actual review controls"
+        ],
+        "name": "recipe revisions preserve frozen components and create alternate takes through actual review controls",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "deleting a selected original blocks atomic save, preserves drafts and permits a valid explicit replacement"
+        ],
+        "name": "deleting a selected original blocks atomic save, preserves drafts and permits a valid explicit replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "recipe review reflows and preserves keyboard access at 1440px"
+        ],
+        "name": "recipe review reflows and preserves keyboard access at 1440px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "recipe review reflows and preserves keyboard access at 768px"
+        ],
+        "name": "recipe review reflows and preserves keyboard access at 768px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "recipe review reflows and preserves keyboard access at 390px"
+        ],
+        "name": "recipe review reflows and preserves keyboard access at 390px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-change-sets.spec.mjs",
+        "titlePath": [
+          "recipe-change-sets.spec.mjs",
+          "original MIME claims are checked against stored media before assembly"
+        ],
+        "name": "original MIME claims are checked against stored media before assembly",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion-native.spec.mjs",
+        "titlePath": [
+          "recipe-conversion-native.spec.mjs",
+          "installed Codex ten-shot recipe lifecycle at http://127.0.0.1:4173"
+        ],
+        "name": "installed Codex ten-shot recipe lifecycle at http://127.0.0.1:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion-native.spec.mjs",
+        "titlePath": [
+          "recipe-conversion-native.spec.mjs",
+          "installed Codex ten-shot recipe lifecycle at http://localhost:4173"
+        ],
+        "name": "installed Codex ten-shot recipe lifecycle at http://localhost:4173",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "guided mapping preserves the source, keeps full prose collapsed and downloads an approval-free package"
+        ],
+        "name": "guided mapping preserves the source, keeps full prose collapsed and downloads an approval-free package",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "conversion reviews uncertainty, copies every complete mode, atomically saves on the same shot and replays without duplication"
+        ],
+        "name": "conversion reviews uncertainty, copies every complete mode, atomically saves on the same shot and replays without duplication",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "a missing selected original blocks conversion and an actual valid replacement makes it reviewable"
+        ],
+        "name": "a missing selected original blocks conversion and an actual valid replacement makes it reviewable",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "a late scene write failure rolls back every store and a fresh explicit review can retry"
+        ],
+        "name": "a late scene write failure rolls back every store and a fresh explicit review can retry",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "guided mapping and complete review are keyboard-accessible without page clipping at 1440px"
+        ],
+        "name": "guided mapping and complete review are keyboard-accessible without page clipping at 1440px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "guided mapping and complete review are keyboard-accessible without page clipping at 768px"
+        ],
+        "name": "guided mapping and complete review are keyboard-accessible without page clipping at 768px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "guided mapping and complete review are keyboard-accessible without page clipping at 390px"
+        ],
+        "name": "guided mapping and complete review are keyboard-accessible without page clipping at 390px",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "explicit reusable editing preserves converted snapshots and the original preferred take"
+        ],
+        "name": "explicit reusable editing preserves converted snapshots and the original preferred take",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "a delayed file read cannot overwrite newer mapping edits or write records"
+        ],
+        "name": "a delayed file read cannot overwrite newer mapping edits or write records",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-conversion.spec.mjs",
+        "titlePath": [
+          "recipe-conversion.spec.mjs",
+          "removing mapped cues and participants through guided controls remains reviewable"
+        ],
+        "name": "removing mapped cues and participants through guided controls remains reviewable",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "titlePath": [
+          "recipe-mcp.spec.mjs",
+          "B1 sdk-existing: actual SDK preview, browser approval, receipt, replay and revocation"
+        ],
+        "name": "B1 sdk-existing: actual SDK preview, browser approval, receipt, replay and revocation",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "titlePath": [
+          "recipe-mcp.spec.mjs",
+          "B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation"
+        ],
+        "name": "B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "titlePath": [
+          "recipe-mcp.spec.mjs",
+          "B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation"
+        ],
+        "name": "B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation",
+        "project": "",
+        "status": "skipped",
+        "expectedStatus": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only.",
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "recipe-mcp.spec.mjs",
+        "titlePath": [
+          "recipe-mcp.spec.mjs",
+          "B1 same-batch create/reuse/defer uses exact approved IDs without scope expansion"
+        ],
+        "name": "B1 same-batch create/reuse/defer uses exact approved IDs without scope expansion",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "corrected-recheck"
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "titlePath": [
+          "scene-workflows.spec.mjs",
+          "canonical output copy, save, and small legacy backup roundtrip"
+        ],
+        "name": "canonical output copy, save, and small legacy backup roundtrip",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "titlePath": [
+          "scene-workflows.spec.mjs",
+          "duplicate save requires an explicit decision"
+        ],
+        "name": "duplicate save requires an explicit decision",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "scene-workflows.spec.mjs",
+        "titlePath": [
+          "scene-workflows.spec.mjs",
+          "storyboard order and collection return survive navigation"
+        ],
+        "name": "storyboard order and collection return survive navigation",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive"
+        ],
+        "name": "MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus"
+        ],
+        "name": "source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save"
+        ],
+        "name": "voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "assembly rechecks stored source: deleted original blocks navigation until replacement"
+        ],
+        "name": "assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "assembly rechecks stored source: stale deleted original blocks navigation until replacement"
+        ],
+        "name": "assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "assembly rechecks stored source: unsupported MIME blocks navigation until replacement"
+        ],
+        "name": "assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement"
+        ],
+        "name": "assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable"
+        ],
+        "name": "review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "MIDORI responsive builder and output at 1440x900"
+        ],
+        "name": "MIDORI responsive builder and output at 1440x900",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "MIDORI responsive builder and output at 768x1024"
+        ],
+        "name": "MIDORI responsive builder and output at 768x1024",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "shot-types.spec.mjs",
+        "titlePath": [
+          "shot-types.spec.mjs",
+          "MIDORI responsive builder and output at 390x844"
+        ],
+        "name": "MIDORI responsive builder and output at 390x844",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "eleven real video shots hover, reset, expand and preserve all records and media hashes"
+        ],
+        "name": "eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "reduced motion disables hover and explicit Preview stays usable"
+        ],
+        "name": "reduced motion disables hover and explicit Preview stays usable",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "secondary actions, drag grip and keyboard ordering preserve saved takes"
+        ],
+        "name": "secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "continuity forms stack, footer and focus remain reachable at 1440x900"
+        ],
+        "name": "continuity forms stack, footer and focus remain reachable at 1440x900",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "continuity forms stack, footer and focus remain reachable at 768x1024"
+        ],
+        "name": "continuity forms stack, footer and focus remain reachable at 768x1024",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "continuity forms stack, footer and focus remain reachable at 390x844"
+        ],
+        "name": "continuity forms stack, footer and focus remain reachable at 390x844",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "continuity forms stack, footer and focus remain reachable at 720x450"
+        ],
+        "name": "continuity forms stack, footer and focus remain reachable at 720x450",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy"
+        ],
+        "name": "Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "corrupt video stays recoverable through an explicit preview without browser errors or writes"
+        ],
+        "name": "corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL"
+        ],
+        "name": "rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media"
+        ],
+        "name": "wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-cleanup.spec.mjs",
+        "titlePath": [
+          "storyboard-cleanup.spec.mjs",
+          "touch collection media",
+          "uses visible Preview rather than hover and never navigates on playback"
+        ],
+        "name": "uses visible Preview rather than hover and never navigates on playback",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "titlePath": [
+          "storyboard-screenshots.spec.mjs",
+          "storyboard visual evidence 1440"
+        ],
+        "name": "storyboard visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "titlePath": [
+          "storyboard-screenshots.spec.mjs",
+          "storyboard visual evidence 768"
+        ],
+        "name": "storyboard visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "storyboard-screenshots.spec.mjs",
+        "titlePath": [
+          "storyboard-screenshots.spec.mjs",
+          "storyboard visual evidence 390"
+        ],
+        "name": "storyboard visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "long take names and IDs stay inside the dialog at 1440"
+        ],
+        "name": "long take names and IDs stay inside the dialog at 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "long take names and IDs stay inside the dialog at 768"
+        ],
+        "name": "long take names and IDs stay inside the dialog at 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "long take names and IDs stay inside the dialog at 390"
+        ],
+        "name": "long take names and IDs stay inside the dialog at 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline"
+        ],
+        "name": "drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order"
+        ],
+        "name": "editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "variant file input shares the pipeline, maximum handling and keyboard ordering"
+        ],
+        "name": "variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "library tags expand, search, select several and clear while preserving search, sorting and stored tags"
+        ],
+        "name": "library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "reference dialog preserves explicit order, exact downloads and historical read-only controls"
+        ],
+        "name": "reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "take preference, project note, comparison and removal keep immutable source scenes"
+        ],
+        "name": "take preference, project note, comparison and removal keep immutable source scenes",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-polish.spec.mjs",
+        "titlePath": [
+          "uiux-polish.spec.mjs",
+          "identity approval and stale fallback preserve canonical outputs and saved generation snapshots"
+        ],
+        "name": "identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "titlePath": [
+          "uiux-screenshots.spec.mjs",
+          "polish visual evidence 1440"
+        ],
+        "name": "polish visual evidence 1440",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "titlePath": [
+          "uiux-screenshots.spec.mjs",
+          "polish visual evidence 768"
+        ],
+        "name": "polish visual evidence 768",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      },
+      {
+        "file": "uiux-screenshots.spec.mjs",
+        "titlePath": [
+          "uiux-screenshots.spec.mjs",
+          "polish visual evidence 390"
+        ],
+        "name": "polish visual evidence 390",
+        "project": "",
+        "status": "expected",
+        "expectedStatus": "passed",
+        "skipReason": null,
+        "evidence": "complete-attempt"
+      }
+    ]
+  },
+  "previousArchiveSamples": [
+    {
+      "file": "full.zip",
+      "sha256": "ab9e623bd18471c44728d8e8a43769ad3cfab973eb07fda2198cdc2b33304330",
+      "entries": 3,
+      "compressedBytes": 13674,
+      "uncompressedBytes": 130675,
+      "verified": true,
+      "independentReader": "Python zipfile; CRC, SHA-256, original media and exact UTF-8 prompt checks",
+      "exitCode": 0
+    },
+    {
+      "file": "project.zip",
+      "sha256": "646eca3a1f1929ddc2a8cabc5d966f4f9466514a66fd28f5c8856760723ad1d1",
+      "entries": 31,
+      "compressedBytes": 48579,
+      "uncompressedBytes": 214897,
+      "verified": true,
+      "independentReader": "Python zipfile; CRC, SHA-256, original media and exact UTF-8 prompt checks",
+      "exitCode": 0
+    }
+  ],
+  "fileInventory": {
+    "file": "docs/qa/multi-frame-image-prompt-studio-c-files.json",
+    "modified": 77,
+    "new": 134,
+    "artifactScanPassed": true
+  },
+  "gitChecks": {
+    "git status --short": 0,
+    "git diff --name-status": 0,
+    "git diff --check": 0,
+    "validationTsDiffEmpty": true,
+    "git diff --cached --check": 0
+  },
+  "independentReview": {
+    "originalMaterialFindings": 4,
+    "resolvedMaterialFindings": 4,
+    "unresolvedFindings": 0,
+    "finalDecision": "Ready to stage, owner-sign and run complete hosted CI. No merge/handoff approval implied.",
+    "verified": [
+      "immutable source/fix hashes",
+      "schema equality",
+      "raw native call audit fields and cumulative actual timing",
+      "exact file/title-path/project browser reconciliation",
+      "20 screenshot hashes/sizes/dimensions",
+      "Authenticode/AllSigned evidence",
+      "Python CRC/SHA/text archive readback",
+      "all retained command-log hashes"
+    ]
+  },
+  "finalLineEndingNormalization": {
+    "files": 9,
+    "change": "CRLF source line endings to LF only",
+    "appArtifactsIdentical": true,
+    "appArtifactFiles": 15,
+    "allFiveProductionBridgeEntriesIdentical": true,
+    "focusedExistingTestsPassed": 40,
+    "focusedTestExitCode": 0,
+    "appBuildExitCode": 0,
+    "bridgeBuildExitCode": 0,
+    "warning": "The initial staged diff check returned2 for CRLF trailing whitespace; corrected without changing runtime bytes."
+  }
+}

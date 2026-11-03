@@ -1,0 +1,856 @@
+{
+  "scope": "Workstream C reviewed candidate; excludes live settings, raw QA outputs and unrelated work",
+  "modified": 77,
+  "new": 134,
+  "files": [
+    {
+      "status": "modified",
+      "file": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "modified",
+      "file": "AGENTS.md"
+    },
+    {
+      "status": "modified",
+      "file": "README.md"
+    },
+    {
+      "status": "modified",
+      "file": "bridge/src/registerTools.ts"
+    },
+    {
+      "status": "modified",
+      "file": "bridge/src/relay.ts"
+    },
+    {
+      "status": "new",
+      "file": "bridge/src/schemaDiscovery.ts"
+    },
+    {
+      "status": "modified",
+      "file": "bridge/test/adapterProcess.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "bridge/test/keyframeCapabilities.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "bridge/test/schemaDiscovery.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "bridge/test/stdio.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "docs/agent-authoring-guide.md"
+    },
+    {
+      "status": "modified",
+      "file": "docs/blocking-and-spatial-continuity.md"
+    },
+    {
+      "status": "modified",
+      "file": "docs/change-set-v5.md"
+    },
+    {
+      "status": "new",
+      "file": "docs/change-set-v6.md"
+    },
+    {
+      "status": "new",
+      "file": "docs/change-set-v6.schema.json"
+    },
+    {
+      "status": "new",
+      "file": "docs/keyframes-and-image-prompts.md"
+    },
+    {
+      "status": "modified",
+      "file": "docs/local-codex-mcp.md"
+    },
+    {
+      "status": "new",
+      "file": "docs/qa/multi-frame-image-prompt-studio-c-files.json"
+    },
+    {
+      "status": "new",
+      "file": "docs/qa/multi-frame-image-prompt-studio-c-results.json"
+    },
+    {
+      "status": "new",
+      "file": "docs/qa/multi-frame-image-prompt-studio-c.md"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-1440-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-390-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-720-dpr2.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-continuity-768-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-1440-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-390-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-720-dpr2.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-frames-768-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-1440-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-390-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-720-dpr2.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/after/after-video-768-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-1440-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-390-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-720-dpr2.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/continuity-frames-768-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-1440-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-390-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-720-dpr2.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/screenshots/multi-frame-image-prompt-studio-c/before/output-768-dpr1.png"
+    },
+    {
+      "status": "new",
+      "file": "docs/superpowers/plans/2026-11-03-multi-frame-image-prompt-studio-c.md"
+    },
+    {
+      "status": "new",
+      "file": "docs/superpowers/specs/2026-11-03-multi-frame-image-prompt-studio-c-design.md"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/blocking-upgrade.spec.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/continuity-workspace.spec.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/ensemble-mcp.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-authoring.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-backup.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-fixture.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-flow.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-mcp.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-media-races.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-native-fixture.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-native.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-output.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-review.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-shared-native.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "e2e/keyframe-upgrade.spec.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/local-mcp-fixture.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/output-workspace-screenshots.spec.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "e2e/recipe-mcp.spec.mjs"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/capture-keyframe-baseline.mjs"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/keyframe-mcp-workflow.d.mts"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/keyframe-mcp-workflow.mjs"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/keyframe-mcp-workflow.test.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "scripts/qa/mcp-codex-cli.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "scripts/qa/mcp-codex-cli.test.mjs"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/verify-keyframe-archives.py"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/write-keyframe-flow-fixture.d.mts"
+    },
+    {
+      "status": "new",
+      "file": "scripts/qa/write-keyframe-flow-fixture.mjs"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/blockingBackup.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/frame-raster-fixtures.json"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/keyframe-legacy-baseline.json"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/keyframeChangeSetFixture.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/keyframeFixture.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/keyframeStorageFixture.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/syntheticMediaLock.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/fixtures/syntheticRasterDecoder.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/flowHandoff.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/flowHandoffDialog.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/frameImageAssociations.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/frameImageRetention.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/frameImageStorage.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/frameOutputReview.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/frameVideoReview.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/imagePromptDocument.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/imagePromptSources.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeAuthoring.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeBackup.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeBuilder.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeChangeSetContract.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeChangeSetPlanning.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeChangeSetStorage.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeContinuity.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeConversion.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeDependencies.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeEditor.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeImageUI.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeLedger.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeLegacy.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeLibraryCompatibility.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeLocalImages.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeMcpCapabilities.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeMcpPermissions.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeMcpPrivacy.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeMcpProjection.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeModel.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeNativeChecks.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeOutputControls.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeOutputWorkspace.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframePatch.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeProjectExport.test.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeProposalReview.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeReviewRegressions.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/keyframeTemplates.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/libraryCompatibility.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/libraryCompatibilityGate.test.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/__tests__/mediaPreparationLock.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/projectContinuity.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/projects.test.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/__tests__/promptOutputWorkspace.test.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/ChangeSetPreview.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/ContinuityViews.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/ImportReceipt.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/LibraryCompatibilityGate.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/ProjectContinuityPanel.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/SharedModals.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/aiConnections/PermissionReview.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/components/aiConnections/PermissionsWorkspace.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FlowHandoffDialog.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FrameImageHistory.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FrameImagePanel.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FrameOutputDecisions.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FrameVideoReview.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/FrameWorkspace.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/KeyframeEditor.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/KeyframeProposalReview.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/KeyframeTimeline.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/KeyframeVisualSetup.tsx"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/keyframeRecovery.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/components/keyframes/keyframes.css"
+    },
+    {
+      "status": "modified",
+      "file": "src/connections/AiConnectionContext.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/connections/browserTransport.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/connections/proposalBroker.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/backupFeatures.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/blockingChangeSetSchema.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/blockingConversionMapping.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/blockingMcp.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetCapacity.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetLedger.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetPlanner.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetRecipeContent.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetSchema.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/changeSetValidation.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/ensembleValidation.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/flowCompatibility.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/flowHandoff.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/frameAuthoring.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/frameImageAssociations.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/frameImageMedia.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/frameOutputReview.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/frameVideoReview.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/generationDocument.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/imagePromptDocument.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/imagePromptInputs.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeChangeSet.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeChangeSetSchema.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeConversionMapping.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeDependencies.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeDocument.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeMcp.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframePatch.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeProjectExport.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeReceipt.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeRecord.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/keyframeValidation.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/localFrameImages.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/mcpCapabilities.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/mcpPermissionDraft.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/mcpProtocol.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/mcpReads.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/mcpScope.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/phase4Validation.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/phase5ProjectValidation.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/projectExport.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/projectStoryboard.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/promptAssembler.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/recipeConversion.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/recipeConversionRequest.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/sceneDocument.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/domain/sceneDuplicates.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/domain/stillCamera.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/screens/AiRecipeBuilderScreen.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/screens/ChangeSetImportScreen.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/screens/PromptOutputScreen.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/screens/SceneBuilderScreen.tsx"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/backup.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/changeSets.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/db.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/storage/frameImages.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/libraryCompatibility.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/storage/mediaPreparationLock.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/projectBulk.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/projectContinuity.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/projects.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/storage/sceneAuthoring.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/types/changeSet.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/types/domain.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/types/frameProduction.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/types/keyframeChangeSet.ts"
+    },
+    {
+      "status": "new",
+      "file": "src/types/keyframes.ts"
+    },
+    {
+      "status": "modified",
+      "file": "src/types/mcp.ts"
+    }
+  ],
+  "artifactScan": {
+    "forbiddenPaths": [],
+    "privateKeyOrTokenPatternFiles": []
+  },
+  "note": "Purposeful committed QA summaries, synthetic fixtures and product screenshots are distinct from ignored temporary QA archives/logs/profiles."
+}

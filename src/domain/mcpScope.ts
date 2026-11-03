@@ -1,5 +1,5 @@
 import type { ChangeSet, ChangeSetReceipt, ChangeSetState } from '../types/changeSet';
-import type { McpScope,McpScopeV1,McpScopeV2 } from '../types/mcp';
+import type { McpScope,McpScopeV1,McpScopeV2,McpScopeV3 } from '../types/mcp';
 import { getProjectShots } from './projectStoryboard';
 import { readImportLedger } from './changeSetLedger';
 import { McpError, record, exactKeys } from './mcpProtocol';
@@ -7,18 +7,25 @@ import{getSceneSnapshotEntries}from'./ensembleReferences';
 import{isRecipeOperation}from'../types/changeSet';
 
 export const MCP_SCOPE_ID_LIMITS = Object.freeze({ projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250 });
-export const MCP_SCOPE_LIMITS = Object.freeze({ ...MCP_SCOPE_ID_LIMITS, blockingSceneIds:250,reusableRecords: 500, receiptGrants: 1000 });
+export const MCP_SCOPE_LIMITS = Object.freeze({ ...MCP_SCOPE_ID_LIMITS, blockingSceneIds:250,keyframeSceneIds:250,imagePromptFrameGrants:250,reusableRecords: 500, receiptGrants: 1000 });
 export function emptyMcpScope(): McpScopeV1 { return { version: 1, epoch: 0, projectIds: [], sceneIds: [], assetIds: [], variantIds: [], templateIds: [], fullPromptSceneIds: [], mediaIds: [], candidateIds: [], receiptGrants: [], includeAssetText: false, includeCharacterIdentity: false, includeNotes: false, includeMediaFilenames: false, allowNewProjects: false, allowProposals: false }; }
 export function emptyMcpScopeV2():McpScopeV2{return{...emptyMcpScope(),version:2,blockingSceneIds:[],allowBlockingProposals:false};}
+export function emptyMcpScopeV3():McpScopeV3{return{...emptyMcpScopeV2(),version:3,keyframeSceneIds:[],imagePromptFrameGrants:[],allowKeyframeProposals:false,allowFrameImageProposals:false,allowImagePromptDerivation:false};}
 export function validateMcpScope(scope: McpScope): McpScope {
-  record(scope);const keys=Object.keys(scope.version===2?emptyMcpScopeV2():emptyMcpScope());exactKeys(scope,keys,keys);
+  record(scope);const keys=Object.keys(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope());exactKeys(scope,keys,keys);
   const invalid = () => { throw new McpError('INVALID_SCOPE', 'Select at most 10 projects, 250 explicit scenes and 500 reusable records, using unique native record IDs.'); };
-  if (![1,2].includes(scope.version) || !Number.isSafeInteger(scope.epoch) || scope.epoch < 0) invalid();
-  const fields = {...MCP_SCOPE_ID_LIMITS,...(scope.version===2?{blockingSceneIds:250}:{})};
+  if (![1,2,3].includes(scope.version) || !Number.isSafeInteger(scope.epoch) || scope.epoch < 0) invalid();
+  const fields = {...MCP_SCOPE_ID_LIMITS,...(scope.version!==1?{blockingSceneIds:250}:{}),...(scope.version===3?{keyframeSceneIds:250}:{})};
   for (const [field, maximum] of Object.entries(fields)) { const values = scope[field as keyof typeof fields]; if (!Array.isArray(values) || values.length > maximum || new Set(values).size !== values.length || values.some(id => typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(id))) invalid(); }
   if (scope.assetIds.length + scope.variantIds.length + scope.templateIds.length > MCP_SCOPE_LIMITS.reusableRecords) invalid();
   for (const field of ['includeAssetText', 'includeCharacterIdentity', 'includeNotes', 'includeMediaFilenames', 'allowNewProjects', 'allowProposals'] as const) if (typeof scope[field] !== 'boolean') invalid();
-  if(scope.version===2&&typeof scope.allowBlockingProposals!=='boolean')invalid();
+  if(scope.version!==1&&typeof scope.allowBlockingProposals!=='boolean')invalid();
+  if(scope.version===3){
+    for(const key of ['allowKeyframeProposals','allowFrameImageProposals','allowImagePromptDerivation'] as const)if(typeof scope[key]!=='boolean')invalid();
+    const grants=scope.imagePromptFrameGrants;
+    if(!Array.isArray(grants)||grants.length>250||new Set(grants.map(g=>JSON.stringify([g?.sceneId,g?.frameId]))).size!==grants.length)invalid();
+    for(const g of grants)if(!g||Object.keys(g).length!==2||!scope.keyframeSceneIds.includes(g.sceneId)||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(g.sceneId)||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(g.frameId))invalid();
+  }
   if (!Array.isArray(scope.receiptGrants) || scope.receiptGrants.length > MCP_SCOPE_LIMITS.receiptGrants || new Set(scope.receiptGrants.map(g => `${g.changeSetId}:${g.packageDigest}`)).size !== scope.receiptGrants.length) invalid();
   for (const grant of scope.receiptGrants) if (!grant || Object.keys(grant).length !== 2 || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(grant.changeSetId) || !/^[a-f0-9]{64}$/.test(grant.packageDigest)) invalid();
   return structuredClone(scope);
@@ -69,12 +76,35 @@ function availableMedia(scope: McpScope, state: ChangeSetState): Set<string> {
   }
   return ids;
 }
-export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state: ChangeSetState, localReuseGrants: ReadonlySet<string> = new Set()): void {
-  if (!scope.allowProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
-  if(changeSet.schema==='krakinai.change-set.v5'&&(scope.version!==2||!scope.allowBlockingProposals))denyScope();
+export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state: ChangeSetState, localReuseGrants: ReadonlySet<string> = new Set(), readOnlyDerivation=false): void {
+  if(readOnlyDerivation){if(changeSet.schema!=='krakinai.change-set.v6'||scope.version!==3||!scope.allowImagePromptDerivation||changeSet.operations.some(op=>!isRecipeOperation(op)||!('sceneId'in op)||!!op.imageCarryOver?.length))denyScope();}
+  else if (!scope.allowProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
+  if(changeSet.schema==='krakinai.change-set.v5'&&(scope.version===1||!scope.allowBlockingProposals))denyScope();
+  if(changeSet.schema==='krakinai.change-set.v6'){
+    if(scope.version!==3)denyScope();
+    for(const op of changeSet.operations){
+      if(isRecipeOperation(op)){
+        if(!readOnlyDerivation&&!scope.allowKeyframeProposals)denyScope();
+        if('sceneId'in op&&!scope.keyframeSceneIds.includes(op.sceneId))denyScope();
+        if(op.blocking!==undefined&&(!readOnlyDerivation&&!scope.allowBlockingProposals||('sceneId'in op&&!scope.blockingSceneIds.includes(op.sceneId))))denyScope();
+        if('sceneId'in op&&state.scenes.find(s=>s.id===op.sceneId)?.blocking&&!scope.blockingSceneIds.includes(op.sceneId))denyScope();
+        if(op.imageCarryOver?.length&&!scope.allowFrameImageProposals)denyScope();
+      }
+      if(op.type.startsWith('frame_')){
+        if(!('scene'in op))denyScope();
+        if('id'in op.scene){if(!scope.keyframeSceneIds.includes(op.scene.id))denyScope();}
+        else{const ref=op.scene.ref,creator=changeSet.operations.find(candidate=>isRecipeOperation(candidate)&&candidate.clientRef===ref);if(!creator||!isRecipeOperation(creator)||!scope.allowKeyframeProposals)denyScope();if('sceneId'in creator&&!scope.keyframeSceneIds.includes(creator.sceneId))denyScope();}
+
+        if(op.type==='frame_image.link'||op.type==='frame_image.clear'){
+          if(!scope.allowFrameImageProposals)denyScope();if('id'in op.scene){const sceneId=op.scene.id;if(!scope.imagePromptFrameGrants.some(g=>g.sceneId===sceneId&&g.frameId===op.frameId))denyScope();}
+          if(op.type==='frame_image.link'&&!scope.mediaIds.includes(op.mediaId))denyScope();
+        }else if(!scope.allowKeyframeProposals)denyScope();
+      }
+    }
+  }
   const requireExistingScene = (id: string) => { if (!scenes.has(id) || !state.scenes.some(s => s.id === id)) denyScope(); };
   for (const op of changeSet.operations) {
-    if(changeSet.schema==='krakinai.change-set.v5'&&isRecipeOperation(op)&&'sceneId'in op&&(scope.version!==2||!scope.blockingSceneIds.includes(op.sceneId)))denyScope();
+    if(changeSet.schema==='krakinai.change-set.v5'&&isRecipeOperation(op)&&'sceneId'in op&&(scope.version===1||!scope.blockingSceneIds.includes(op.sceneId)))denyScope();
     if(op.type==='scene.convert_direct_to_recipe'&&!scope.fullPromptSceneIds.includes(op.sceneId))denyScope();
     const requireParent=(id:string)=>{if(!scope.assetIds.includes(id)||!state.assets.some(a=>a.id===id&&a.category==='characters'))denyScope()};
     if(op.type==='variant.propose')requireParent(op.parentCharacterId);

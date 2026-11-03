@@ -36,7 +36,7 @@ it('guards the actual application openDatabase entry point rather than only a se
 it('upgrades only the header and keeps all eight stores, keys, unknown fields and blob bytes',async()=>{
  const old=await legacy(),before=await snapshot(old),oldBlob=new Uint8Array(await before.media[0].blob.arrayBuffer());old.close();
  await compat.enableBlockingLibrary({onBlocked:()=>{throw Error('Unexpected blocking');}});
- const db=await compat.openProtectedDatabase();owned.push(db);expect(db.version).toBe(2);expect([...db.objectStoreNames]).toEqual(stores.slice().sort());
+ const db=await compat.openProtectedDatabase();owned.push(db);expect(db.version).toBe(3);expect([...db.objectStoreNames]).toEqual(stores.slice().sort());
  const after=await snapshot(db);expect(after).toEqual(before);expect(new Uint8Array(await after.media[0].blob.arrayBuffer())).toEqual(oldBlob);
  await expect(request(factory.open(name,1))).rejects.toMatchObject({name:'VersionError'});
 });
@@ -56,20 +56,20 @@ it('aborts a cancelled blocked request when it later receives the upgrade transa
 it('does not open an already-cancelled upgrade and can retry after cancellation',async()=>{
  const old=await legacy(),controller=new AbortController();old.close();controller.abort();
  await expect(compat.enableBlockingLibrary({signal:controller.signal,onBlocked:()=>{}})).rejects.toMatchObject({name:'AbortError'});
- expect(await compat.inspectLibraryCompatibility()).toBe('legacy-v1');await compat.enableBlockingLibrary({onBlocked:()=>{}});expect(await compat.inspectLibraryCompatibility()).toBe('current-v2');
+ expect(await compat.inspectLibraryCompatibility()).toBe('legacy-v1');await compat.enableBlockingLibrary({onBlocked:()=>{}});expect(await compat.inspectLibraryCompatibility()).toBe('current-v3');
 });
 it('reports success if commit wins a late cancellation rather than claiming the header stayed v1',async()=>{
  const old=await legacy();old.close();const controller=new AbortController(),open=factory.open.bind(factory);
- vi.spyOn(factory,'open').mockImplementation((...args:Parameters<IDBFactory['open']>)=>{const r=open(...args);if(args[1]===2)r.addEventListener('upgradeneeded',()=>r.transaction!.addEventListener('complete',()=>controller.abort()));return r;});
- await expect(compat.enableBlockingLibrary({signal:controller.signal,onBlocked:()=>{}})).resolves.toBeUndefined();expect(await compat.inspectLibraryCompatibility()).toBe('current-v2');
+ vi.spyOn(factory,'open').mockImplementation((...args:Parameters<IDBFactory['open']>)=>{const r=open(...args);if(args[1]===3)r.addEventListener('upgradeneeded',()=>r.transaction!.addEventListener('complete',()=>controller.abort()));return r;});
+ await expect(compat.enableBlockingLibrary({signal:controller.signal,onBlocked:()=>{}})).resolves.toBeUndefined();expect(await compat.inspectLibraryCompatibility()).toBe('current-v3');
 });
 it('closes a B connection on versionchange, discards its cache and rejects a newer library',async()=>{
  const [db,same]=await Promise.all([compat.openProtectedDatabase(),compat.openProtectedDatabase()]);owned.push(db);expect(db).toBe(same);
- const r=factory.open(name,3);r.onblocked=()=>{throw Error('B failed to close its cached connection.');};const future=await request(r);owned.push(future);
+ const r=factory.open(name,4);r.onblocked=()=>{throw Error('B failed to close its cached connection.');};const future=await request(r);owned.push(future);
  expect(()=>db.transaction('assets','readwrite')).toThrow();expect(await compat.inspectLibraryCompatibility()).toBe('unsupported');await expect(compat.openProtectedDatabase()).rejects.toThrow(/newer|unsupported/i);
 });
-it('creates only the existing eight stores in a genuinely fresh v2 library',async()=>{
- const db=await compat.openProtectedDatabase();owned.push(db);expect(db.version).toBe(2);const snap=await snapshot(db);expect(Object.keys(snap)).toHaveLength(8);expect(Object.values(snap).flat()).toEqual([]);
+it('creates only the existing eight stores in a genuinely fresh v3 library',async()=>{
+ const db=await compat.openProtectedDatabase();owned.push(db);expect(db.version).toBe(3);const snap=await snapshot(db);expect(Object.keys(snap)).toHaveLength(8);expect(Object.values(snap).flat()).toEqual([]);
 });
 it('preserves an inconsistent legacy schema instead of silently recreating missing stores',async()=>{
  const old=await legacy('media'),before=await snapshot(old);old.close();
@@ -78,6 +78,7 @@ it('preserves an inconsistent legacy schema instead of silently recreating missi
 });
 it('rejects an inconsistent v2 schema without creating or repairing stores',async()=>{
  const old=await raw(2,'media'),before=await snapshot(old);old.close();
- await expect(compat.openProtectedDatabase()).rejects.toThrow(/store|schema/i);
+ await expect(compat.openProtectedDatabase()).rejects.toThrow(/enable|upgrade/i);
+ await expect(compat.enableBlockingLibrary({onBlocked:()=>{}})).rejects.toThrow(/store|schema/i);
  const reopened=await raw(2,'media');expect(await snapshot(reopened)).toEqual(before);
 });

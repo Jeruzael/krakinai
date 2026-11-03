@@ -14,6 +14,7 @@ import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 import {RecipeConversionReview}from'./RecipeConversionReview';
 import {canonicalStringify}from'../domain/changeSetCanonical';
+import {KeyframeProposalReview} from './keyframes/KeyframeProposalReview';
 import {BlockingProposalReview} from './blocking/BlockingProposalReview';
 export function ChangeSetPreview({
   preview,
@@ -32,7 +33,7 @@ export function ChangeSetPreview({
   const [downloadStatus, setDownloadStatus] = useState("");
   const { plan, approval, changeSet } = preview;
   const onApproval=(next:ChangeSetApproval)=>{
-    if(changeSet.schema==='krakinai.change-set.v5'&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,blocking:false,blockingOutputDecisions:{}};
+    if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(changeSet.schema)&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,blocking:false,blockingOutputDecisions:{},...(changeSet.schema==='krakinai.change-set.v6'?{keyframes:false,frameImages:false,frameVideo:false,frameOutputDecisions:{}}:{})};
     if(changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,conversionDecisions:{}};
     supplyApproval(next);
   };
@@ -63,6 +64,7 @@ export function ChangeSetPreview({
         !["shot.select_take", "shot.set_status"].includes(t),
     ],
     ["Scenes", (t: string) => t.startsWith("scene.")],
+    ["Frame images and video review", (t:string)=>t.startsWith("frame_")],
     ["Reusable candidates", (t: string) => t.startsWith("asset.")||t.startsWith('variant.')],
     [
       "Preference and status",
@@ -151,6 +153,7 @@ export function ChangeSetPreview({
           </div>
         )}
       </section>
+      <KeyframeProposalReview preview={preview} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
       <BlockingProposalReview preview={preview} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
       <div className="import-preview-grid">
         <section

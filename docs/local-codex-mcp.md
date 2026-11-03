@@ -69,3 +69,8 @@ There are 13 allowlisted tools and no apply, approval, shell, filesystem or arbi
 Pair challenges last two minutes and allow five proof attempts. Sessions expire after one hour absolute or 15 minutes idle, with five-minute MAC epochs and 45-second unresponsive-browser expiry. Proposals expire after ten minutes. Consent at Apply is one use with a 60-second deadline. Process shutdown and lost rotation acknowledgement fail closed.
 
 Authenticated loopback messages use transcript-bound P-256 ECDH, HKDF and purpose-separated HMACs with sequence/replay checks. This is not TLS encryption or protection against a compromised OS account, malicious browser extension, same-origin script compromise or an authorized desktop automation tool. Browser `isTrusted` checks reject synthetic DOM approval events; they are not proof of a physical human against OS automation. Memory release is best effort, not forensic erasure. Real Chrome/Edge native pairing remains an explicit certification gate; automated Chromium with an injected verifier is reported separately.
+
+
+## Frame plans and image prompts (scope3)
+
+Use a reviewed C-capable portable bridge, Disconnect before enabling frame permission format, select exact project/source/frame and contributor disclosures, Apply Permissions and complete fresh native/browser pairing. Complete saved image prompts and canonical derivation are separate grants from Video Full text. The thirteen-tool allowlist and existing ceilings remain unchanged. See [frame workflow and minimum scope](keyframes-and-image-prompts.md#codex-access), [v6 contract](change-set-v6.md), and [C measured acceptance](qa/multi-frame-image-prompt-studio-c.md). Updating source does not activate a live release or modify your library.

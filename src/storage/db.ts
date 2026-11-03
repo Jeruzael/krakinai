@@ -14,6 +14,8 @@ import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from 
 export { SimilarSceneError } from '../domain/sceneDuplicates';
 import { getIdentityRevision, resolveGenerationIdentity } from '../domain/identityAnchors';
 import { resolveBlockingOutputs, type BlockingOutputDecisions } from '../domain/blockingOutputReview';
+import type {FrameAuthoringChoices} from '../domain/frameAuthoring';
+import {withStableLibraryMedia} from './mediaPreparationLock';
 import {
   SCHEMA_VERSION,
   type BuilderSlot,
@@ -175,6 +177,7 @@ export async function getAllSnapshot(): Promise<LibrarySnapshot> {
 }
 
 export async function loadStarterLibrary(forceReset = false): Promise<LibrarySnapshot> {
+  return withStableLibraryMedia(async()=>{
   const db = await openDatabase();
   const current = await getAllSnapshot();
   if (current.preferences.starterLoaded && !forceReset) {
@@ -209,6 +212,7 @@ export async function loadStarterLibrary(forceReset = false): Promise<LibrarySna
 
   await txDone(tx);
   return getAllSnapshot();
+  });
 }
 
 export function collectReferencedMediaIds(snap: {
@@ -229,6 +233,8 @@ export function collectReferencedMediaIds(snap: {
     for (const l of v.mediaLinks) ids.add(l.mediaId);
   }
   for (const d of snap.drafts) {
+    for(const assignment of Object.values(d.frameImageAssignments??{}))ids.add(assignment.mediaId);
+    for(const prompt of Object.values(d.imagePromptSnapshots??{}))for(const provenance of prompt.referenceProvenance)ids.add(provenance.association.mediaId);
     for (const link of d.directReferences ?? []) ids.add(link.mediaId);
     for (const {snapshot:s} of getSceneSnapshotEntries(d)) {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
@@ -239,6 +245,7 @@ export function collectReferencedMediaIds(snap: {
     else for (const l of d.referencePack?.entries ?? []) if (l.sourceSlot === 'source'||l.participantId) ids.add(l.mediaId);
   }
   for (const sc of snap.scenes) {
+    for(const prompt of Object.values(sc.imagePromptSnapshots??{}))for(const provenance of prompt.referenceProvenance)ids.add(provenance.association.mediaId);
     for (const link of sc.directReferences ?? []) ids.add(link.mediaId);
     for (const {snapshot:s} of getSceneSnapshotEntries(sc)) {
       for (const l of s?.mediaLinks ?? []) ids.add(l.mediaId);
@@ -257,6 +264,7 @@ export function collectReferencedMediaIds(snap: {
     }
   }
   for (const c of snap.collections ?? []) {
+    for(const event of c.project?.frameProduction?.imageEvents??[])if(event.mediaId)ids.add(event.mediaId);
     if (c.coverMediaId) ids.add(c.coverMediaId);
     for(const shot of c.project?.shots ?? []) {
       if(shot.firstFrameMediaId)ids.add(shot.firstFrameMediaId);
@@ -277,6 +285,7 @@ export async function saveMediaAsset(input: {
   height?: number;
   durationSeconds?: number;
 }): Promise<MediaAsset> {
+  return withStableLibraryMedia(async()=>{
   const snap = await getAllSnapshot();
   const currentBytes = snap.media.reduce(
     (sum, m) => sum + m.byteSize + (m.posterBlob?.size ?? 0),
@@ -307,6 +316,7 @@ export async function saveMediaAsset(input: {
   tx.objectStore('media').put(record);
   await txDone(tx);
   return record;
+  });
 }
 
 // Missing persisted references do not prove that a blob is unused: another tab's
@@ -624,6 +634,8 @@ export async function saveSceneDraft(
     bumpInputRevision?: boolean;
     expectedInputRevision?: number;
     confirmBlockingRemoval?: boolean;
+    confirmKeyframeRemoval?:boolean;
+    confirmFrameImageRemoval?:boolean;
   }
 ): Promise<SceneDraft> {
   const authoringError=validateSceneAuthoring(input);
@@ -632,7 +644,7 @@ export async function saveSceneDraft(
   if (cameraError) throw new Error(cameraError);
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
   if(performanceError)throw new Error(performanceError);
-  const metadataError=validatePhase4Record(input.ensemble!==undefined||input.blocking!==undefined?input:{ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
+  const metadataError=validatePhase4Record(input.ensemble!==undefined||input.blocking!==undefined||input.keyframePlan!==undefined||input.imagePromptSnapshots!==undefined||input.manualImageOutputs!==undefined||input.frameImageAssignments!==undefined?input:{ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
   if(metadataError)throw new Error(metadataError);
   const db = await openDatabase();
   const needsInheritedPrefix=input.inheritedAvoidPrefix===undefined&&input.shotType!==undefined&&input.shotType!=='character_scene'&&Boolean(input.sourceSceneId);
@@ -641,9 +653,11 @@ export async function saveSceneDraft(
   const pStore = tx.objectStore('preferences');
 
   const existing = input.id ? await getFromStore<SceneDraft>(dStore, input.id) : undefined;
+  if(input.expectedInputRevision!==undefined&&existing?.inputRevision!==input.expectedInputRevision){tx.abort();throw new Error('This draft changed in another tab. Your edits are preserved locally; refresh and compare before saving.');}
   if(existing?.ensemble&&input.ensemble===undefined){tx.abort();throw new Error('This stored draft has an ensemble. Open the current workspace before saving; the existing draft is preserved.');}
   if(existing?.blocking&&input.blocking===undefined&&!input.confirmBlockingRemoval){tx.abort();throw Error('Confirm removal of authored blocking explicitly. The stored draft is preserved.');}
-  if(input.expectedInputRevision!==undefined&&existing?.inputRevision!==input.expectedInputRevision){tx.abort();throw new Error('This draft changed in another tab. Your edits are preserved locally; refresh and compare before saving.');}
+  if(existing?.keyframePlan&&input.keyframePlan===undefined&&!input.confirmKeyframeRemoval){tx.abort();throw Error('Confirm removal of the authored keyframe plan explicitly. The stored draft is preserved.');}
+  if(existing?.frameImageAssignments&&input.frameImageAssignments===undefined&&!input.confirmFrameImageRemoval){tx.abort();throw Error('Keep draft-owned frame images or confirm their removal explicitly. The stored draft is preserved.');}
   let inheritedAvoidPrefix=input.inheritedAvoidPrefix??existing?.inheritedAvoidPrefix;
   if(inheritedAvoidPrefix===undefined&&needsInheritedPrefix) {
     const scenes=await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
@@ -652,7 +666,7 @@ export async function saveSceneDraft(
   }
   const now = new Date().toISOString();
   const nextRevision =
-    existing&&(isDirectPrompt(input)||input.revisionIntent||input.ensemble)
+    existing&&(isDirectPrompt(input)||input.revisionIntent||input.ensemble||input.keyframePlan!==undefined||existing.keyframePlan!==undefined)
       ? input.bumpInputRevision===false?existing.inputRevision:existing.inputRevision+1
       : input.inputRevision !== undefined
       ? input.inputRevision
@@ -663,6 +677,10 @@ export async function saveSceneDraft(
       : 1;
 
   const record: SceneDraft = {
+    ...(input.frameImageAssignments!==undefined?{frameImageAssignments:structuredClone(input.frameImageAssignments)}:{}),
+    ...(input.keyframePlan!==undefined?{keyframePlan:structuredClone(input.keyframePlan)}:{}),
+    ...(input.imagePromptSnapshots!==undefined?{imagePromptSnapshots:structuredClone(input.imagePromptSnapshots)}:{}),
+    ...(input.manualImageOutputs!==undefined?{manualImageOutputs:structuredClone(input.manualImageOutputs)}:{}),
     ...(input.blocking!==undefined?{blocking:structuredClone(input.blocking)}:{}),
     ...(input.ensemble!==undefined?{ensemble:structuredClone(input.ensemble)}:{}),
     id: existing?.id || input.id || generateId('draft'),
@@ -709,15 +727,15 @@ export async function saveSceneDraft(
   return record;
 }
 
-export interface SaveSceneOptions { blockingOutputDecisions?:BlockingOutputDecisions; duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; expectedInputRevision?:number; expectedProjectRevision?:number; projectTarget?: {collectionId:string;shotId:string} }
+export interface SaveSceneOptions extends FrameAuthoringChoices { frameImageChoices?:import("../domain/localFrameImages").LocalFrameImageChoices; blockingOutputDecisions?:BlockingOutputDecisions; duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; expectedInputRevision?:number; expectedProjectRevision?:number; projectTarget?: {collectionId:string;shotId:string} }
 export async function saveSceneFromDraft(draftId: string, options: SaveSceneOptions = {}): Promise<SavedScene> {
   const current=(await getAllSnapshot()).drafts.find(record=>record.id===draftId);
-  if(current&&(isDirectPrompt(current)||current.revisionIntent)){
+  if(current&&(isDirectPrompt(current)||current.revisionIntent||current.keyframePlan||current.imagePromptSnapshots||current.manualImageOutputs)){
     const {saveAuthoredScene}=await import('./sceneAuthoring');
     if(options.expectedInputRevision===undefined)throw new Error('An expected draft input revision is required for authored scene saves. Refresh the reviewed draft before saving.');
     const expectedProjectRevision=options.expectedProjectRevision??current.authoredProjectTarget?.expectedProjectRevision;
     if(options.projectTarget&&expectedProjectRevision===undefined)throw new Error('An expected project revision is required for this authored save.');
-    return saveAuthoredScene(draftId,{requestId:options.requestId??generateId('save'),expectedInputRevision:options.expectedInputRevision,...(options.blockingOutputDecisions?{blockingOutputDecisions:options.blockingOutputDecisions}:{}),...(options.projectTarget?{target:{...options.projectTarget,expectedProjectRevision:expectedProjectRevision!}}:{})});
+    return saveAuthoredScene(draftId,{requestId:options.requestId??generateId('save'),expectedInputRevision:options.expectedInputRevision,...(options.blockingOutputDecisions?{blockingOutputDecisions:options.blockingOutputDecisions}:{}),...(options.frameOutputDecisions?{frameOutputDecisions:options.frameOutputDecisions}:{}),...(options.frameVideoDecision?{frameVideoDecision:options.frameVideoDecision}:{}),...(options.frameImageChoices?{frameImageChoices:options.frameImageChoices}:{}),...(options.projectTarget?{target:{...options.projectTarget,expectedProjectRevision:expectedProjectRevision!}}:{})});
   }
   const db = await openDatabase();
   const tx = db.transaction(['drafts', 'scenes', 'assets', 'media', 'collections'], 'readwrite');
@@ -882,7 +900,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
   const scene = snap.scenes.find((s) => s.id === sceneId);
   if (!scene) throw new Error('Saved scene not found.');
   if(isDirectPrompt(scene)){
-    return saveSceneDraft({title:`${scene.title.slice(0,93)} (Copy)`,authoringMode:'direct_prompt',directPrompt:structuredClone(scene.directPrompt),directReferences:getDirectReferenceLinks(scene),pendingInputs:structuredClone(scene.pendingInputs),claimNotes:scene.claimNotes,slots:structuredClone(scene.slots),extraRequiredSlots:[],sceneInstructions:'',settings:{...scene.settings},sourceSceneId:scene.id,shotType:scene.shotType,sourceMediaLinks:structuredClone(scene.sourceMediaLinks),referencePack:structuredClone(scene.referencePack),manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed'});
+    return saveSceneDraft({title:`${scene.title.slice(0,93)} (Copy)`,authoringMode:'direct_prompt',directPrompt:structuredClone(scene.directPrompt),directReferences:getDirectReferenceLinks(scene),pendingInputs:structuredClone(scene.pendingInputs),claimNotes:scene.claimNotes,slots:structuredClone(scene.slots),extraRequiredSlots:[],sceneInstructions:'',settings:{...scene.settings},sourceSceneId:scene.id,shotType:scene.shotType,sourceMediaLinks:structuredClone(scene.sourceMediaLinks),referencePack:structuredClone(scene.referencePack),...(scene.keyframePlan?{keyframePlan:structuredClone(scene.keyframePlan)}:{}),manualOutputs:{},resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed'});
   }
 
   return saveSceneDraft({
@@ -890,6 +908,9 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
     ...(scene.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:structuredClone(scene.conversionProvenance)}:{}),
     ...(scene.ensemble?{ensemble:structuredClone(scene.ensemble)}:{}),
     ...(scene.blocking?{blocking:structuredClone(scene.blocking)}:{}),
+    ...(scene.keyframePlan?{keyframePlan:structuredClone(scene.keyframePlan)}:{}),
+    ...(scene.imagePromptSnapshots?{imagePromptSnapshots:structuredClone(scene.imagePromptSnapshots)}:{}),
+    ...(scene.manualImageOutputs?{manualImageOutputs:structuredClone(scene.manualImageOutputs)}:{}),
     inheritedAvoidPrefix:savedAvoidPrefix(scene,snap.scenes),
     ...(scene.shotType !== undefined ? { shotType: scene.shotType } : {}),
     ...(scene.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(scene.sourceMediaLinks) } : {}),
@@ -902,7 +923,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
     dialogue: scene.dialogue ? structuredClone(scene.dialogue) : undefined,
     settings: { ...scene.settings },
     sourceSceneId: scene.id,
-    manualOutputs: scene.blocking?structuredClone(scene.manualOutputs):{},
+    manualOutputs: scene.blocking||scene.keyframePlan?structuredClone(scene.manualOutputs):{},
     resultMediaLinks: [],
     reviewNotes: '',
     reviewStatus: 'unreviewed',
@@ -950,7 +971,9 @@ export async function saveDraftAsTemplate(params: {
   ensembleMode?:'full'|'shared_only';
   confirmEnsembleOmissions?:boolean;
   confirmBlockingOmission?:boolean;
+  confirmKeyframeOmission?:boolean;
 }): Promise<Template> {
+  if((params.draft.keyframePlan||params.draft.imagePromptSnapshots||params.draft.manualImageOutputs)&&!params.confirmKeyframeOmission)throw Error('Confirm that scene-specific keyframes and image outputs are omitted from this reusable template. The source draft remains unchanged.');
   if(params.draft.blocking&&!params.confirmBlockingOmission)throw Error('Confirm that scene-specific blocking is omitted from this reusable template. The source draft remains unchanged.');
   const ensemble=Boolean(params.draft.ensemble);
   if(ensemble&&!['full','shared_only'].includes(params.ensembleMode??''))throw Error('Choose an explicit ensemble template choice: full ensemble or shared components only.');
@@ -1156,6 +1179,7 @@ export async function removeMemberFromCollection(params: {
 }
 
 export async function replaceAllStoresTransactionally(data: LibrarySnapshot): Promise<void> {
+  return withStableLibraryMedia(async()=>{
   const db = await openDatabase();
   const tx = db.transaction(STORE_NAMES, 'readwrite');
 
@@ -1183,6 +1207,7 @@ export async function replaceAllStoresTransactionally(data: LibrarySnapshot): Pr
     await completion.catch(() => undefined);
     throw error;
   }
+  });
 }
 
 async function writeIdentityAnchor(characterId: string, text: string, approve: boolean, expectedIdentityRevision?: number): Promise<PromptAsset> {

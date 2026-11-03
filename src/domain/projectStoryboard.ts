@@ -1,5 +1,6 @@
 import type { Collection, CollectionMemberRef, ProjectShot, SavedScene } from '../types/domain';
 import { resolveShotType } from './shotTypeRules';
+import {retireUnavailableFrameImages} from './frameImageAssociations';
 
 export function getProjectShotType(shot: ProjectShot, selectedScene?: SavedScene) {
   const savedType = selectedScene ? resolveShotType(selectedScene) : undefined;
@@ -57,5 +58,5 @@ export function removeTakeFromProject(collection: Collection, sceneId: string, s
     const takeNotes=shot.takeNotes ? Object.fromEntries(Object.entries(shot.takeNotes).filter(([id]) => id !== sceneId)) : undefined;
     return {...shot,takeSceneIds,selectedSceneId,takeNotes,status:takeSceneIds.length===0?'planned':shot.status};
   });
-  return {...collection,project:{...collection.project,revision:collection.project.revision+1,shots},members:projectMembersFromShots(collection,shots)};
+  return retireUnavailableFrameImages({...collection,project:{...collection.project,revision:collection.project.revision+1,shots},members:projectMembersFromShots(collection,shots)});
 }

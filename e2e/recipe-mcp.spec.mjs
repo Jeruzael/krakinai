@@ -136,6 +136,7 @@ for (const mode of [
         "krakinai.change-set.v3",
         "krakinai.change-set.v4",
         "krakinai.change-set.v5",
+        "krakinai.change-set.v6",
       ]);
       const preview = await bridge.call("krakinai_preview_change_set", {
         changeSet: input,

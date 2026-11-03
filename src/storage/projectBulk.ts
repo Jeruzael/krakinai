@@ -2,6 +2,7 @@ import type {Collection,ProductionStatus,ProjectShot,SavedScene} from '../types/
 import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
+import {retireUnavailableFrameImages} from '../domain/frameImageAssociations';
 
 const statuses=new Set<ProductionStatus>(['planned','prompt_ready','generated','reviewed','final']);
 const limit=16*1024*1024;
@@ -21,7 +22,7 @@ async function mutate(collectionId:string,change:(c:Collection,scenes:SavedScene
  const db=await openDatabase();const tx=db.transaction(['collections','scenes'],'readwrite');const completion=done(tx);
  try{
   const store=tx.objectStore('collections');const raw=await request<Collection|undefined>(store.get(collectionId));if(!raw)throw new Error('Collection not found.');
-  const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());const result=change(raw,scenes);
+  const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());const result=retireUnavailableFrameImages(change(raw,scenes));
   if(result!==raw){const error=validateProject(result,scenes);if(error)throw new Error(error);store.put(result);}
   await completion;return result;
  }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}

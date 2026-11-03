@@ -3,6 +3,7 @@ import { getProjectShots } from '../domain/projectStoryboard';
 import { validateProject, type ProjectReferences } from '../domain/phase5ProjectValidation';
 import { generateId, openDatabase } from './db';
 import { validateMediaCandidate } from '../domain/validation';
+import {withStableLibraryMedia} from './mediaPreparationLock';
 
 function request<T>(req: IDBRequest<T>): Promise<T> { return new Promise((resolve, reject) => { req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error); }); }
 function done(tx: IDBTransaction): Promise<void> { return new Promise((resolve, reject) => { tx.oncomplete=()=>resolve(); tx.onabort=()=>reject(tx.error ?? new Error('Project transaction aborted.')); tx.onerror=()=>reject(tx.error ?? new Error('Project transaction failed.')); }); }
@@ -62,6 +63,7 @@ export function updateProjectFrames({collectionId,shotId,firstFrameMediaId,lastF
   return replaceShot(c,next);
 });}
 export async function uploadProjectFrame({collectionId,shotId,side,file}:{collectionId:string;shotId:string;side:'firstFrameMediaId'|'lastFrameMediaId';file:File}):Promise<Collection> {
+  return withStableLibraryMedia(async()=>{
   id(collectionId,'collection ID');id(shotId,'shot ID');
   if(side!=='firstFrameMediaId'&&side!=='lastFrameMediaId')throw new Error('Invalid frame side.');
   if(!file||typeof file.name!=='string'||typeof file.type!=='string'||typeof file.size!=='number')throw new Error('Invalid image file.');
@@ -92,6 +94,7 @@ export async function uploadProjectFrame({collectionId,shotId,side,file}:{collec
     mediaStore.put(record);collectionStore.put(updated);
     await completion;return updated;
   }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+  });
 }
 export function updateWardrobeIntent({collectionId,shotId,reason,notes}:{collectionId:string;shotId:string;reason?:WardrobeIntentReason|null;notes?:string}):Promise<Collection> {return mutate(collectionId,c=>{
   const old=shot(c,shotId);

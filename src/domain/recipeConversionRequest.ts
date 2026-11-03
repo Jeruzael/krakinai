@@ -10,6 +10,7 @@ import{resolveImportedBindings}from'./changeSetReferences';
 import{applyRecipeEnsemblePatch}from'./changeSetEnsemble';
 import{collectReferenceCandidates}from'./referencePack';
 import{generateId}from'../storage/db';
+import{enableKeyframeMapping}from'./keyframeConversionMapping';
 const clone=<T>(x:T):T=>structuredClone(x);
 /** Match the JSON transport's optional-field semantics without changing any string value. */
 export const serializableMappingPackage=(input:ChangeSet):ChangeSet=>JSON.parse(JSON.stringify(input)) as ChangeSet;
@@ -48,9 +49,9 @@ export async function createConversionPackage(source:SavedScene,target:SceneProj
  if(!current||!isDirectPrompt(current)||!shot?.takeSceneIds.includes(current.id)||collection?.project?.revision!==target.expectedProjectRevision)throw Error('Select the saved Direct Prompt and its exact current project shot before mapping.');
  let op:ConversionOperation={type:'scene.convert_direct_to_recipe',operationId:'convert',clientRef:'converted',sceneId:current.id,expectedHeadId:getRevisionHead(current,state.scenes).id,project:{id:collection.id,expectedRevision:target.expectedProjectRevision},shot:{id:shot.id},title:(current.title+' — Recipe').slice(0,100),shotType:current.shotType??'character_scene',settings:{...clone(current.settings),aspectRatio:current.settings.aspectRatio??'16:9',durationSeconds:current.settings.durationSeconds??8},sceneInstructions:'',pendingInputs:clone(current.pendingInputs??[]),conversion:{version:1,sourceTextSha256:'0'.repeat(64),mappings:[]}};
  const input:ChangeSet={schema:'krakinai.change-set.v4',changeSetId:generateId('recipe_conversion'),source:{kind:'manual',label:'Guided Direct Prompt conversion'},title:'Direct Prompt → recipe alternate take',operations:[op]};
- const proofs=await prepareConversionSources(input,[current]);op.conversion.sourceTextSha256=proofs.get(current.id)!.sha256;op=reconcileConversionMappings(op,current,state);input.operations=[op];return serializableMappingPackage(input);
+ const proofs=await prepareConversionSources(input,[current]);op.conversion.sourceTextSha256=proofs.get(current.id)!.sha256;op=reconcileConversionMappings(op,current,state);input.operations=[op];return current.keyframePlan?enableKeyframeMapping(serializableMappingPackage(input),state):serializableMappingPackage(input);
 }
-export function buildConversionRequest(source:SavedScene,target:SceneProjectTarget,version:4|5=4):string{
+export function buildConversionRequest(source:SavedScene,target:SceneProjectTarget,version:4|5|6=4):string{
  return `Prepare a KRAKINAI v${version} recipe conversion proposal.\nProject: ${target.collectionId}\nShot: ${target.shotId}\nExpected project revision: ${target.expectedProjectRevision}\nOriginal saved Direct Prompt: ${source.id}\nRead the authorized project and krakinai_get_scene for this source (explicit full-prompt permission required). Use its sourceTextSha256 and expectedHeadId. Search authorized reusable assets and compatible Outfits before proposing missing elements. Map participants and exact dialogue cues explicitly; mark uncertainty and unresolved inputs honestly. Preview with krakinai_preview_change_set, then submit for browser review. Preserve the original, references, pending frames and preferred take. Save a genuine assembled recipe alternate take on this same shot only after human browser approval. Do not create a new project or widen read permissions. This request contains IDs only; it grants no access and includes no original prompt text.${version===5?' Continue the downloaded v5 planning package; preserve its Blocking IDs and captured binding tokens. Use exact authorized source revision/digests, separate Blocking grants and human output decisions. Never refresh stale proofs or infer approval.':''}`;
 }
 export function ensemblePatchFromMapping(draft:SceneDraft):NonNullable<RecipeSceneOperation['ensemble']>{

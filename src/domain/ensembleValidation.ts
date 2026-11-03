@@ -4,6 +4,10 @@ import { validatePhase4Record } from "./phase4Validation";
 import { validatePerformanceDirection } from "./dialoguePerformance";
 import { getShotTypeRules, isShotType, resolveShotType } from "./shotTypeRules";
 import { MAX_FILES_PER_RECORD } from "./validation";
+import type {ComponentSnapshot} from '../types/domain';
+export function validateSnapshotWardrobeOwnership(character:ComponentSnapshot|undefined,wardrobe:ComponentSnapshot|undefined):string|undefined{
+ if(wardrobe?.sourceType==='variant'&&(!character||character.sourceType!=='asset'||wardrobe.parentCharacterId!==character.sourceId))return 'Outfit variant belongs to a different parent Character. Select a compatible Outfit.';
+}
 const record = (v: unknown): v is Record<string, unknown> =>
   !!v && typeof v === "object" && !Array.isArray(v);
 const text = (v: unknown, max: number, required = false): v is string =>
@@ -186,16 +190,8 @@ export function validateSceneEnsemble(
       if (characters.has(key))
         errors.push(label + "duplicate Character source.");
       characters.add(key);
-      if (
-        record(p.wardrobe) &&
-        p.wardrobe.sourceType === "variant" &&
-        (p.character.sourceType !== "asset" ||
-          p.wardrobe.parentCharacterId !== p.character.sourceId)
-      )
-        errors.push(
-          label +
-            "Outfit variant belongs to a different parent Character. Select a compatible Outfit.",
-        );
+      const wardrobeOwnership=validateSnapshotWardrobeOwnership(p.character as unknown as ComponentSnapshot,record(p.wardrobe)?p.wardrobe as unknown as ComponentSnapshot:undefined);
+      if(wardrobeOwnership)errors.push(label+wardrobeOwnership);
       const metadata = validatePhase4Record({
         slots: {
           character: p.character,

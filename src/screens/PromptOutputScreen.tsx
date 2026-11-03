@@ -1,3 +1,7 @@
+import {FlowHandoffDialog} from '../components/keyframes/FlowHandoffDialog';
+import {FrameVideoReview} from '../components/keyframes/FrameVideoReview';
+import {createSceneRevisionDraft} from '../storage/sceneAuthoring';
+import {FrameWorkspace,useFrameOutputPreview} from '../components/keyframes/FrameWorkspace';
 import React, { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
@@ -61,14 +65,15 @@ import { ReferencePackManager } from '../components/ReferencePackManager';
 import { getGenerationPackReferences } from '../domain/referencePack';
 import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, SHOT_TYPE_LABELS } from '../domain/shotTypeRules';
 import { CollectionReturnControl } from '../components/CollectionReturnControl';
-import { carryProjectTarget, getProjectSaveTarget } from '../domain/projectRoutes';
-import { collectionSceneRoute } from '../domain/collectionNavigation';
+import { carryProjectTarget, getProjectSaveTarget,getSavedSceneProjectTarget } from '../domain/projectRoutes';
+import { collectionSceneRoute,collectionViewState } from '../domain/collectionNavigation';
 import './promptOutput.css';
 import {BlockingOutputReview} from '../components/blocking/BlockingOutputReview';
 import {resolveBlockingOutputs,type BlockingOutputDecisions} from '../domain/blockingOutputReview';
 
 const OUTPUT_TABS = [
-  { value: 'prompt', label: 'Prompt' },
+  { value: 'prompt', label: 'Video Prompt' },
+  { value: 'frames', label: 'Image Frames' },
   { value: 'references', label: 'References' },
   { value: 'review', label: 'Review' },
 ] as const;
@@ -144,6 +149,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const saveGuard = useRef(false);
   const saveToken = useRef<{binding:string;id:string} | null>(null);
   const [saveBusy, setSaveBusy] = useState(false);
+  const [flowOpen,setFlowOpen]=useState(false);
   const [saveError, setSaveError] = useState('');
   const [blockingDecisions,setBlockingDecisions]=useState<BlockingOutputDecisions>({});
   const reviewedDraft=snapshot?.drafts.find(d=>d.id===id);
@@ -163,7 +169,9 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const canonicalMode: OutputMode = jsonMode ? 'structured' : mode as OutputMode;
   const derivedView = jsonMode || workflow !== 'canonical';
   const [activeTab, setActiveTab] =
-    useState<(typeof OUTPUT_TABS)[number]['value']>('prompt');
+    useState<(typeof OUTPUT_TABS)[number]['value']>(()=>new URLSearchParams(window.location.hash.split('?')[1]).get('outputTab')==='frames'?'frames':'prompt');
+  const requestedOutputTab=new URLSearchParams(hashPath.split('?')[1]).get('outputTab');
+  useEffect(()=>{setActiveTab(requestedOutputTab==='frames'?'frames':'prompt');},[id,requestedOutputTab]);
   const [reviewNotesBuffer, setReviewNotesBuffer] = useState<string | null>(
     null
   );
@@ -234,9 +242,11 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     return map;
   }, [snapshot]);
 
+  const framePreview=useFrameOutputPreview(reviewedDraft,snapshot?.scenes.find(s=>s.id===reviewedDraft?.sourceSceneId),mediaMap,blockingDecisions);
+
   if (!snapshot) return null;
 
-  const isSavedScene = id.startsWith('scene_');
+  const isSavedScene = snapshot.scenes.some(scene=>scene.id===id);
   const savedCandidate = isSavedScene
     ? snapshot.scenes.find((s) => s.id === id)
     : undefined;
@@ -267,9 +277,15 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   const assembled = draft ? assembleScenePrompt(draft) : null;
   const needsBlockingReview=!!draft&&(!!draft.blocking||!!snapshot.scenes.find(s=>s.id===draft.sourceSceneId)?.blocking);
   const blockingResolution=draft&&assembled?resolveBlockingOutputs(draft,assembled.outputs,blockingDecisions,needsBlockingReview):undefined;
-  const rawSource = savedScene ?? draft!;
+  const frameOutputs=framePreview.enabled?framePreview.prepared?.video.outputs:undefined;
+  const rawSource = savedScene ?? (framePreview.prepared?{...draft!,...framePreview.prepared.images,outputs:framePreview.prepared.video.outputs,manualOutputs:framePreview.prepared.video.manualOutputs}:draft!);
   const source = {...rawSource, avoidText:getSceneLevelAvoidText(rawSource), slots:getActiveSceneSlots(rawSource),
     sourceMediaLinks:getActiveSourceMediaLinks(rawSource),referencePack:getActiveReferencePack(rawSource)};
+  const frameRequest=savedScene?getSavedSceneProjectTarget(hashPath,savedScene,snapshot.collections):undefined;
+  const frameMemberships=savedScene?snapshot.collections.flatMap(c=>(c.project?.shots??[]).filter(shot=>shot.takeSceneIds.includes(savedScene.id)).map(shot=>({collectionId:c.id,shotId:shot.id}))):[];
+  const frameTarget=frameRequest?.requested?frameRequest.target:projectContext.target??draft?.authoredProjectTarget??(frameMemberships.length===1?frameMemberships[0]:undefined);
+  const frameCollection=snapshot.collections.find(c=>c.id===frameTarget?.collectionId);
+  const frameShotId=frameTarget?.shotId;
   const liveMaster = snapshot.assets.find(asset => asset.id === source.slots.character?.sourceId);
   const generationOptions = {
     identity: resolveGenerationIdentity(source, liveMaster, !!savedScene).identity,
@@ -304,14 +320,14 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
   let activeText='';
   try{activeText =
     mode === 'json'
-      ? serializeSceneJson(savedScene ?? draft!)
+      ? serializeSceneJson(rawSource)
       : mode === 'generation_json'
         ? serializeGenerationJson(source, generationOptions)
         : workflow !== 'canonical'
           ? formatGenerationText(source, workflow as ExportPresetId, generationOptions)
       : savedScene
         ? savedScene.outputs[canonicalMode]
-        : (manualOverride?.text ?? assembled?.outputs[canonicalMode] ?? '');
+        : (frameOutputs?.[canonicalMode] ?? manualOverride?.text ?? assembled?.outputs[canonicalMode] ?? '');
   }catch(cause){outputError=cause instanceof Error?cause.message:String(cause);}
   const outputUnavailable=!!outputError||needsBlockingReview&&assembled?.valid===false;
 
@@ -428,20 +444,21 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
 
   const handleSaveScene = async (decision?: 'version' | 'take') => {
     if (!draft || saveGuard.current) return;
-    if(outputUnavailable||blockingResolution?.valid===false){setSaveError('Repair blocking and choose each active manual-output decision before saving. Your planning draft is preserved.');return;}
+    if(outputUnavailable||(!framePreview.enabled&&blockingResolution?.valid===false)||framePreview.enabled&&(!framePreview.prepared||framePreview.prepared.findings.some(f=>f.severity==='blocking'))){setSaveError('Repair blocking and choose each active manual-output decision before saving. Your planning draft is preserved.');return;}
     if (projectContext.error) { setSaveError(projectContext.error); return; }
     saveGuard.current = true;
     setSaveBusy(true);
     setSaveError('');
-    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target,blockingDecisions]);
+    const binding = JSON.stringify([draft, decision, decision ? duplicateTarget : undefined, projectContext.target,blockingDecisions,framePreview.decisions,framePreview.video,framePreview.imageChoices]);
     if (saveToken.current?.binding !== binding) saveToken.current = {binding, id: crypto.randomUUID()};
-    const options: SaveSceneOptions = {requestId:saveToken.current.id, ...(draft.revisionIntent||needsBlockingReview?{expectedInputRevision:draft.inputRevision,...(projectContext.target?{expectedProjectRevision:draft.authoredProjectTarget?.expectedProjectRevision??snapshot.collections.find(c=>c.id===projectContext.target!.collectionId)?.project?.revision??0}:{})}:{}),...(needsBlockingReview?{blockingOutputDecisions:blockingDecisions}:{}), ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
+    const options: SaveSceneOptions = {requestId:saveToken.current.id,...(framePreview.enabled?{frameOutputDecisions:framePreview.decisions,frameVideoDecision:framePreview.video,frameImageChoices:framePreview.imageChoices}:{}), ...(draft.revisionIntent||needsBlockingReview||framePreview.enabled?{expectedInputRevision:draft.inputRevision,...(projectContext.target?{expectedProjectRevision:draft.authoredProjectTarget?.expectedProjectRevision??snapshot.collections.find(c=>c.id===projectContext.target!.collectionId)?.project?.revision??0}:{})}:{}),...(needsBlockingReview?{blockingOutputDecisions:blockingDecisions}:{}), ...(projectContext.target ? {projectTarget:projectContext.target} : {}), ...(decision ? {duplicateDecision:decision,duplicateOfSceneId:duplicateTarget} : {})};
     try {
       const saved = await saveSceneFromDraft(draft.id, options);
       await refreshSnapshot();
       setSimilarScenes([]);
       showToast(`Saved immutable scene "${saved.title}".`, 'success');
-      navigate(projectContext.target ? collectionSceneRoute(saved.id, projectContext.target.collectionId, {tab:'storyboard',shot:projectContext.target.shotId}) : `/output/${saved.id}`, true);
+      const destination=saved.saveProjectTarget??projectContext.target;
+      navigate(destination?collectionSceneRoute(saved.id,destination.collectionId,{...(new URLSearchParams(hashPath.split('?')[1]).has('tab')?collectionViewState(hashPath):{tab:'storyboard'}),shot:destination.shotId})+(activeTab==='frames'?'&outputTab=frames':''):`/output/${saved.id}`,true);
     } catch (err) {
       if (err instanceof SimilarSceneError) {
         setSimilarScenes(err.matches);
@@ -589,7 +606,11 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
     ? getProviderNotices(record, workflow as ExportPresetId, generationOptions) : [];
   const editPreflightSource = () => {
     setShowPreflight(false);
-    if (draft) navigate(`/builder/${draft.id}`);
+    if (draft) navigate(carryProjectTarget(`/builder/${draft.id}`,hashPath));
+    else if(savedScene?.keyframePlan){
+      const target=frameTarget;
+      void createSceneRevisionDraft(savedScene.id,{alternateTake:true,...(target?{target:{...target,expectedProjectRevision:snapshot.collections.find(c=>c.id===target.collectionId)?.project?.revision??0}}:{})}).then(async copy=>{await refreshSnapshot();navigate(target?collectionSceneRoute(copy.id,target.collectionId,{...collectionViewState(hashPath),shot:target.shotId})+'&takeTarget=1&outputTab=frames'+(new URLSearchParams(hashPath.split('?')[1]).get('frame')?'&frame='+encodeURIComponent(new URLSearchParams(hashPath.split('?')[1]).get('frame')!):''):`/output/${copy.id}?outputTab=frames`);}).catch(e=>showToast(e instanceof Error?e.message:String(e),'error'));
+    }
     else void createDraftFromSavedScene(savedScene!.id).then(async copy => {
       await refreshSnapshot();
       navigate(`/builder/${copy.id}`);
@@ -1049,6 +1070,10 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           ))}
         </div>
 
+        <section role="tabpanel" id={`${tabId}-panel-frames`} aria-labelledby={`${tabId}-tab-frames`} hidden={activeTab!=='frames'} className="output-tab-panel">
+          {savedScene&&<button className="btn btn-secondary btn-sm" disabled={!frameCollection?.project||!frameShotId} onClick={()=>setFlowOpen(true)}>Prepare for Flow</button>}
+          <FrameWorkspace key={id} source={savedScene??draft!} draft={draft} parent={snapshot.scenes.find(s=>s.id===draft?.sourceSceneId)} collection={frameCollection} shotId={frameShotId} mediaMap={mediaMap} preview={framePreview} onChanged={refreshSnapshot} onEditCopy={editPreflightSource}/>
+        </section>
         <section
           role="tabpanel"
           id={`${tabId}-panel-prompt`}
@@ -1063,6 +1088,8 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
               source data; manual prose is not translated into JSON.
             </p>
           )}
+      {draft&&framePreview.enabled&&activeTab==='prompt'&&<div className="card"><FrameVideoReview decision={framePreview.video} onDecision={framePreview.setVideo} onChanged={refreshSnapshot}/></div>}
+      {draft&&assembled&&needsBlockingReview&&<div className="card"><BlockingOutputReview source={draft} canonical={framePreview.prepared?.video.canonicalOutputs??assembled.outputs} decisions={blockingDecisions} onChange={setBlockingDecisions} requireReview/></div>}
           <SceneOutputWorkspace
             layout={workspaceLayout}
             configuration={outputConfiguration}
@@ -1290,8 +1317,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
       </div>
 
       {outputUnavailable&&<section className="card" role="alert"><h3>Complete output unavailable</h3><p>{outputError||assembled?.errors.join(' ')}</p>{draft&&<button type="button" className="btn btn-secondary" onClick={()=>navigate(carryProjectTarget(`/builder/${draft.id}`,hashPath))}>Repair blocking in Scene Builder</button>}</section>}
-      {draft&&assembled&&needsBlockingReview&&<div className="card"><BlockingOutputReview source={draft} canonical={assembled.outputs} decisions={blockingDecisions} onChange={setBlockingDecisions} requireReview/></div>}
-      {activeTab !== 'prompt' && promptActions}
+      {activeTab !== 'prompt' && activeTab !== 'frames' && promptActions}
       <footer
         className="card output-action-footer"
         role="region"
@@ -1339,7 +1365,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
               <button
                 type="button"
                 className="btn btn-primary"
-                disabled={saveBusy||outputUnavailable||blockingResolution?.valid===false}
+                disabled={saveBusy||outputUnavailable||(!framePreview.enabled&&blockingResolution?.valid===false)||framePreview.enabled&&(!framePreview.prepared||framePreview.prepared.findings.some(f=>f.severity==='blocking'))}
                 onClick={() => void handleSaveScene()}
               >
                 <BookmarkCheck size={16} />{' '}
@@ -1461,6 +1487,7 @@ const RecipePromptOutputScreen:React.FC<{id:string}>=({id})=>{
           </div>
         </StudioDialog>
       )}
+      {flowOpen&&savedScene&&frameCollection?.project&&frameShotId&&<FlowHandoffDialog scene={savedScene} collection={frameCollection} shotId={frameShotId} snapshot={snapshot} onClose={()=>setFlowOpen(false)}/>}
       {showPreflight && (
         <ScenePreflightDialog
           findings={preflightFindings}

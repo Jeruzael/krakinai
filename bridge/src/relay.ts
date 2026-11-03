@@ -2,7 +2,7 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { randomUUID } from 'node:crypto';
 import { BRIDGE_VERSION, MCP_LIMITS, McpError, exactKeys, record, resultData, resultError, validateOrigin, validateToolArgs, type McpCommand, type McpResult, type McpToolName } from '../../src/domain/mcpProtocol';
 import { createOffer, decode64, deriveEpoch, deriveHandshake, checkProof, proof, randomSecret, signMessage, verifyMessage, type AuthMessage, type EpochKeys, type HandshakeKeys, type KeyOffer } from '../../src/domain/mcpCrypto';
-import {BLOCKING_BRIDGE_VERSION,MCP_BLOCKING_CAPABILITIES,intersectMcpCapabilities,requireBlockingCapabilities} from '../../src/domain/mcpCapabilities';
+import {BLOCKING_BRIDGE_VERSION,MCP_KEYFRAME_CAPABILITIES,MCP_BLOCKING_CAPABILITIES,intersectMcpCapabilities,requireBlockingCapabilities,requireKeyframeCapabilities} from '../../src/domain/mcpCapabilities';
 
 export interface VerificationRequest { bridgePath: string; version: string; origin: string; relay: string; challengeId: string; secret: string; verificationCode: string }
 export interface NativeVerification { decision: Promise<boolean>; close(): void }
@@ -69,13 +69,13 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
         const v2=path==='/v2/pair/start';
         record(value);const fields=v2?['version','client','capabilities']:['version','client'];exactKeys(value,fields,fields);
         if (value.version !== (v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION)) fail(400, 'PROTOCOL_VERSION');
-        const capabilities=v2?intersectMcpCapabilities(value.capabilities,MCP_BLOCKING_CAPABILITIES):[];
+        const capabilities=v2?intersectMcpCapabilities(value.capabilities,MCP_KEYFRAME_CAPABILITIES):[];
         if (session || challenge || starting) fail(409, 'PAIRING_BUSY');
         if (now() - nativeAt < 30000) fail(429, 'RATE_LIMITED'); rate(pairingStarts, 5, 300000);
         const client = offer(value.client); starting = true; nativeAt = now();
         try {
           const server = await createOffer(), secret = randomSecret(), challengeId = randomUUID();
-          const transcript = { version: v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION, instanceId, challengeId, origin: appOrigin, relay: url, client, server: server.offer,...(v2?{clientCapabilities:value.capabilities,serverCapabilities:[...MCP_BLOCKING_CAPABILITIES],capabilities}:{}) };
+          const transcript = { version: v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION, instanceId, challengeId, origin: appOrigin, relay: url, client, server: server.offer,...(v2?{clientCapabilities:value.capabilities,serverCapabilities:[...MCP_KEYFRAME_CAPABILITIES],capabilities}:{}) };
           const keys = await deriveHandshake(secret, server.privateKey, client.publicKey, transcript);
           const native = options.verifyNative({ bridgePath: options.bridgePath, version: '1.0.0', origin: appOrigin, relay: url, challengeId, secret, verificationCode: keys.transcriptDigest.slice(0, 12) });
           const current: Challenge = { id: challengeId, created: now(), attempts: 0, secret, keys, transcript, native, allowed: false,capabilities }; challenge = current; notify('pairing');
@@ -157,6 +157,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
         burstTokens--; rate(toolTimes, 30, 60000); const args = validateToolArgs(tool, raw);
         if (!session?.confirmed) { if (tool === 'krakinai_connection_status') return resultData({ connected: false, state: 'disconnected', apiVersion: BRIDGE_VERSION, manualImportAvailable: true }); throw new McpError('PAIRING_REQUIRED', 'Connect and approve permissions in KRAKINAI first.', true); }
         if('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v5')requireBlockingCapabilities(session.capabilities);
+        if(args.target||args.projection||('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v6'))requireKeyframeCapabilities(session.capabilities);
         if (pending.size >= MCP_LIMITS.requests) throw new McpError('QUEUE_FULL', 'The local request queue is full. Retry after pending requests finish.', true);
         const command: McpCommand = { requestId: randomUUID(), tool, args }, sessionId = session.id;
         return await new Promise<McpResult>(resolve => {

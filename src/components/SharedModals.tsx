@@ -379,6 +379,8 @@ export const SettingsBackupModal: React.FC = () => {
     setRestoreSummary(null);
     setPendingZipBytes(null);
     const file = e.target.files?.[0];
+    // Allow choosing this same backup again after Cancel or validation failure.
+    e.currentTarget.value = '';
     if (!file) return;
 
     try {

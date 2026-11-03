@@ -1,0 +1,23 @@
+import React from 'react';
+import {it,expect,afterEach,vi} from 'vitest';
+import {render,screen,cleanup} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import App from '../App';
+import {seedKeyframeStorage} from './fixtures/keyframeStorageFixture';
+import {getAllSnapshot} from '../storage/db';
+let close:(()=>Promise<void>)|undefined;
+afterEach(async()=>{cleanup();vi.unstubAllGlobals();await close?.();close=undefined;});
+it('requires explicit frame controls and freezes the format during actual synthetic pairing',async()=>{
+ const f=await seedKeyframeStorage(),before=await getAllSnapshot();window.location.hash='#/connections/ai';
+ const relayModule='../../bridge/src/relay.ts';const {createRelay}=await import(/* @vite-ignore */ relayModule);let secret='';
+ const relay=await createRelay({port:0,appOrigin:window.location.origin,bridgePath:'C:/synthetic/frame-test.mjs',verifyNative(info:{secret:string}){secret=info.secret;return{decision:Promise.resolve(true),close(){}};}});close=()=>relay.close();
+ const fetcher=globalThis.fetch;vi.stubGlobal('fetch',(url:string,init?:RequestInit)=>fetcher(url,{...init,headers:{...init?.headers,origin:window.location.origin}}));
+ const user=userEvent.setup();render(<App/>);await screen.findByRole('heading',{name:'AI Connections'});await user.click(screen.getByRole('tab',{name:'Permissions'}));
+ await user.click(screen.getByRole('checkbox',{name:'Enable frame permission format'}));
+ for(const name of ['Allow frame plan proposals','Allow frame image association proposals','Allow canonical image-prompt derivation'])expect(screen.getByRole('checkbox',{name})).not.toBeChecked();
+ await user.click(screen.getByRole('button',{name:'Select All Records'}));expect(screen.getByRole('checkbox',{name:'Select all matching Frame plan text'})).not.toBeChecked();
+ await user.click(screen.getByRole('button',{name:'Apply Permissions'}));expect(await getAllSnapshot()).toEqual(before);
+ await user.click(screen.getByRole('tab',{name:'Connection'}));const address=screen.getByRole('textbox',{name:'Local bridge address'});await user.clear(address);await user.type(address,relay.url);await user.click(screen.getByRole('button',{name:'Connect Codex'}));
+ await user.type(await screen.findByLabelText('One-time pairing key'),secret);await user.click(screen.getByRole('button',{name:'Confirm pairing'}));await screen.findByText('Connected',{exact:true});
+ await user.click(screen.getByRole('tab',{name:'Permissions'}));expect(screen.getByRole('checkbox',{name:'Enable frame permission format'})).toBeDisabled();expect(await getAllSnapshot()).toEqual(before);expect(f.parent.id).toBeTruthy();
+},20000);

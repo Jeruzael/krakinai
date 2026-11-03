@@ -81,6 +81,7 @@ export function ImportReceipt({
           ))}
         </div>
       </details>
+      {receipt.version===3&&<details className="import-group"><summary>Confirmed frame and image association IDs</summary><pre>{JSON.stringify(receipt.frameResults,null,2)}</pre><p>These historical IDs do not grant Codex additional prompt or media access. Deleted targets are not recreated by replay.</p></details>}
       <details className="import-group">
         <summary>Created ID mappings and approval record</summary>
         <pre>

@@ -82,7 +82,7 @@ for (const [width, height] of [
         await button.evaluate((el) => el.getBoundingClientRect().bottom)
       ).toBeLessThanOrEqual(
         await page
-          .getByRole('tabpanel', { name: 'Prompt', exact: true })
+          .getByRole('tabpanel', { name: 'Video Prompt', exact: true })
           .evaluate((el) => el.getBoundingClientRect().bottom - 8)
       );
     }

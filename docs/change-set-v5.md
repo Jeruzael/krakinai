@@ -34,7 +34,7 @@ Approval fields are browser-owned and cannot be serialized into operations. V5 a
 
 Review binds exact source/new Blocking, stable changed paths, complete canonical/effective outputs, inherited manual buffers, choices, target mappings, final storyboard order and selected takes. Comparisons run after all simulated operations. A new unselected take has a separately labelled hypothetical comparison; it is not shown as the project's selected take.
 
-Old v1–v4 reconstruction of a Blocking-bearing parent fails explicitly. Metadata-only operations that do not reconstruct the scene retain their normal behavior. There is no generic JSON-pointer writer, separate Blocking writer, approval tool, external generation tool or v6 contract.
+Old v1–v4 reconstruction of a Blocking-bearing parent fails explicitly. Metadata-only operations that do not reconstruct the scene retain their normal behavior. There is no generic JSON-pointer writer, separate Blocking writer, approval tool, external generation tool or generic future-field acceptance. [v6](change-set-v6.md) separately versions frame authoring; v5 stays unchanged.
 
 ## Atomic receipt and replay
 

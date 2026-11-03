@@ -467,7 +467,7 @@ describe('Prompt Output studio workspace', () => {
     await renderOutput(draft.id);
     const before = (await getAllSnapshot()).drafts;
     const workspace = screen.getByRole('tablist', { name: 'Output workspace' });
-    const prompt = within(workspace).getByRole('tab', { name: 'Prompt' });
+    const prompt = within(workspace).getByRole('tab', { name: 'Video Prompt' });
     const references = within(workspace).getByRole('tab', {
       name: 'References',
     });
@@ -476,9 +476,11 @@ describe('Prompt Output studio workspace', () => {
     expect(references).toHaveAttribute('tabindex', '-1');
     expect(prompt).toHaveAttribute(
       'aria-controls',
-      screen.getByRole('tabpanel', { name: 'Prompt' }).id
+      screen.getByRole('tabpanel', { name: 'Video Prompt' }).id
     );
     await user.click(prompt);
+    await user.keyboard('{ArrowRight}');
+    expect(within(workspace).getByRole('tab',{name:'Image Frames'})).toHaveFocus();
     await user.keyboard('{ArrowRight}');
     expect(references).toHaveFocus();
     expect(
@@ -605,7 +607,7 @@ describe('Prompt Output studio workspace', () => {
       await screen.findByRole('button', { name: 'Retain & Copy Manual Edits' })
     );
     expect(writeText).toHaveBeenLastCalledWith(manualPrompt);
-    await user.click(screen.getByRole('tab', { name: 'Prompt' }));
+    await user.click(screen.getByRole('tab', { name: 'Video Prompt' }));
     expect(
       screen.getByRole('textbox', { name: 'Manual prompt output' })
     ).toHaveValue('Unfinished manual buffer.');
@@ -702,7 +704,7 @@ describe('Prompt Output studio workspace', () => {
     const beforeNotesUrl = screen
       .getAllByAltText('Character view 1')[0]
       .getAttribute('src');
-    await user.click(screen.getByRole('tab', { name: 'Prompt' }));
+    await user.click(screen.getByRole('tab', { name: 'Video Prompt' }));
     await waitFor(() => {
       // A refreshed media object produces a new URL after the asynchronous
       // blur save. Wait for its effect before beginning the next interaction.

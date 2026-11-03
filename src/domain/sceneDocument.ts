@@ -18,6 +18,7 @@ import {buildDirectPromptDocument} from './directPromptDocument';
 import type {SceneBlockingV1} from '../types/blocking';
 import {buildBlockingDocument,formatBlockingDocument,type BlockingDocumentV1} from './blockingDocument';
 import { getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, getSourceFidelityInstructions, resolveShotType, SHOT_TYPE_LABELS } from './shotTypeRules';
+import {hasKeyframeDocumentData,projectKeyframeDocument,type KeyframeDocumentSource,type KeyframeDocumentProjection} from './keyframeDocument';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
   'character',
@@ -29,7 +30,7 @@ export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
   'style',
 ];
 
-export interface SceneDocumentSource extends SceneAuthoringFields {
+export interface SceneDocumentSource extends SceneAuthoringFields,KeyframeDocumentSource {
   blocking?:SceneBlockingV1;
   ensemble?: SceneEnsembleV1;
   sceneRevision?: SceneRevision;
@@ -68,7 +69,8 @@ export interface SceneComponentDocument {
 }
 
 export interface SceneDocument {
-  schema: 'krakinai.scene-prompt.v1' | 'krakinai.scene-prompt.v2' | 'krakinai.scene-prompt.v3';
+  schema: 'krakinai.scene-prompt.v1' | 'krakinai.scene-prompt.v2' | 'krakinai.scene-prompt.v3' | 'krakinai.scene-prompt.v4';
+  keyframes?:KeyframeDocumentProjection;
   blocking?:BlockingDocumentV1;
   participants?: EnsembleParticipantDocument[];
   primaryParticipantId?: string|null;
@@ -198,10 +200,13 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
   };
   const result=source.ensemble?buildEnsembleDocument(source,document):document;
   const blocking=buildBlockingDocument(source);
-  return blocking?{...result,schema:'krakinai.scene-prompt.v3',blocking}:result;
+  const withBlocking:SceneDocument=blocking?{...result,schema:'krakinai.scene-prompt.v3',blocking}:result;
+  const keyframes=projectKeyframeDocument(source);
+  return keyframes?{...withBlocking,schema:'krakinai.scene-prompt.v4',keyframes}:withBlocking;
 }
 
 export function serializeSceneJson(source: SceneDocumentSource): string {
+  if(isDirectPrompt(source)&&hasKeyframeDocumentData(source))throw Error('Preserve this incomplete planning draft or guided Recipe conversion package; a Direct Prompt cannot export a complete C Recipe document.');
   if(isDirectPrompt(source)){buildBlockingDocument(source);return JSON.stringify(buildDirectPromptDocument(source),null,2);}
   return JSON.stringify(buildSceneDocument(source), null, 2);
 }

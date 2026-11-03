@@ -7,10 +7,10 @@ import { resolve } from 'node:path';
 
 async function unusedPort() { const server = createServer(); await new Promise<void>(r => server.listen(0, '127.0.0.1', r)); const port = (server.address() as { port: number }).port; await new Promise<void>(r => server.close(() => r())); return port; }
 describe('actual compiled SDK stdio process', () => {
-  it('negotiates a legacy client, lists the allowlist and calls a real tool without a browser', async () => {
+  it.each(['default','legacy'] as const)('negotiates a %s client, lists the allowlist and calls a real tool without a browser', async mode => {
     const transport = new StdioClientTransport({ command: process.execPath, args: [resolve(process.env.KRAKINAI_TEST_BRIDGE_DIST ?? 'dist', 'krakinai-mcp.mjs'), '--app-origin', 'http://127.0.0.1:4173', '--port', String(await unusedPort())], stderr: 'pipe' });
     let stderr = ''; transport.stderr?.on('data', part => { stderr += String(part); });
-    const client = new Client({ name: 'krakinai-synthetic-sdk-client', version: '1.0.0' });
+    const client = new Client({ name: 'krakinai-synthetic-sdk-client', version: '1.0.0' },mode==='legacy'?{versionNegotiation:{mode:'legacy'}}:{});
     try {
       await client.connect(transport);
       const tools = await client.listTools(); expect(tools.tools).toHaveLength(13);
@@ -19,8 +19,12 @@ describe('actual compiled SDK stdio process', () => {
       expect(authoring.description).toContain('explicit user request');
       expect(authoring.description).toContain('Never expand permissions');
       expect(authoring.annotations).toMatchObject({readOnlyHint:false,destructiveHint:false,openWorldHint:false,idempotentHint:true});
-      const versions=(tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema.properties!.changeSet as any).oneOf;
-      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5']);
+      const inputSchema=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema as any;
+      const resolveSchema=(v:any,root:any=inputSchema):any=>Array.isArray(v)?v.map(value=>resolveSchema(value,root)):v&&typeof v==='object'?v.$ref?resolveSchema(root.$defs[v.$ref.slice(8)],root):Object.fromEntries(Object.entries(v).filter(([key])=>key!=='$defs').map(([k,value])=>[k,resolveSchema(value,v.$id?v:root)])):v;
+      const versions=resolveSchema(inputSchema.properties.changeSet).oneOf;
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6']);
+      const discoveryBytes=Buffer.byteLength(JSON.stringify(tools));expect(discoveryBytes).toBeLessThan(1310720);console.info('SYNTHETIC_MCP_DISCOVERY_BYTES',discoveryBytes);
+      expect(tools.tools.find(t=>t.name==='krakinai_get_generation_prompt')!.inputSchema.properties).toHaveProperty('target');
       for(const version of versions)expect(version.properties.operations.maxItems).toBe(250);
       const operationTypes=versions.map((v:any)=>v.properties.operations.items.oneOf.map((o:any)=>o.properties.type.const));
       expect(operationTypes[0]).not.toContain('scene.create_recipe');

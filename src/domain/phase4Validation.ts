@@ -10,6 +10,7 @@ import{ENSEMBLE_LOCAL_ID_PATTERN}from'../types/ensemble';
 import{validateConversionProvenance}from'./recipeConversion';
 import{validateSceneBlocking}from'./blockingValidation';
 import type{BlockingSource}from'../types/blocking';
+import{validateKeyframeRecord}from'./keyframeRecord';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -29,6 +30,7 @@ function identityError(value: Record<string, unknown>): string | undefined {
 /** Validate optional Stage B metadata without resolving historical source or media IDs. */
 export function validatePhase4Record(value: unknown): string | undefined {
   if (!record(value)) return 'Invalid record.';
+  const keyframeError=validateKeyframeRecord(value);if(keyframeError)return keyframeError;
   const conversionError=validateConversionProvenance(value.conversionProvenance);
   if(conversionError)return conversionError;
   if(value.conversionProvenance!==undefined&&(value.authoringMode!=='recipe'||(value.sourceSceneId!==undefined&&typeof value.sourceSceneId!=='string')))return 'Conversion provenance belongs to a recipe scene.';

@@ -5,6 +5,7 @@ import {
   CHANGE_SET_V3_SCHEMA,
   CHANGE_SET_V4_SCHEMA,
   CHANGE_SET_V5_SCHEMA,
+  CHANGE_SET_V6_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
 import { isRecipeOperation } from "../types/changeSet";
@@ -157,7 +158,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   }
   inspect(value);
   validateJsonRule(
-    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v5'?CHANGE_SET_V5_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
+    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v6'?CHANGE_SET_V6_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v5'?CHANGE_SET_V5_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
       typeof value === "object" &&
       "schema" in value &&
       value.schema === "krakinai.change-set.v2"
@@ -168,6 +169,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   const data = value as ChangeSet,
     ids = new Set<string>(),
     refs = new Map<string, { kind: string; index: number }>();
+  if(data.schema==='krakinai.change-set.v6'&&new TextEncoder().encode(raw).length>1024*1024)throw Error('Change-set v6 exceeds the 1 MiB package budget. Split the proposal.');
   let projects = 0,
     shots = 0,
     scenes = 0,
@@ -227,6 +229,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   data.operations.forEach((o, i) => {
     if(o.type==='scene.convert_direct_to_recipe')validateConversionInput(o.conversion);
     if (isRecipeOperation(o)) {
+      if(o.keyframes){const upserts=o.keyframes.frameUpserts??[],removed=o.keyframes.removeFrameIds??[],order=o.keyframes.frameOrder;for(const ids of [upserts.map(f=>f.id),removed,...(order?[order]:[])])if(new Set(ids).size!==ids.length)throw Error('Duplicate keyframe patch IDs.');if(upserts.some(f=>removed.includes(f.id)))throw Error('Conflicting keyframe patch edits.');}
       validateEnsembleRecipePatch(o);
       const bind=(target:{id:string}|{ref:string},kind:'character'|'wardrobe'|'outfit')=>{
         use(target,kind==='outfit'?'variant_candidate':'asset',i);
@@ -285,6 +288,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
           "identitySource",
           'ensemble',
           'blocking',
+          'keyframes','videoDecision','imageCarryOver',
         ].some(
           (k) =>
             k in o &&
@@ -300,6 +304,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     if ("shot" in o) use(o.shot, "shot", i);
     if ("shots" in o) o.shots.forEach((s) => use(s, "shot", i));
     if ("scene" in o) use(o.scene, "scene", i);
+    if((o.type==='frame_image.link'||o.type==='frame_image.clear'||o.type==='frame_video.request_review')&&'id'in o.scene&&o.expectedSceneRevision===undefined)throw Error('An existing frame target requires its exact scene revision.');
     if ("sourceScene" in o) use(o.sourceScene, "scene", i);
     if ("assetRefs" in o) o.assetRefs?.forEach((a) => use(a.asset, "asset", i));
     if (

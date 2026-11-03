@@ -49,4 +49,4 @@ Use the [existing launcher setup](desktop-bridge-launcher.md) or [direct stdio s
 
 Submission queues a proposal and writes no records. Apply revalidates the exact source, head, project, permissions and reviewed content in the existing atomic transaction. A new immutable take is created; preferred takes change only through separately approved selection operations. Codex receives confirmed IDs through the receipt, but new saved Blocking/Full text requires its own exact grants.
 
-Native/installed-CLI certification and hosted CI status are recorded separately in the [B QA report](qa/shot-blocking-b.md); automated SDK smoke is not a substitute for that certification. Ordered keyframes and Image Prompt Studio remain Workstream C.
+Native/installed-CLI certification and hosted CI status are recorded separately in the [B QA report](qa/shot-blocking-b.md); automated SDK smoke is not a substitute for that certification. [Workstream C](keyframes-and-image-prompts.md) adds ordered frames and separate canonical still prompts using protected header3 and permissioned v6 proposals. This document describes B; refer to the C guide for the newer compatibility boundary.

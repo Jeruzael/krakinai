@@ -2,6 +2,8 @@ import type {CameraComposition} from './cinematography';
 import type {SceneEnsembleV1,EnsembleTemplateDefaultV1} from './ensemble';
 import type {ImportLedger} from './changeSet';
 import type {SceneBlockingV1} from './blocking';
+import type {KeyframePlanV1,ImagePromptSnapshotV1,ManualImageOutputs} from './keyframes';
+import type {FrameProductionV1,DraftFrameImageAssignment} from './frameProduction';
 import type {DirectPromptContent, SceneAuthoringFields, SceneProjectTarget, SceneRevision, SceneRevisionIntent} from './sceneAuthoring';
 export const SCHEMA_VERSION = 1;
 
@@ -226,6 +228,10 @@ export interface ManualOutputOverride {
 }
 
 export interface SceneDraft extends SceneAuthoringFields {
+  frameImageAssignments?:Record<string,DraftFrameImageAssignment>;
+  keyframePlan?:KeyframePlanV1;
+  imagePromptSnapshots?:Record<string,ImagePromptSnapshotV1>;
+  manualImageOutputs?:ManualImageOutputs;
   blocking?:SceneBlockingV1;
   ensemble?:SceneEnsembleV1;
   revisionIntent?: SceneRevisionIntent;
@@ -254,6 +260,9 @@ export interface SceneDraft extends SceneAuthoringFields {
 }
 
 interface SavedSceneBase extends Omit<SceneAuthoringFields, 'authoringMode' | 'directPrompt'> {
+  keyframePlan?:KeyframePlanV1;
+  imagePromptSnapshots?:Record<string,ImagePromptSnapshotV1>;
+  manualImageOutputs?:ManualImageOutputs;
   blocking?:SceneBlockingV1;
   ensemble?:SceneEnsembleV1;
   sceneRevision?: SceneRevision;
@@ -348,7 +357,7 @@ export interface ProjectShot {
 
 export interface Collection {
   planningNotes?: string;
-  project?: { version: 1; revision: number; shots: ProjectShot[]; cast?: CharacterBibleEntry[]; transitions?: ProjectTransition[] };
+  project?: { version: 1; revision: number; shots: ProjectShot[]; cast?: CharacterBibleEntry[]; transitions?: ProjectTransition[];frameProduction?:FrameProductionV1 };
   id: string;
   name: string;
   description: string;
