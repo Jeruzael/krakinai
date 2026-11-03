@@ -10,7 +10,7 @@ import {serializableMappingPackage} from './recipeConversionRequest';
 
 /** Explicit format promotion. Resuming v5 never refreshes stale source proofs. */
 export async function enableBlockingMapping(input:ChangeSet,state:ChangeSetState):Promise<ChangeSet>{
- if(input.schema==='krakinai.change-set.v5')return input;
+ if(input.schema==='krakinai.change-set.v5'||input.schema==='krakinai.change-set.v6')return input;
  if(input.schema!=='krakinai.change-set.v4')throw Error('Choose a v4/v5 conversion mapping package.');
  const next=structuredClone(input);next.schema='krakinai.change-set.v5';
  for(const op of next.operations)if(isRecipeOperation(op)&&'sceneId'in op){const source=state.scenes.find(s=>s.id===op.sceneId);if(!source)throw Error('A mapped source is missing. Keep this package and restore its exact source before planning.');Object.assign(op,await blockingSourceTokens(source));}

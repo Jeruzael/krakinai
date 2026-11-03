@@ -1,3 +1,4 @@
+import {prepareLocalFrameImages,applyLocalFrameImages,validateLocalFrameImageChoices,type LocalFrameImageChoices,type PreparedLocalFrameImages} from '../domain/localFrameImages';
 import type {
   Collection,
   MediaAsset,
@@ -51,6 +52,8 @@ import {
 import { validateProject } from "../domain/phase5ProjectValidation";
 import { validateCameraCompositionSlots } from "../domain/cameraCompositionValidation";
 import {resolveBlockingOutputs,type BlockingOutputDecisions} from '../domain/blockingOutputReview';
+import {prepareFrameAuthoring,assertPreparedFrameAuthoring,type FrameAuthoringChoices,type PreparedFrameAuthoring} from '../domain/frameAuthoring';
+import {withStableLibraryMedia} from './mediaPreparationLock';
 
 const request = <T>(req: IDBRequest<T>): Promise<T> =>
   new Promise((resolve, reject) => {
@@ -78,7 +81,8 @@ function stable(value: unknown): unknown {
     );
   return value;
 }
-export interface AuthoredSaveOptions {
+export interface AuthoredSaveOptions extends FrameAuthoringChoices {
+  frameImageChoices?:LocalFrameImageChoices;
   blockingOutputDecisions?:BlockingOutputDecisions;
   requestId: string;
   expectedInputRevision: number;
@@ -179,6 +183,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     );
   const direct = options.asDirect || isDirectPrompt(source);
   if(options.asDirect&&source.blocking)throw Error('Keep this blocking recipe intact. Direct Prompt conversion does not support authored blocking.');
+  if(options.asDirect&&source.keyframePlan)throw Error('Keep this keyframe Recipe intact. Direct Prompt conversion would lose frame authorship.');
   if(options.asDirect&&source.ensemble)throw Error('Ensemble Direct Prompt conversion belongs to B3. Keep this recipe and its participants unchanged.');
   const prefix = savedAvoidPrefix(source, snap.scenes);
   const editableAvoid =
@@ -195,6 +200,9 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     slots: clone(source.slots),
     ...(source.ensemble?{ensemble:clone(source.ensemble)}:{}),
     ...(source.blocking?{blocking:clone(source.blocking)}:{}),
+    ...(source.keyframePlan?{keyframePlan:clone(source.keyframePlan)}:{}),
+    ...(source.imagePromptSnapshots?{imagePromptSnapshots:clone(source.imagePromptSnapshots)}:{}),
+    ...(source.manualImageOutputs?{manualImageOutputs:clone(source.manualImageOutputs)}:{}),
     extraRequiredSlots: clone(source.extraRequiredSlots),
     sceneInstructions: source.sceneInstructions,
     dialogue: clone(source.dialogue),
@@ -242,6 +250,7 @@ export async function createSceneRevisionDraft(sceneId:string,options:RevisionDr
 }
 
 function validateAuthoredSaveOptions(options:AuthoredSaveOptions):void {
+  validateLocalFrameImageChoices(options.frameImageChoices);
   if (
     typeof options.requestId !== "string" ||
     !options.requestId.trim() ||
@@ -278,15 +287,19 @@ function prepareAuthoredOperation(draft:SceneDraft,options:AuthoredSaveOptions){
         selectAsPreferred: !!options.selectAsPreferred,
         allowDuplicate: !!options.allowDuplicate,
         ...(options.blockingOutputDecisions?{blockingOutputDecisions:options.blockingOutputDecisions}:{}),
+        ...(options.frameOutputDecisions?{frameOutputDecisions:options.frameOutputDecisions}:{}),
+        ...(options.frameVideoDecision?{frameVideoDecision:options.frameVideoDecision}:{}),
+        ...(options.frameImageChoices?{frameImageChoices:options.frameImageChoices}:{}),
       }),
     );
   return {target,fingerprint};
 }
 /** Synchronous shared planner; no persistence or asynchronous work. */
-export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,state:Pick<LibrarySnapshot,'scenes'|'collections'|'assets'|'media'>,identity:{id:string;now:string}):{scene:SavedScene;collection?:Collection}{
+export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,state:Pick<LibrarySnapshot,'scenes'|'collections'|'assets'|'media'>,identity:{id:string;now:string},preparedFrames?:PreparedFrameAuthoring,preparedImages?:PreparedLocalFrameImages):{scene:SavedScene;collection?:Collection}{
   const {target,fingerprint}=prepareAuthoredOperation(draft,options);
   const scenes=state.scenes;
-  const preserveFrozen=!!draft.blocking||!!scenes.find(s=>s.id===draft.sourceSceneId)?.blocking;
+  const sourceScene=scenes.find(s=>s.id===draft.sourceSceneId),hasFrames=!!draft.keyframePlan||!!sourceScene?.keyframePlan;
+  const preserveFrozen=!!draft.blocking||!!sourceScene?.blocking||hasFrames;
   let collectionUpdate:Collection|undefined;
     if (draft.inputRevision !== options.expectedInputRevision)
       throw new Error(
@@ -297,6 +310,10 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
     const cameraError = validateCameraCompositionSlots(draft.slots);
     if (cameraError) throw new Error(cameraError);
     const mediaMap = new Map(state.media.map(m=>[m.id,m]));
+    if(hasFrames&&!isDirectPrompt(draft)){
+      if(!preparedFrames)throw Error('Prepare the exact keyframe outputs and video decision before saving.');
+      assertPreparedFrameAuthoring(preparedFrames,draft,sourceScene,mediaMap,options);
+    }
     const capture = <T extends import("../types/domain").MediaLink>(
       links: T[],
     ) =>
@@ -388,6 +405,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         : {}),
     };
     const base = {
+      ...(draft.keyframePlan?{keyframePlan:clone(draft.keyframePlan)}:{}),
       ...(draft.blocking?{blocking:clone(draft.blocking)}:{}),
       ...(draft.ensemble?{ensemble:clone(draft.ensemble)}:{}),
       id,
@@ -491,7 +509,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
       if (!assembled.valid) throw new Error(assembled.errors.join(" "));
       const generation=resolveGenerationIdentity({...draft,slots:activeSlots},master).generation;
       if(preserveFrozen&&JSON.stringify(generation)!==JSON.stringify(draft.generation))throw Error('Review the Character identity dependency before saving blocking. Its frozen generation choice cannot be refreshed silently.');
-      const resolution=resolveBlockingOutputs(draft,assembled.outputs,options.blockingOutputDecisions,!!scenes.find(s=>s.id===draft.sourceSceneId)?.blocking);
+      const resolution=preparedFrames?{valid:preparedFrames.video.valid,outputs:preparedFrames.video.outputs,manualOutputs:preparedFrames.video.manualOutputs,findings:preparedFrames.video.findings}:resolveBlockingOutputs(draft,assembled.outputs,options.blockingOutputDecisions,!!scenes.find(s=>s.id===draft.sourceSceneId)?.blocking);
       if(!resolution.valid)throw Error(resolution.findings.filter(f=>f.severity==='blocking').map(f=>f.message).join(' '));
       scene = {
         ...base,
@@ -508,6 +526,8 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         dialogue: clone(draft.dialogue),
         outputs: resolution.outputs,
         manualOutputs: resolution.manualOutputs,
+        ...(preparedFrames&&Object.keys(preparedFrames.images.imagePromptSnapshots).length?{imagePromptSnapshots:clone(preparedFrames.images.imagePromptSnapshots)}:{}),
+        ...(preparedFrames&&Object.keys(preparedFrames.images.manualImageOutputs).length?{manualImageOutputs:clone(preparedFrames.images.manualImageOutputs)}:{}),
         references: preserveFrozen?clone(assembled.references):captureMediaNames(assembled.references, mediaMap),
       };
     }
@@ -576,12 +596,27 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         shotId: shot.id,
       };
     }
+  if(options.frameImageChoices&&(options.frameImageChoices.draftFrameIds.length||options.frameImageChoices.carryOverEventIds.length)){
+    const original=state.collections.find(c=>c.id===scene.saveProjectTarget?.collectionId);
+    if(!preparedImages||!preparedFrames||!collectionUpdate||!original)throw Error("Prepare the explicitly selected frame images before saving this storyboard take.");
+    collectionUpdate=applyLocalFrameImages(preparedImages,original,collectionUpdate,scene,preparedFrames,mediaMap,()=>generateId("frame_event"),now);
+    const error=validateProject(collectionUpdate,[...scenes,scene]);if(error)throw Error(error);
+  }
   return {scene,collection:collectionUpdate};
 }
 
 /** Browser-owned atomic operation; no external client has direct DB-file access. */
 export async function saveAuthoredScene(draftId:string,options:AuthoredSaveOptions):Promise<SavedScene>{
+  return saveAuthoredScenePrepared(draftId,options);
+}
+async function saveAuthoredScenePrepared(draftId:string,options:AuthoredSaveOptions,ownsMediaLease=false):Promise<SavedScene>{
   validateAuthoredSaveOptions(options);
+  const snapshot=await getAllSnapshot(),reviewedDraft=snapshot.drafts.find(d=>d.id===draftId);
+  if(!reviewedDraft)throw Error('Scene draft not found.');
+  const reviewedSource=snapshot.scenes.find(s=>s.id===reviewedDraft.sourceSceneId),retry=snapshot.scenes.some(s=>s.saveRequestId===options.requestId);
+  if(!ownsMediaLease&&!isDirectPrompt(reviewedDraft)&&(reviewedDraft.keyframePlan||reviewedSource?.keyframePlan))return withStableLibraryMedia(()=>saveAuthoredScenePrepared(draftId,options,true),true);
+  const preparedFrames=!retry&&!isDirectPrompt(reviewedDraft)&&(reviewedDraft.keyframePlan||reviewedSource?.keyframePlan)?await prepareFrameAuthoring(reviewedDraft,reviewedSource,new Map(snapshot.media.map(m=>[m.id,m])),options):undefined;
+  const preparedImages=!retry&&preparedFrames&&options.frameImageChoices&&(options.frameImageChoices.draftFrameIds.length||options.frameImageChoices.carryOverEventIds.length)?await prepareLocalFrameImages(reviewedDraft,reviewedSource,snapshot.collections.find(c=>c.id===(options.target??reviewedDraft.authoredProjectTarget)?.collectionId),new Map(snapshot.media.map(m=>[m.id,m])),preparedFrames,options.frameImageChoices):undefined;
   const db=await openDatabase(),tx=db.transaction(['drafts','scenes','assets','media','collections'],'readwrite'),completion=done(tx);
   try{
     const draft=await request<SceneDraft|undefined>(tx.objectStore('drafts').get(draftId));
@@ -596,7 +631,7 @@ export async function saveAuthoredScene(draftId:string,options:AuthoredSaveOptio
     const master=masterId?await request<PromptAsset|undefined>(tx.objectStore('assets').get(masterId)):undefined;
     const masters=draft.ensemble?await Promise.all([...new Set(draft.ensemble.participants.filter(p=>p.character.sourceType==='asset').map(p=>p.character.sourceId))].map(id=>id===masterId?Promise.resolve(master):request<PromptAsset|undefined>(tx.objectStore('assets').get(id)))):[master];
     const assets=masters.filter((asset):asset is PromptAsset=>!!asset);
-    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets},{id:generateId('scene'),now:new Date().toISOString()});
+    const result=planAuthoredScene(draft,options,{scenes,media,collections,assets},{id:generateId('scene'),now:new Date().toISOString()},preparedFrames,preparedImages);
     if(result.collection)tx.objectStore('collections').put(result.collection);
     tx.objectStore('scenes').add(result.scene);
     await completion;return result.scene;

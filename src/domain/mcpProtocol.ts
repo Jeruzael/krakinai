@@ -28,22 +28,24 @@ export function exactKeys(value: Record<string, unknown>, allowed: readonly stri
 }
 const idSchema = { type: 'string', pattern: '^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$', maxLength: 200 };
 const cursorSchema = { type: 'string', minLength: 1, maxLength: 600 };
+const imageTargetSchema={type:'object',properties:{kind:{const:'image',type:'string'},keyframeId:{type:'string',pattern:'^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$',maxLength:64},mode:{type:'string',enum:['full','compact']}},required:['kind','keyframeId','mode'],additionalProperties:false};
+const frameProjectionSchema={type:'object',properties:{operationId:idSchema,keyframeId:imageTargetSchema.properties.keyframeId,mode:imageTargetSchema.properties.mode},required:['operationId','keyframeId','mode'],additionalProperties:false};
 const pageFields = { cursor: cursorSchema, limit: { type: 'integer', minimum: 1, maximum: 50 } };
 type ToolSchema = { type: 'object'; properties: Record<string, unknown>; required: string[]; additionalProperties: false };
 const schema = (properties: Record<string, unknown>, required: string[] = []): ToolSchema => ({ type: 'object', properties, required, additionalProperties: false });
 export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   krakinai_connection_status: schema({}), krakinai_list_projects: schema(pageFields),
   krakinai_get_project: schema({ projectId: idSchema }, ['projectId']),
-  krakinai_get_storyboard: schema({ projectId: idSchema, ...pageFields }, ['projectId']),
-  krakinai_get_scene: schema({ sceneId: idSchema }, ['sceneId']),
+  krakinai_get_storyboard: schema({ projectId: idSchema, ...pageFields,projection:{type:'string',enum:['metadata','keyframes']} }, ['projectId']),
+  krakinai_get_scene: schema({ sceneId: idSchema,projection:{type:'string',enum:['metadata','keyframes']} }, ['sceneId']),
   krakinai_get_scene_history: schema({ sceneId: idSchema, ...pageFields }, ['sceneId']),
   krakinai_search_assets: schema({ query: { type: 'string', maxLength: 200 }, category: { type: 'string', enum: ['characters', 'wardrobe', 'actions', 'environments', 'camera', 'lighting', 'styles'] }, kind: { type: 'string', enum: ['asset', 'variant', 'template'] }, ...pageFields }),
   krakinai_get_shot_types: schema({}),
-  krakinai_preview_change_set: schema({ changeSet: SUPPORTED_CHANGE_SET_SCHEMA }, ['changeSet']),
+  krakinai_preview_change_set: schema({ changeSet: SUPPORTED_CHANGE_SET_SCHEMA,projection:frameProjectionSchema }, ['changeSet']),
   krakinai_submit_change_set: schema({ changeSet: SUPPORTED_CHANGE_SET_SCHEMA }, ['changeSet']),
-  krakinai_get_proposal_status: schema({ proposalId: idSchema }, ['proposalId']),
+  krakinai_get_proposal_status: schema({ proposalId: idSchema,projection:frameProjectionSchema }, ['proposalId']),
   krakinai_get_import_receipt: schema({ changeSetId: idSchema, packageDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }, ['changeSetId', 'packageDigest']),
-  krakinai_get_generation_prompt: schema({ sceneId: idSchema }, ['sceneId']),
+  krakinai_get_generation_prompt: schema({ sceneId: idSchema,target:imageTargetSchema }, ['sceneId']),
 };
 export function validateToolArgs(name: McpToolName, value: unknown): Record<string, unknown> {
   if (!MCP_TOOL_NAMES.includes(name)) throw new McpError('UNKNOWN_TOOL');
@@ -55,6 +57,8 @@ export function validateToolArgs(name: McpToolName, value: unknown): Record<stri
     if (field.type === 'integer') { if (!Number.isSafeInteger(entry) || (entry as number) < field.minimum! || (entry as number) > field.maximum!) throw new McpError('INVALID_REQUEST'); }
     else if (typeof entry !== 'string' || entry.length > (field.maxLength ?? Infinity) || entry.length < (field.minLength ?? 0) || (field.pattern && !new RegExp(field.pattern).test(entry)) || (field.enum && !field.enum.includes(entry))) throw new McpError('INVALID_REQUEST');
   }
+  if('target'in value){const t=value.target;record(t);exactKeys(t,['kind','keyframeId','mode'],['kind','keyframeId','mode']);if(t.kind!=='image'||typeof t.keyframeId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(t.keyframeId)||!['full','compact'].includes(String(t.mode)))throw new McpError('INVALID_REQUEST');}
+  if('projection'in value&&typeof value.projection==='object'){const t=value.projection;record(t);exactKeys(t,['operationId','keyframeId','mode'],['operationId','keyframeId','mode']);if(typeof t.operationId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(t.operationId)||typeof t.keyframeId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(t.keyframeId)||!['full','compact'].includes(String(t.mode)))throw new McpError('INVALID_REQUEST');}
   if ('changeSet' in value) {
     assertByteLimit(JSON.stringify(value.changeSet), MCP_LIMITS.package);
     try { parseChangeSet(value.changeSet); } catch { throw new McpError('INVALID_PACKAGE', 'The native Stage B package is invalid. Review its schema in the manual importer.'); }

@@ -22,6 +22,7 @@ import { dialogueRequiresCharacter, getActiveSceneSlots, getActiveSourceMediaLin
 import {validateSceneEnsemble} from './ensembleValidation';
 import {getSceneSnapshotEntries} from './ensembleReferences';
 import {validateSceneBlocking} from './blockingValidation';
+import {validateKeyframePlan} from './keyframeValidation';
 
 export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
@@ -85,7 +86,7 @@ export interface AssembledPromptResult {
   references: MediaLink[];
 }
 
-export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
+export function assembleScenePrompt(input: SceneDraft,options?:{authoredKeyframeMoments?:true}): AssembledPromptResult {
   const draft = {...input, avoidText:getSceneLevelAvoidText(input), slots:getActiveSceneSlots(input)};
   const errors: string[] = [...validateShotSourceMedia(draft),...validateSceneEnsemble(input,{forAssembly:true})];
   const blockingErrors=validateSceneBlocking(input.blocking,input,'assembly').filter(f=>f.severity==='blocking');
@@ -197,13 +198,19 @@ export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
       }
     }
   }
+  let authoredMoments='';
+  if(options?.authoredKeyframeMoments&&input.keyframePlan){
+    const invalid=validateKeyframePlan(input.keyframePlan,input,'planning').filter(f=>f.severity==='blocking');
+    errors.push(...invalid.map(f=>f.message));
+    if(!invalid.length)authoredMoments='\n\nAuthored visual moments (planned; no interpolated motion):\n'+input.keyframePlan.frames.map((frame,index)=>`${index+1}. ${frame.label}${frame.timeSeconds!==undefined?` (${frame.timeSeconds}s)`:frame.relativePosition!==undefined?` (${Math.round(frame.relativePosition*100)}% intended progression)`:''}: ${frame.visualInstructions?.trim()||'Visual moment not yet described.'}`).join('\n');
+  }
   return {
     valid: errors.length === 0,
     errors,
     outputs: blockingErrors.length?{full:'',structured:'',compact:''}:{
-      full: formatSceneDocumentText(document, 'full'),
-      structured: formatSceneDocumentText(document, 'structured'),
-      compact: formatSceneDocumentText(document, 'compact'),
+      full: formatSceneDocumentText(document, 'full')+authoredMoments,
+      structured: formatSceneDocumentText(document, 'structured')+authoredMoments,
+      compact: formatSceneDocumentText(document, 'compact')+authoredMoments,
     },
     avoidText: document.avoidText,
     references,

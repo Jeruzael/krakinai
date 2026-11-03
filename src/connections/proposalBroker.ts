@@ -9,7 +9,8 @@ import { MCP_LIMITS, McpError, resultData, resultError, validateToolArgs, type M
 import { emptyChangeSetApproval, type ChangeSetApproval, type ChangeSetState } from '../types/changeSet';
 import type { McpProposalView, McpScope, ReceiptGrant } from '../types/mcp';
 import {conversionMcpPreview}from'../domain/recipeConversionMcp';
-import {requireBlockingCapabilities} from '../domain/mcpCapabilities';
+import {requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain/mcpCapabilities';
+import {keyframeMcpPreview,type FrameMcpProjection} from '../domain/keyframeMcp';
 import {blockingMcpPreview} from '../domain/blockingMcp';
 
 interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void> }
@@ -37,7 +38,8 @@ export class ProposalBroker {
   #effectiveScope(): McpScope { return { ...this.#scope, receiptGrants: [...this.#scope.receiptGrants, ...this.#receiptGrants.values()] }; }
   connect(sessionId: string, scope: McpScope, expiresAt = this.#deps.now() + MCP_LIMITS.sessionMs,capabilities:readonly string[]=[]) {
     const checked = validateMcpScope(scope);
-    if(checked.version===2)requireBlockingCapabilities(capabilities);
+    if(checked.version!==1)requireBlockingCapabilities(capabilities);
+    if(checked.version===3)requireKeyframeCapabilities(capabilities);
     this.disconnect(); this.#session = sessionId; this.#deadline = Math.min(expiresAt, this.#deps.now() + MCP_LIMITS.sessionMs); this.#activity = this.#deps.now();
     this.#capabilities=[...capabilities];
     this.#scope = { ...checked, epoch: this.#scope.epoch + 1 }; this.#emit();
@@ -45,7 +47,8 @@ export class ProposalBroker {
   setScope(scope: McpScope) {
     const checked = validateMcpScope(scope);
     if(this.#session&&checked.version!==this.#scope.version)throw new McpError('CAPABILITY_REQUIRED','Disconnect and make a fresh native pairing before changing the permission format.');
-    if(checked.version===2)requireBlockingCapabilities(this.#capabilities);
+    if(this.#session&&checked.version!==1)requireBlockingCapabilities(this.#capabilities);
+    if(this.#session&&checked.version===3)requireKeyframeCapabilities(this.#capabilities);
     this.#scope = { ...checked, epoch: this.#scope.epoch + 1 }; this.#reviewed.clear(); this.#consents.clear(); this.#receiptGrants.clear(); this.#reuse.clear();
     for (const p of this.#proposals.values()) if (pendingStates.has(p.status)) { p.status = 'conflict'; p.error = 'Permissions changed. Preview and review again.'; }
     this.#emit();
@@ -68,11 +71,16 @@ export class ProposalBroker {
     try {
       this.expire(); const context = this.#current(); this.#assert(context); if (sessionId !== context.sessionId) throw new McpError('DISCONNECTED');
       this.#activity = this.#deps.now(); const args = validateToolArgs(command.tool, command.args);
+      if(args.target||args.projection||('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v6'))requireKeyframeCapabilities(this.#capabilities);
       if (command.tool === 'krakinai_get_proposal_status') {
         if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
         const p = this.#proposal(String(args.proposalId));
         if (p.scopeEpoch !== this.#scope.epoch) throw new McpError('PERMISSION_DENIED');
         const data = this.#status(p);
+        if(p.preview?.changeSet.schema==='krakinai.change-set.v6'&&p.status!=='applied'){
+          const state=await this.#deps.readState();this.#assert(context);assertProposalScope(p.preview.changeSet,this.#scope,state,this.#reuse.get(p.id));
+          const keyframes=await keyframeMcpPreview(p.preview,this.#scope,state,args.projection as FrameMcpProjection|undefined);this.#assert(context);return resultData({...data,previewIsSnapshot:true,previewPreparedAt:p.preview.allocation.preparedAt,previewDigest:p.preview.approvedDigest,keyframes});
+        }
         if(p.preview?.changeSet.schema==='krakinai.change-set.v5'&&p.status!=='applied'){
           const state=await this.#deps.readState();this.#assert(context);assertProposalScope(p.preview.changeSet,this.#scope,state,this.#reuse.get(p.id));
           return resultData({...data,previewIsSnapshot:true,previewPreparedAt:p.preview.allocation.preparedAt,previewDigest:p.preview.approvedDigest,blocking:blockingMcpPreview(p.preview,this.#scope,state)});
@@ -86,12 +94,14 @@ export class ProposalBroker {
       }
       const state = await this.#deps.readState(); this.#assert(context);
       if (command.tool === 'krakinai_submit_change_set' || command.tool === 'krakinai_preview_change_set') {
-        const pkg = parseChangeSet(args.changeSet); assertProposalScope(pkg, this.#scope, state);
+        const pkg = parseChangeSet(args.changeSet),readOnlyDerivation=command.tool==='krakinai_preview_change_set'&&!!args.projection&&pkg.schema==='krakinai.change-set.v6'&&this.#scope.version===3&&this.#scope.allowImagePromptDerivation&&(!this.#scope.allowProposals||!this.#scope.allowKeyframeProposals); assertProposalScope(pkg, this.#scope, state,new Set(),readOnlyDerivation);
         const digest = await changeSetDigest(pkg); this.#assert(context);
         if (command.tool === 'krakinai_preview_change_set') {
           const preview=await this.#deps.preview(pkg); this.#assert(context);
-          const current=pkg.schema==='krakinai.change-set.v5'?await this.#deps.readState():state;this.#assert(context);if(pkg.schema==='krakinai.change-set.v5')assertProposalScope(pkg,this.#scope,current);
-          return resultData({ changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}),...(pkg.schema==='krakinai.change-set.v5'?{blocking:blockingMcpPreview(preview,this.#scope,current)}:{}) });
+          const current=['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema)?await this.#deps.readState():state;this.#assert(context);if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema))assertProposalScope(pkg,this.#scope,current,new Set(),readOnlyDerivation);
+          const keyframes=pkg.schema==='krakinai.change-set.v6'?await keyframeMcpPreview(preview,this.#scope,current,args.projection as FrameMcpProjection|undefined):undefined;this.#assert(context);
+          if(args.projection&&!keyframes)throw new McpError('INVALID_REQUEST','Frame projection requires a v6 proposal.');
+          return resultData({...(keyframes?{keyframes}:{}), changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}),...(pkg.schema==='krakinai.change-set.v5'?{blocking:blockingMcpPreview(preview,this.#scope,current)}:{}) });
         }
         const existing = [...this.#proposals.values()].find(p => p.sessionId === sessionId && p.changeSetId === pkg.changeSetId);
         if (existing) { if (existing.packageDigest !== digest) throw new McpError('CONFLICT', 'This change-set ID already identifies different content.'); return resultData(this.#status(existing)); }
@@ -101,7 +111,7 @@ export class ProposalBroker {
           this.#proposals.delete(discard.id); this.#reviewed.delete(discard.id); this.#consents.delete(discard.id); this.#versions.delete(discard.id); this.#reuse.delete(discard.id);
         }
         const preview = await this.#deps.preview(pkg); this.#assert(context);
-        if(pkg.schema==='krakinai.change-set.v5'){const current=await this.#deps.readState();this.#assert(context);assertProposalScope(pkg,this.#scope,current);}
+        if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema)){const current=await this.#deps.readState();this.#assert(context);assertProposalScope(pkg,this.#scope,current,new Set(),readOnlyDerivation);}
         const p: McpProposalView = { id: crypto.randomUUID(), changeSetId: pkg.changeSetId, packageDigest: digest, sessionId, scopeEpoch: context.epoch, receivedAt: this.#deps.now(), expiresAt: this.#deps.now() + MCP_LIMITS.proposalMs, status: 'review_required', preview: structuredClone(preview) };
         if (preview.replay && canReadReceipt(preview.replay, this.#effectiveScope(), state)) { p.status = 'applied'; p.receipt = structuredClone(preview.replay); }
         this.#proposals.set(p.id, p); this.#emit(); return resultData(p.receipt ? { ...this.#status(p), receipt: receiptProjection(p.receipt, state) } : this.#status(p));

@@ -1,12 +1,12 @@
 import { canonicalStringify } from '../domain/changeSetCanonical';
 import { BRIDGE_VERSION, MCP_LIMITS, McpError, exactKeys, record, resultError, validateOrigin, validateRelayAddress, validateToolArgs, type McpCommand, type McpResult } from '../domain/mcpProtocol';
 import { createOffer, deriveHandshake, checkProof, proof, decode64, deriveEpoch, signMessage, verifyMessage, type AuthMessage, type EpochKeys, type KeyOffer } from '../domain/mcpCrypto';
-import {BLOCKING_BRIDGE_VERSION,MCP_BLOCKING_CAPABILITIES,validateCapabilityTranscript,requireBlockingCapabilities} from '../domain/mcpCapabilities';
+import {BLOCKING_BRIDGE_VERSION,MCP_KEYFRAME_CAPABILITIES,MCP_BLOCKING_CAPABILITIES,validateCapabilityTranscript,requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain/mcpCapabilities';
 
 export interface PairingView { verificationCode: string; expiresAt: string; origin: string; relay: string;capabilities?:string[] }
 interface BrowserTransportOptions {
   relayAddress: string; appOrigin: string; fetcher?: typeof fetch; now?: () => number;
-  pairingVersion?:1|2;requireBlocking?:boolean;
+  pairingVersion?:1|2|3;requireBlocking?:boolean;requireKeyframes?:boolean;
   onConnected(sessionId: string, grant: { expiresAt: number;capabilities?:string[] }): void; onDisconnected(reason: string): void;
   onCommand(command: McpCommand, sessionId: string): Promise<McpResult>;
 }
@@ -51,10 +51,12 @@ export class BrowserTransport {
     this.#working = true; const generation = ++this.#generation;
     try {
       const local = await createOffer();
-      let v2=this.options.pairingVersion===2,response:Record<string,unknown>;
-      try{response=await this.#json(v2?'/v2/pair/start':'/v1/pair/start',v2?{version:BLOCKING_BRIDGE_VERSION,client:local.offer,capabilities:[...MCP_BLOCKING_CAPABILITIES]}:{version:BRIDGE_VERSION,client:local.offer});}
+      const offered=this.options.pairingVersion===3?MCP_KEYFRAME_CAPABILITIES:MCP_BLOCKING_CAPABILITIES;
+      let v2=this.options.pairingVersion!==undefined&&this.options.pairingVersion!==1,response:Record<string,unknown>;
+      try{response=await this.#json(v2?'/v2/pair/start':'/v1/pair/start',v2?{version:BLOCKING_BRIDGE_VERSION,client:local.offer,capabilities:[...offered]}:{version:BRIDGE_VERSION,client:local.offer});}
       catch(error){
         if(!v2||!(error instanceof McpError)||error.code!=='UNSUPPORTED_PAIRING_VERSION')throw error;
+        if(this.options.requireKeyframes)requireKeyframeCapabilities([]);
         if(this.options.requireBlocking)requireBlockingCapabilities([]);
         v2=false;response=await this.#json('/v1/pair/start',{version:BRIDGE_VERSION,client:local.offer});
       }
@@ -62,8 +64,9 @@ export class BrowserTransport {
       const transcript = response.transcript;
       const fields=['version','instanceId','challengeId','origin','relay','client','server',...(v2?['clientCapabilities','serverCapabilities','capabilities']:[])];exactKeys(transcript,fields,fields);
       if (generation !== this.#generation || transcript.version !== (v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION) || transcript.origin !== this.appOrigin || transcript.relay !== this.relayAddress || canonicalStringify(transcript.client) !== canonicalStringify(local.offer) || typeof transcript.challengeId !== 'string' || typeof transcript.instanceId !== 'string' || typeof response.expiresAt !== 'string' || typeof response.verificationCode !== 'string') throw new McpError('AUTH_FAILED');
-      const capabilities=v2?validateCapabilityTranscript(transcript,MCP_BLOCKING_CAPABILITIES):undefined;
+      const capabilities=v2?validateCapabilityTranscript(transcript,offered):undefined;
       if(this.options.requireBlocking)requireBlockingCapabilities(capabilities??[]);
+      if(this.options.requireKeyframes)requireKeyframeCapabilities(capabilities??[]);
       record(transcript.server); exactKeys(transcript.server, ['publicKey', 'nonce'], ['publicKey', 'nonce']);
       decode64(String(transcript.server.publicKey), 65); decode64(String(transcript.server.nonce), 32);
       const view = { verificationCode: response.verificationCode, expiresAt: response.expiresAt, origin: this.appOrigin, relay: this.relayAddress,...(capabilities?{capabilities}:{}) };

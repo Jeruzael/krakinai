@@ -15,6 +15,10 @@ test('launcher CLI certification uses only the production adapter and the explic
 });
 
 const project = { projectId: 'synthetic-selected', projectName: 'MIDORI', excludedProjectId: 'synthetic-private' };
+test('routes v6 keyframe acceptance explicitly without changing prior workflow selectors',()=>{
+ const target={projectId:'synthetic-project',sceneId:'synthetic-parent',shotId:'shot09'},workflow={kind:'keyframes',target,changeSet:{schema:'krakinai.change-set.v6',changeSetId:'synthetic-frames',operations:[{operationId:'middle',type:'scene.revise_recipe',clientRef:'new-take',sceneId:target.sceneId,project:{id:target.projectId,expectedRevision:1},shot:{id:target.shotId}}]},baseline:{sourceSceneIds:[target.sceneId]},onReply:async()=>{}};
+ assert.equal(createCliWorkflow({workflow}).plan.length,17);
+});
 const plan = ['krakinai_connection_status', 'krakinai_list_projects', 'krakinai_get_project'].map(suffix => ({ suffix }));
 const message = (index, payload) => ({ role: 'tool', tool_call_id: `synthetic_cli_read_${index + 1}`, content: JSON.stringify({ content: [{ type: 'text', text: JSON.stringify(payload) }], isError: false }) });
 const success = () => [message(0, { ok: true, data: { connected: true, projectIds: [project.projectId] } }), message(1, { ok: true, data: { items: [{ id: project.projectId, name: project.projectName }], nextCursor: null } }), message(2, { ok: true, data: { id: project.projectId, name: project.projectName } })];

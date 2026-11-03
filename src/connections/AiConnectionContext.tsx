@@ -4,7 +4,7 @@ import { authorizedSceneIds, emptyMcpScope, validateMcpScope } from '../domain/m
 import type { McpScope } from '../types/mcp';
 import { BrowserTransport, type PairingView } from './browserTransport';
 import { ProposalBroker, type BrokerView } from './proposalBroker';
-import {requireBlockingCapabilities} from '../domain/mcpCapabilities';
+import {requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain/mcpCapabilities';
 
 interface ConnectionValue {
   broker: ProposalBroker; view: BrokerView; scope: McpScope;
@@ -35,7 +35,8 @@ export function AiConnectionProvider({ children }: { children: React.ReactNode }
     if (phaseRef.current === 'pairing') throw Error('Cancel pairing before changing permissions.');
     const copy = validateMcpScope(next), snapshot = libraryRef.current.snapshot;
     if(broker.getState().connected&&copy.version!==broker.getState().scope.version)throw Error('Disconnect and make a fresh native pairing before changing the permission format.');
-    if(broker.getState().connected&&copy.version===2)requireBlockingCapabilities(transportRef.current?.getCapabilities()??[]);
+    if(broker.getState().connected&&copy.version!==1)requireBlockingCapabilities(transportRef.current?.getCapabilities()??[]);
+    if(broker.getState().connected&&copy.version===3)requireKeyframeCapabilities(transportRef.current?.getCapabilities()??[]);
     if (snapshot) { const scenes = authorizedSceneIds(copy, snapshot); copy.fullPromptSceneIds = copy.fullPromptSceneIds.filter(id => scenes.has(id)); }
     if (broker.getState().connected) broker.setScope(copy);
     scopeRef.current = copy; setDraftScope(copy);
@@ -47,7 +48,7 @@ export function AiConnectionProvider({ children }: { children: React.ReactNode }
     phaseRef.current = 'pairing'; setPhase('pairing');
     if (old) { transportRef.current = undefined; await old.disconnect(); }
     setMessage(''); setPairing(undefined);
-    const client = new BrowserTransport({ relayAddress: address, appOrigin: window.location.origin,pairingVersion:selected.version,requireBlocking:selected.version===2,
+    const client = new BrowserTransport({ relayAddress: address, appOrigin: window.location.origin,pairingVersion:selected.version,requireBlocking:selected.version!==1,requireKeyframes:selected.version===3,
       onConnected(id, grant) { if (transportRef.current !== client) return; broker.connect(id, selected, grant.expiresAt,grant.capabilities); if (mounted.current) { setSessionExpiresAt(grant.expiresAt); setPhase('connected'); setPairing(undefined); setMessage('Connected. Every application still requires your review and approval here.'); } },
       onDisconnected(reason) { if (transportRef.current !== client) return; transportRef.current = undefined; broker.disconnect(); if (mounted.current) { setSessionExpiresAt(undefined); setPhase('disconnected'); setPairing(undefined); setMessage(reason); setDraftScope(emptyMcpScope()); } },
       onCommand: (command, sessionId) => broker.handle(command, sessionId),

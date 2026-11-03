@@ -55,6 +55,8 @@ import type {BlockingSourceProofs} from './blockingPatch';
 import {blockingDifferences,buildBlockingFinalReview,blockingReviewedProjection} from './blockingReview';
 import {assembleScenePrompt} from './promptAssembler';
 import {resolveBlockingOutputs} from './blockingOutputReview';
+import {applyRecipeKeyframeChange,keyframeDraftSignature,keyframeReviewedProjection,type KeyframePlanningContext} from './keyframeChangeSet';
+import {planFrameImageAssociation,planFrameImageCarryOver,validateFrameProductionBudget,emptyFrameProduction} from './frameImageAssociations';
 const copy = <T>(v: T): T => structuredClone(v);
 class PlanningError extends Error {
   constructor(
@@ -74,6 +76,7 @@ export function planChangeSet(
   allocation: ChangeSetAllocation,
   conversionProofs:ConversionSourceProofs=new Map(),
   blockingProofs:BlockingSourceProofs=new Map(),
+  keyframeContext?:KeyframePlanningContext,
 ): ChangeSetPlan {
   const state: ChangeSetState = {
     ...initial,
@@ -199,8 +202,9 @@ export function planChangeSet(
     };
     plan.operations.push(row);
     try {
-      if(('sceneId'in op&&state.scenes.some(s=>s.id===op.sceneId&&s.blocking)||'restoreFromSceneId'in op&&state.scenes.some(s=>s.id===op.restoreFromSceneId&&s.blocking))&&(input.schema!=='krakinai.change-set.v5'||!isRecipeOperation(op)))fail('BLOCKING_VERSION','This source contains blocking. Use an exact v5 recipe operation to preserve and review it; the old scene is unchanged.');
-      if('sceneId'in op&&!['krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5'].includes(input.schema)&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 or later to reconstruct it; the old scene is unchanged.');
+      if(('sceneId'in op&&state.scenes.some(s=>s.id===op.sceneId&&s.keyframePlan)||'restoreFromSceneId'in op&&state.scenes.some(s=>s.id===op.restoreFromSceneId&&s.keyframePlan))&&(input.schema!=='krakinai.change-set.v6'||!isRecipeOperation(op)))fail('KEYFRAME_VERSION','This take contains keyframes. Use an exact v6 Recipe operation to preserve and review them.');
+      if(('sceneId'in op&&state.scenes.some(s=>s.id===op.sceneId&&s.blocking)||'restoreFromSceneId'in op&&state.scenes.some(s=>s.id===op.restoreFromSceneId&&s.blocking))&&(!['krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema)||!isRecipeOperation(op)))fail('BLOCKING_VERSION','This source contains blocking. Use an exact v5 or v6 recipe operation to preserve and review it; the old scene is unchanged.');
+      if('sceneId'in op&&!['krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema)&&state.scenes.some(s=>s.id===op.sceneId&&s.ensemble))fail('ENSEMBLE_VERSION','This parent contains ensemble participants. Use change-set v3 or later to reconstruct it; the old scene is unchanged.');
       if (requiresStoryboardApproval(op) && !approval.storyboard)
         finding(
           op.operationId,
@@ -539,6 +543,32 @@ export function planChangeSet(
         if(outcome.matches.length)finding(op.operationId,'CANDIDATE_MATCH',`${outcome.matches.length} possible same-parent Outfit match(es); review before creating.`,'advisory');
         if(op.clientRef)mappings[op.clientRef]={kind:'variant_candidate',id:outcome.candidate.id,...(outcome.variantId?{variantId:outcome.variantId}:{})};
         record(op,outcome.candidate.id,outcome.status);
+      } else if(op.type==='frame_image.link'||op.type==='frame_image.clear'||op.type==='frame_video.request_review'){
+        if(input.schema!=='krakinai.change-set.v6'||!keyframeContext)fail('KEYFRAME_VERSION','Use a prepared v6 frame proposal.');
+        const c=project(op.project),s=shot(c,op.shot),sceneId=resolve(op.scene,'scene'),scene=state.scenes.find(row=>row.id===sceneId);
+        if(!scene||!s.takeSceneIds.includes(sceneId))fail('FRAME_TARGET','The scene is not a take of the exact project shot.');
+        if('id'in op.scene&&scene.revision!==op.expectedSceneRevision)fail('FRAME_SOURCE_STALE','The exact saved take revision changed.');
+        const proof='id'in op.scene?keyframeContext.sources.get(sceneId):[...keyframeContext.prepared.entries()].find(([id])=>allocation.ids[id]===sceneId)?.[1];
+        if(!proof)fail('FRAME_SOURCE_PROOF','Read and prepare the exact frame source again.');
+        if('id'in op.scene&&'signature'in proof&&proof.signature!==canonicalStringify(scene))fail('FRAME_SOURCE_STALE','The frame source changed. Preview again.');
+        row.projectId=c.id;row.shotId=s.id;
+        if(op.type==='frame_video.request_review'){
+          if(proof.basis.planDigest!==op.expectedKeyframeDigest)fail('FRAME_SOURCE_STALE','The keyframe plan digest changed.');
+          if(!approval.frameVideo)finding(op.operationId,'APPROVAL_FRAME_VIDEO','Explicit approval of the video review request is required.');
+          const prepared='videoBasis'in proof?proof.videoBasis:'images'in proof?proof.video.basis:undefined;
+          if(!prepared)fail('FRAME_VIDEO_PREPARATION','Prepare this saved video review basis before applying.');
+          const production=copy(c.project!.frameProduction??emptyFrameProduction());
+          production.videoReviews.push({id:allocation.ids[op.operationId],shotId:s.id,sceneId,kind:'requested',basis:copy(prepared),createdAt:allocation.preparedAt});production.revision++;validateFrameProductionBudget(production);c.project!.frameProduction=production;
+          row.resolved={videoReview:copy(production.videoReviews.at(-1))};record(op,allocation.ids[op.operationId],'updated');
+        }else{
+          const frameProof=proof.frames[op.frameId];
+          if(!frameProof||!scene.keyframePlan?.frames.some(frame=>frame.id===op.frameId)||frameProof.visualDigest!==op.expectedFrameDigest)fail('FRAME_SOURCE_STALE','The exact frame or image-prompt basis is missing or changed. Assemble its image prompt and preview again.');
+          if(!approval.frameImages)finding(op.operationId,'APPROVAL_FRAME_IMAGES','Explicit approval of the exact image association changes is required.');
+          if(op.type==='frame_image.link'&&keyframeContext.mediaValidationErrors.has(op.mediaId))fail('FRAME_IMAGE_MEDIA',keyframeContext.mediaValidationErrors.get(op.mediaId)!);
+          const result=planFrameImageAssociation({collection:c,target:{shotId:s.id,sceneId,frameId:op.frameId},proof:frameProof,expectedRevision:op.expectedAssociationRevision,eventId:allocation.ids[op.operationId],now:allocation.preparedAt,kind:op.type==='frame_image.link'?'link':'clear',...(op.type==='frame_image.link'?{media:mediaMap.get(op.mediaId),mediaProof:keyframeContext.mediaProofs.get(op.mediaId)}:{})});
+          c.project=result.collection.project;row.resolved={frameImage:copy(result.event)};record(op,result.event.id,'updated');
+        }
+        mutation(c);
       } else if (isRecipeOperation(op)) {
         const c = project(op.project),
           s = shot(c, op.shot),
@@ -572,18 +602,31 @@ export function planChangeSet(
           },
           target=>{if('id'in target)return target.id;const mapped=mappings[target.ref];if(mapped?.kind!=='variant_candidate'||!mapped.variantId)fail('DEPENDENCY_BLOCKED','A recipe depends on a deferred Outfit candidate. Approve creation/reuse or remove that binding. Download this package to complete it later.');return mapped.variantId;},
           conversionProofs,
-          input.schema==='krakinai.change-set.v5'?{proofs:blockingProofs}:undefined,
+          ['krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema)?{proofs:blockingProofs}:undefined,
         );
+        const v6=input.schema==='krakinai.change-set.v6';
+        if(v6){if(!keyframeContext)fail('KEYFRAME_PREPARATION_REQUIRED','Prepare the exact frame changes before review.');applyRecipeKeyframeChange(draft,parent,op,keyframeContext);keyframeContext.collect?.(op,draft,parent);}
         const resolved = recipeDraftPreview(draft, parent);
         row.resolved = { recipe: resolved };
-        const v5=input.schema==='krakinai.change-set.v5',blockingReview=!!draft.blocking||!!parent?.blocking||Object.hasOwn(op,'blocking');
+        const v5=['krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema),blockingReview=!!draft.blocking||!!parent?.blocking||Object.hasOwn(op,'blocking');
         if(v5)resolved.manualOutputsDiscarded=false;
-        if(v5){
+        if(v5&&!v6){
           const canonical=assembleScenePrompt(draft),choices=approval.blockingOutputDecisions?.[op.operationId],resolution=resolveBlockingOutputs(draft,canonical.outputs,choices,!!parent?.blocking);
           Object.assign(row.resolved as object,{blocking:{sourceSceneId:parent?.id,sourceRevision:parent?.revision,expectedSourceRecipeDigest:op.expectedSourceRecipeDigest,expectedBlockingDigest:op.expectedBlockingDigest,before:copy(parent?.blocking??null),after:copy(draft.blocking??null),changedPaths:blockingDifferences(parent?.blocking,draft.blocking),manualOutputs:copy(draft.manualOutputs),canonicalOutputs:copy(canonical.outputs),effectiveOutputs:copy(resolution.outputs),outputDecisions:copy(choices??{}),outputChanges:Object.fromEntries((['full','structured','compact'] as const).map(mode=>[mode,{canonical:parent?.outputs[mode]!==canonical.outputs[mode],effective:parent?.outputs[mode]!==resolution.outputs[mode]}])),findings:copy(resolution.findings)}});
           if(blockingReview&&!approval.blocking)finding(op.operationId,'APPROVAL_BLOCKING','Explicit approval of the exact blocking changes is required.');
           for(const issue of resolution.findings)finding(op.operationId,issue.code,issue.message,issue.severity==='advisory'?'advisory':'blocking');
           if(!resolution.valid)continue;
+        }
+        const prepared=v6?keyframeContext?.prepared.get(op.operationId):undefined;
+        if(v6){
+          if(!prepared)fail('KEYFRAME_PREPARATION_REQUIRED','Prepare the exact frame changes before review.');
+          if(prepared.signature!==keyframeDraftSignature(draft,op,approval))fail('KEYFRAME_PREPARATION_STALE','Frame inputs or decisions changed. Preview again.');
+          Object.assign(row.resolved as object,{keyframes:copy(prepared)});
+          for(const issue of prepared.findings)finding(op.operationId,issue.code,issue.message,issue.severity==='advisory'?'advisory':'blocking');
+          if((draft.keyframePlan||parent?.keyframePlan||Object.hasOwn(op,'keyframes'))&&!approval.keyframes)finding(op.operationId,'APPROVAL_KEYFRAMES','Explicit approval of the exact keyframe and image-prompt changes is required.');
+          if((draft.keyframePlan||parent?.keyframePlan)&&!approval.frameVideo)finding(op.operationId,'APPROVAL_FRAME_VIDEO','Review and approve the separate video correspondence decision.');
+          if(blockingReview&&!approval.blocking)finding(op.operationId,'APPROVAL_BLOCKING','Explicit approval of the exact blocking changes is required.');
+          if(prepared.findings.some(f=>f.severity==='blocking'))continue;
         }
         const conversionFindings=op.type==='scene.convert_direct_to_recipe'?conversionReviewFindings(op,approval,parent!,draft):[];
         plan.findings.push(...conversionFindings);
@@ -604,13 +647,14 @@ export function planChangeSet(
             requestId: `import:${input.changeSetId}:${op.operationId}`,
             expectedInputRevision: 1,
             ...(v5?{blockingOutputDecisions:approval.blockingOutputDecisions?.[op.operationId]}:{}),
+            ...(v6?{frameOutputDecisions:approval.frameOutputDecisions?.[op.operationId],frameVideoDecision:op.videoDecision}:{}),
             target,
             allowDuplicate: approval.allowDuplicateSceneOperations.includes(
               op.operationId,
             ),
           },
           state,
-          { id: allocation.ids[op.operationId], now: allocation.preparedAt },
+          { id: allocation.ids[op.operationId], now: allocation.preparedAt },prepared,
         );
         finishRecipeScene(result.scene, input);
         if(op.type==='scene.convert_direct_to_recipe')Object.assign(result.scene,{saveDecision:'take',separateTakeOfSceneId:op.sceneId});
@@ -618,6 +662,16 @@ export function planChangeSet(
         if (error) throw Error(error);
         if (state.scenes.some((s) => s.id === result.scene.id))
           fail("ID_COLLISION", "Allocated scene ID already exists.");
+        if(v6&&op.imageCarryOver?.length){
+          if(!approval.frameImages)finding(op.operationId,'APPROVAL_FRAME_IMAGES','Explicit approval of the listed image carry-over is required; review will reset.');
+          if(!parent||!result.collection||!prepared)fail('FRAME_CARRY_TARGET','Carry-over requires an exact source take and project shot.');
+          for(const [index,choice]of op.imageCarryOver.entries()){
+            const source=c.project?.frameProduction?.imageEvents.find(e=>e.id===choice.associationId),proof=prepared.frames[choice.frameId];
+            if(!source||source.sceneId!==parent.id||source.shotId!==s.id||source.revision!==choice.expectedRevision||!proof)fail('FRAME_CARRY_SOURCE','The exact source image association, frame or revision changed.');
+            if(source.mediaId&&keyframeContext?.mediaValidationErrors.has(source.mediaId))fail('FRAME_IMAGE_MEDIA',keyframeContext.mediaValidationErrors.get(source.mediaId)!);
+            result.collection=planFrameImageCarryOver({collection:result.collection,source,target:{shotId:s.id,sceneId:result.scene.id,frameId:choice.frameId},proof,media:source.mediaId?mediaMap.get(source.mediaId):undefined,mediaProof:source.mediaId?keyframeContext?.mediaProofs.get(source.mediaId):undefined,eventId:`${allocation.ids[op.operationId]}-carry-${index}`,now:allocation.preparedAt});
+          }
+        }
         const warnings = recipeWarnings(draft);
         if(result.scene.ensemble){for(const p of result.scene.ensemble.participants)if(p.generation?.fallbackReason)finding(op.operationId,'GENERATION_IDENTITY_REVIEW',`${p.character.sourceTitle}: ${p.generation.fallbackReason}`,'advisory');}
         else if (result.scene.generation?.fallbackReason)
@@ -937,11 +991,12 @@ export function planChangeSet(
   if(newVariantIds.size)plan.variants=state.variants!.filter(v=>newVariantIds.has(v.id));
   if(changedVariantCandidates.size)plan.variantCandidates=variantCandidates.filter(c=>changedVariantCandidates.has(c.id));
   plan.candidates = candidates.filter((c) => changedCandidates.has(c.id));
-  if(input.schema==='krakinai.change-set.v5')plan.blockingContinuity=buildBlockingFinalReview(plan.collections,state.scenes,plan.scenes);
+  if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema))plan.blockingContinuity=buildBlockingFinalReview(plan.collections,state.scenes,plan.scenes);
   plan.stateSignature = changeSetStateSignature(input, approval, initial, [
     ...duplicateScenes,
   ]);
-  if(input.schema==='krakinai.change-set.v5')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v5Review:blockingReviewedProjection(plan)});
+  if(input.schema==='krakinai.change-set.v6')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v6Review:keyframeReviewedProjection(plan),v5Review:blockingReviewedProjection(plan)});
+  else if(input.schema==='krakinai.change-set.v5')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v5Review:blockingReviewedProjection(plan)});
   else if(input.schema==='krakinai.change-set.v4')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v4Review:ensembleReviewedProjection(plan)});
   else if(input.schema==='krakinai.change-set.v3')plan.stateSignature=canonicalStringify({state:plan.stateSignature,v3Review:ensembleReviewedProjection(plan)});
   else if (

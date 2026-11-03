@@ -27,6 +27,9 @@ import {
   readImportLedger,
   validateChangeSetApproval,
 } from "../domain/changeSetLedger";
+import {prepareKeyframeChangeSet,keyframeReviewedProjection} from '../domain/keyframeChangeSet';
+import {frameReceiptResults} from '../domain/keyframeReceipt';
+import {withStableLibraryMedia} from './mediaPreparationLock';
 const request = <T>(r: IDBRequest<T>) =>
   new Promise<T>((resolve, reject) => {
     r.onsuccess = () => resolve(r.result);
@@ -47,14 +50,14 @@ async function readConversionProofs(input:ChangeSet):Promise<ConversionSourcePro
   return prepareConversionSources(input,scenes.filter((s):s is SavedScene=>!!s));
 }
 async function readBlockingProofs(input:ChangeSet):Promise<BlockingSourceProofs>{
- if(input.schema!=='krakinai.change-set.v5')return new Map();
+ if(!['krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema))return new Map();
  const ids=[...new Set(input.operations.flatMap(o=>isRecipeOperation(o)&&'sceneId'in o?[o.sceneId]:[]))];
  if(!ids.length)return new Map();
  const db=await openDatabase(),tx=db.transaction('scenes','readonly'),completion=done(tx);
  const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(tx.objectStore('scenes').get(id))));await completion;
  return prepareBlockingSources(scenes.filter((s):s is SavedScene=>!!s));
 }
-const receiptVersion=(input:ChangeSet,plan:ChangeSetPlan)=>input.schema==='krakinai.change-set.v5'?{version:2 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedContent:canonicalStringify(blockingReviewedProjection(plan))}:{version:1 as const};
+const receiptVersion=(input:ChangeSet,plan:ChangeSetPlan,state:ChangeSetState)=>input.schema==='krakinai.change-set.v6'?{version:3 as const,changeSetSchema:'krakinai.change-set.v6' as const,reviewedContent:canonicalStringify(keyframeReviewedProjection(plan)),frameResults:frameReceiptResults(input,plan,state)}:input.schema==='krakinai.change-set.v5'?{version:2 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedContent:canonicalStringify(blockingReviewedProjection(plan))}:{version:1 as const};
 const signedContent = (
   input: Pick<
     ChangeSetPreview,
@@ -65,6 +68,7 @@ const signedContent = (
   approval: input.approval,
   allocation: input.allocation,
   stateSignature: input.plan.stateSignature,
+  ...(input.changeSet.schema==='krakinai.change-set.v6'?{v6Review:keyframeReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema==='krakinai.change-set.v5'?{v5Review:blockingReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema==='krakinai.change-set.v3'?{v3Review:ensembleReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema==='krakinai.change-set.v4'?{v4Review:ensembleReviewedProjection(input.plan)}:{}),
@@ -115,7 +119,7 @@ function emptyPlan(): ChangeSetPlan {
     },
   };
 }
-export async function previewChangeSet(
+async function previewChangeSetInternal(
   input: string | unknown,
   approval?: ChangeSetApproval,
 ): Promise<ChangeSetPreview> {
@@ -153,8 +157,9 @@ export async function previewChangeSet(
     };
   }
   const conversionProofs=await prepareConversionSources(changeSet,snapshot.scenes);
-  const blockingProofs=changeSet.schema==='krakinai.change-set.v5'?await prepareBlockingSources(snapshot.scenes.filter(s=>changeSet.operations.some(o=>isRecipeOperation(o)&&'sceneId'in o&&o.sceneId===s.id))):new Map();
-  const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs,blockingProofs),
+  const blockingProofs=['krakinai.change-set.v5','krakinai.change-set.v6'].includes(changeSet.schema)?await prepareBlockingSources(snapshot.scenes.filter(s=>changeSet.operations.some(o=>isRecipeOperation(o)&&'sceneId'in o&&o.sceneId===s.id))):new Map();
+  const keyframeContext=changeSet.schema==='krakinai.change-set.v6'?await prepareKeyframeChangeSet(changeSet,decisions,snapshot,allocation,conversionProofs,blockingProofs):undefined;
+  const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs,blockingProofs,keyframeContext),
     draft = { changeSet, approval: decisions, allocation, plan };
   const approvedDigest = await changeSetDigest(signedContent(draft));
   if (
@@ -163,7 +168,7 @@ export async function previewChangeSet(
     )
   ) {
     const receipt: ChangeSetReceipt = {
-      ...receiptVersion(changeSet,plan),
+      ...receiptVersion(changeSet,plan,snapshot),
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,
@@ -241,7 +246,7 @@ function checkSynchronousAuthorization(
     );
   }
 }
-export async function applyApprovedChangeSet(
+async function applyApprovedChangeSetInternal(
   preview: ChangeSetPreview,
   approvedDigest: string,
   authorize?: (currentState: ChangeSetState) => unknown,
@@ -283,6 +288,7 @@ export async function applyApprovedChangeSet(
     throw Error("Invalid preview allocation.");
   const conversionProofs=await readConversionProofs(changeSet);
   const blockingProofs=await readBlockingProofs(changeSet);
+  const keyframeContext=changeSet.schema==='krakinai.change-set.v6'?await prepareKeyframeChangeSet(changeSet,prepared.approval,await getAllSnapshot(),prepared.allocation,conversionProofs,blockingProofs):undefined;
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -323,8 +329,8 @@ export async function applyApprovedChangeSet(
     const appliedAt = new Date().toISOString();
     const plan = planChangeSet(changeSet, prepared.approval, state, {
         ...prepared.allocation,
-        preparedAt: appliedAt,
-      },conversionProofs,blockingProofs),
+        preparedAt: changeSet.schema==='krakinai.change-set.v6'?prepared.allocation.preparedAt:appliedAt,
+      },conversionProofs,blockingProofs,keyframeContext),
       blocked = plan.findings.filter((f) => f.severity === "blocking");
     if (blocked.length) throw Error(blocked.map((f) => f.message).join(" "));
     if (plan.stateSignature !== prepared.plan.stateSignature)
@@ -332,7 +338,7 @@ export async function applyApprovedChangeSet(
         "Relevant project, scene, asset or media state changed after preview. Nothing was applied; preview and approve again.",
       );
     const receipt: ChangeSetReceipt = {
-      ...receiptVersion(changeSet,plan),
+      ...receiptVersion(changeSet,plan,state),
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,
@@ -375,4 +381,14 @@ export async function applyApprovedChangeSet(
     await completion.catch(() => undefined);
     throw error;
   }
+}
+
+/** One media-stability lease encloses C preparation and the existing Stage B transaction. */
+export async function previewChangeSet(input:string|unknown,approval?:ChangeSetApproval):Promise<ChangeSetPreview>{
+ const parsed=parseChangeSet(input);
+ return parsed.schema==='krakinai.change-set.v6'?withStableLibraryMedia(()=>previewChangeSetInternal(parsed,approval),true):previewChangeSetInternal(parsed,approval);
+}
+export async function applyApprovedChangeSet(preview:ChangeSetPreview,approvedDigest:string,authorize?:(currentState:ChangeSetState)=>unknown):Promise<ChangeSetReceipt>{
+ const captured=structuredClone(preview);
+ return captured.changeSet.schema==='krakinai.change-set.v6'?withStableLibraryMedia(()=>applyApprovedChangeSetInternal(captured,approvedDigest,authorize),true):applyApprovedChangeSetInternal(captured,approvedDigest,authorize);
 }

@@ -8,7 +8,7 @@ import {blockingDigest} from './blockingPatch';
 import {changeSetDigest} from './changeSetCanonical';
 import {getSceneSnapshotEntries} from './ensembleReferences';
 
-export const hasBlockingGrant=(scope:McpScope,id:string)=>scope.version===2&&scope.blockingSceneIds.includes(id);
+export const hasBlockingGrant=(scope:McpScope,id:string)=>scope.version!==1&&scope.blockingSceneIds.includes(id);
 export function blockingDisclosure(scene:Pick<SavedScene,'id'|'blocking'>,allowed:boolean){
  return scene.blocking?{available:true,version:1 as const,disclosure:allowed?'shared':'withheld',...(allowed?{plan:structuredClone(scene.blocking)}:{})}:undefined;
 }

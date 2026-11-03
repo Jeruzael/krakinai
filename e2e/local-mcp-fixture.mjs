@@ -75,13 +75,13 @@ export async function sdkBridge({ production = false, origin = mcpOrigin } = {})
   };
 }
 
-export async function pairSynthetic(page, bridge) {
+export async function pairSynthetic(page, bridge, expectedOrigin = mcpOrigin) {
   await applyMcpPermissions(page);
   await page.getByRole('tab', { name: 'Connection', exact: true }).click();
   await page.getByLabel('Local bridge address', { exact: true }).fill(`http://127.0.0.1:${bridge.port}`);
   await page.getByRole('button', { name: 'Connect Codex', exact: true }).click();
   const verification = await bridge.nativeVerification();
-  expect(verification.origin).toBe(mcpOrigin);
+  expect(verification.origin).toBe(expectedOrigin);
   await expect(page.locator('.ai-verification')).toHaveText(verification.verificationCode);
   await enterPairingKey(page, verification.secret);
   await page.getByRole('button', { name: 'Confirm pairing', exact: true }).click();

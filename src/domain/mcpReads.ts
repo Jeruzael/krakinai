@@ -12,7 +12,8 @@ import { McpError, MCP_LIMITS, assertByteLimit, validateToolArgs, type McpToolNa
 import {hashConversionSourceText}from'./recipeConversion';
 import {isDirectPrompt}from'./directPrompt';
 import {hasBlockingGrant,blockingSourceTokens} from './blockingMcp';
-import {MCP_BLOCKING_CAPABILITIES} from './mcpCapabilities';
+import {keyframeImageMetadata,keyframeSceneProjection,keyframeSavedImage,keyframeSourceTokens} from './keyframeMcp';
+import {MCP_KEYFRAME_CAPABILITIES,MCP_BLOCKING_CAPABILITIES} from './mcpCapabilities';
 
 async function page<T>(items: T[], args: Record<string, unknown>, scope: McpScope, stampInput: unknown) {
   const signature = await changeSetDigest(stampInput), limit = Number(args.limit ?? 20); let offset = 0;
@@ -24,7 +25,7 @@ async function page<T>(items: T[], args: Record<string, unknown>, scope: McpScop
 }
 export function receiptProjection(receipt: ChangeSetReceipt, state: ChangeSetState) {
   const sceneIds = Object.values(receipt.idMappings).filter(m => m.kind === 'scene').map(m => m.id);
-  return { ...(receipt.version===2?{version:2,changeSetSchema:receipt.changeSetSchema}:{}),changeSetId: receipt.changeSetId, packageDigest: receipt.packageDigest, approvedDigest: receipt.approvedDigest, appliedAt: receipt.appliedAt,
+  return { ...(receipt.version!==1?{version:receipt.version,changeSetSchema:receipt.changeSetSchema}:{}),...(receipt.version===3?{frameResults:structuredClone(receipt.frameResults)}:{}),changeSetId: receipt.changeSetId, packageDigest: receipt.packageDigest, approvedDigest: receipt.approvedDigest, appliedAt: receipt.appliedAt,
     idMappings: structuredClone(receipt.idMappings), operations: structuredClone(receipt.operations), projectRevisions: structuredClone(receipt.projectRevisions),
     scenes: sceneIds.map(id => { const scene = state.scenes.find(s => s.id === id); return scene ? { id, available: true, rootSceneId: revisionRoot(scene), parentSceneId: scene.sceneRevision?.parentSceneId, sequence: scene.sceneRevision?.sequence ?? 1, restoredFromSceneId: scene.sceneRevision?.restoredFromSceneId, pendingInputs: (scene.pendingInputs ?? []).map(p => ({ kind: p.kind })) } : { id, available: false }; }) };
 }
@@ -33,23 +34,24 @@ export async function readMcpTool(tool: McpToolName, raw: unknown, scope: McpSco
   const args = validateToolArgs(tool, raw);
   const disclosures = { includeAssetText: scope.includeAssetText, includeCharacterIdentity: scope.includeCharacterIdentity, includeNotes: scope.includeNotes, includeMediaFilenames: scope.includeMediaFilenames };
   let result: unknown;
-  if (tool === 'krakinai_connection_status') result = { connected: true, state: 'connected', scopeEpoch: scope.epoch, projectIds: [...scope.projectIds], sceneIds: [...scope.sceneIds], mediaIds: [...scope.mediaIds], candidateIds: [...scope.candidateIds], receiptGrants: structuredClone(scope.receiptGrants), disclosure: { ...disclosures, fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorizedSceneIds(scope, state).has(id)) }, allowProposals: scope.allowProposals, allowNewProjects: scope.allowNewProjects, automaticApplication: false,...(scope.version===2?{scopeVersion:2,capabilities:[...MCP_BLOCKING_CAPABILITIES],supportedScopeVersions:[1,2],supportedChangeSetVersions:[1,2,3,4,5],blockingSceneIds:scope.blockingSceneIds.filter(id=>authorizedSceneIds(scope,state).has(id)),allowBlockingProposals:scope.allowBlockingProposals}:{}) };
+  if (tool === 'krakinai_connection_status') result = { connected: true, state: 'connected', scopeEpoch: scope.epoch, projectIds: [...scope.projectIds], sceneIds: [...scope.sceneIds], mediaIds: [...scope.mediaIds], candidateIds: [...scope.candidateIds], receiptGrants: structuredClone(scope.receiptGrants), disclosure: { ...disclosures, fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorizedSceneIds(scope, state).has(id)) }, allowProposals: scope.allowProposals, allowNewProjects: scope.allowNewProjects, automaticApplication: false,...(scope.version===3?{scopeVersion:3,capabilities:[...MCP_KEYFRAME_CAPABILITIES],supportedScopeVersions:[1,2,3],supportedChangeSetVersions:[1,2,3,4,5,6],keyframeSceneIds:scope.keyframeSceneIds.filter(id=>authorizedSceneIds(scope,state).has(id)),imagePromptFrameGrants:scope.imagePromptFrameGrants.filter(g=>authorizedSceneIds(scope,state).has(g.sceneId)),allowKeyframeProposals:scope.allowKeyframeProposals,allowFrameImageProposals:scope.allowFrameImageProposals,allowImagePromptDerivation:scope.allowImagePromptDerivation}:{}),...(scope.version!==1?{scopeVersion:scope.version,...(scope.version===2?{capabilities:[...MCP_BLOCKING_CAPABILITIES],supportedScopeVersions:[1,2],supportedChangeSetVersions:[1,2,3,4,5]}:{}),blockingSceneIds:scope.blockingSceneIds.filter(id=>authorizedSceneIds(scope,state).has(id)),allowBlockingProposals:scope.allowBlockingProposals}:{}) };
   else if (tool === 'krakinai_list_projects') {
     const projects = state.collections.filter(c => scope.projectIds.includes(c.id)).map(c => { const { shots, ...metadata } = projectAiContextProject(c, [], scope.includeNotes); return { ...metadata, shotCount: getProjectShots(c, state.scenes).length }; });
     result = await page(projects, args, scope, { tool, projects });
   } else if (tool === 'krakinai_get_project' || tool === 'krakinai_get_storyboard') {
     const project = requireProject(String(args.projectId), scope, state), shots = getProjectShots(project, state.scenes);
     const { shots: projected, ...metadata } = projectAiContextProject(project, tool === 'krakinai_get_storyboard' ? shots : [], scope.includeNotes);
-    if(Array.isArray(projected))for(const row of projected){if(state.scenes.find(s=>s.id===row.selectedSceneId)?.blocking)row.blockingAvailable=true;}
+    if(Array.isArray(projected))for(const row of projected){const scene=state.scenes.find(s=>s.id===row.selectedSceneId);if(scene?.blocking)row.blockingAvailable=true;if(scene?.keyframePlan)Object.assign(row,{keyframes:args.projection==='keyframes'?keyframeSceneProjection(scene,scope):{available:true,frameCount:scene.keyframePlan.frames.length,disclosure:'withheld'}});}
     result = tool === 'krakinai_get_project' ? { ...metadata, shotCount: shots.length } : { projectId: project.id, expectedRevision: project.project?.revision ?? 0, ...await page(projected as unknown[], args, scope, { tool, projectId: project.id, revision: project.project?.revision ?? 0, shots: projected }) };
   } else if (tool === 'krakinai_get_scene' || tool === 'krakinai_get_generation_prompt') {
     const scene = requireScene(String(args.sceneId), scope, state);
     const canReadFull=scope.fullPromptSceneIds.includes(scene.id)&&(!scene.blocking||hasBlockingGrant(scope,scene.id));
-    if (tool === 'krakinai_get_generation_prompt') { if (!canReadFull) denyScope(); result = { sceneId: scene.id, format: 'full', text: scene.outputs.full, trust: 'untrusted_user_content' }; }
+    if (tool === 'krakinai_get_generation_prompt'&&args.target) {const target=args.target as {keyframeId:string;mode:'full'|'compact'};result=keyframeSavedImage(scene,target.keyframeId,target.mode,scope);}
+    else if (tool === 'krakinai_get_generation_prompt') { if (!canReadFull) denyScope(); result = { sceneId: scene.id, format: 'full', text: scene.outputs.full, trust: 'untrusted_user_content' }; }
     else {
-      const doc=buildAiContext(state,{...disclosures,sceneIds:[scene.id],fullPromptSceneIds:canReadFull?[scene.id]:[],...(scope.version===2?{blockingSceneIds:hasBlockingGrant(scope,scene.id)?[scene.id]:[]}:{})});
+      const doc=buildAiContext(state,{...disclosures,sceneIds:[scene.id],fullPromptSceneIds:canReadFull?[scene.id]:[],...(scope.version!==1?{blockingSceneIds:hasBlockingGrant(scope,scene.id)?[scene.id]:[]}:{})});
       const map=new Map(state.media.map(m=>[m.id,m]));
-      result={...doc.scenes[0],...(isDirectPrompt(scene)&&canReadFull?{sourceTextSha256:await hashConversionSourceText(scene.outputs.full)}:{}),...(hasBlockingGrant(scope,scene.id)?await blockingSourceTokens(scene):{}),...(scene.blocking&&!canReadFull&&scope.fullPromptSceneIds.includes(scene.id)?{fullPromptDisclosure:'withheld; exact Blocking grant required'}:{}),sourceMedia:(scene.sourceMediaLinks??[]).map(l=>projectAiContextLink(l,map,scope.includeNotes,scope.includeMediaFilenames)),trust:'untrusted_user_content'};
+      result={...doc.scenes[0],...(args.projection==='keyframes'?{frameImages:keyframeImageMetadata(scene,scope,state)}:{}),...(scene.keyframePlan?{keyframes:args.projection==='keyframes'?keyframeSceneProjection(scene,scope):{available:true,frameCount:scene.keyframePlan.frames.length,disclosure:'withheld'}}:{}),...(args.projection==='keyframes'&&keyframeSceneProjection(scene,scope).disclosure==='shared'?await keyframeSourceTokens(scene,state):{}),...(isDirectPrompt(scene)&&canReadFull?{sourceTextSha256:await hashConversionSourceText(scene.outputs.full)}:{}),...(hasBlockingGrant(scope,scene.id)?await blockingSourceTokens(scene):{}),...(scene.blocking&&!canReadFull&&scope.fullPromptSceneIds.includes(scene.id)?{fullPromptDisclosure:'withheld; exact Blocking grant required'}:{}),sourceMedia:(scene.sourceMediaLinks??[]).map(l=>projectAiContextLink(l,map,scope.includeNotes,scope.includeMediaFilenames)),trust:'untrusted_user_content'};
     }
   } else if (tool === 'krakinai_get_scene_history') {
     const scene = requireScene(String(args.sceneId), scope, state), root = revisionRoot(scene), authorized = authorizedSceneIds(scope, state);

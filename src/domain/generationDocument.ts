@@ -9,6 +9,7 @@ import {isDirectPrompt} from './directPrompt';
 import {buildDirectPromptDocument} from './directPromptDocument';
 import{getEnsembleAvoidParts}from './ensembleReferences';
 import{buildBlockingDocument}from './blockingDocument';
+import{hasKeyframeDocumentData}from './keyframeDocument';
 
 export interface GenerationReference {
   participantId?:string;
@@ -102,7 +103,8 @@ export function buildGenerationDocument(
     references=references.map((ref,order)=>({...ref,order}));
   }
   return {
-    schema: project.blocking?"krakinai.generation-prompt.v3" as const:source.ensemble?"krakinai.generation-prompt.v2" as const:"krakinai.generation-prompt.v1" as const,
+    schema: project.keyframes?"krakinai.generation-prompt.v4" as const:project.blocking?"krakinai.generation-prompt.v3" as const:source.ensemble?"krakinai.generation-prompt.v2" as const:"krakinai.generation-prompt.v1" as const,
+    ...(project.keyframes?{keyframes:structuredClone(project.keyframes)}:{}),
     ...(project.blocking?{blocking:structuredClone(project.blocking)}:{}),
     ...(project.participants?{primaryParticipantId:project.primaryParticipantId,participants:project.participants.map(p=>({id:p.id,name:p.name,presence:p.presence,role:p.role,characterSource:p.characterSource,identity:p.character?(options.participantIdentities?.[p.id]??{source:'master' as const,description:p.character.prompt}):null,wardrobe:p.wardrobe?.prompt??null,performanceNotes:p.performanceNotes})),dialogueCues:project.dialogueCues}:{}),
     scene: {
@@ -164,6 +166,7 @@ export function serializeGenerationJson(
   source: SceneDocumentSource,
   options?: GenerationExportOptions,
 ): string {
+  if(isDirectPrompt(source)&&hasKeyframeDocumentData(source))throw Error('Preserve this incomplete planning draft or guided Recipe conversion package before complete C generation export.');
   if(isDirectPrompt(source)){buildBlockingDocument(source);return JSON.stringify(buildDirectPromptDocument(source,'generation'),null,2);}
   return JSON.stringify(buildGenerationDocument(source, options), null, 2);
 }

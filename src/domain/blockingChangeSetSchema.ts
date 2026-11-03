@@ -19,6 +19,9 @@ const interaction:JsonRule={oneOf:[
  obj({id,kind:{const:'custom'},description:text(1000),target:interactionTarget},['id','kind','description']),
 ]};
 const holder:JsonRule={oneOf:[obj({kind:{const:'participant'},participant},['kind','participant']),obj({kind:{const:'shared'},participants:{...arr(participant,8),minItems:2}},['kind','participants']),obj({kind:{const:'landmark'},landmarkId:id},['kind','landmarkId']),...['unheld','unspecified'].map(kind=>obj({kind:{const:kind}},['kind']))]};
+export const BLOCKING_PARTICIPANT_RULE=participant;
+export const BLOCKING_PHASE_PATCH_RULE=phase;
+export const BLOCKING_HOLDER_RULE=holder;
 const action=obj({kind:choices('hold','move','enter','exit','custom','unspecified'),text:nullable(text(500)),waypointLandmarkIds:nullable(arr(id,4)),interactionUpserts:arr(interaction,32),removeInteractionIds:arr(id,32),interactionOrder:arr(id,32)});
 export const BLOCKING_PATCH_SCHEMA:JsonRule=obj({
  version:{const:1},expectedBaseDigest:BLOCKING_DIGEST_RULE,

@@ -21,7 +21,7 @@ describe('compiled persistent adapter SDK process', () => {
       expect(authoring.description).toContain('Never expand permissions');
       expect(authoring.annotations).toMatchObject({readOnlyHint:false,destructiveHint:false,openWorldHint:false,idempotentHint:true});
       const versions=(authoring.inputSchema.properties!.changeSet as any).oneOf;
-      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5']);
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6']);
       expect(tools.tools.some(tool => /start|stop|approve|shell|filesystem/.test(tool.name))).toBe(false);
       const status = await client.callTool({ name: 'krakinai_connection_status', arguments: {} });
       expect(JSON.parse((status.content![0] as { text: string }).text)).toMatchObject({ ok: true, data: { connected: false } });

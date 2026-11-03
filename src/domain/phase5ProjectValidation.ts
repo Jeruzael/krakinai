@@ -1,6 +1,7 @@
 import type {Collection,ProjectShot,SavedScene,PromptAsset,Variant,MediaAsset,CharacterBibleEntry,ProjectTransition} from '../types/domain';
 import {projectMembersFromShots} from './projectStoryboard';
 import {isShotType} from './shotTypeRules';
+import {validateFrameProduction} from './frameImageAssociations';
 
 const statuses=new Set(['planned','prompt_ready','generated','reviewed','final']);
 const reasons=new Set(['new_day','costume_change','flashback','timeline','deliberate','other']);
@@ -12,6 +13,8 @@ export function validateProject(collection:Collection, scenes:SavedScene[], chec
   const project=collection.project;
   if (!project) return null;
   if (project.version!==1 || !Number.isSafeInteger(project.revision) || project.revision<0 || !Array.isArray(project.shots)) return 'Invalid project metadata or revision.';
+  try{validateFrameProduction(project.frameProduction);}catch(error){return (error as Error).message;}
+  for(const pointer of project.frameProduction?.active??[]){const scene=scenes.find(s=>s.id===pointer.sceneId);if(!project.shots.some(shot=>shot.id===pointer.shotId&&shot.takeSceneIds.includes(pointer.sceneId))||!scene?.keyframePlan?.frames.some(frame=>frame.id===pointer.frameId))return 'Active frame image must belong to an existing exact project/shot/take/frame. Historical targets may remain unavailable.';}
   const sceneIds=new Set(scenes.map(s=>s.id));
   const ids=new Set<string>();
   for (const [index,shot] of [...project.shots].sort((a,b)=>a.order-b.order).entries()) {

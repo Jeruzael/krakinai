@@ -69,6 +69,7 @@ test('frame Clear after browser Back requires explicit discard of a dirty wardro
  await page.getByRole('button',{name:'Review wardrobe',exact:true}).click();
  await page.getByRole('textbox',{name:'Continuity notes',exact:true}).fill('Keep this unrelated review');
  await page.goBack();await expect(page.getByRole('tab',{name:'Frames & Prompts',exact:true})).toHaveAttribute('aria-selected','true');
+ await page.getByText('Legacy First / Last images',{exact:true}).click();
  await page.getByRole('button',{name:'Clear',exact:true}).click();
  await expect(page.getByRole('dialog',{name:'Discard unsaved review?',exact:true})).toBeVisible();
  expect(await storedProof(page)).toEqual(before);
@@ -101,6 +102,7 @@ for(const [width,height]of[[1440,900],[768,1024],[390,844],[720,450]]){
   const dir='docs/screenshots/continuity-workspace-a/after';await mkdir(dir,{recursive:true});
   for(const [view,name]of[['Overview','overview'],['Wardrobe','wardrobe'],['Frames & Prompts','frames'],['Transitions','transitions']]){
    await page.getByRole('tab',{name:view,exact:true}).click();
+   if(name==='frames')await page.getByText('Legacy First / Last images',{exact:true}).click();
    await page.locator('.pc-inspector,.pc-content-scroll').evaluateAll(els=>els.forEach(el=>el.scrollTop=0));
    for(const img of await page.locator('.pc-frame-preview img').all()){
     await expect(img).toBeVisible();await expect.poll(()=>img.evaluate(el=>el.complete&&el.naturalWidth>0)).toBe(true);

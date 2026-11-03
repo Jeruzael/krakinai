@@ -2,6 +2,7 @@ import type {Collection,ProjectShot,ProductionStatus,SavedScene,ShotType} from '
 import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
+import {retireUnavailableFrameImages} from '../domain/frameImageAssociations';
 
 function request<T>(req:IDBRequest<T>):Promise<T>{return new Promise((resolve,reject)=>{req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);});}
 function done(tx:IDBTransaction):Promise<void>{return new Promise((resolve,reject)=>{tx.oncomplete=()=>resolve();tx.onabort=()=>reject(tx.error??new Error('Project transaction aborted.'));tx.onerror=()=>reject(tx.error??new Error('Project transaction failed.'));});}
@@ -17,7 +18,7 @@ async function mutate(collectionId:string,change:(collection:Collection,scenes:S
     const store=tx.objectStore('collections');const collection=await request<Collection|undefined>(store.get(collectionId));
     if(!collection)throw new Error('Collection not found.');
     const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());
-    const result=change(collection,scenes);
+    const result=retireUnavailableFrameImages(change(collection,scenes));
     if(result!==collection){const error=validateProject(result,scenes);if(error)throw new Error(error);store.put(result);}
     await completion;return result;
   }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}

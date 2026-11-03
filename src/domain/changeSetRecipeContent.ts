@@ -28,6 +28,7 @@ export function recipeContentProjection(scene: SavedScene) {
     sourceSceneId,
   } = scene;
   return {
+    ...(scene.keyframePlan?{keyframePlan:scene.keyframePlan,imagePromptSnapshots:scene.imagePromptSnapshots,manualImageOutputs:scene.manualImageOutputs}:{}),
     ...(scene.conversionProvenance?{conversionProvenance:scene.conversionProvenance}:{}),
     ...(ensemble?{ensemble}:{}),
     id,

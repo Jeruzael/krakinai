@@ -15,3 +15,8 @@ export function validateCapabilityTranscript(transcript:Record<string,unknown>,o
 export function requireBlockingCapabilities(capabilities:readonly string[]):void{
  if(!MCP_BLOCKING_CAPABILITIES.every(c=>capabilities.includes(c)))throw new McpError('CAPABILITY_REQUIRED','Update the local bridge and make a fresh native pairing to use Blocking permissions and v5 proposals.');
 }
+
+export const MCP_KEYFRAME_CAPABILITIES=Object.freeze([...MCP_BLOCKING_CAPABILITIES,'keyframes.v1','image-prompts.v1','change-set.v6','scope.v3'] as const);
+export function requireKeyframeCapabilities(capabilities:readonly string[]):void{
+ if(!MCP_KEYFRAME_CAPABILITIES.every(c=>capabilities.includes(c)))throw new McpError('CAPABILITY_REQUIRED','Update the local bridge and Disconnect, then make a fresh native pairing to use frame plans, image prompts and v6 proposals.');
+}

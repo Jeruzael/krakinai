@@ -1,6 +1,6 @@
 import { validatePhase5Metadata } from '../domain/phase5MetadataValidation';
 import { validateProject } from '../domain/phase5ProjectValidation';
-import {detectBackupFeatures,validateBackupFeatures,type BackupFeature} from '../domain/backupFeatures';
+import {hasCBackupFeature,detectBackupFeatures,validateBackupFeatures,type BackupFeature} from '../domain/backupFeatures';
 import {readLegacyRecordsForBackup} from './libraryCompatibility';
 import {canonicalStringify} from '../domain/changeSetCanonical';
 import { getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
@@ -39,6 +39,8 @@ import {
 } from './db';
 
 export interface SerializedMediaManifestEntry {
+  sha256?:string;
+  posterSha256?:string;
   id: string;
   filename: string;
   safeFilename: string;
@@ -136,6 +138,7 @@ export async function exportFullBackupZip(): Promise<Uint8Array> {
 export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint8Array>{
   const files: Record<string, Uint8Array> = {};
   const mediaEntries: SerializedMediaManifestEntry[] = [];
+  const cChecksums=hasCBackupFeature(detectBackupFeatures(snap));
   let totalUncompressed = 0;
 
   for (const m of snap.media) {
@@ -145,16 +148,16 @@ export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint
     files[archivePath] = bytes;
     totalUncompressed += bytes.byteLength;
 
-    let posterByteSize: number | undefined;
+    let posterByteSize: number | undefined,posterSha256:string|undefined;
     if (m.posterBlob) {
       const posterArchivePath = `posters/${m.id}.jpg`;
       const pBytes = await blobToUint8Array(m.posterBlob);
       files[posterArchivePath] = pBytes;
-      posterByteSize = pBytes.byteLength;
+      posterByteSize = pBytes.byteLength;if(cChecksums)posterSha256=await backupSha256(pBytes);
       totalUncompressed += pBytes.byteLength;
     }
 
-    mediaEntries.push(backupMediaMetadata(m,bytes.byteLength,posterByteSize));
+    mediaEntries.push({...backupMediaMetadata(m,bytes.byteLength,posterByteSize),...(cChecksums?{sha256:await backupSha256(bytes),...(posterSha256?{posterSha256}:{})}:{})});
   }
 
   const manifest=buildBackupManifest(snap,new Date().toISOString(),mediaEntries);
@@ -400,6 +403,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
       };
     }
 
+    if(manifest.schemaVersion===2&&hasCBackupFeature(manifest.requiredFeatures)&&(!/^[a-f0-9]{64}$/.test(mEntry.sha256??'')||await backupSha256(rawBytes)!==mEntry.sha256))return{valid:false,error:`C backup media SHA-256 checksum is missing or mismatched: ${mEntry.id}.`};
     totalMediaBytes += rawBytes.byteLength;
     let posterBlob: Blob | undefined;
     if (mEntry.posterArchivePath) {
@@ -410,6 +414,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
           error: `Missing poster file in archive: ${mEntry.posterArchivePath}`,
         };
       }
+      if(manifest.schemaVersion===2&&hasCBackupFeature(manifest.requiredFeatures)&&(!/^[a-f0-9]{64}$/.test(mEntry.posterSha256??'')||await backupSha256(pBytes)!==mEntry.posterSha256))return{valid:false,error:`C backup poster SHA-256 checksum is missing or mismatched: ${mEntry.id}.`};
       totalMediaBytes += pBytes.byteLength;
       posterBlob = new Blob([pBytes as unknown as BlobPart], { type: 'image/jpeg' });
     }
@@ -524,3 +529,5 @@ export async function restoreFullBackupZip(zipBytes: Uint8Array): Promise<Backup
   await replaceAllStoresTransactionally(validation.parsedSnapshot);
   return validation.summary;
 }
+
+const backupSha256=async(bytes:Uint8Array)=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes as BufferSource))].map(n=>n.toString(16).padStart(2,'0')).join('');

@@ -255,7 +255,7 @@ export function ChangeSetImportScreen({initialChangeSet,onBack,onDirtyChange}:{i
               value={raw}
               rows={10}
               maxLength={MAX_CHANGE_SET_BYTES}
-              placeholder="Paste a krakinai.change-set.v1–v4 planning, Direct Prompt, recipe or conversion package"
+              placeholder="Paste a krakinai.change-set.v1–v6 planning, Recipe, Blocking or frame package"
               disabled={busy === "apply"}
               onChange={(e) => {
                 resetPreview();

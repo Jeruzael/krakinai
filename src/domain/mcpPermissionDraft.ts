@@ -1,6 +1,6 @@
 import type { ChangeSetState } from '../types/changeSet';
 import type { McpScope, ReceiptGrant } from '../types/mcp';
-import { authorizedSceneIds, emptyMcpScope,emptyMcpScopeV2, MCP_SCOPE_LIMITS, validateMcpScope } from './mcpScope';
+import { authorizedSceneIds, emptyMcpScope,emptyMcpScopeV2,emptyMcpScopeV3, MCP_SCOPE_LIMITS, validateMcpScope } from './mcpScope';
 import { getProjectShots } from './projectStoryboard';
 
 export const PERMISSION_FIELDS = [
@@ -21,12 +21,12 @@ export const CAPABILITY_FIELDS = [
   { field: 'allowProposals', label: 'Allow change-set proposals', description: 'Codex may submit proposals. Every database change still needs your separate browser review.' },
   { field: 'allowNewProjects', label: 'Allow new project creation', description: 'Proposals may request a new project. This does not approve or save the project.' },
 ] as const;
-export type PermissionField = typeof PERMISSION_FIELDS[number]['field']|'blockingSceneIds';
-export type PermissionFlag = typeof DISCLOSURE_FIELDS[number]['field'] | typeof CAPABILITY_FIELDS[number]['field']|'allowBlockingProposals';
+export type PermissionField = typeof PERMISSION_FIELDS[number]['field']|'blockingSceneIds'|'keyframeSceneIds'|'imagePromptFrameGrants';
+export type PermissionFlag = typeof DISCLOSURE_FIELDS[number]['field'] | typeof CAPABILITY_FIELDS[number]['field']|'allowBlockingProposals'|'allowKeyframeProposals'|'allowFrameImageProposals'|'allowImagePromptDerivation';
 export interface PermissionRecord { id: string; label: string; category?: string }
 export type PermissionInventory = Record<PermissionField, PermissionRecord[]>;
 export const receiptKey = (grant: ReceiptGrant) => grant.changeSetId + ':' + grant.packageDigest;
-export const permissionIds = (scope: McpScope, field: PermissionField): string[] =>field==='blockingSceneIds'?scope.version===2?scope.blockingSceneIds:[]: field === 'receiptGrants' ? scope.receiptGrants.map(receiptKey) : scope[field];
+export const permissionIds = (scope: McpScope, field: PermissionField): string[] =>field==='imagePromptFrameGrants'?scope.version===3?scope.imagePromptFrameGrants.map(g=>JSON.stringify([g.sceneId,g.frameId])):[]:field==='keyframeSceneIds'?scope.version===3?scope.keyframeSceneIds:[]:field==='blockingSceneIds'?scope.version!==1?scope.blockingSceneIds:[]: field === 'receiptGrants' ? scope.receiptGrants.map(receiptKey) : scope[field];
 
 export function buildPermissionInventory(state: ChangeSetState, scope:McpScope = emptyMcpScope()): PermissionInventory {
   const authorized = authorizedSceneIds(scope, state);
@@ -40,6 +40,8 @@ export function buildPermissionInventory(state: ChangeSetState, scope:McpScope =
     candidateIds: [...(state.preferences.aiImports?.candidates ?? []).filter(c => c.status === 'pending' || scope.candidateIds.includes(c.id)).map(c => ({ id: c.id, label: c.title, category: c.kind })),...(state.preferences.aiImports?.variantCandidates??[]).filter(c=>c.status==='pending'||scope.candidateIds.includes(c.id)).map(c=>({id:c.id,label:c.title,category:'Outfit'}))],
     fullPromptSceneIds: state.scenes.filter(s => authorized.has(s.id)).map(s => ({ id: s.id, label: s.title })),
     receiptGrants: (state.preferences.aiImports?.receipts ?? []).map(r => ({ id: receiptKey(r), label: r.title ?? r.changeSetId })),
+    keyframeSceneIds:state.scenes.filter(s=>authorized.has(s.id)).map(s=>({id:s.id,label:s.title})),
+    imagePromptFrameGrants:state.scenes.filter(s=>authorized.has(s.id)&&scope.version===3&&scope.keyframeSceneIds.includes(s.id)).flatMap(s=>(s.keyframePlan?.frames??[]).map(f=>({id:JSON.stringify([s.id,f.id]),label:s.title+' / '+f.label}))),
     blockingSceneIds:state.scenes.filter(s=>authorized.has(s.id)).map(s=>({id:s.id,label:s.title})),
   };
 }
@@ -55,7 +57,9 @@ function checked(scope: McpScope): McpScope {
 function withIds(scope: McpScope, field: PermissionField, ids: string[]): McpScope {
   const copy = structuredClone(scope);
   if (field === 'receiptGrants') copy.receiptGrants = ids.map(key => ({ changeSetId: key.slice(0, -65), packageDigest: key.slice(-64) }));
-  else if(field==='blockingSceneIds'){if(copy.version!==2)throw Error('Enable the Blocking permission format and make a fresh pairing first.');copy.blockingSceneIds=ids;}
+  else if(field==='blockingSceneIds'){if(copy.version===1)throw Error('Enable the Blocking permission format and make a fresh pairing first.');copy.blockingSceneIds=ids;}
+  else if(field==='keyframeSceneIds'){if(copy.version!==3)throw Error('Enable frame permissions and make a fresh pairing first.');copy.keyframeSceneIds=ids;}
+  else if(field==='imagePromptFrameGrants'){if(copy.version!==3)throw Error('Enable frame permissions first.');copy.imagePromptFrameGrants=ids.map(id=>{const pair=JSON.parse(id);if(!Array.isArray(pair)||pair.length!==2)throw Error('Invalid exact frame selection.');return{sceneId:pair[0],frameId:pair[1]};});}
   else copy[field] = ids;
   return copy;
 }
@@ -66,7 +70,7 @@ export function changeSelection(scope: McpScope, field: PermissionField, ids: st
 }
 export function normalizePermissionDraft(scope: McpScope, state: ChangeSetState): McpScope {
   const authorized = authorizedSceneIds(scope, state);
-  return { ...structuredClone(scope), fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorized.has(id)),...(scope.version===2?{blockingSceneIds:scope.blockingSceneIds.filter(id=>authorized.has(id)&&state.scenes.some(s=>s.id===id))}:{}) };
+  return { ...structuredClone(scope), fullPromptSceneIds: scope.fullPromptSceneIds.filter(id => authorized.has(id)),...(scope.version!==1?{blockingSceneIds:scope.blockingSceneIds.filter(id=>authorized.has(id)&&state.scenes.some(s=>s.id===id))}:{}),...(scope.version===3?{keyframeSceneIds:scope.keyframeSceneIds.filter(id=>authorized.has(id)),imagePromptFrameGrants:scope.imagePromptFrameGrants.filter(g=>authorized.has(g.sceneId)&&scope.keyframeSceneIds.includes(g.sceneId)&&state.scenes.find(s=>s.id===g.sceneId)?.keyframePlan?.frames.some(f=>f.id===g.frameId))}:{}) };
 }
 export function validatePermissionDraft(scope: McpScope, state: ChangeSetState): McpScope {
   const checkedScope = checked(scope), inventory = buildPermissionInventory(state, checkedScope);
@@ -74,7 +78,8 @@ export function validatePermissionDraft(scope: McpScope, state: ChangeSetState):
     const known = new Set(inventory[field].map(r => r.id));
     if (permissionIds(checkedScope, field).some(id => !known.has(id))) throw Error(label + ': a selected record is unavailable or no longer authorized. Remove it or refresh your selection before applying.');
   }
-  if(checkedScope.version===2&&checkedScope.blockingSceneIds.some(id=>!inventory.blockingSceneIds.some(r=>r.id===id)))throw Error('Blocking authoring text: a selected scene is unavailable or outside the selected metadata scope.');
+  if(checkedScope.version!==1&&checkedScope.blockingSceneIds.some(id=>!inventory.blockingSceneIds.some(r=>r.id===id)))throw Error('Blocking authoring text: a selected scene is unavailable or outside the selected metadata scope.');
+  if(checkedScope.version===3)for(const field of ['keyframeSceneIds','imagePromptFrameGrants'] as const)if(permissionIds(checkedScope,field).some(id=>!inventory[field].some(r=>r.id===id)))throw Error('An exact frame permission is unavailable or outside the selected plan and metadata scope.');
   return checkedScope;
 }
 export function selectAllRecords(scope: McpScope, state: ChangeSetState): McpScope {
@@ -86,11 +91,12 @@ export function selectAllRecords(scope: McpScope, state: ChangeSetState): McpSco
 export function clearAllRecords(scope: McpScope): McpScope {
   let next = structuredClone(scope);
   for (const { field } of PERMISSION_FIELDS) next = withIds(next, field, []);
-  if(next.version===2)next.blockingSceneIds=[];
+  if(next.version!==1)next.blockingSceneIds=[];
+  if(next.version===3){next.keyframeSceneIds=[];next.imagePromptFrameGrants=[];}
   return next;
 }
 export function presetPermissionDraft(preset: 'minimal' | 'creative' | 'full', scope: McpScope, state: ChangeSetState): McpScope {
-  let next:McpScope = { ...(scope.version===2?emptyMcpScopeV2():emptyMcpScope()), epoch: scope.epoch, projectIds: [...scope.projectIds] };
+  let next:McpScope = { ...(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope()), epoch: scope.epoch, projectIds: [...scope.projectIds] };
   if (preset === 'creative') next = { ...next, assetIds: [...scope.assetIds], variantIds: [...scope.variantIds], templateIds: [...scope.templateIds], allowProposals: true };
   if (preset === 'full') {
     next = selectAllRecords(next, state);
@@ -111,15 +117,19 @@ export function scopeDiff(before: McpScope, after: McpScope, inventory: Permissi
     return { field, label: item.label, kind: field === 'fullPromptSceneIds' || field === 'receiptGrants' ? 'sensitive' : 'read', before: oldIds.length, after: newIds.length, added: newIds.filter(id => !oldIds.includes(id)).map(label), removed: oldIds.filter(id => !newIds.includes(id)).map(label) };
   });
   for (const item of [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS]) rows.push({ field: item.field, label: item.label, kind: item.field.startsWith('allow') ? 'capability' : 'sensitive', before: before[item.field], after: after[item.field], added: [], removed: [] });
-  if(before.version===2||after.version===2){
+  if(before.version!==1||after.version!==1){
     const oldIds=permissionIds(before,'blockingSceneIds'),newIds=permissionIds(after,'blockingSceneIds'),label=(id:string)=>({id,label:inventory.blockingSceneIds.find(r=>r.id===id)?.label??id});
     rows.push({field:'blockingSceneIds',label:'Blocking authoring text',kind:'sensitive',before:oldIds.length,after:newIds.length,added:newIds.filter(id=>!oldIds.includes(id)).map(label),removed:oldIds.filter(id=>!newIds.includes(id)).map(label)});
-    rows.push({field:'allowBlockingProposals',label:'Allow blocking proposals',kind:'capability',before:before.version===2&&before.allowBlockingProposals,after:after.version===2&&after.allowBlockingProposals,added:[],removed:[]});
+    rows.push({field:'allowBlockingProposals',label:'Allow blocking proposals',kind:'capability',before:before.version!==1&&before.allowBlockingProposals,after:after.version!==1&&after.allowBlockingProposals,added:[],removed:[]});
+  }
+  if(before.version===3||after.version===3){
+    for(const field of ['keyframeSceneIds','imagePromptFrameGrants'] as const){const a=permissionIds(before,field),b=permissionIds(after,field),label=(id:string)=>({id,label:inventory[field].find(r=>r.id===id)?.label??id});rows.push({field,label:field==='keyframeSceneIds'?'Frame plan text':'Complete saved image prompts',kind:'sensitive',before:a.length,after:b.length,added:b.filter(id=>!a.includes(id)).map(label),removed:a.filter(id=>!b.includes(id)).map(label)});}
+    for(const field of ['allowKeyframeProposals','allowFrameImageProposals','allowImagePromptDerivation'] as const)rows.push({field,label:field,kind:'capability',before:before.version===3&&before[field],after:after.version===3&&after[field],added:[],removed:[]});
   }
   return rows;
 }
 export function permissionFingerprint(scope: McpScope): string {
-  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field]),...(scope.version===2?[{version:2,blockingSceneIds:[...scope.blockingSceneIds].sort(),allowBlockingProposals:scope.allowBlockingProposals}]:[])]);
+  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field]),...(scope.version!==1?[{version:scope.version,blockingSceneIds:[...scope.blockingSceneIds].sort(),allowBlockingProposals:scope.allowBlockingProposals}]:[]),...(scope.version===3?[{keyframeSceneIds:[...scope.keyframeSceneIds].sort(),imagePromptFrameGrants:[...permissionIds(scope,'imagePromptFrameGrants')].sort(),allowKeyframeProposals:scope.allowKeyframeProposals,allowFrameImageProposals:scope.allowFrameImageProposals,allowImagePromptDerivation:scope.allowImagePromptDerivation}]:[])]);
 }
 export function permissionInventoryStamp(state: ChangeSetState): string {
   return JSON.stringify([state.collections.map(p => [p.id, p.project?.revision]), state.scenes.map(s => [s.id, s.revision]), state.assets.map(a => [a.id, a.revision]), (state.variants ?? []).map(v => [v.id, v.revision]), state.templates.map(t => [t.id, t.revision]), state.media.map(m => m.id), (state.preferences.aiImports?.candidates ?? []).map(c => [c.id, c.status]), ...((state.preferences.aiImports?.variantCandidates?.length??0)?[(state.preferences.aiImports!.variantCandidates!).map(c=>[c.id,c.status,c.revision])]:[]), (state.preferences.aiImports?.receipts ?? []).map(receiptKey)]);
@@ -144,4 +154,12 @@ export function projectPermissionContext(projectId: string, state: ChangeSetStat
   for (const shot of shots) { if (shot.firstFrameMediaId) media.add(shot.firstFrameMediaId); if (shot.lastFrameMediaId) media.add(shot.lastFrameMediaId); }
   const knownMedia = new Set(state.media.map(m => m.id));
   return { project, shotCount: shots.length, sceneCount: scenes.length, missingSceneIds: sceneIds.filter(id => !scenes.some(s => s.id === id)), relatedAssetIds: [...assets].filter(id => state.assets.some(a => a.id === id)), relatedVariantIds: [...variants].filter(id => (state.variants ?? []).some(v => v.id === id)), missingMediaIds: [...media].filter(id => !knownMedia.has(id)), pendingInputs: scenes.reduce((count, s) => count + (s.pendingInputs?.length ?? 0), 0) };
+}
+
+/** A format switch is preparation for a fresh pairing, never a permission preset. */
+export function permissionScopeFormat(scope:McpScope,version:1|2|3):McpScope{
+ const common=Object.fromEntries(Object.keys(emptyMcpScope()).filter(k=>k!=='version').map(k=>[k,structuredClone(scope[k as keyof McpScope])]));
+ if(version===1)return validateMcpScope({...emptyMcpScope(),...common,version:1} as McpScope);
+ const blocking=scope.version!==1?{blockingSceneIds:[...scope.blockingSceneIds],allowBlockingProposals:scope.allowBlockingProposals}:{};
+ return validateMcpScope({...version===3?emptyMcpScopeV3():emptyMcpScopeV2(),...common,...blocking,version} as McpScope);
 }

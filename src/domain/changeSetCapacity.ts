@@ -6,6 +6,8 @@ import type {
 import { MAX_MANIFEST_BYTES } from "./validation";
 import { buildBackupManifest } from "../storage/backup";
 
+import {detectBackupFeatures,hasCBackupFeature} from './backupFeatures';
+
 /** Retain the existing full-backup metadata bound; imported records must remain restorable. */
 export function validateChangeSetBackupCapacity(
   state: ChangeSetState,
@@ -36,9 +38,12 @@ export function validateChangeSetBackupCapacity(
   const bytes = new TextEncoder().encode(
     JSON.stringify(buildBackupManifest(snapshot, appliedAt), null, 2),
   ).length;
-  if (bytes > MAX_MANIFEST_BYTES)
+  // Hash fields are filled from real bytes by export; reserve their pretty-JSON
+  // size without inventing a checksum in this metadata-only capacity check.
+  const checkedBytes=bytes+(hasCBackupFeature(detectBackupFeatures(snapshot))?snapshot.media.reduce((n,m)=>n+96+(m.posterBlob?128:0),0):0);
+  if (checkedBytes > MAX_MANIFEST_BYTES)
     throw Error(
-      `Resulting full-backup metadata would be ${bytes.toLocaleString()} bytes, exceeding the existing 20 MiB backup metadata allowance. Use a smaller batch; no records were changed.`,
+      `Resulting full-backup metadata would be ${checkedBytes.toLocaleString()} bytes, exceeding the existing 20 MiB backup metadata allowance. Use a smaller batch; no records were changed.`,
     );
-  return bytes;
+  return checkedBytes;
 }

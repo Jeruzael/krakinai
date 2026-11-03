@@ -66,6 +66,7 @@ export function prepareConversionDraft(operation:ConversionOperation,source:Save
   ...(source.sourceMediaLinks?{sourceMediaLinks:structuredClone(source.sourceMediaLinks)}:{}),
   ...(source.pendingInputs?{pendingInputs:structuredClone(source.pendingInputs)}:{}),
   ...(source.claimNotes?{claimNotes:source.claimNotes}:{}),
+  ...(source.keyframePlan?{keyframePlan:structuredClone(source.keyframePlan)}:{}),
   conversionProvenance:{...structuredClone(operation.conversion),sourceSceneId:source.id},
  };
 }

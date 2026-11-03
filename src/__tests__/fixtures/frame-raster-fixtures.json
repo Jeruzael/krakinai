@@ -1,0 +1,32 @@
+{
+  "description": "Synthetic two-color 32x24 QA rasters generated and independently decoded with Pillow; no user media.",
+  "files": [
+    {
+      "format": "PNG",
+      "mime": "image/png",
+      "filename": "synthetic-frame.png",
+      "width": 32,
+      "height": 24,
+      "sha256": "640e68930ebd8d20ed3fbeea6897948e3bf42c61b724c889ba66b3233069da62",
+      "base64": "iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAIAAAAUMWhjAAAAOklEQVR4nGOUC5jGQArYp1FHknomBhoDplELCIHRICIIRoOIIBgNIoJgNIgIgtEgIghGg4ggoHkQAQB+mgKYnRa3pAAAAABJRU5ErkJggg=="
+    },
+    {
+      "format": "JPEG",
+      "mime": "image/jpeg",
+      "filename": "synthetic-frame.jpg",
+      "width": 32,
+      "height": 24,
+      "sha256": "8a43b2bcefb666f361ee2fe4afc726f8696950f7227c78ea4eee106ffdde931b",
+      "base64": "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRofHh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwhMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAARCAAYACADASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwDiKKKK+mPDPQaKKK/HT9QPPqKKK/Yj8vPQaKKK/HT9QP/Z"
+    },
+    {
+      "format": "WEBP",
+      "mime": "image/webp",
+      "filename": "synthetic-frame.webp",
+      "width": 32,
+      "height": 24,
+      "sha256": "4933be0d35b770f3a6617110a105bd306fd4a83715202ae0eda970269d3619b4",
+      "base64": "UklGRloAAABXRUJQVlA4IE4AAAAwBACdASogABgAPl0kjUWjoiEb9AA4BcSyAF+z2LwD8QPxV5AAFna+cwAA/vJmr/8sv8CMPd/69I1x1LmTs1o6Ye+CrmfP31ExqDAoAAA="
+    }
+  ]
+}

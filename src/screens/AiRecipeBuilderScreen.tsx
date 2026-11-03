@@ -74,7 +74,7 @@ export function AiRecipeBuilderScreen(){
    if(!file.name.toLowerCase().endsWith('.json'))throw Error('Choose a JSON change-set package.');
    const text=await file.text();if(token!==loadGeneration.current)return;
    const input=parseChangeSet(text),first=input.operations.find((o):o is ConversionOperation=>o.type==='scene.convert_direct_to_recipe');
-   if(!['krakinai.change-set.v4','krakinai.change-set.v5'].includes(input.schema)||!first||!('id'in first.project)||!('id'in first.shot))throw Error('Choose a v4 Direct Prompt conversion package or a v5 Blocking conversion package. Use Import AI Change Set for other workflows.');
+   if(!['krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6'].includes(input.schema)||!first||!('id'in first.project)||!('id'in first.shot))throw Error('Choose a v4–v6 Direct Prompt conversion planning package. Use Import AI Change Set for other workflows.');
    if(currentPackage.current&&!window.confirm('Replace the current unsaved mapping with this package?'))return;
    initGeneration.current++;const key=JSON.stringify([first.project.id,first.shot.id]);selectionKey.current=first.sceneId+'|'+key;setSourceId(first.sceneId);setTargetKey(key);setOperationId(first.operationId);setPackage(input);setPreview(undefined);setError('');setStatus('Mapping loaded without approvals. Review all bindings before saving.');
   }catch(cause){if(token===loadGeneration.current)setError((cause as Error).message)}

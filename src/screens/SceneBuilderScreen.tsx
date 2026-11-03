@@ -1,3 +1,6 @@
+import {KeyframeEditor} from '../components/keyframes/KeyframeEditor';
+import {recoverKeyframeEdit} from '../components/keyframes/keyframeRecovery';
+import {canonicalStringify} from '../domain/changeSetCanonical';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   Camera,
@@ -96,6 +99,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [intentionalIds, setIntentionalIds] = useState<string[]>([]);
   const [pickerSlot, setPickerSlot] = useState<BuilderSlot | null>(null);
   const [showCameraComposer, setShowCameraComposer] = useState(false);
+  const [showKeyframes,setShowKeyframes]=useState(false),[tplKeyframesConfirmed,setTplKeyframesConfirmed]=useState(false);
+  const keyframeTriggerRef=useRef<HTMLButtonElement>(null);
   const [showBlocking,setShowBlocking]=useState(false);
   const blockingTriggerRef=useRef<HTMLButtonElement>(null);
   const [tplBlockingConfirmed,setTplBlockingConfirmed]=useState(false);
@@ -113,7 +118,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
   const [ensembleRequest,setEnsembleRequest]=useState<{kind:'participants'|'cues';id?:string;token:number}>();
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(()=>{if(draft&&recoverBlockingEdit(draft))setShowBlocking(true);},[draft?.id]);
+  useEffect(()=>{if(draft&&recoverBlockingEdit(draft))setShowBlocking(true);else if(draft&&recoverKeyframeEdit(draft))setShowKeyframes(true);},[draft?.id]);
 
   useEffect(() => {
     let mounted = true;
@@ -146,7 +151,8 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     nextDraft: SceneDraft,
     bumpRevision = true,
     reportFailure = false,
-    confirmBlockingRemoval = false
+    confirmBlockingRemoval = false,
+    frameRemoval:{confirmKeyframeRemoval?:boolean;confirmFrameImageRemoval?:boolean}={}
   ) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     const displayedAtStart = latestDraft.current;
@@ -155,8 +161,9 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
     try {
       const saved = await saveSceneDraft({
         ...nextDraft,
-        ...(nextDraft.revisionIntent||nextDraft.ensemble||nextDraft.blocking?{expectedInputRevision:nextDraft.inputRevision}:{}),
+        ...(nextDraft.revisionIntent||nextDraft.ensemble||nextDraft.blocking||nextDraft.keyframePlan||frameRemoval.confirmKeyframeRemoval?{expectedInputRevision:nextDraft.inputRevision}:{}),
         ...(confirmBlockingRemoval?{confirmBlockingRemoval:true}:{}),
+        ...frameRemoval,
         bumpInputRevision: bumpRevision,
       });
       // A completed autosave must not replace edits made while it was pending.
@@ -486,6 +493,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         includeCharacterIdentity: tplIncludeChar && !getShotTypeRules(draft).inapplicableSlots.includes('character'),
         ...(draft.ensemble?{ensembleMode:tplEnsembleMode,confirmEnsembleOmissions:tplEnsembleConfirmed}:{}),
         ...(draft.blocking?{confirmBlockingOmission:tplBlockingConfirmed}:{}),
+        ...((draft.keyframePlan||draft.imagePromptSnapshots||draft.manualImageOutputs)?{confirmKeyframeOmission:tplKeyframesConfirmed}:{}),
       });
       await refreshSnapshot();
       setShowTemplateModal(false);
@@ -813,6 +821,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
             </div>
             <EnsembleControls draft={draft} assets={snapshot.assets} variants={snapshot.variants} request={ensembleRequest} onChange={async next=>!!(await persistDraftImmediate(next,true,true))}/>
             <div className="blocking-controls" data-preflight="blocking" tabIndex={-1}>
+              <button type="button" className="btn btn-secondary btn-sm" ref={keyframeTriggerRef} disabled={saveState==='saving'} onClick={()=>setShowKeyframes(true)}>Image Frames · {draft.keyframePlan?.frames.length??0} planned</button>
               <button type="button" className="btn btn-secondary btn-sm" ref={blockingTriggerRef} disabled={saveState==='saving'} onClick={()=>setShowBlocking(true)}>Edit blocking</button>
               <span className="muted-text">{!draft.blocking?'Optional · no plan':blockingFindings.some(f=>f.severity==='blocking')?'Incomplete · review bindings':'Authored · Start → Action → End'}</span>
             </div>
@@ -1157,6 +1166,12 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
         if (!saved) throw new Error('Reference Pack could not be saved. Your selection remains available here.');
         setShowReferencePack(false);
       }} />}
+      {showKeyframes&&<KeyframeEditor source={draft} value={draft.keyframePlan} mediaMap={mediaMap} onDirtyChange={setDirtyFormGuard} returnFocusRef={keyframeTriggerRef} onClose={()=>setShowKeyframes(false)} onChange={async keyframePlan=>{
+        const current=latestDraft.current??draft;if(canonicalStringify(current)!==canonicalStringify(draft))throw Error('The source draft changed. Keep this frame plan open and compare the current Recipe.');
+        const ids=new Set(keyframePlan?.frames.map(frame=>frame.id)??[]),retain=<T,>(values:Record<string,T>|undefined)=>keyframePlan&&values?Object.fromEntries(Object.entries(values).filter(([id])=>ids.has(id))):undefined;
+        const saved=await persistDraftImmediate({...current,keyframePlan,imagePromptSnapshots:retain(current.imagePromptSnapshots),manualImageOutputs:retain(current.manualImageOutputs),frameImageAssignments:retain(current.frameImageAssignments)},true,true,false,{confirmKeyframeRemoval:!!current.keyframePlan&&!keyframePlan,confirmFrameImageRemoval:!!current.frameImageAssignments&&!keyframePlan});
+        if(!saved)throw Error('Frame planning was not saved. These working edits remain available here.');
+      }}/>}
       {showBlocking&&<BlockingEditor source={draft} value={draft.blocking} onDirtyChange={setDirtyFormGuard} returnFocusRef={blockingTriggerRef} spatialSetups={snapshot.scenes.filter(scene=>scene.blocking?.space).map(scene=>({sceneId:scene.id,title:scene.title,blocking:scene.blocking!}))} onClose={()=>setShowBlocking(false)} onChange={async blocking=>{const current=latestDraft.current??draft;const saved=await persistDraftImmediate({...current,blocking},true,true,!blocking&&!!current.blocking);if(!saved)throw Error('Blocking draft was not saved. Keep these controls open and retry.');}}/>}
       {showCameraComposer && (
         <CameraComposer
@@ -1388,7 +1403,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
                 type="submit"
                 form="studio-template-form"
                 className="btn btn-primary"
-                disabled={!!draft.blocking&&!tplBlockingConfirmed||!!draft.ensemble&&(!tplEnsembleMode||(tplEnsembleMode==='shared_only'&&!tplEnsembleConfirmed))}
+                disabled={!!(draft.keyframePlan||draft.imagePromptSnapshots||draft.manualImageOutputs)&&!tplKeyframesConfirmed||!!draft.blocking&&!tplBlockingConfirmed||!!draft.ensemble&&(!tplEnsembleMode||(tplEnsembleMode==='shared_only'&&!tplEnsembleConfirmed))}
               >
                 Save Template
               </button>
@@ -1396,6 +1411,7 @@ export const SceneBuilderScreen: React.FC<{ draftId?: string }> = ({
           }
         >
           <form id="studio-template-form" onSubmit={handleSaveAsTemplate}>
+            {(draft.keyframePlan||draft.imagePromptSnapshots||draft.manualImageOutputs)&&<label className="blocking-check"><input type="checkbox" checked={tplKeyframesConfirmed} onChange={e=>setTplKeyframesConfirmed(e.target.checked)}/>I understand scene-specific keyframes and image prompts are not included in this reusable template</label>}
             {draft.blocking&&<label className="blocking-check"><input type="checkbox" checked={tplBlockingConfirmed} onChange={e=>setTplBlockingConfirmed(e.target.checked)}/>I understand scene-specific blocking is not included in this template</label>}
             <div className="form-group">
               <label htmlFor="tpl-name" className="form-label">
