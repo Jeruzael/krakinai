@@ -21,6 +21,7 @@ import type {
 } from "./sceneAuthoring";
 import type { CameraCompositionChoice } from "./cinematography";
 import type{DialogueCue}from'./ensemble';
+import type {BlockingChangeFields,BlockingApprovalFields} from './blockingChangeSet';
 export type RecordTarget = { id: string } | { ref: string };
 export type ProjectTarget =
   { id: string; expectedRevision: number } | { ref: string };
@@ -174,7 +175,7 @@ export interface RecipeParticipantUpsert{id:string;character?:ParticipantAssetBi
 export interface RecipeEnsemblePatch{version:1;participantUpserts?:RecipeParticipantUpsert[];removeParticipantIds?:string[];participantOrder?:string[];primaryParticipantId?:string|null;dialogueCues?:DialogueCue[]}
 export type OutfitProposalOperation=OperationBase&{type:'variant.propose';clientRef:string;variantType:'Outfit';parentCharacterId:string;expectedParentRevision:number;title:string;promptText:string;description?:string;tags:string[];notes?:string;sourceScene?:RecordTarget};
 export type OutfitReviewOperation=OperationBase&{type:'variant.review_candidate';candidateId:string;expectedRevision:number};
-export interface RecipeSceneFields extends Omit<ImportedSceneFields, "prompt"> {
+export interface RecipeSceneFields extends Omit<ImportedSceneFields, "prompt">, BlockingChangeFields {
   ensemble?:RecipeEnsemblePatch;
   sceneInstructions?: string;
   avoidText?: string;
@@ -246,7 +247,7 @@ export type ChangeOperation =
   | OutfitReviewOperation
   | RecipeSceneOperation;
 export interface ChangeSet {
-  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3" | "krakinai.change-set.v4";
+  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3" | "krakinai.change-set.v4" | "krakinai.change-set.v5";
   changeSetId: string;
   source: { kind: PromptOrigin; label?: string };
   title?: string;
@@ -259,7 +260,7 @@ export interface CandidateDecision {
   expectedRevision?: number;
   acknowledgeDuplicate?: boolean;
 }
-export interface ChangeSetApproval {
+export interface ChangeSetApproval extends BlockingApprovalFields {
   conversionDecisions?:Record<string,ConversionDecision>;
   variantDecisions?:Record<string,{action:'defer'|'create'|'reuse';variantId?:string;expectedRevision?:number;acknowledgeDuplicate?:boolean}>;
   storyboard: boolean;
@@ -317,8 +318,7 @@ export interface ImportOperationResult {
     | 'variant_reused'
     | "unchanged";
 }
-export interface ChangeSetReceipt {
-  version: 1;
+export interface ChangeSetReceiptBase {
   changeSetId: string;
   packageDigest: string;
   approvedDigest: string;
@@ -331,9 +331,10 @@ export interface ChangeSetReceipt {
   operations: ImportOperationResult[];
   projectRevisions: Record<string, { before: number; after: number }>;
 }
+export type ChangeSetReceipt=ChangeSetReceiptBase&({version:1}|{version:2;changeSetSchema:'krakinai.change-set.v5';/** Canonical, non-executable review evidence including complete reviewed buffers. */reviewedContent:string});
 export interface ImportLedger {
   variantCandidates?:ImportVariantCandidate[];
-  version: 1;
+  version: 1|2;
   receipts: ChangeSetReceipt[];
   candidates: ImportCandidate[];
 }
@@ -368,6 +369,7 @@ export interface ChangeSetAllocation {
   ids: Record<string, string>;
 }
 export interface ChangeSetPlan {
+  blockingContinuity?:import('../domain/blockingReview').BlockingFinalReview;
   variants?:Variant[];
   variantCandidates?:ImportVariantCandidate[];
   findings: ImportFinding[];

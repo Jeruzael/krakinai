@@ -1,0 +1,283 @@
+{
+  "syntheticOnly": true,
+  "documents": {
+    "single": {
+      "outputs": {
+        "full": "# Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Character Identity\nAya is a fictional adult. Preserve this exact identity.\n\n## Wardrobe & Accessories\nA white bridal gown.\n\n## Environment / Location\nA quiet enclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Aya\nDialogue Mode: On-camera speech\nLanguage: Filipino\nDelivery Notes: Calm delivery.\n\nSpeak softly.\nCaptions: No on-screen captions.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nPreserve each person independently.",
+        "structured": "=== SCENE OVERVIEW ===\nScene Title: Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n=== CHARACTER IDENTITY ===\nAya is a fictional adult. Preserve this exact identity.\n\n=== WARDROBE & ACCESSORIES ===\nA white bridal gown.\n\n=== ENVIRONMENT / LOCATION ===\nA quiet enclosed courtyard.\n\n=== ACTION & PERFORMANCE ===\nGreet the arriving guest.\n\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Aya\nDialogue Mode: On-camera speech\nLanguage: Filipino\nDelivery Notes: Calm delivery.\n\nSpeak softly.\nCaptions: No on-screen captions.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n=== ADDITIONAL SCENE INSTRUCTIONS ===\nPreserve each person independently.",
+        "compact": "# Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Character Identity\nAya is a fictional adult. Preserve this exact identity.\n\n## Wardrobe & Accessories\nA white bridal gown.\n\n## Environment / Location\nEnclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Aya\nDialogue Mode: On-camera speech\nLanguage: Filipino\nDelivery Notes: Calm delivery.\n\nSpeak softly.\nCaptions: No on-screen captions.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nPreserve each person independently."
+      },
+      "sceneJson": "{\n  \"schema\": \"krakinai.scene-prompt.v1\",\n  \"scene\": {\n    \"title\": \"Synthetic ensemble\",\n    \"type\": \"single_shot\",\n    \"instructions\": \"Preserve each person independently.\"\n  },\n  \"components\": {\n    \"character\": {\n      \"title\": \"Aya / Base Identity\",\n      \"prompt\": \"Aya is a fictional adult. Preserve this exact identity.\",\n      \"compactPrompt\": \"Aya is a fictional adult. Preserve this exact identity.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"asset\",\n        \"id\": \"character\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"snapshot\": {\n        \"promptText\": \"Aya is a fictional adult. Preserve this exact identity.\",\n        \"compactText\": null,\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"wardrobe\": {\n      \"title\": \"Synthetic bridal gown\",\n      \"prompt\": \"A white bridal gown.\",\n      \"compactPrompt\": \"A white bridal gown.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"variant\",\n        \"id\": \"aya-outfit\",\n        \"revision\": 1,\n        \"parentCharacterId\": \"character\"\n      },\n      \"snapshot\": {\n        \"promptText\": \"A white bridal gown.\",\n        \"compactText\": null,\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"environment\": {\n      \"title\": \"Synthetic Courtyard\",\n      \"prompt\": \"A quiet enclosed courtyard.\",\n      \"compactPrompt\": \"Enclosed courtyard.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"asset\",\n        \"id\": \"environment\",\n        \"revision\": 2,\n        \"parentCharacterId\": null\n      },\n      \"snapshot\": {\n        \"promptText\": \"A quiet enclosed courtyard.\",\n        \"compactText\": \"Enclosed courtyard.\",\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"action\": {\n      \"title\": \"Synthetic Greeting\",\n      \"prompt\": \"Greet the arriving guest.\",\n      \"compactPrompt\": \"Greet the arriving guest.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"asset\",\n        \"id\": \"action\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"snapshot\": {\n        \"promptText\": \"Greet the arriving guest.\",\n        \"compactText\": null,\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"camera\": null,\n    \"lighting\": null,\n    \"style\": null\n  },\n  \"dialogue\": {\n    \"type\": \"spoken_audio\",\n    \"mode\": \"on_camera\",\n    \"speaker\": \"Aya\",\n    \"language\": \"Filipino\",\n    \"deliveryNotes\": \"Calm delivery.\\n\\nSpeak softly.\",\n    \"performanceDirection\": {\n      \"version\": 1,\n      \"styles\": [\n        \"calm\"\n      ]\n    },\n    \"exactLine\": \"  I do.\\r\\n😊  \",\n    \"captionPreference\": \"none\"\n  },\n  \"avoidText\": \"\",\n  \"settings\": {\n    \"aspectRatio\": \"16:9\",\n    \"durationSeconds\": 8,\n    \"toolNotes\": null\n  },\n  \"referenceFiles\": []\n}",
+      "generationJson": "{\n  \"schema\": \"krakinai.generation-prompt.v1\",\n  \"scene\": {\n    \"title\": \"Synthetic ensemble\",\n    \"type\": \"single_shot\",\n    \"durationSeconds\": 8,\n    \"aspectRatio\": \"16:9\",\n    \"instructions\": \"Preserve each person independently.\",\n    \"toolNotes\": null\n  },\n  \"character\": {\n    \"name\": \"Aya / Base Identity\",\n    \"identitySource\": \"master\",\n    \"description\": \"Aya is a fictional adult. Preserve this exact identity.\"\n  },\n  \"wardrobe\": \"A white bridal gown.\",\n  \"environment\": \"A quiet enclosed courtyard.\",\n  \"action\": \"Greet the arriving guest.\",\n  \"camera\": null,\n  \"lighting\": null,\n  \"style\": null,\n  \"dialogue\": {\n    \"mode\": \"on_camera\",\n    \"speaker\": \"Aya\",\n    \"language\": \"Filipino\",\n    \"deliveryNotes\": \"Calm delivery.\\n\\nSpeak softly.\",\n    \"exactLine\": \"  I do.\\r\\n😊  \",\n    \"captionPreference\": \"none\"\n  },\n  \"negativeInstructions\": [],\n  \"references\": []\n}"
+    },
+    "ensemble": {
+      "outputs": {
+        "full": "# Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Participant: Aya / Base Identity [primary]\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nA white bridal gown.\n\n## Participant: Lucas / Base Identity [lucas]\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nA charcoal groom suit.\n\nPerformance Notes: Speak with quiet determination.\n\n## Environment / Location\nA quiet enclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\nDelivery Notes: Calm delivery.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nPreserve each person independently.",
+        "structured": "=== SCENE OVERVIEW ===\nScene Title: Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n=== PARTICIPANT: Aya / Base Identity [primary] ===\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nA white bridal gown.\n\n=== PARTICIPANT: Lucas / Base Identity [lucas] ===\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nA charcoal groom suit.\n\nPerformance Notes: Speak with quiet determination.\n\n=== ENVIRONMENT / LOCATION ===\nA quiet enclosed courtyard.\n\n=== ACTION & PERFORMANCE ===\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\nDelivery Notes: Calm delivery.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n=== ADDITIONAL SCENE INSTRUCTIONS ===\nPreserve each person independently.",
+        "compact": "# Synthetic ensemble\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Participant: Aya / Base Identity [primary]\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nA white bridal gown.\n\n## Participant: Lucas / Base Identity [lucas]\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nWardrobe & Accessories:\nCharcoal suit.\n\nPerformance Notes: Speak with quiet determination.\n\n## Environment / Location\nEnclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\nDelivery Notes: Calm delivery.\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nPreserve each person independently."
+      },
+      "sceneJson": "{\n  \"schema\": \"krakinai.scene-prompt.v2\",\n  \"scene\": {\n    \"title\": \"Synthetic ensemble\",\n    \"type\": \"single_shot\",\n    \"instructions\": \"Preserve each person independently.\"\n  },\n  \"components\": {\n    \"character\": null,\n    \"wardrobe\": null,\n    \"environment\": {\n      \"title\": \"Synthetic Courtyard\",\n      \"prompt\": \"A quiet enclosed courtyard.\",\n      \"compactPrompt\": \"Enclosed courtyard.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"asset\",\n        \"id\": \"environment\",\n        \"revision\": 2,\n        \"parentCharacterId\": null\n      },\n      \"snapshot\": {\n        \"promptText\": \"A quiet enclosed courtyard.\",\n        \"compactText\": \"Enclosed courtyard.\",\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"action\": {\n      \"title\": \"Synthetic Greeting\",\n      \"prompt\": \"Greet the arriving guest.\",\n      \"compactPrompt\": \"Greet the arriving guest.\",\n      \"avoidText\": null,\n      \"source\": {\n        \"type\": \"asset\",\n        \"id\": \"action\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"snapshot\": {\n        \"promptText\": \"Greet the arriving guest.\",\n        \"compactText\": null,\n        \"overrideText\": null,\n        \"overrideCompactText\": null\n      }\n    },\n    \"camera\": null,\n    \"lighting\": null,\n    \"style\": null\n  },\n  \"dialogue\": null,\n  \"avoidText\": \"\",\n  \"settings\": {\n    \"aspectRatio\": \"16:9\",\n    \"durationSeconds\": 8,\n    \"toolNotes\": null\n  },\n  \"referenceFiles\": [],\n  \"primaryParticipantId\": \"primary\",\n  \"participants\": [\n    {\n      \"id\": \"primary\",\n      \"name\": \"Aya / Base Identity\",\n      \"role\": null,\n      \"presence\": \"on_camera\",\n      \"performanceNotes\": null,\n      \"characterSource\": {\n        \"type\": \"asset\",\n        \"id\": \"character\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"character\": {\n        \"title\": \"Aya / Base Identity\",\n        \"prompt\": \"Aya is a fictional adult. Preserve this exact identity.\",\n        \"compactPrompt\": \"Aya is a fictional adult. Preserve this exact identity.\",\n        \"avoidText\": null,\n        \"source\": {\n          \"type\": \"asset\",\n          \"id\": \"character\",\n          \"revision\": 1,\n          \"parentCharacterId\": null\n        },\n        \"snapshot\": {\n          \"promptText\": \"Aya is a fictional adult. Preserve this exact identity.\",\n          \"compactText\": null,\n          \"overrideText\": null,\n          \"overrideCompactText\": null\n        }\n      },\n      \"wardrobe\": {\n        \"title\": \"Synthetic bridal gown\",\n        \"prompt\": \"A white bridal gown.\",\n        \"compactPrompt\": \"A white bridal gown.\",\n        \"avoidText\": null,\n        \"source\": {\n          \"type\": \"variant\",\n          \"id\": \"aya-outfit\",\n          \"revision\": 1,\n          \"parentCharacterId\": \"character\"\n        },\n        \"snapshot\": {\n          \"promptText\": \"A white bridal gown.\",\n          \"compactText\": null,\n          \"overrideText\": null,\n          \"overrideCompactText\": null\n        }\n      }\n    },\n    {\n      \"id\": \"lucas\",\n      \"name\": \"Lucas / Base Identity\",\n      \"role\": null,\n      \"presence\": \"on_camera\",\n      \"performanceNotes\": \"Speak with quiet determination.\",\n      \"characterSource\": {\n        \"type\": \"asset\",\n        \"id\": \"lucas\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"character\": {\n        \"title\": \"Lucas / Base Identity\",\n        \"prompt\": \"Lucas is a fictional adult. Preserve this exact identity.\",\n        \"compactPrompt\": \"Lucas is a fictional adult. Preserve this exact identity.\",\n        \"avoidText\": null,\n        \"source\": {\n          \"type\": \"asset\",\n          \"id\": \"lucas\",\n          \"revision\": 1,\n          \"parentCharacterId\": null\n        },\n        \"snapshot\": {\n          \"promptText\": \"Lucas is a fictional adult. Preserve this exact identity.\",\n          \"compactText\": null,\n          \"overrideText\": null,\n          \"overrideCompactText\": null\n        }\n      },\n      \"wardrobe\": {\n        \"title\": \"Lucas suit\",\n        \"prompt\": \"A charcoal groom suit.\",\n        \"compactPrompt\": \"Charcoal suit.\",\n        \"avoidText\": null,\n        \"source\": {\n          \"type\": \"variant\",\n          \"id\": \"lucas-suit\",\n          \"revision\": 1,\n          \"parentCharacterId\": \"lucas\"\n        },\n        \"snapshot\": {\n          \"promptText\": \"A charcoal groom suit.\",\n          \"compactText\": \"Charcoal suit.\",\n          \"overrideText\": null,\n          \"overrideCompactText\": null\n        }\n      }\n    }\n  ],\n  \"dialogueCues\": [\n    {\n      \"type\": \"spoken_audio\",\n      \"mode\": \"off_screen\",\n      \"speaker\": \"Officiant\",\n      \"language\": null,\n      \"deliveryNotes\": null,\n      \"exactLine\": \"Lucas, do you take Aya as your wife?\",\n      \"captionPreference\": \"unspecified\",\n      \"id\": \"officiant\"\n    },\n    {\n      \"type\": \"spoken_audio\",\n      \"mode\": \"on_camera\",\n      \"speaker\": \"Lucas\",\n      \"language\": null,\n      \"deliveryNotes\": \"Calm delivery.\",\n      \"performanceDirection\": {\n        \"version\": 1,\n        \"styles\": [\n          \"calm\"\n        ]\n      },\n      \"exactLine\": \"  I do.\\r\\n😊  \",\n      \"captionPreference\": \"unspecified\",\n      \"id\": \"lucas-reply\",\n      \"participantId\": \"lucas\"\n    }\n  ]\n}",
+      "generationJson": "{\n  \"schema\": \"krakinai.generation-prompt.v2\",\n  \"primaryParticipantId\": \"primary\",\n  \"participants\": [\n    {\n      \"id\": \"primary\",\n      \"name\": \"Aya / Base Identity\",\n      \"presence\": \"on_camera\",\n      \"role\": null,\n      \"characterSource\": {\n        \"type\": \"asset\",\n        \"id\": \"character\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"identity\": {\n        \"source\": \"master\",\n        \"description\": \"Aya is a fictional adult. Preserve this exact identity.\"\n      },\n      \"wardrobe\": \"A white bridal gown.\",\n      \"performanceNotes\": null\n    },\n    {\n      \"id\": \"lucas\",\n      \"name\": \"Lucas / Base Identity\",\n      \"presence\": \"on_camera\",\n      \"role\": null,\n      \"characterSource\": {\n        \"type\": \"asset\",\n        \"id\": \"lucas\",\n        \"revision\": 1,\n        \"parentCharacterId\": null\n      },\n      \"identity\": {\n        \"source\": \"master\",\n        \"description\": \"Lucas is a fictional adult. Preserve this exact identity.\"\n      },\n      \"wardrobe\": \"A charcoal groom suit.\",\n      \"performanceNotes\": \"Speak with quiet determination.\"\n    }\n  ],\n  \"dialogueCues\": [\n    {\n      \"type\": \"spoken_audio\",\n      \"mode\": \"off_screen\",\n      \"speaker\": \"Officiant\",\n      \"language\": null,\n      \"deliveryNotes\": null,\n      \"exactLine\": \"Lucas, do you take Aya as your wife?\",\n      \"captionPreference\": \"unspecified\",\n      \"id\": \"officiant\"\n    },\n    {\n      \"type\": \"spoken_audio\",\n      \"mode\": \"on_camera\",\n      \"speaker\": \"Lucas\",\n      \"language\": null,\n      \"deliveryNotes\": \"Calm delivery.\",\n      \"performanceDirection\": {\n        \"version\": 1,\n        \"styles\": [\n          \"calm\"\n        ]\n      },\n      \"exactLine\": \"  I do.\\r\\n😊  \",\n      \"captionPreference\": \"unspecified\",\n      \"id\": \"lucas-reply\",\n      \"participantId\": \"lucas\"\n    }\n  ],\n  \"scene\": {\n    \"title\": \"Synthetic ensemble\",\n    \"type\": \"single_shot\",\n    \"durationSeconds\": 8,\n    \"aspectRatio\": \"16:9\",\n    \"instructions\": \"Preserve each person independently.\",\n    \"toolNotes\": null\n  },\n  \"character\": null,\n  \"wardrobe\": null,\n  \"environment\": \"A quiet enclosed courtyard.\",\n  \"action\": \"Greet the arriving guest.\",\n  \"camera\": null,\n  \"lighting\": null,\n  \"style\": null,\n  \"dialogue\": null,\n  \"negativeInstructions\": [],\n  \"references\": []\n}"
+    },
+    "direct": "  Synthetic original: wait in the courtyard.\r\nSOURCE_ONLY_DO_NOT_COPY 😊  "
+  },
+  "schemaHashes": {
+    "CHANGE_SET_SCHEMA": "a8b79c5b4bb433e314f8f9b96878b4dd6ea411c629527918910b6e5cf0aeb5b2",
+    "CHANGE_SET_V2_SCHEMA": "3650a2495a32cb95b8e669276decc3a5b20ce66aac19eea79842e97ad22f4928",
+    "CHANGE_SET_V3_SCHEMA": "377d593def145bfb01d72ad9624952af93673765422b03d3cc83687ee7bd11ed",
+    "CHANGE_SET_V4_SCHEMA": "e175f045cf4b20235174421c3774bca672195f4f047ffbe3ee4caf0fc07cb582"
+  },
+  "imports": {
+    "v1": {
+      "packageDigest": "ea4bd3f0e8a342caf478a8b01c8268786ca8c9b5e973cf19c218ed2097257344",
+      "approvedDigest": "56d12a797ddeda31e4e467ce9481e64931affcc46ce7005df1b3df2e5ca2a8fb",
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-midori-60s-v1",
+        "packageDigest": "ea4bd3f0e8a342caf478a8b01c8268786ca8c9b5e973cf19c218ed2097257344",
+        "approvedDigest": "56d12a797ddeda31e4e467ce9481e64931affcc46ce7005df1b3df2e5ca2a8fb",
+        "source": {
+          "kind": "chatgpt",
+          "label": "Synthetic MIDORI planning"
+        },
+        "title": "Synthetic MIDORI — 15 shots / 60 seconds",
+        "preparedAt": "2026-11-03T00:00:00.000Z",
+        "appliedAt": "2026-11-03T00:00:00.000Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": []
+        },
+        "idMappings": {
+          "midori": {
+            "kind": "project",
+            "id": "collection_000000010000"
+          },
+          "shot-01": {
+            "kind": "shot",
+            "id": "shot_000000020000"
+          },
+          "scene-01": {
+            "kind": "scene",
+            "id": "scene_000000030000"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "project",
+            "type": "project.create",
+            "recordId": "collection_000000010000",
+            "status": "created"
+          },
+          {
+            "operationId": "shot-01",
+            "type": "shot.create",
+            "recordId": "shot_000000020000",
+            "status": "created"
+          },
+          {
+            "operationId": "prompt-01",
+            "type": "scene.create_direct_prompt",
+            "recordId": "scene_000000030000",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "collection_000000010000": {
+            "before": 0,
+            "after": 1
+          }
+        }
+      },
+      "receiptSha256": "3b84522005fb65d06a79096b1969ca103b2a71308d12c8777d9f4930d0897da5",
+      "outputs": [
+        {
+          "id": "scene_000000030000",
+          "outputs": {
+            "full": "  # MIDORI — Synthetic\r\n\r\n“Dito tayo, tara na!” 😊 é\r\n\t{\"negative\":\"Do not invent facts.\"}  \r\nShot 01: Presenter introduction; approved identity remains to be selected."
+          }
+        }
+      ]
+    },
+    "v2": {
+      "packageDigest": "3ff015d4e0e262b2fca9209493b4012e3cc3d8f78b1a3d273f6bf08f947dda2b",
+      "approvedDigest": "4a87b74b762068e5ca84f54e59c7300cc5b5846cf865ce45a6248fdd28a80c2f",
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-recipe",
+        "packageDigest": "3ff015d4e0e262b2fca9209493b4012e3cc3d8f78b1a3d273f6bf08f947dda2b",
+        "approvedDigest": "4a87b74b762068e5ca84f54e59c7300cc5b5846cf865ce45a6248fdd28a80c2f",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic B1"
+        },
+        "preparedAt": "2026-11-03T00:00:00.000Z",
+        "appliedAt": "2026-11-03T00:00:00.000Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": []
+        },
+        "idMappings": {
+          "recipe": {
+            "kind": "scene",
+            "id": "scene_000000070000"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "recipe",
+            "type": "scene.create_recipe",
+            "recordId": "scene_000000070000",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 1,
+            "after": 2
+          }
+        }
+      },
+      "receiptSha256": "ab06cb3294a6974ed5f3ff44a7a1dc77ed782057c9659f68e784f95d9fceb589",
+      "outputs": [
+        {
+          "id": "scene_000000070000",
+          "outputs": {
+            "full": "# Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n## Environment / Location\nA quiet enclosed courtyard.\n\n## Additional Scene Instructions\nKeep the original geometry.",
+            "structured": "=== SCENE OVERVIEW ===\nScene Title: Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n=== ENVIRONMENT / LOCATION ===\nA quiet enclosed courtyard.\n\n=== ADDITIONAL SCENE INSTRUCTIONS ===\nKeep the original geometry.",
+            "compact": "# Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n## Environment / Location\nEnclosed courtyard.\n\n## Additional Scene Instructions\nKeep the original geometry."
+          }
+        }
+      ]
+    },
+    "v3": {
+      "packageDigest": "4ac49d383f2746a2c34eb8b1c36746d6b8b9645e8216fb55b4c017e7447fc81b",
+      "approvedDigest": "a4c7368077a874817cad9da219c9135dac292edd95f10e6419b2d5ab9a962519",
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-ensemble-import",
+        "packageDigest": "4ac49d383f2746a2c34eb8b1c36746d6b8b9645e8216fb55b4c017e7447fc81b",
+        "approvedDigest": "a4c7368077a874817cad9da219c9135dac292edd95f10e6419b2d5ab9a962519",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic B2 fixture"
+        },
+        "preparedAt": "2026-11-03T00:00:00.000Z",
+        "appliedAt": "2026-11-03T00:00:00.000Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": []
+        },
+        "idMappings": {
+          "scene": {
+            "kind": "scene",
+            "id": "scene_000000090000"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "ensemble",
+            "type": "scene.create_recipe",
+            "recordId": "scene_000000090000",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 1,
+            "after": 2
+          }
+        }
+      },
+      "receiptSha256": "beb9261fab0f2b57113b7c84f12a7920c01d35f8eb27ad443412f61724cc68e1",
+      "outputs": [
+        {
+          "id": "scene_000000090000",
+          "outputs": {
+            "full": "# Synthetic two-person scene\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Participant: Aya / Base Identity [aya]\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\n## Participant: Lucas / Base Identity [lucas]\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nPerformance Notes: Speak with quiet determination.\n\n## Environment / Location\nA quiet enclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nKeep each participant distinct.",
+            "structured": "=== SCENE OVERVIEW ===\nScene Title: Synthetic two-person scene\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n=== PARTICIPANT: Aya / Base Identity [aya] ===\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\n=== PARTICIPANT: Lucas / Base Identity [lucas] ===\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nPerformance Notes: Speak with quiet determination.\n\n=== ENVIRONMENT / LOCATION ===\nA quiet enclosed courtyard.\n\n=== ACTION & PERFORMANCE ===\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n=== ADDITIONAL SCENE INSTRUCTIONS ===\nKeep each participant distinct.",
+            "compact": "# Synthetic two-person scene\nScene Type: Single-shot video\nAspect Ratio: 16:9\nIntended Duration: 8s\n\n## Participant: Aya / Base Identity [aya]\n\nPresence: On camera (primary)\n\nCharacter Identity:\nAya is a fictional adult. Preserve this exact identity.\n\n## Participant: Lucas / Base Identity [lucas]\n\nPresence: On camera\n\nCharacter Identity:\nLucas is a fictional adult. Preserve this exact identity.\n\nPerformance Notes: Speak with quiet determination.\n\n## Environment / Location\nEnclosed courtyard.\n\n## Action & Performance\nGreet the arriving guest.\n\nCue 1 [officiant]\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Officiant\nDialogue Mode: Off-screen speech\n\nEXACT SPOKEN LINE:\n\"Lucas, do you take Aya as your wife?\"\n\nPerformance Instruction:\nDeliver the exact line aloud as off-screen speech.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\nCue 2 [lucas-reply] — Participant: lucas\n=== SPOKEN DIALOGUE SCRIPT ===\nSpeaker: Lucas\nDialogue Mode: On-camera speech\n\nEXACT SPOKEN LINE:\n\"  I do.\r\n😊  \"\n\nPerformance Instruction:\nSpeak the exact line aloud as on-camera dialogue.\nTreat the quoted words as the spoken performance script, separate from scene and camera instructions.\nDo not display the spoken words as on-screen text unless captions were explicitly requested.\n\n## Additional Scene Instructions\nKeep each participant distinct."
+          }
+        }
+      ]
+    },
+    "v4": {
+      "packageDigest": "d81e9eb589f8aba907281b5889b64c38bba095f268f223a262d9615307bf6fcb",
+      "approvedDigest": "f3ce8f79452ca3dcb6a0b55ac94cb660ec56f3a61e8690a5654a56afc0e49783",
+      "receipt": {
+        "version": 1,
+        "changeSetId": "synthetic-conversion",
+        "packageDigest": "d81e9eb589f8aba907281b5889b64c38bba095f268f223a262d9615307bf6fcb",
+        "approvedDigest": "f3ce8f79452ca3dcb6a0b55ac94cb660ec56f3a61e8690a5654a56afc0e49783",
+        "source": {
+          "kind": "codex",
+          "label": "Synthetic B1"
+        },
+        "preparedAt": "2026-11-03T00:00:00.000Z",
+        "appliedAt": "2026-11-03T00:00:00.000Z",
+        "approval": {
+          "storyboard": true,
+          "scenes": true,
+          "preferred": false,
+          "statuses": false,
+          "assetDecisions": {},
+          "allowDuplicateSceneOperations": [],
+          "conversionDecisions": {
+            "convert": {
+              "reviewed": true,
+              "acknowledgedRowIds": []
+            }
+          }
+        },
+        "idMappings": {
+          "converted": {
+            "kind": "scene",
+            "id": "scene_0000000b0000"
+          }
+        },
+        "operations": [
+          {
+            "operationId": "convert",
+            "type": "scene.convert_direct_to_recipe",
+            "recordId": "scene_0000000b0000",
+            "status": "created"
+          }
+        ],
+        "projectRevisions": {
+          "project": {
+            "before": 2,
+            "after": 3
+          }
+        }
+      },
+      "receiptSha256": "0cb68cd3b6d344fbf2dffa909f9f2abd9b50cf9fe2b08e8bd4c1c087c8d075b4",
+      "outputs": [
+        {
+          "id": "direct-source",
+          "outputs": {
+            "full": "  Synthetic original: wait in the courtyard.\r\nSOURCE_ONLY_DO_NOT_COPY 😊  "
+          }
+        },
+        {
+          "id": "scene_0000000b0000",
+          "outputs": {
+            "full": "# Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n## Environment / Location\nA quiet enclosed courtyard.\n\n## Additional Scene Instructions\nKeep the original geometry.",
+            "structured": "=== SCENE OVERVIEW ===\nScene Title: Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n=== ENVIRONMENT / LOCATION ===\nA quiet enclosed courtyard.\n\n=== ADDITIONAL SCENE INSTRUCTIONS ===\nKeep the original geometry.",
+            "compact": "# Synthetic Courtyard\nScene Type: Single-shot video\nShot Type: Property / Environment\nAspect Ratio: 16:9\nIntended Duration: 4s\n\n## Environment / Location\nEnclosed courtyard.\n\n## Additional Scene Instructions\nKeep the original geometry."
+          }
+        }
+      ]
+    }
+  }
+}

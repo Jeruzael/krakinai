@@ -13,6 +13,7 @@ import { findSimilarScenes, sceneDuplicateKey, SimilarSceneError } from '../doma
 import { getProjectShots, projectMembersFromShots, removeTakeFromProject } from '../domain/projectStoryboard';
 export { SimilarSceneError } from '../domain/sceneDuplicates';
 import { getIdentityRevision, resolveGenerationIdentity } from '../domain/identityAnchors';
+import { resolveBlockingOutputs, type BlockingOutputDecisions } from '../domain/blockingOutputReview';
 import {
   SCHEMA_VERSION,
   type BuilderSlot,
@@ -50,47 +51,12 @@ import {
   validateVariantInput,
 } from '../domain/validation';
 
-const DB_NAME = 'krakinai_prompt_library_db';
-const DB_VERSION = 1;
-
-export const STORE_NAMES = [
-  'assets',
-  'variants',
-  'media',
-  'drafts',
-  'scenes',
-  'collections',
-  'templates',
-  'preferences',
-] as const;
-
-export type StoreName = (typeof STORE_NAMES)[number];
-
-let dbPromise: Promise<IDBDatabase> | null = null;
+import { openProtectedDatabase, STORE_NAMES, type StoreName } from './libraryCompatibility';
+export { STORE_NAMES };
+export type { StoreName };
 
 export function openDatabase(): Promise<IDBDatabase> {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise((resolve, reject) => {
-    if (typeof indexedDB === 'undefined') {
-      reject(new Error('IndexedDB is unavailable in this browser environment.'));
-      return;
-    }
-    const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      for (const store of STORE_NAMES) {
-        if (!db.objectStoreNames.contains(store)) {
-          db.createObjectStore(store, { keyPath: 'id' });
-        }
-      }
-    };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => {
-      dbPromise = null;
-      reject(req.error || new Error('Failed to open IndexedDB.'));
-    };
-  });
-  return dbPromise;
+  return openProtectedDatabase();
 }
 
 function getAllFromStore<T>(store: IDBObjectStore): Promise<T[]> {
@@ -657,6 +623,7 @@ export async function saveSceneDraft(
     inputRevision?: number;
     bumpInputRevision?: boolean;
     expectedInputRevision?: number;
+    confirmBlockingRemoval?: boolean;
   }
 ): Promise<SceneDraft> {
   const authoringError=validateSceneAuthoring(input);
@@ -665,7 +632,7 @@ export async function saveSceneDraft(
   if (cameraError) throw new Error(cameraError);
   const performanceError=validatePerformanceDirection(input.dialogue?.performanceDirection);
   if(performanceError)throw new Error(performanceError);
-  const metadataError=validatePhase4Record(input.ensemble!==undefined?input:{ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
+  const metadataError=validatePhase4Record(input.ensemble!==undefined||input.blocking!==undefined?input:{ shotType: input.shotType, sourceMediaLinks: input.sourceMediaLinks, inheritedAvoidPrefix:input.inheritedAvoidPrefix });
   if(metadataError)throw new Error(metadataError);
   const db = await openDatabase();
   const needsInheritedPrefix=input.inheritedAvoidPrefix===undefined&&input.shotType!==undefined&&input.shotType!=='character_scene'&&Boolean(input.sourceSceneId);
@@ -675,6 +642,7 @@ export async function saveSceneDraft(
 
   const existing = input.id ? await getFromStore<SceneDraft>(dStore, input.id) : undefined;
   if(existing?.ensemble&&input.ensemble===undefined){tx.abort();throw new Error('This stored draft has an ensemble. Open the current workspace before saving; the existing draft is preserved.');}
+  if(existing?.blocking&&input.blocking===undefined&&!input.confirmBlockingRemoval){tx.abort();throw Error('Confirm removal of authored blocking explicitly. The stored draft is preserved.');}
   if(input.expectedInputRevision!==undefined&&existing?.inputRevision!==input.expectedInputRevision){tx.abort();throw new Error('This draft changed in another tab. Your edits are preserved locally; refresh and compare before saving.');}
   let inheritedAvoidPrefix=input.inheritedAvoidPrefix??existing?.inheritedAvoidPrefix;
   if(inheritedAvoidPrefix===undefined&&needsInheritedPrefix) {
@@ -695,6 +663,7 @@ export async function saveSceneDraft(
       : 1;
 
   const record: SceneDraft = {
+    ...(input.blocking!==undefined?{blocking:structuredClone(input.blocking)}:{}),
     ...(input.ensemble!==undefined?{ensemble:structuredClone(input.ensemble)}:{}),
     id: existing?.id || input.id || generateId('draft'),
     title: input.title,
@@ -740,7 +709,7 @@ export async function saveSceneDraft(
   return record;
 }
 
-export interface SaveSceneOptions { duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; expectedInputRevision?:number; expectedProjectRevision?:number; projectTarget?: {collectionId:string;shotId:string} }
+export interface SaveSceneOptions { blockingOutputDecisions?:BlockingOutputDecisions; duplicateDecision?: 'version' | 'take'; duplicateOfSceneId?: string; requestId?: string; expectedInputRevision?:number; expectedProjectRevision?:number; projectTarget?: {collectionId:string;shotId:string} }
 export async function saveSceneFromDraft(draftId: string, options: SaveSceneOptions = {}): Promise<SavedScene> {
   const current=(await getAllSnapshot()).drafts.find(record=>record.id===draftId);
   if(current&&(isDirectPrompt(current)||current.revisionIntent)){
@@ -748,7 +717,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     if(options.expectedInputRevision===undefined)throw new Error('An expected draft input revision is required for authored scene saves. Refresh the reviewed draft before saving.');
     const expectedProjectRevision=options.expectedProjectRevision??current.authoredProjectTarget?.expectedProjectRevision;
     if(options.projectTarget&&expectedProjectRevision===undefined)throw new Error('An expected project revision is required for this authored save.');
-    return saveAuthoredScene(draftId,{requestId:options.requestId??generateId('save'),expectedInputRevision:options.expectedInputRevision,...(options.projectTarget?{target:{...options.projectTarget,expectedProjectRevision:expectedProjectRevision!}}:{})});
+    return saveAuthoredScene(draftId,{requestId:options.requestId??generateId('save'),expectedInputRevision:options.expectedInputRevision,...(options.blockingOutputDecisions?{blockingOutputDecisions:options.blockingOutputDecisions}:{}),...(options.projectTarget?{target:{...options.projectTarget,expectedProjectRevision:expectedProjectRevision!}}:{})});
   }
   const db = await openDatabase();
   const tx = db.transaction(['drafts', 'scenes', 'assets', 'media', 'collections'], 'readwrite');
@@ -756,6 +725,9 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   try {
   const draft = await getFromStore<SceneDraft>(tx.objectStore('drafts'), draftId);
   if (!draft) throw new Error('Scene draft not found.');
+  const sourceScene=draft.sourceSceneId?await getFromStore<SavedScene>(tx.objectStore('scenes'),draft.sourceSceneId):undefined;
+  const preserveFrozen=!!draft.blocking||!!sourceScene?.blocking;
+  if(preserveFrozen&&options.expectedInputRevision!==draft.inputRevision)throw Error('The blocking draft input revision differs from the reviewed revision. Refresh and review before saving.');
 
   const cameraError = validateCameraCompositionSlots(draft.slots);
   if (cameraError) throw new Error(cameraError);
@@ -763,25 +735,25 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
   const mediaMap = new Map((await getAllFromStore<MediaAsset>(tx.objectStore('media'))).map(media => [media.id, media]));
   const sourceErrors = validateShotSourceMedia(draft, mediaMap);
   if (sourceErrors.length) throw new Error(sourceErrors.join(' '));
-  const hydratedDraft: SceneDraft = draft.sourceMediaLinks === undefined ? draft : { ...draft, sourceMediaLinks: draft.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })) };
+  const hydratedDraft: SceneDraft = preserveFrozen||draft.sourceMediaLinks === undefined ? draft : { ...draft, sourceMediaLinks: draft.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })) };
   const activeSlots = getActiveSceneSlots(draft);
   const activePack = getActiveReferencePack(hydratedDraft);
   const character = activeSlots.character;
   const liveMaster = character ? await getFromStore<PromptAsset>(tx.objectStore('assets'), character.sourceId) : undefined;
   const resolvedIdentity = resolveGenerationIdentity({ ...draft, slots: activeSlots }, liveMaster);
+  if(preserveFrozen&&JSON.stringify(resolvedIdentity.generation)!==JSON.stringify(draft.generation))throw Error('Review the Character identity dependency before saving blocking. Its frozen generation choice cannot be refreshed silently.');
   const assembled = assembleScenePrompt(hydratedDraft);
   if (!assembled.valid) {
     throw new Error(assembled.errors.join(' '));
   }
 
   const now = new Date().toISOString();
-  const finalOutputs: Record<OutputMode, string> = {
-    full: draft.manualOutputs.full?.text ?? assembled.outputs.full,
-    structured: draft.manualOutputs.structured?.text ?? assembled.outputs.structured,
-    compact: draft.manualOutputs.compact?.text ?? assembled.outputs.compact,
-  };
+  const resolution=resolveBlockingOutputs(draft,assembled.outputs,options.blockingOutputDecisions,!!sourceScene?.blocking);
+  if(!resolution.valid)throw Error(resolution.findings.filter(f=>f.severity==='blocking').map(f=>f.message).join(' '));
+  const finalOutputs=resolution.outputs;
 
   let scene: SavedScene = {
+    ...(draft.blocking?{blocking:structuredClone(draft.blocking)}:{}),
     ...(draft.ensemble?{ensemble:structuredClone(draft.ensemble)}:{}),
     id: generateId('scene'),
     title: draft.title.trim(),
@@ -797,7 +769,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     dialogue: draft.dialogue ? structuredClone(draft.dialogue) : undefined,
     settings: { ...draft.settings },
     outputs: finalOutputs,
-    manualOutputs: structuredClone(draft.manualOutputs),
+    manualOutputs: resolution.manualOutputs,
     references: assembled.references.map((r) => ({ ...r })),
     sourceSceneId: draft.sourceSceneId,
     ...(draft.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:structuredClone(draft.conversionProvenance)}:{}),
@@ -809,12 +781,14 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     updatedAt: now,
   };
 
-  if(scene.ensemble){scene=prepareEnsembleSource(scene,await getAllFromStore<PromptAsset>(tx.objectStore('assets')),mediaMap);const error=validatePhase4Record(scene);if(error)throw Error(error);}
-  for (const slot of Object.values(scene.slots)) if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
-  scene.references = captureMediaNames(scene.references, mediaMap);
-  scene.resultMediaLinks = captureMediaNames(scene.resultMediaLinks, mediaMap);
-  if (scene.sourceMediaLinks) scene.sourceMediaLinks = captureMediaNames(scene.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })), mediaMap);
-  if (scene.referencePack) scene.referencePack.entries = captureMediaNames(scene.referencePack.entries.map(entry => entry.sourceSlot === 'source' ? { ...entry, filename: mediaMap.get(entry.mediaId)?.filename ?? entry.filename, mimeType: mediaMap.get(entry.mediaId)?.mimeType ?? entry.mimeType } : entry), mediaMap);
+  if(scene.ensemble){scene=prepareEnsembleSource(scene,await getAllFromStore<PromptAsset>(tx.objectStore('assets')),mediaMap,preserveFrozen);const error=validatePhase4Record(scene);if(error)throw Error(error);}
+  if(!preserveFrozen){
+    for (const slot of Object.values(scene.slots)) if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
+    scene.references = captureMediaNames(scene.references, mediaMap);
+    scene.resultMediaLinks = captureMediaNames(scene.resultMediaLinks, mediaMap);
+    if (scene.sourceMediaLinks) scene.sourceMediaLinks = captureMediaNames(scene.sourceMediaLinks.map(link => ({ ...link, filename: mediaMap.get(link.mediaId)?.filename ?? link.filename, mimeType: mediaMap.get(link.mediaId)?.mimeType ?? link.mimeType })), mediaMap);
+    if (scene.referencePack) scene.referencePack.entries = captureMediaNames(scene.referencePack.entries.map(entry => entry.sourceSlot === 'source' ? { ...entry, filename: mediaMap.get(entry.mediaId)?.filename ?? entry.filename, mimeType: mediaMap.get(entry.mediaId)?.mimeType ?? entry.mimeType } : entry), mediaMap);
+  }
   const scenes = await getAllFromStore<SavedScene>(tx.objectStore('scenes'));
   const retry = options.requestId ? scenes.find(saved => saved.saveRequestId === options.requestId) : undefined;
   if (retry) {
@@ -840,6 +814,7 @@ export async function saveSceneFromDraft(draftId: string, options: SaveSceneOpti
     const collectionStore=tx.objectStore('collections');
     const collection=await getFromStore<Collection>(collectionStore,target.collectionId);
     if (!collection?.project) throw new Error('Target project not found.');
+    if(preserveFrozen&&options.expectedProjectRevision!==collection.project.revision)throw Error('Project revision changed. Refresh and review the blocking save target.');
     const shot=collection.project.shots.find(s=>s.id===target.shotId);
     if (!shot) throw new Error('Target project shot not found.');
     const shots=collection.project.shots.map(s=>s.id===shot.id?{...s,takeSceneIds:[...s.takeSceneIds,scene.id],selectedSceneId:s.selectedSceneId??scene.id}:s);
@@ -914,6 +889,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
     title: `${scene.title} (Copy)`,
     ...(scene.conversionProvenance?{authoringMode:'recipe' as const,conversionProvenance:structuredClone(scene.conversionProvenance)}:{}),
     ...(scene.ensemble?{ensemble:structuredClone(scene.ensemble)}:{}),
+    ...(scene.blocking?{blocking:structuredClone(scene.blocking)}:{}),
     inheritedAvoidPrefix:savedAvoidPrefix(scene,snap.scenes),
     ...(scene.shotType !== undefined ? { shotType: scene.shotType } : {}),
     ...(scene.sourceMediaLinks !== undefined ? { sourceMediaLinks: structuredClone(scene.sourceMediaLinks) } : {}),
@@ -926,7 +902,7 @@ export async function createDraftFromSavedScene(sceneId: string): Promise<SceneD
     dialogue: scene.dialogue ? structuredClone(scene.dialogue) : undefined,
     settings: { ...scene.settings },
     sourceSceneId: scene.id,
-    manualOutputs: {},
+    manualOutputs: scene.blocking?structuredClone(scene.manualOutputs):{},
     resultMediaLinks: [],
     reviewNotes: '',
     reviewStatus: 'unreviewed',
@@ -973,7 +949,9 @@ export async function saveDraftAsTemplate(params: {
   includeCharacterIdentity: boolean;
   ensembleMode?:'full'|'shared_only';
   confirmEnsembleOmissions?:boolean;
+  confirmBlockingOmission?:boolean;
 }): Promise<Template> {
+  if(params.draft.blocking&&!params.confirmBlockingOmission)throw Error('Confirm that scene-specific blocking is omitted from this reusable template. The source draft remains unchanged.');
   const ensemble=Boolean(params.draft.ensemble);
   if(ensemble&&!['full','shared_only'].includes(params.ensembleMode??''))throw Error('Choose an explicit ensemble template choice: full ensemble or shared components only.');
   if(ensemble&&params.ensembleMode==='shared_only'&&!params.confirmEnsembleOmissions)throw Error('Confirm omission of all participants, per-person wardrobe and dialogue cues.');

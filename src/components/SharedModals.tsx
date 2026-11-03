@@ -26,6 +26,7 @@ import { downloadBlobAsFile } from '../hooks/useObjectUrl';
 import {
   CATEGORY_LABELS,
   MAX_TOTAL_MEDIA_BYTES,
+  MAX_BACKUP_UNCOMPRESSED_BYTES,
   SLOT_TO_CATEGORY,
 } from '../domain/validation';
 import { SLOT_UI_LABELS as SLOT_LABELS } from '../domain/displayLabels';
@@ -461,7 +462,7 @@ export const SettingsBackupModal: React.FC = () => {
             </h3>
             <p className="muted-text" style={{ margin: '0 0 8px' }}>
               Media usage: <strong>{mediaMiB} MiB</strong> of {maxMiB} MiB
-              prototype limit (250 MiB max uncompressed backup).
+              configured media limit ({MAX_BACKUP_UNCOMPRESSED_BYTES/(1024*1024)} MiB maximum uncompressed backup). Large-library restore capacity is not certified by this limit; the current backup tools process archives in memory.
             </p>
             <div className="tag-list">
               <span className="badge">{snapshot.assets.length} Prompts</span>

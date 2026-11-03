@@ -42,6 +42,8 @@ import{applyRecipeEnsemblePatch}from'./changeSetEnsemble';
 import{prepareEnsembleSource}from'./ensemblePersistence';
 import{getSceneSnapshotEntries}from'./ensembleReferences';
 import{validateConversionSource,prepareConversionDraft,retainConversionReferences,type ConversionSourceProofs}from'./recipeConversion';
+import {canonicalStringify} from './changeSetCanonical';
+import {applyBlockingPatch,validateBlockingSource,type BlockingSourceProofs,NULL_BLOCKING_DIGEST} from './blockingPatch';
 const clone = <T>(value: T): T => structuredClone(value);
 
 /** A transient authoring draft, never an assertion that a stored draft exists. */
@@ -53,7 +55,9 @@ export function buildRecipeChangeDraft(
   resolveAsset: (target: RecordTarget) => string,
   resolveVariant?: (target:RecordTarget)=>string,
   conversionProofs:ConversionSourceProofs=new Map(),
+  blockingOptions?:{proofs:BlockingSourceProofs},
 ): SceneDraft {
+  if(blockingOptions)validateBlockingSource(operation,state,blockingOptions.proofs);
   let draft: SceneDraft;
   const identity = {
     id: `draft_${allocation.ids[operation.operationId]}`,
@@ -94,13 +98,14 @@ export function buildRecipeChangeDraft(
     };
     if (operation.reason && draft.revisionIntent)
       draft.revisionIntent.reason = operation.reason;
+    if(blockingOptions)draft.manualOutputs=clone(parent.manualOutputs);
   }
   draft.authoringMode = "recipe";
   if(draft.ensemble&&(Object.hasOwn(operation,'dialogue')||Object.hasOwn(operation,'identitySource')||operation.assetRefs?.some(r=>['character','wardrobe'].includes(r.slot))||operation.variantRefs?.some(r=>['character','wardrobe'].includes(r.slot))||operation.clearSlots?.some(s=>['character','wardrobe'].includes(s))||['character','wardrobe'].some(s=>Object.hasOwn(operation.overrides??{},s))))throw Error('Use a v3 ensemble participant patch for Character, wardrobe, identity source or dialogue changes.');
   delete draft.directPrompt;
   delete draft.directReferences;
   // Browser-owned consent is checked in the planner; every new output is assembled.
-  draft.manualOutputs = {};
+  if(!blockingOptions)draft.manualOutputs = {};
   for (const key of [
     "title",
     "shotType",
@@ -203,11 +208,16 @@ export function buildRecipeChangeDraft(
               : {}),
           };
   }
-  if(draft.ensemble)draft=prepareEnsembleSource(draft,state.assets);
-  else draft.generation = resolveGenerationIdentity(
+  if(draft.ensemble)draft=prepareEnsembleSource(draft,state.assets,undefined,!!blockingOptions||!!draft.blocking);
+  else {
+   const generation = resolveGenerationIdentity(
     draft,
     state.assets.find((a) => a.id === draft.slots.character?.sourceId),
-  ).generation;
+   ).generation;
+   if(blockingOptions&&draft.generation&&canonicalStringify(generation)!==canonicalStringify(draft.generation))throw Error('Review the frozen Character identity dependency; v5 cannot silently refresh its generation choice.');
+   draft.generation=generation;
+  }
+  if(blockingOptions)draft.blocking=applyBlockingPatch(draft.blocking,operation.blocking,draft,'sceneId'in operation?blockingOptions.proofs.get(operation.sceneId)!.blockingDigest:NULL_BLOCKING_DIGEST);
   if (operation.references !== undefined) {
     const mediaMap = new Map(state.media.map((m) => [m.id, m]));
     const activeIds = new Set(

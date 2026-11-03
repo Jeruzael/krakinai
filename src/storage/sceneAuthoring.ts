@@ -50,6 +50,7 @@ import {
 } from "../domain/projectStoryboard";
 import { validateProject } from "../domain/phase5ProjectValidation";
 import { validateCameraCompositionSlots } from "../domain/cameraCompositionValidation";
+import {resolveBlockingOutputs,type BlockingOutputDecisions} from '../domain/blockingOutputReview';
 
 const request = <T>(req: IDBRequest<T>): Promise<T> =>
   new Promise((resolve, reject) => {
@@ -78,6 +79,7 @@ function stable(value: unknown): unknown {
   return value;
 }
 export interface AuthoredSaveOptions {
+  blockingOutputDecisions?:BlockingOutputDecisions;
   requestId: string;
   expectedInputRevision: number;
   target?: SceneProjectTarget;
@@ -176,6 +178,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
       "This scene belongs to multiple projects. Choose an explicit project and shot before revising.",
     );
   const direct = options.asDirect || isDirectPrompt(source);
+  if(options.asDirect&&source.blocking)throw Error('Keep this blocking recipe intact. Direct Prompt conversion does not support authored blocking.');
   if(options.asDirect&&source.ensemble)throw Error('Ensemble Direct Prompt conversion belongs to B3. Keep this recipe and its participants unchanged.');
   const prefix = savedAvoidPrefix(source, snap.scenes);
   const editableAvoid =
@@ -191,6 +194,7 @@ export function buildRevisionDraft(sceneId:string,snap:Pick<LibrarySnapshot,'sce
     title: source.title,
     slots: clone(source.slots),
     ...(source.ensemble?{ensemble:clone(source.ensemble)}:{}),
+    ...(source.blocking?{blocking:clone(source.blocking)}:{}),
     extraRequiredSlots: clone(source.extraRequiredSlots),
     sceneInstructions: source.sceneInstructions,
     dialogue: clone(source.dialogue),
@@ -273,6 +277,7 @@ function prepareAuthoredOperation(draft:SceneDraft,options:AuthoredSaveOptions){
         target,
         selectAsPreferred: !!options.selectAsPreferred,
         allowDuplicate: !!options.allowDuplicate,
+        ...(options.blockingOutputDecisions?{blockingOutputDecisions:options.blockingOutputDecisions}:{}),
       }),
     );
   return {target,fingerprint};
@@ -281,6 +286,7 @@ function prepareAuthoredOperation(draft:SceneDraft,options:AuthoredSaveOptions){
 export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,state:Pick<LibrarySnapshot,'scenes'|'collections'|'assets'|'media'>,identity:{id:string;now:string}):{scene:SavedScene;collection?:Collection}{
   const {target,fingerprint}=prepareAuthoredOperation(draft,options);
   const scenes=state.scenes;
+  const preserveFrozen=!!draft.blocking||!!scenes.find(s=>s.id===draft.sourceSceneId)?.blocking;
   let collectionUpdate:Collection|undefined;
     if (draft.inputRevision !== options.expectedInputRevision)
       throw new Error(
@@ -382,6 +388,7 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
         : {}),
     };
     const base = {
+      ...(draft.blocking?{blocking:clone(draft.blocking)}:{}),
       ...(draft.ensemble?{ensemble:clone(draft.ensemble)}:{}),
       id,
       title: draft.title.trim(),
@@ -482,15 +489,16 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
       const master = activeSlots.character ? state.assets.find(a=>a.id===activeSlots.character!.sourceId) : undefined;
       const assembled = assembleScenePrompt(draft);
       if (!assembled.valid) throw new Error(assembled.errors.join(" "));
+      const generation=resolveGenerationIdentity({...draft,slots:activeSlots},master).generation;
+      if(preserveFrozen&&JSON.stringify(generation)!==JSON.stringify(draft.generation))throw Error('Review the Character identity dependency before saving blocking. Its frozen generation choice cannot be refreshed silently.');
+      const resolution=resolveBlockingOutputs(draft,assembled.outputs,options.blockingOutputDecisions,!!scenes.find(s=>s.id===draft.sourceSceneId)?.blocking);
+      if(!resolution.valid)throw Error(resolution.findings.filter(f=>f.severity==='blocking').map(f=>f.message).join(' '));
       scene = {
         ...base,
         slots: clone(activeSlots),
-        generation: resolveGenerationIdentity(
-          { ...draft, slots: activeSlots },
-          master,
-        ).generation,
+        generation,
         referencePack: clone(draft.conversionProvenance?draft.referencePack:pack),
-        sourceMediaLinks: draft.sourceMediaLinks
+        sourceMediaLinks: preserveFrozen?clone(draft.sourceMediaLinks):draft.sourceMediaLinks
           ? captureMediaNames(getActiveSourceMediaLinks(draft), mediaMap)
           : undefined,
         avoidText: assembled.avoidText,
@@ -498,21 +506,15 @@ export function planAuthoredScene(draft:SceneDraft,options:AuthoredSaveOptions,s
           ? { inheritedAvoidPrefix: getCapturedAvoidPrefix(draft) }
           : {}),
         dialogue: clone(draft.dialogue),
-        outputs: {
-          full: draft.manualOutputs.full?.text ?? assembled.outputs.full,
-          structured:
-            draft.manualOutputs.structured?.text ??
-            assembled.outputs.structured,
-          compact:
-            draft.manualOutputs.compact?.text ?? assembled.outputs.compact,
-        },
-        references: captureMediaNames(assembled.references, mediaMap),
+        outputs: resolution.outputs,
+        manualOutputs: resolution.manualOutputs,
+        references: preserveFrozen?clone(assembled.references):captureMediaNames(assembled.references, mediaMap),
       };
     }
-    if(scene.ensemble){scene=prepareEnsembleSource(scene,state.assets,mediaMap);const error=validatePhase4Record(scene);if(error)throw Error(error);}
-    for (const slot of Object.values(scene.slots))
+    if(scene.ensemble){scene=prepareEnsembleSource(scene,state.assets,mediaMap,preserveFrozen);const error=validatePhase4Record(scene);if(error)throw Error(error);}
+    if(!preserveFrozen)for (const slot of Object.values(scene.slots))
       if (slot) slot.mediaLinks = captureMediaNames(slot.mediaLinks, mediaMap);
-    scene.resultMediaLinks = captureMediaNames(
+    scene.resultMediaLinks = preserveFrozen?clone(scene.resultMediaLinks):captureMediaNames(
       scene.resultMediaLinks,
       mediaMap,
     );

@@ -7,6 +7,7 @@ import {
   type SceneDocumentSource,
 } from "./sceneDocument";
 import { getShotTypeRules, SHOT_TYPE_LABELS } from './shotTypeRules';
+import {formatBlockingDocument} from './blockingDocument';
 
 export type ExportPresetId =
   "generic_structured" | "gemini_omni_flash" | "custom";
@@ -118,6 +119,7 @@ export function formatGenerationText(
     ["VISUAL STYLE", doc.style],
   ])
     section(title!, content ?? null);
+  if(doc.blocking)blocks.push(formatBlockingDocument(doc.blocking,'structured'));
   const dialogues:(NonNullable<typeof doc.dialogue>&{id?:string;participantId?:string;timing?:{startSeconds:number;endSeconds:number}})[]=doc.dialogue?[doc.dialogue]:(doc.dialogueCues??[]);
   for (const [index,dialogue]of dialogues.entries()) {
     const lines = [

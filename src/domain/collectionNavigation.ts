@@ -15,6 +15,10 @@ export function collectionSceneRoute(sceneId: string, collectionId: string, stat
  const s = collectionViewState('?' + new URLSearchParams(state as Record<string,string>).toString());
  return `/output/${encodeURIComponent(sceneId)}?${new URLSearchParams({collection:collectionId,tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot ? {shot:s.shot}:{}),...(s.continuity?{continuity:s.continuity}:{})}).toString()}`;
 }
+export function collectionBuilderRoute(draftId:string,collectionId:string,state:Partial<CollectionViewState>={}):string{
+ const s=collectionViewState('?'+new URLSearchParams(state as Record<string,string>).toString());
+ return `/builder/${encodeURIComponent(draftId)}?${new URLSearchParams({collection:collectionId,takeTarget:'1',tab:s.tab,view:s.view,sort:s.sort,filter:s.filter,...(s.shot?{shot:s.shot}:{}),...(s.continuity?{continuity:s.continuity}:{})}).toString()}`;
+}
 export function resolveCollectionContext(path: string, sceneId: string, collections: Collection[]) {
  const q = new URLSearchParams(path.split('?')[1] || '');
  const collection = collections.find(c=>c.id === q.get('collection'));

@@ -19,6 +19,8 @@ import {
 } from "../domain/changeSetCanonical";
 import { planChangeSet } from "../domain/changeSetPlanner";
 import {prepareConversionSources,type ConversionSourceProofs}from'../domain/recipeConversion';
+import {prepareBlockingSources,type BlockingSourceProofs} from '../domain/blockingPatch';
+import {blockingReviewedProjection} from '../domain/blockingReview';
 import type {SavedScene}from'../types/domain';
 import {
   appendImportReceipt,
@@ -44,6 +46,15 @@ async function readConversionProofs(input:ChangeSet):Promise<ConversionSourcePro
   await completion;
   return prepareConversionSources(input,scenes.filter((s):s is SavedScene=>!!s));
 }
+async function readBlockingProofs(input:ChangeSet):Promise<BlockingSourceProofs>{
+ if(input.schema!=='krakinai.change-set.v5')return new Map();
+ const ids=[...new Set(input.operations.flatMap(o=>isRecipeOperation(o)&&'sceneId'in o?[o.sceneId]:[]))];
+ if(!ids.length)return new Map();
+ const db=await openDatabase(),tx=db.transaction('scenes','readonly'),completion=done(tx);
+ const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(tx.objectStore('scenes').get(id))));await completion;
+ return prepareBlockingSources(scenes.filter((s):s is SavedScene=>!!s));
+}
+const receiptVersion=(input:ChangeSet,plan:ChangeSetPlan)=>input.schema==='krakinai.change-set.v5'?{version:2 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedContent:canonicalStringify(blockingReviewedProjection(plan))}:{version:1 as const};
 const signedContent = (
   input: Pick<
     ChangeSetPreview,
@@ -54,6 +65,7 @@ const signedContent = (
   approval: input.approval,
   allocation: input.allocation,
   stateSignature: input.plan.stateSignature,
+  ...(input.changeSet.schema==='krakinai.change-set.v5'?{v5Review:blockingReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema==='krakinai.change-set.v3'?{v3Review:ensembleReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema==='krakinai.change-set.v4'?{v4Review:ensembleReviewedProjection(input.plan)}:{}),
   ...(input.changeSet.schema === "krakinai.change-set.v2" &&
@@ -109,7 +121,7 @@ export async function previewChangeSet(
 ): Promise<ChangeSetPreview> {
   const changeSet = parseChangeSet(input),
     decisions = structuredClone(approval ?? emptyChangeSetApproval());
-  validateChangeSetApproval(decisions, changeSet.operations);
+  validateChangeSetApproval(decisions, changeSet.operations,changeSet.schema);
   const snapshot = await getAllSnapshot(),
     ledger = readImportLedger(snapshot.preferences),
     packageDigest = await changeSetDigest(changeSet),
@@ -141,7 +153,8 @@ export async function previewChangeSet(
     };
   }
   const conversionProofs=await prepareConversionSources(changeSet,snapshot.scenes);
-  const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs),
+  const blockingProofs=changeSet.schema==='krakinai.change-set.v5'?await prepareBlockingSources(snapshot.scenes.filter(s=>changeSet.operations.some(o=>isRecipeOperation(o)&&'sceneId'in o&&o.sceneId===s.id))):new Map();
+  const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs,blockingProofs),
     draft = { changeSet, approval: decisions, allocation, plan };
   const approvedDigest = await changeSetDigest(signedContent(draft));
   if (
@@ -150,7 +163,7 @@ export async function previewChangeSet(
     )
   ) {
     const receipt: ChangeSetReceipt = {
-      version: 1,
+      ...receiptVersion(changeSet,plan),
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,
@@ -235,7 +248,7 @@ export async function applyApprovedChangeSet(
 ): Promise<ChangeSetReceipt> {
   const prepared = structuredClone(preview),
     changeSet = parseChangeSet(prepared.changeSet);
-  validateChangeSetApproval(prepared.approval, changeSet.operations);
+  validateChangeSetApproval(prepared.approval, changeSet.operations,changeSet.schema);
   const packageDigest = await changeSetDigest(changeSet);
   if (
     prepared.version !== 1 ||
@@ -269,6 +282,7 @@ export async function applyApprovedChangeSet(
   )
     throw Error("Invalid preview allocation.");
   const conversionProofs=await readConversionProofs(changeSet);
+  const blockingProofs=await readBlockingProofs(changeSet);
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -310,7 +324,7 @@ export async function applyApprovedChangeSet(
     const plan = planChangeSet(changeSet, prepared.approval, state, {
         ...prepared.allocation,
         preparedAt: appliedAt,
-      },conversionProofs),
+      },conversionProofs,blockingProofs),
       blocked = plan.findings.filter((f) => f.severity === "blocking");
     if (blocked.length) throw Error(blocked.map((f) => f.message).join(" "));
     if (plan.stateSignature !== prepared.plan.stateSignature)
@@ -318,7 +332,7 @@ export async function applyApprovedChangeSet(
         "Relevant project, scene, asset or media state changed after preview. Nothing was applied; preview and approve again.",
       );
     const receipt: ChangeSetReceipt = {
-      version: 1,
+      ...receiptVersion(changeSet,plan),
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,

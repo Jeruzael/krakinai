@@ -2,6 +2,8 @@
 
 Stage B is a local file/paste importer. It does not connect to ChatGPT or an MCP server. The machine-readable [JSON Schema](change-set.schema.json) is generated from the same repository-owned schema used by runtime validation. Regenerate it with `node scripts/export-change-set-schema.mjs`; the parity test prevents drift. Schema URLs are identifiers, not network requests.
 
+This page specifies the preserved v1 contract. The authenticated MCP bridge submits through the same browser review/atomic save path. Optional Blocking recipe operations use the separate [v5 contract](change-set-v5.md) and [protected library workflow](blocking-and-spatial-continuity.md). V1–v4 packages retain their exact schema/digest branches; they cannot reconstruct a Blocking-bearing parent by dropping its new data.
+
 ## Package and targets
 
 ```json

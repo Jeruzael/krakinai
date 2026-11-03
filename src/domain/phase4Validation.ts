@@ -8,6 +8,8 @@ import{validateSceneEnsemble}from'./ensembleValidation';
 import{validateEnsembleTemplateDefault}from'./ensembleTemplates';
 import{ENSEMBLE_LOCAL_ID_PATTERN}from'../types/ensemble';
 import{validateConversionProvenance}from'./recipeConversion';
+import{validateSceneBlocking}from'./blockingValidation';
+import type{BlockingSource}from'../types/blocking';
 
 const record = (value: unknown): value is Record<string, unknown> => !!value && typeof value === 'object' && !Array.isArray(value);
 const text = (value: unknown, max = 100000, nonblank = false) => typeof value === 'string' && value.length <= max && (!nonblank || !!value.trim());
@@ -34,6 +36,8 @@ export function validatePhase4Record(value: unknown): string | undefined {
   if(ensembleError)return ensembleError;
   const authoringError=validateSceneAuthoring(value, value.outputs!==undefined);
   if(authoringError)return authoringError;
+  const blockingError=validateSceneBlocking(value.blocking,value as unknown as BlockingSource,value.outputs!==undefined?'assembly':'planning').find(f=>f.severity==='blocking');
+  if(blockingError)return blockingError.message;
   const cameraError=validateCameraCompositionSlots(value.slots)??validateCameraComposition(value.cameraComposition,typeof value.slot==='string'?value.slot:'');
   if(cameraError)return cameraError;
   if (value.inheritedAvoidPrefix !== undefined && !text(value.inheritedAvoidPrefix,MAX_MANIFEST_BYTES)) return 'Invalid inherited negative prefix.';

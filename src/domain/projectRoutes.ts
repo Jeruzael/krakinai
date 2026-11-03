@@ -4,6 +4,7 @@ import type {SceneProjectTarget} from '../types/sceneAuthoring';
 import { createDraftFromSavedScene, getAllSnapshot, saveSceneDraft } from '../storage/db';
 import { initializeProject } from '../storage/projects';
 import {isDirectPrompt} from './directPrompt';
+import {collectionViewState} from './collectionNavigation';
 
 export function getSavedSceneProjectTarget(path:string,scene:SavedScene,collections:Collection[]):{requested:boolean;target?:SceneProjectTarget;error?:string}{
   const query=new URLSearchParams(path.split('?')[1]??'');
@@ -30,6 +31,7 @@ export function carryProjectTarget(route: string, fromPath: string): string {
   const from = new URLSearchParams(fromPath.split('?')[1] ?? '');
   if (!from.has('takeTarget')) return route;
   const query = new URLSearchParams({collection:from.get('collection') ?? '',shot:from.get('shot') ?? '',takeTarget:from.get('takeTarget') ?? '',tab:'storyboard'});
+  if(from.get('tab')==='continuity'){const state=collectionViewState(fromPath);for(const key of ['tab','view','sort','filter','continuity']as const){const value=state[key];if(value!==undefined)query.set(key,value);}}
   return `${route}?${query.toString()}`;
 }
 

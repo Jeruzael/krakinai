@@ -2,17 +2,18 @@ import { createServer, type IncomingMessage, type ServerResponse } from 'node:ht
 import { randomUUID } from 'node:crypto';
 import { BRIDGE_VERSION, MCP_LIMITS, McpError, exactKeys, record, resultData, resultError, validateOrigin, validateToolArgs, type McpCommand, type McpResult, type McpToolName } from '../../src/domain/mcpProtocol';
 import { createOffer, decode64, deriveEpoch, deriveHandshake, checkProof, proof, randomSecret, signMessage, verifyMessage, type AuthMessage, type EpochKeys, type HandshakeKeys, type KeyOffer } from '../../src/domain/mcpCrypto';
+import {BLOCKING_BRIDGE_VERSION,MCP_BLOCKING_CAPABILITIES,intersectMcpCapabilities,requireBlockingCapabilities} from '../../src/domain/mcpCapabilities';
 
 export interface VerificationRequest { bridgePath: string; version: string; origin: string; relay: string; challengeId: string; secret: string; verificationCode: string }
 export interface NativeVerification { decision: Promise<boolean>; close(): void }
 export interface RelayOptions { port: number; appOrigin: string; bridgePath: string; verifyNative(info: VerificationRequest): NativeVerification; now?: () => number; onState?(state: { browser: 'not-paired' | 'pairing' | 'paired' | 'expired' }): void }
 export interface RelayHandle { url: string; dispatch(tool: McpToolName, args: unknown): Promise<McpResult>; close(): Promise<void> }
-interface Challenge { id: string; created: number; attempts: number; secret: string; keys: HandshakeKeys; transcript: unknown; native: NativeVerification; allowed: boolean }
-interface Session { id: string; epoch: number; nonce: string; master: CryptoKey; keys: EpochKeys; created: number; activity: number; seen: number; rotated: number; seq: number; confirmed: boolean; rotation?: { epoch: number; nonce: string } }
+interface Challenge { id: string; created: number; attempts: number; secret: string; keys: HandshakeKeys; transcript: unknown; native: NativeVerification; allowed: boolean;capabilities:string[] }
+interface Session { id: string; epoch: number; nonce: string; master: CryptoKey; keys: EpochKeys; created: number; activity: number; seen: number; rotated: number; seq: number; confirmed: boolean;capabilities:string[]; rotation?: { epoch: number; nonce: string } }
 interface Pending { command: McpCommand; sessionId: string; delivered: boolean; finish(result: McpResult): void }
 class HttpError extends McpError { constructor(public status: number, code: string) { super(code); } }
 function fail(status: number, code: string): never { throw new HttpError(status, code); }
-const paths = new Set(['/v1/pair/start', '/v1/pair/proof', '/v1/session/confirm', '/v1/session/poll', '/v1/session/result', '/v1/session/rotate', '/v1/session/revoke']);
+const paths = new Set(['/v2/pair/start','/v1/pair/start', '/v1/pair/proof', '/v1/session/confirm', '/v1/session/poll', '/v1/session/result', '/v1/session/rotate', '/v1/session/revoke']);
 function offer(value: unknown): KeyOffer { record(value); exactKeys(value, ['publicKey', 'nonce'], ['publicKey', 'nonce']); if (typeof value.publicKey !== 'string' || typeof value.nonce !== 'string') fail(400, 'INVALID_REQUEST'); decode64(value.publicKey, 65); decode64(value.nonce, 32); return value as unknown as KeyOffer; }
 
 export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
@@ -64,18 +65,20 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
       }
       if (req.method !== 'POST') fail(405, 'METHOD_DENIED');
       const path = req.url, value = await read(req);
-      if (path === '/v1/pair/start') {
-        record(value); exactKeys(value, ['version', 'client'], ['version', 'client']);
-        if (value.version !== BRIDGE_VERSION) fail(400, 'PROTOCOL_VERSION');
+      if (path === '/v1/pair/start'||path==='/v2/pair/start') {
+        const v2=path==='/v2/pair/start';
+        record(value);const fields=v2?['version','client','capabilities']:['version','client'];exactKeys(value,fields,fields);
+        if (value.version !== (v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION)) fail(400, 'PROTOCOL_VERSION');
+        const capabilities=v2?intersectMcpCapabilities(value.capabilities,MCP_BLOCKING_CAPABILITIES):[];
         if (session || challenge || starting) fail(409, 'PAIRING_BUSY');
         if (now() - nativeAt < 30000) fail(429, 'RATE_LIMITED'); rate(pairingStarts, 5, 300000);
         const client = offer(value.client); starting = true; nativeAt = now();
         try {
           const server = await createOffer(), secret = randomSecret(), challengeId = randomUUID();
-          const transcript = { version: BRIDGE_VERSION, instanceId, challengeId, origin: appOrigin, relay: url, client, server: server.offer };
+          const transcript = { version: v2?BLOCKING_BRIDGE_VERSION:BRIDGE_VERSION, instanceId, challengeId, origin: appOrigin, relay: url, client, server: server.offer,...(v2?{clientCapabilities:value.capabilities,serverCapabilities:[...MCP_BLOCKING_CAPABILITIES],capabilities}:{}) };
           const keys = await deriveHandshake(secret, server.privateKey, client.publicKey, transcript);
           const native = options.verifyNative({ bridgePath: options.bridgePath, version: '1.0.0', origin: appOrigin, relay: url, challengeId, secret, verificationCode: keys.transcriptDigest.slice(0, 12) });
-          const current: Challenge = { id: challengeId, created: now(), attempts: 0, secret, keys, transcript, native, allowed: false }; challenge = current; notify('pairing');
+          const current: Challenge = { id: challengeId, created: now(), attempts: 0, secret, keys, transcript, native, allowed: false,capabilities }; challenge = current; notify('pairing');
           void native.decision.then(allowed => { if (challenge === current) { if (allowed) current.allowed = true; else clearChallenge(); } }, () => { if (challenge === current) clearChallenge(); });
           json(res, 200, { transcript, expiresAt: new Date(current.created + MCP_LIMITS.challengeMs).toISOString(), verificationCode: keys.transcriptDigest.slice(0, 12) });
         } finally { starting = false; }
@@ -91,7 +94,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
         if (!current.allowed) fail(409, 'NATIVE_APPROVAL_PENDING');
         const sessionId = randomUUID(), epochNonce = randomSecret(), keys = await deriveEpoch(current.keys.master, sessionId, 0, epochNonce), serverProof = await proof(current.keys, 'server');
         expire(); if (challenge !== current || session) fail(401, 'AUTH_FAILED');
-        session = { id: sessionId, epoch: 0, nonce: epochNonce, master: current.keys.master, keys, created: now(), activity: now(), seen: now(), rotated: now(), seq: 0, confirmed: false };
+        session = { id: sessionId, epoch: 0, nonce: epochNonce, master: current.keys.master, keys, created: now(), activity: now(), seen: now(), rotated: now(), seq: 0, confirmed: false,capabilities:[...current.capabilities] };
         clearChallenge(); json(res, 200, { sessionId, epochNonce, proof: serverProof, expiresAt: new Date(session.created + MCP_LIMITS.sessionMs).toISOString() }); return;
       }
       const { current, message } = await authenticate(value, path); record(message.body); let body: unknown;
@@ -153,6 +156,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
         if (burstTokens < 1) throw new McpError('RATE_LIMITED', 'The local tool burst limit was reached. Retry shortly.', true);
         burstTokens--; rate(toolTimes, 30, 60000); const args = validateToolArgs(tool, raw);
         if (!session?.confirmed) { if (tool === 'krakinai_connection_status') return resultData({ connected: false, state: 'disconnected', apiVersion: BRIDGE_VERSION, manualImportAvailable: true }); throw new McpError('PAIRING_REQUIRED', 'Connect and approve permissions in KRAKINAI first.', true); }
+        if('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v5')requireBlockingCapabilities(session.capabilities);
         if (pending.size >= MCP_LIMITS.requests) throw new McpError('QUEUE_FULL', 'The local request queue is full. Retry after pending requests finish.', true);
         const command: McpCommand = { requestId: randomUUID(), tool, args }, sessionId = session.id;
         return await new Promise<McpResult>(resolve => {

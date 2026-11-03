@@ -4,6 +4,7 @@ import {
   CHANGE_SET_V2_SCHEMA,
   CHANGE_SET_V3_SCHEMA,
   CHANGE_SET_V4_SCHEMA,
+  CHANGE_SET_V5_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
 import { isRecipeOperation } from "../types/changeSet";
@@ -156,7 +157,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   }
   inspect(value);
   validateJsonRule(
-    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
+    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v5'?CHANGE_SET_V5_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
       typeof value === "object" &&
       "schema" in value &&
       value.schema === "krakinai.change-set.v2"
@@ -283,6 +284,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
           "cameraComposition",
           "identitySource",
           'ensemble',
+          'blocking',
         ].some(
           (k) =>
             k in o &&

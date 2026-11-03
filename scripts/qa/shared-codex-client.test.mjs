@@ -5,10 +5,15 @@ import {mkdir,writeFile} from 'node:fs/promises';
 import {resolve,join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {randomUUID} from 'node:crypto';
-import {responsesToolMessage,toolResponseEvents,findAdvertisedTool,endInstalledThread} from './shared-codex-client.mjs';
+import {responsesToolMessage,toolResponseEvents,findAdvertisedTool,endInstalledThread,blockedDestination} from './shared-codex-client.mjs';
 import {readCliReply} from './mcp-cli-replies.mjs';
 const expected={callId:'actual-call-one',name:'mcp__krakinai__krakinai_connection_status',args:{}};
 const input=()=>[{type:'function_call',call_id:expected.callId,name:expected.name,arguments:'{}'},{type:'function_call_output',call_id:expected.callId,output:JSON.stringify({content:[{type:'text',text:JSON.stringify({ok:true,data:{connected:false}})}]})}];
+test('blocked egress diagnostics retain only public destination metadata, never credentials or query/body text',()=>{
+ assert.deepEqual(blockedDestination({method:'CONNECT',url:'chatgpt.com:443'}),{method:'CONNECT',hostname:'chatgpt.com',port:'443',blocked:true,forwarded:false});
+ const diagnostic=blockedDestination({method:'POST',url:'https://user:secret@example.com/v1/private?token=secret',headers:{authorization:'secret'},body:'secret'});assert.deepEqual(diagnostic,{method:'POST',hostname:'example.com',port:'443',blocked:true,forwarded:false});assert(!JSON.stringify(diagnostic).includes('secret'));
+ assert.deepEqual(blockedDestination({method:'secret',url:'malformed secret'}),{method:'OTHER',hostname:'[invalid]',port:'',blocked:true,forwarded:false});
+});
 test('normalizes only exact actual Responses call/output pairs',()=>{
  const message=responsesToolMessage({input:input()},expected);assert.equal(message.tool_call_id,expected.callId);assert.equal(readCliReply([message],expected.callId,'status').data.connected,false);
 });

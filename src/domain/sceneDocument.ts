@@ -15,6 +15,8 @@ import type {CameraComposition} from '../types/cinematography';
 import type {SceneAuthoringFields, SceneRevision} from '../types/sceneAuthoring';
 import {isDirectPrompt} from './directPrompt';
 import {buildDirectPromptDocument} from './directPromptDocument';
+import type {SceneBlockingV1} from '../types/blocking';
+import {buildBlockingDocument,formatBlockingDocument,type BlockingDocumentV1} from './blockingDocument';
 import { getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, getSourceFidelityInstructions, resolveShotType, SHOT_TYPE_LABELS } from './shotTypeRules';
 
 export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
@@ -28,6 +30,7 @@ export const SCENE_COMPONENT_ORDER: BuilderSlot[] = [
 ];
 
 export interface SceneDocumentSource extends SceneAuthoringFields {
+  blocking?:SceneBlockingV1;
   ensemble?: SceneEnsembleV1;
   sceneRevision?: SceneRevision;
   referencePack?: import('../types/domain').ReferencePack;
@@ -65,7 +68,8 @@ export interface SceneComponentDocument {
 }
 
 export interface SceneDocument {
-  schema: 'krakinai.scene-prompt.v1' | 'krakinai.scene-prompt.v2';
+  schema: 'krakinai.scene-prompt.v1' | 'krakinai.scene-prompt.v2' | 'krakinai.scene-prompt.v3';
+  blocking?:BlockingDocumentV1;
   participants?: EnsembleParticipantDocument[];
   primaryParticipantId?: string|null;
   dialogueCues?: (NonNullable<SceneDocument['dialogue']>&{id:string;participantId?:string;timing?:{startSeconds:number;endSeconds:number}})[];
@@ -192,11 +196,13 @@ export function buildSceneDocument(source: SceneDocumentSource): SceneDocument {
       mimeType: safeMetadata(link.mimeType),
     })),
   };
-  return source.ensemble?buildEnsembleDocument(source,document):document;
+  const result=source.ensemble?buildEnsembleDocument(source,document):document;
+  const blocking=buildBlockingDocument(source);
+  return blocking?{...result,schema:'krakinai.scene-prompt.v3',blocking}:result;
 }
 
 export function serializeSceneJson(source: SceneDocumentSource): string {
-  if(isDirectPrompt(source))return JSON.stringify(buildDirectPromptDocument(source),null,2);
+  if(isDirectPrompt(source)){buildBlockingDocument(source);return JSON.stringify(buildDirectPromptDocument(source),null,2);}
   return JSON.stringify(buildSceneDocument(source), null, 2);
 }
 
@@ -290,6 +296,7 @@ export function formatSceneDocumentText(
     );
   }
   const dialogue = formatDialogue(doc);
+  if(doc.blocking)blocks.push(formatBlockingDocument(doc.blocking,mode));
   if (dialogue) blocks.push(dialogue);
   for(const [index,cue]of(doc.dialogueCues??[]).entries())blocks.push(`Cue ${index+1} [${cue.id}]${cue.participantId?` — Participant: ${cue.participantId}`:''}${cue.timing?` | ${cue.timing.startSeconds}–${cue.timing.endSeconds}s`:''}\n${formatDialogue({...doc,dialogue:cue})}`);
   if (hasText(doc.scene.instructions))

@@ -21,6 +21,7 @@ import { getEffectiveDialogueDelivery, validatePerformanceDirection } from './di
 import { dialogueRequiresCharacter, getActiveSceneSlots, getActiveSourceMediaLinks, getSceneLevelAvoidText, getShotTypeRules, validateShotSourceMedia } from './shotTypeRules';
 import {validateSceneEnsemble} from './ensembleValidation';
 import {getSceneSnapshotEntries} from './ensembleReferences';
+import {validateSceneBlocking} from './blockingValidation';
 
 export const ORDERED_BUILDER_SLOTS = SCENE_COMPONENT_ORDER;
 
@@ -87,6 +88,8 @@ export interface AssembledPromptResult {
 export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
   const draft = {...input, avoidText:getSceneLevelAvoidText(input), slots:getActiveSceneSlots(input)};
   const errors: string[] = [...validateShotSourceMedia(draft),...validateSceneEnsemble(input,{forAssembly:true})];
+  const blockingErrors=validateSceneBlocking(input.blocking,input,'assembly').filter(f=>f.severity==='blocking');
+  errors.push(...blockingErrors.map(f=>`Review Blocking (${f.path}): ${f.message}`));
   const title = (draft.title ?? '').trim();
   if (!title) {
     errors.push('Scene title is required.');
@@ -180,7 +183,7 @@ export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
     }
   }
 
-  const document = buildSceneDocument(draft);
+  const document = buildSceneDocument(blockingErrors.length?{...draft,blocking:undefined}:draft);
   const references: MediaLink[] = [];
   const seenMediaIds = new Set<string>();
   for(const link of getActiveSourceMediaLinks(draft)) {
@@ -197,7 +200,7 @@ export function assembleScenePrompt(input: SceneDraft): AssembledPromptResult {
   return {
     valid: errors.length === 0,
     errors,
-    outputs: {
+    outputs: blockingErrors.length?{full:'',structured:'',compact:''}:{
       full: formatSceneDocumentText(document, 'full'),
       structured: formatSceneDocumentText(document, 'structured'),
       compact: formatSceneDocumentText(document, 'compact'),

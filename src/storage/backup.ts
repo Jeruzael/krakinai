@@ -1,5 +1,8 @@
 import { validatePhase5Metadata } from '../domain/phase5MetadataValidation';
 import { validateProject } from '../domain/phase5ProjectValidation';
+import {detectBackupFeatures,validateBackupFeatures,type BackupFeature} from '../domain/backupFeatures';
+import {readLegacyRecordsForBackup} from './libraryCompatibility';
+import {canonicalStringify} from '../domain/changeSetCanonical';
 import { getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import {
@@ -53,8 +56,7 @@ export interface SerializedMediaManifestEntry {
   createdAt: string;
 }
 
-export interface BackupManifest {
-  schemaVersion: number;
+interface BackupManifestBase {
   appVersion: string;
   appName: string;
   exportedAt: string;
@@ -67,6 +69,7 @@ export interface BackupManifest {
   preferences: Preferences;
   media: SerializedMediaManifestEntry[];
 }
+export type BackupManifest=BackupManifestBase&({schemaVersion:1;requiredFeatures?:never}|{schemaVersion:2;requiredFeatures:BackupFeature[]});
 
 export interface BackupValidationSummary {
   schemaVersion: number;
@@ -121,11 +124,16 @@ function backupMediaMetadata(m:MediaAsset,byteSize=m.blob.size,posterByteSize=m.
 
 /** Metadata only: never reads media bytes or compresses an archive. Shared with import capacity checks. */
 export function buildBackupManifest(snap:LibrarySnapshot,exportedAt=new Date().toISOString(),mediaEntries=snap.media.map(m=>backupMediaMetadata(m))):BackupManifest {
-  return {schemaVersion:SCHEMA_VERSION,appVersion:'1.0.0',appName:'KRAKINAI',exportedAt,assets:snap.assets,variants:snap.variants,drafts:snap.drafts,scenes:snap.scenes,collections:snap.collections,templates:snap.templates,preferences:snap.preferences,media:mediaEntries};
+  const requiredFeatures=detectBackupFeatures(snap),base={appVersion:'1.0.0',appName:'KRAKINAI',exportedAt,assets:snap.assets,variants:snap.variants,drafts:snap.drafts,scenes:snap.scenes,collections:snap.collections,templates:snap.templates,preferences:snap.preferences,media:mediaEntries};
+  return requiredFeatures.length?{schemaVersion:2,...base,requiredFeatures}:{schemaVersion:SCHEMA_VERSION,...base};
 }
 
 export async function exportFullBackupZip(): Promise<Uint8Array> {
-  const snap = await getAllSnapshot();
+  return exportSnapshotBackupZip(await getAllSnapshot());
+}
+
+/** Existing archive implementation, shared with the read-only compatibility gate. */
+export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint8Array>{
   const files: Record<string, Uint8Array> = {};
   const mediaEntries: SerializedMediaManifestEntry[] = [];
   let totalUncompressed = 0;
@@ -155,11 +163,28 @@ export async function exportFullBackupZip(): Promise<Uint8Array> {
   totalUncompressed += manifestBytes.byteLength;
 
   if (totalUncompressed > MAX_BACKUP_UNCOMPRESSED_BYTES) {
-    throw new Error('Backup exceeds the 250 MiB uncompressed prototype limit.');
+    throw new Error(`Backup exceeds the configured ${MAX_BACKUP_UNCOMPRESSED_BYTES/(1024*1024)} MiB uncompressed limit.`);
   }
 
   files['manifest.json'] = manifestBytes;
   return zipSync(files, { level: 6 });
+}
+
+/** A checked legacy backup before consent; no library write or format upgrade. */
+export async function exportLegacyBackupBeforeUpgrade():Promise<Uint8Array>{
+ const rows=await readLegacyRecordsForBackup();
+ if(rows.preferences.length!==1||(rows.preferences[0] as Preferences)?.id!=='app_preferences')throw Error('The normal full-backup format cannot preserve these unexpected preference records. Use the previous build’s backup tools before enabling.');
+ const snapshot={...rows,preferences:rows.preferences[0]} as LibrarySnapshot;
+ const bytes=await exportSnapshotBackupZip(snapshot),checked=await validateBackupZip(bytes);
+ if(!checked.valid||!checked.parsedSnapshot)throw Error(`Pre-upgrade backup validation failed: ${checked.error??'No restored snapshot.'} The library was not changed.`);
+ const metadata=(value:LibrarySnapshot)=>({...value,media:value.media.map(({blob,posterBlob,...rest})=>rest)});
+ if(canonicalStringify(metadata(snapshot))!==canonicalStringify(metadata(checked.parsedSnapshot)))throw Error('Pre-upgrade backup did not round trip every record’s metadata. The library was not changed; use the previous build’s backup tools.');
+ const digest=async(blob:Blob)=>canonicalStringify([...new Uint8Array(await crypto.subtle.digest('SHA-256',await blobToUint8Array(blob) as BufferSource))]);
+ const restored=new Map(checked.parsedSnapshot.media.map(record=>[record.id,record]));
+ for(const original of snapshot.media){const copy=restored.get(original.id)!;
+  if(await digest(original.blob)!==await digest(copy.blob)||Boolean(original.posterBlob)!==Boolean(copy.posterBlob)||original.posterBlob&&await digest(original.posterBlob)!==await digest(copy.posterBlob!))throw Error('Pre-upgrade media hash verification failed. The library was not changed.');
+ }
+ return bytes;
 }
 
 export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
@@ -193,7 +218,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     }
     totalUncompressed += entries[p].byteLength;
     if (totalUncompressed > MAX_BACKUP_UNCOMPRESSED_BYTES) {
-      return { valid: false, error: 'Archive uncompressed size exceeds the 250 MiB limit.' };
+      return { valid: false, error: `Archive uncompressed size exceeds the configured ${MAX_BACKUP_UNCOMPRESSED_BYTES/(1024*1024)} MiB limit.` };
     }
   }
 
@@ -215,10 +240,11 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     return { valid: false, error: 'manifest.json is not valid JSON.' };
   }
 
-  if (!manifest || manifest.schemaVersion !== SCHEMA_VERSION) {
+  const featureError=validateBackupFeatures(manifest);
+  if (featureError) {
     return {
       valid: false,
-      error: `Unsupported or missing schemaVersion (expected ${SCHEMA_VERSION}).`,
+      error: featureError,
     };
   }
 
@@ -391,7 +417,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     if (totalMediaBytes > MAX_TOTAL_MEDIA_BYTES) {
       return {
         valid: false,
-        error: 'Backup media exceeds the 200 MiB total stored media limit.',
+        error: `Backup media exceeds the configured ${MAX_TOTAL_MEDIA_BYTES/(1024*1024)} MiB total stored media limit.`,
       };
     }
 

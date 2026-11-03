@@ -20,7 +20,7 @@ describe('actual compiled SDK stdio process', () => {
       expect(authoring.description).toContain('Never expand permissions');
       expect(authoring.annotations).toMatchObject({readOnlyHint:false,destructiveHint:false,openWorldHint:false,idempotentHint:true});
       const versions=(tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema.properties!.changeSet as any).oneOf;
-      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4']);
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5']);
       for(const version of versions)expect(version.properties.operations.maxItems).toBe(250);
       const operationTypes=versions.map((v:any)=>v.properties.operations.items.oneOf.map((o:any)=>o.properties.type.const));
       expect(operationTypes[0]).not.toContain('scene.create_recipe');

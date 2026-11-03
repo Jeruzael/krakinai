@@ -5,6 +5,7 @@ export interface AiContextSelection {
   variantIds?: string[];
   templateIds?: string[];
   fullPromptSceneIds?: string[];
+  blockingSceneIds?:string[];
   includeAssetText?: boolean;
   includeCharacterIdentity?: boolean;
   includeNotes?: boolean;
