@@ -110,6 +110,11 @@ export async function openRecipeOperation(page, id = "recipe") {
       .filter({ hasText: /^Scenes/ })
       .click();
   await button.click();
+  if(await page.locator('.pr-workspace').count())await page.getByRole('tab',{name:'Video',exact:true}).click();
+}
+export async function closeRecipeOperation(page){
+  if(await page.locator('.pr-workspace').count())await page.getByRole('tab',{name:'Summary',exact:true}).click();
+  else await page.getByRole('button',{name:'Close operation',exact:true}).click();
 }
 export function browserRecipe(
   ids,
@@ -193,10 +198,12 @@ export function candidateRecipe(ids) {
 export async function beginWriteObservation(page) {
   await page.evaluate(() => {
     window.__recipeWrites = [];
+    window.__reviewInboxWrites = [];
     for (const method of ["add", "put", "delete", "clear"]) {
       const original = IDBObjectStore.prototype[method];
       IDBObjectStore.prototype[method] = function (...args) {
-        window.__recipeWrites.push({ store: this.name, method });
+        const record={ database:this.transaction.db.name,store:this.name,method };
+        (this.transaction.db.name==='krakinai_review_inbox_db'?window.__reviewInboxWrites:window.__recipeWrites).push(record);
         return original.apply(this, args);
       };
     }
@@ -204,6 +211,9 @@ export async function beginWriteObservation(page) {
 }
 export async function observedWrites(page) {
   return page.evaluate(() => window.__recipeWrites ?? []);
+}
+export async function observedReviewWrites(page) {
+  return page.evaluate(() => window.__reviewInboxWrites ?? []);
 }
 export async function readRecipeEvidence(page) {
   return page.evaluate(async () => {

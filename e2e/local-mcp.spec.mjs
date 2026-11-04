@@ -50,12 +50,11 @@ test('SDK proposal requires trusted browser review and creates exact MIDORI reco
     expect(await readChangeLibrary(page)).toEqual(selectedState);
     const revisionReply = await bridge.call('krakinai_submit_change_set', { changeSet: revision }); expect(revisionReply.ok).toBe(true);
     await showMcpProposals(page); await page.getByRole('button', { name: 'Review proposal', exact: true }).last().click();
-    await page.locator('.import-operations summary').filter({hasText:/^Scenes /}).click();
     await page.getByRole('button',{name:'Review revise05',exact:true}).click();
-    await expect(page.getByRole('textbox',{name:'Existing prompt revise05',exact:true})).toHaveValue(original.outputs.full.replace(/\r\n/g,'\n'));
-    await expect(page.getByRole('textbox',{name:'Proposed prompt revise05',exact:true})).toHaveValue(exactRevision.replace(/\r\n/g,'\n'));
-    await page.getByRole('button',{name:'Close operation',exact:true}).click();
-    await expect(page.getByRole('button',{name:'Review revise05',exact:true})).toBeFocused();
+    await page.getByRole('tab',{name:'Video',exact:true}).click();
+    await expect(page.getByRole('textbox',{name:'Complete existing prompt revise05',exact:true})).toHaveValue(original.outputs.full.replace(/\r\n/g,'\n'));
+    await expect(page.getByRole('textbox',{name:'Complete proposed prompt revise05',exact:true})).toHaveValue(exactRevision.replace(/\r\n/g,'\n'));
+    await page.getByRole('tab',{name:'Summary',exact:true}).click();
     await approveMcpContent(page);
     const revised = await readChangeLibrary(page), revisionReceipt = revised.preferences.aiImports.receipts.at(-1), version = revised.scenes.find(s => s.id === revisionReceipt.idMappings.v05.id);
     expect(version.outputs.full).toBe(exactRevision); expect(revised.scenes.find(s => s.id === original.id)).toEqual(original);
@@ -84,7 +83,7 @@ test('only the human-selected camera candidate is created and confirmed; Charact
     await setMcpFlag(page, 'Allow change-set proposals', true);await pairSynthetic(page,bridge);
     const sample=await changeSetSample(),input={...sample,changeSetId:'synthetic-mcp-candidate-approval',operations:sample.operations.filter(o=>o.type==='asset.propose')};
     const submitted=await bridge.call('krakinai_submit_change_set',{changeSet:input});expect(submitted.ok).toBe(true);expect(await readChangeLibrary(page)).toEqual(before);
-    await showMcpProposals(page); await page.getByRole('button',{name:'Review proposal',exact:true}).click();await page.getByText('Reusable asset decisions (2)',{exact:true}).click();
+    await showMcpProposals(page); await page.getByRole('button',{name:'Review proposal',exact:true}).click();await page.getByRole('button',{name:'Review camera-candidate',exact:true}).click();await page.getByText('Reusable asset decisions (1)',{exact:true}).click();
     await page.getByRole('combobox',{name:'Decision for camera-candidate',exact:true}).selectOption('create');
     const duplicate=page.getByLabel('Create separate asset despite matches (camera-candidate)',{exact:true});if(await duplicate.count())await duplicate.check();
     await approveMcpContent(page);

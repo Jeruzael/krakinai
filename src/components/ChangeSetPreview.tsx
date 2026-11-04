@@ -16,18 +16,23 @@ import {RecipeConversionReview}from'./RecipeConversionReview';
 import {canonicalStringify}from'../domain/changeSetCanonical';
 import {KeyframeProposalReview} from './keyframes/KeyframeProposalReview';
 import {BlockingProposalReview} from './blocking/BlockingProposalReview';
+import {KeyframeProposalApprovals} from './keyframes/KeyframeProposalApprovals';
 export function ChangeSetPreview({
   preview,
   snapshot,
   disabled,
   onApproval:supplyApproval,
   headingRef,
+  approvalsOnly=false,
+  operationId,
 }: {
   preview: Preview;
   snapshot: LibrarySnapshot;
   disabled: boolean;
   onApproval: (value: ChangeSetApproval) => void;
   headingRef?: React.RefObject<HTMLHeadingElement>;
+  approvalsOnly?:boolean;
+  operationId?:string;
 }) {
   const [detail, setDetail] = useState<string>();
   const [downloadStatus, setDownloadStatus] = useState("");
@@ -48,7 +53,7 @@ export function ChangeSetPreview({
     statuses: changeSet.operations.some((o) => o.type === "shot.set_status"),
   };
   const assetOps = changeSet.operations.filter((o) =>
-    o.type.startsWith("asset."),
+    o.type.startsWith("asset.")&&(!operationId||o.operationId===operationId),
   );
   const choice = (id: string, value: CandidateDecision) =>
     onApproval({
@@ -91,6 +96,7 @@ export function ChangeSetPreview({
   };
   return (
     <>
+      {!approvalsOnly&&<>
       <section
         className="card import-summary"
         aria-label="Computed import summary"
@@ -155,7 +161,10 @@ export function ChangeSetPreview({
       </section>
       <KeyframeProposalReview preview={preview} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
       <BlockingProposalReview preview={preview} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
-      <div className="import-preview-grid">
+      </>}
+      {approvalsOnly&&<KeyframeProposalApprovals preview={preview} disabled={disabled} onApproval={onApproval}/>}
+      <div className={approvalsOnly?'import-approvals-only':'import-preview-grid'}>
+        {!approvalsOnly&&
         <section
           className="card import-operations"
           aria-label="Proposed operations"
@@ -226,7 +235,7 @@ export function ChangeSetPreview({
               </ul>
             </details>
           )}
-        </section>
+        </section>}
         <section
           className="card import-approvals"
           aria-label="Explicit import approvals"
@@ -289,7 +298,7 @@ export function ChangeSetPreview({
               Approve production status changes
             </label>
           )}
-          <OutfitReviewDecisions changeSet={changeSet} approval={approval} plan={plan} snapshot={snapshot} disabled={disabled} onApproval={onApproval}/>
+          <OutfitReviewDecisions changeSet={changeSet} approval={approval} plan={plan} snapshot={snapshot} disabled={disabled} onApproval={onApproval} operationId={operationId}/>
           {assetOps.length > 0 && (
             <details className="import-group">
               <summary>Reusable asset decisions ({assetOps.length})</summary>
@@ -409,6 +418,7 @@ export function ChangeSetPreview({
           {changeSet.operations
             .filter(
               (o) =>
+                (!operationId||o.operationId===operationId)&&
                 ["scene.create_direct_prompt", "scene.create_recipe", "scene.convert_direct_to_recipe"].includes(
                   o.type,
                 ) &&
@@ -447,6 +457,7 @@ export function ChangeSetPreview({
               </label>
             ))}
           {plan.operations
+            .filter(row=>!operationId||row.operationId===operationId)
             .filter(
               (row) =>
                 isRecipeOperation(row) && row.type!=='scene.convert_direct_to_recipe'&&
@@ -491,7 +502,7 @@ export function ChangeSetPreview({
             ))}
         </section>
       </div>
-      {selected && (
+      {!approvalsOnly&&selected && (
         <StudioDialog
           title={`Review operation ${selected.operationId}`}
           onClose={() => setDetail(undefined)}

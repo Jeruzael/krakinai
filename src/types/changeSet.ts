@@ -344,6 +344,9 @@ export interface ImportLedger {
 export interface ImportVariantCandidate extends Omit<ImportCandidate,'kind'|'assetId'>{version:1;variantType:'Outfit';parentCharacterId:string;expectedParentRevision:number;variantId?:string}
 export interface ImportFinding {
   operationId?: string;
+  projectId?:string;
+  shotId?:string;
+  fieldPath?:string;
   severity: "blocking" | "advisory";
   code: string;
   message: string;

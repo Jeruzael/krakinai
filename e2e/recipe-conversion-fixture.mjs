@@ -44,6 +44,8 @@ export async function conversionPackageFor(page,ids,{uncertain=false}={}){
 export const mappingUrl=ids=>`/#/recipes/ai?scene=${encodeURIComponent(ids.oldSceneId)}&collection=${encodeURIComponent(ids.projectId)}&shot=${encodeURIComponent(ids.shotId)}`;
 export async function reviewConversion(page,id='convert-01',{acknowledge=true}={}){
  const button=page.getByRole('button',{name:'Review '+id,exact:true});if(!await button.isVisible())await page.locator('details.import-group>summary').filter({hasText:/^Scenes/}).click();await button.click();
- if(acknowledge){for(const box of await page.getByRole('dialog').getByRole('checkbox',{name:/^Acknowledge /}).all())await box.check();await page.getByRole('checkbox',{name:'I reviewed conversion mapping ('+id+')',exact:true}).check()}
- await page.getByRole('button',{name:'Close operation',exact:true}).click();
+ const compact=await page.locator('.pr-workspace').count();if(compact)await page.getByRole('tab',{name:'Recipe',exact:true}).click();
+ const detail=compact?page.getByRole('region',{name:'Selected change',exact:true}):page.getByRole('dialog');
+ if(acknowledge){for(const box of await detail.getByRole('checkbox',{name:/^Acknowledge /}).all())await box.check();await detail.getByRole('checkbox',{name:'I reviewed conversion mapping ('+id+')',exact:true}).check()}
+ if(compact)await page.getByRole('tab',{name:'Summary',exact:true}).click();else await page.getByRole('button',{name:'Close operation',exact:true}).click();
 }

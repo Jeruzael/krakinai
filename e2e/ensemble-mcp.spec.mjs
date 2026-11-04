@@ -17,6 +17,7 @@ import {
   beginWriteObservation,
   observedWrites,
   openRecipeOperation,
+  closeRecipeOperation,
 } from "./recipe-change-set-fixture.mjs";
 import {
   seedEnsembleBrowser,
@@ -176,9 +177,7 @@ for (const mode of [
         })
         .inputValue();
       expect(displayedFull).toContain("SYNTHETIC_PRIVATE_LUCAS_MASTER");
-      await page
-        .getByRole("button", { name: "Close operation", exact: true })
-        .click();
+      await closeRecipeOperation(page);
       expect(await observedWrites(page)).toEqual([]);
       await approveMcpContent(page);
       const after = await readEnsembleLibrary(page),

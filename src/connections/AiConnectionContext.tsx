@@ -5,6 +5,7 @@ import type { McpScope } from '../types/mcp';
 import { BrowserTransport, type PairingView } from './browserTransport';
 import { ProposalBroker, type BrokerView } from './proposalBroker';
 import {requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain/mcpCapabilities';
+import {ReviewInboxRepository} from '../storage/proposalReviewInbox';
 
 interface ConnectionValue {
   broker: ProposalBroker; view: BrokerView; scope: McpScope;
@@ -24,10 +25,11 @@ export function AiConnectionProvider({ children }: { children: React.ReactNode }
   const [sessionExpiresAt, setSessionExpiresAt] = useState<number>();
   const phaseRef = useRef(phase); phaseRef.current = phase;
   const [librarySession] = useState(() => `browser_${crypto.randomUUID().slice(0, 8)}`);
-  if (!brokerRef.current) brokerRef.current = new ProposalBroker({ isSessionLive: id => transportRef.current?.isSessionLive(id) ?? false, onApplied: async () => { await libraryRef.current.refreshSnapshot(); } });
+  if (!brokerRef.current) brokerRef.current = new ProposalBroker({ inbox:new ReviewInboxRepository(),origin:window.location.origin,isSessionLive: id => transportRef.current?.isSessionLive(id) ?? false, onApplied: async () => { await libraryRef.current.refreshSnapshot(); } });
   const broker = brokerRef.current, view = useSyncExternalStore(broker.subscribe, broker.getState, broker.getState);
   useEffect(() => {
     mounted.current = true;
+    void broker.initializeInbox();
     const timer = setInterval(() => { broker.expire(); const current = broker.getState(); if (!current.connected && transportRef.current && phaseRef.current === 'connected') void transportRef.current.disconnect('The authorized session expired. Pair again.'); }, 1000);
     return () => { mounted.current = false; clearInterval(timer); const client = transportRef.current; transportRef.current = undefined; broker.disconnect(); void client?.disconnect(); };
   }, [broker]);

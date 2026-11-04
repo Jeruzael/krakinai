@@ -14,7 +14,7 @@ export function AiConnectionsScreen() {
   const [active, setActive] = useState<View>('connection'), [selected, setSelected] = useState<string>(), [permissionChanges, setPermissionChanges] = useState(false);
   if (!snapshot) return <p role="status">Loading this browser library…</p>;
   const status = phase === 'connected' ? 'Connected' : phase === 'pairing' ? 'Pairing' : phase === 'error' ? 'Connection error' : 'Disconnected';
-  return <div className="ai-connections change-set-workspace">
+  return <div className={'ai-connections change-set-workspace'+(active==='proposals'&&selected?' ai-review-active':'')}>
     <header className="import-heading"><div><p className="import-eyebrow">Production workspace</p><h1>AI Connections</h1><p>Connect Codex, choose its context, and review proposed changes.</p></div><div className="ai-heading-actions"><strong className={'ai-status ' + phase} role="status">{status}</strong><button className="btn btn-secondary btn-sm" onClick={() => navigate('/imports/ai')}>Use manual AI Change Set import</button></div></header>
     <div className="ai-workspace-tabs" role="tablist" aria-label="AI Connections views">
       {views.map((item, index) => <button id={'ai-view-' + item.id} key={item.id} type="button" role="tab" aria-label={item.label} aria-controls={'ai-panel-' + item.id} aria-selected={active === item.id} tabIndex={active === item.id ? 0 : -1} onClick={() => setActive(item.id)} onKeyDown={event => {

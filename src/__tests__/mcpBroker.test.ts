@@ -6,6 +6,7 @@ import { midoriChangeSet, syntheticCamera, emptyState } from './fixtures/changeS
 import type { McpCommand } from '../domain/mcpProtocol';
 import { previewChangeSet } from '../storage/changeSets';
 import { allContentApproval } from './fixtures/changeSetFixture';
+import {REVIEW_WINDOW_MS} from '../domain/proposalReview';
 beforeEach(async () => { await clearAllStoresForTesting(); await initializeDatabase(); const db = await openDatabase(); await new Promise<void>(resolve => { const tx = db.transaction('assets', 'readwrite'); tx.objectStore('assets').put(syntheticCamera()); tx.oncomplete = () => resolve(); }); });
 const allowed = () => ({ ...emptyMcpScope(), assetIds: ['asset_synthetic_camera'], allowNewProjects: true, allowProposals: true });
 const submit = (): McpCommand => ({ requestId: 'request_1', tool: 'krakinai_submit_change_set', args: { changeSet: midoriChangeSet() } });
@@ -60,9 +61,10 @@ it('does not let a scope change preserve a pending disclosure', async () => {
 it('rejects and expires proposals without writing records', async () => {
   let now = Date.now(); const broker = new ProposalBroker({ now: () => now }); broker.connect('session_1', allowed()); const before = await getAllSnapshot();
   await broker.handle(submit(), 'session_1'); const id = broker.getState().proposals[0].id;
-  now += 600001; broker.expire(); expect(broker.getState().proposals[0].status).toBe('expired');
+  now += REVIEW_WINDOW_MS; broker.expire(); expect(broker.getState().proposals[0].status).toBe('expired');
   expect(await getAllSnapshot()).toEqual(before);
-  expect(await broker.handle({ requestId: 's', tool: 'krakinai_get_proposal_status', args: { proposalId: id } }, 'session_1')).toMatchObject({ ok: true, data: { status: 'expired' } });
+  broker.connect('session_2',allowed());await broker.handle(submit(),'session_2');
+  expect(await broker.handle({ requestId: 's', tool: 'krakinai_get_proposal_status', args: { proposalId: id } }, 'session_2')).toMatchObject({ ok: true, data: { status: 'expired' } });
 });
 it('does not leak local preview details through the MCP preview response', async () => {
   const broker = new ProposalBroker(); broker.connect('session_1', allowed());
@@ -88,11 +90,11 @@ it('bounds local scope selections before granting them', () => {
   expect(() => broker.setScope({ ...allowed(), assetIds: ['duplicate', 'duplicate'] })).toThrow();
   expect(broker.getState().scope.assetIds).toEqual(['asset_synthetic_camera']);
 });
-it('expires an unresolved conflict so its bounded queue slot can be recovered', async () => {
+it('expires an unresolved conflict without silently deleting its review package', async () => {
   let now = 1000; const broker = new ProposalBroker({ now: () => now });
   broker.connect('session_1', allowed()); await broker.handle(submit(), 'session_1');
   broker.setScope(allowed()); expect(broker.getState().proposals[0].status).toBe('conflict');
-  now += 600001; broker.expire(); expect(broker.getState().proposals[0].status).toBe('expired');
+  now += REVIEW_WINDOW_MS; broker.expire(); expect(broker.getState().proposals[0].status).toBe('expired');
 });
 it('shows the selected review choices immediately while the new digest is computed', async () => {
   const broker = new ProposalBroker(); broker.connect('session_1', allowed()); await broker.handle(submit(), 'session_1');

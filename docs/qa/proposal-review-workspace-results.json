@@ -1,0 +1,2939 @@
+{
+  "schema": "krakinai.proposal-review-qa.v1",
+  "capturedAt": "2026-11-04T22:58:27.434023+08:00",
+  "status": "local_verified",
+  "testedSource": {
+    "baseCommit": "c85ea435d1a92b06e353f04282da81def6c06a0f",
+    "featureCommit": null,
+    "uncommittedAtVerification": true,
+    "branch": "codex/proposal-review-workspace",
+    "codeFingerprint": "e521e1e2dbdad23a93c5424e29b1bec713e8683292634b6a83407ec3eadb16b0",
+    "codeFiles": [
+      {
+        "path": "e2e/blocking-native-fixture.mjs",
+        "sha256": "2078b9cd4bb2e67b2a0f374f74f3534ec2efef461c00ec913ee3e7a6138a77fd"
+      },
+      {
+        "path": "e2e/ensemble-fixture.mjs",
+        "sha256": "60495469afb999f6f6007d54172e6959a1432a3e1f8c0d0b41f45ba7cb9b02c4"
+      },
+      {
+        "path": "e2e/ensemble-mcp.spec.mjs",
+        "sha256": "6a96c4020b87d21c23af950536da9254b3088dcdb5ac447e2817a654fe1e3f24"
+      },
+      {
+        "path": "e2e/keyframe-fixture.mjs",
+        "sha256": "9fd298a8121da2cc6ff7cd3ff64963c343daaa451219fa54f20cf884c5be6144"
+      },
+      {
+        "path": "e2e/local-mcp-fixture.mjs",
+        "sha256": "d1c7bb4e819403cbf86eab281a54e0d8f8939b47802d2e92f4d577b9606149c2"
+      },
+      {
+        "path": "e2e/local-mcp.spec.mjs",
+        "sha256": "1d2c7ddb3c74f30b5144e3924d020a23f2dcf99675e325d1d98778290036cbdf"
+      },
+      {
+        "path": "e2e/proposal-review.spec.mjs",
+        "sha256": "928405edd6f28db618f245fa9c1eff3b73ab7cbd4f2d7c40ee6d9eea9c3e9018"
+      },
+      {
+        "path": "e2e/recipe-change-set-fixture.mjs",
+        "sha256": "5c0cd091eb5516877f5b090920a40ec61a8ddeaeb03c425bce2693415fe8e567"
+      },
+      {
+        "path": "e2e/recipe-conversion-fixture.mjs",
+        "sha256": "5f85e8e696c3d196de06a2abfa1165673d8b4a0670ec57e35915f0897e3efbfa"
+      },
+      {
+        "path": "e2e/recipe-mcp.spec.mjs",
+        "sha256": "300270188e1aa0999502fe602b1f3c545bf1494ca849c349023098b0369c01c4"
+      },
+      {
+        "path": "src/__tests__/mcpBroker.test.ts",
+        "sha256": "1f882f2a8b9567de4d0b3344e83981dd20041c799fd288fdf81ea0115bf09e2d"
+      },
+      {
+        "path": "src/__tests__/proposalFeedback.test.ts",
+        "sha256": "ab56b91ea53c20e2c7da94081c9adc7ef33e5c65645b15bf27de8ac9197a091b"
+      },
+      {
+        "path": "src/__tests__/proposalReadiness.test.ts",
+        "sha256": "1c5b59caf4ef2884758df5aee09a15c37b412bec349cc9d01e8a50189ffe25be"
+      },
+      {
+        "path": "src/__tests__/proposalReview.test.ts",
+        "sha256": "161eace36fd99753b74635e51de328356cc8561de6843575c44544e0046f31e7"
+      },
+      {
+        "path": "src/__tests__/proposalReviewBroker.test.ts",
+        "sha256": "91a589fedd1347068066dcf47baf23e471b072c4abe318795507624ce2386fe9",
+        "stagedSha256": "8db06707730ab23e166f5a8c8f1393e9b082166de659d3f4ef0269d2659c51e9",
+        "postTestNormalization": "One CRLF line ending normalized to LF; code unchanged. Focused broker tests rerun."
+      },
+      {
+        "path": "src/__tests__/proposalReviewError.test.tsx",
+        "sha256": "2c52e7cf76b7ac43a0270ac92b162f1b236ef90799234760ab9adae4ea0a8acc"
+      },
+      {
+        "path": "src/__tests__/proposalReviewInbox.test.ts",
+        "sha256": "de5bd94300af529cceeecffef2fd3eea51b18dd3a5dcd246c5823fc80aca4fab"
+      },
+      {
+        "path": "src/__tests__/proposalReviewLock.test.ts",
+        "sha256": "8645bb762b44a559d98b3c1078980d92ce68c6cad265aa92f72bb58bf60c4933"
+      },
+      {
+        "path": "src/__tests__/proposalReviewWorkspace.test.tsx",
+        "sha256": "9e07ca02f8243ec14e81c0311664e4b25dd85c007c986c7af905884a3d0fecdc"
+      },
+      {
+        "path": "src/components/ChangeSetPreview.tsx",
+        "sha256": "4479efcab847c09fb8688313e4fc583973e6d810632fb1d533298aeab727b8d8"
+      },
+      {
+        "path": "src/components/McpProposalReview.tsx",
+        "sha256": "e48e9e594c518135b309b69c3714c258511d489f8d693b89ac95c9c1ec29cd52"
+      },
+      {
+        "path": "src/components/OutfitReviewDecisions.tsx",
+        "sha256": "c1eb76029e21d72965730eb449718e9852e8ddeaba03c3909371acadf12b70e6"
+      },
+      {
+        "path": "src/components/RecipeOperationPreview.tsx",
+        "sha256": "3d80d12ea28e376226d484aab7af6924413b64ae93316bc1e8b7a0a44495e58e"
+      },
+      {
+        "path": "src/components/aiConnections/IncomingProposals.tsx",
+        "sha256": "98fb053c59bf49d63d508bf03831d379d80d18d237a92d38678f11429103f5bb"
+      },
+      {
+        "path": "src/components/aiConnections/ProposalIssues.tsx",
+        "sha256": "726aa38b74438ede069db5820caa54b974d5f8c12bf888918fe949c8739c2790"
+      },
+      {
+        "path": "src/components/aiConnections/ProposalOperationDetail.tsx",
+        "sha256": "e85f5c8d425ba21a266252e1734c620b5ff643f84d9596dc2e4cf68c8bb51c8b"
+      },
+      {
+        "path": "src/components/aiConnections/ProposalRejectionDialog.tsx",
+        "sha256": "3a9948e5f8d0fd9179a2eab8399fdc96f2dd93d72db1b48a1fb06e3232bd4b34"
+      },
+      {
+        "path": "src/components/aiConnections/ProposalReviewWorkspace.tsx",
+        "sha256": "edfa2b7ca08880a4515c76180690af280df20683001efae9eb09eb131d9a02ce"
+      },
+      {
+        "path": "src/components/aiConnections/ReviewPromptText.tsx",
+        "sha256": "556c45b26eb8a292b3331f783131217ed49f48a159498f60134dc4fbf941302a"
+      },
+      {
+        "path": "src/components/aiConnections/proposalReview.css",
+        "sha256": "97c6a2940b6e012e0d12880a90970bf836dbab374459ffd3f9249dd1879b4fa3"
+      },
+      {
+        "path": "src/components/blocking/BlockingOutputReview.tsx",
+        "sha256": "cb4e3143000f4b0fb65e8581e92e2ee2054e64a1b04e70b2fc8caec328c6465d"
+      },
+      {
+        "path": "src/components/blocking/BlockingProposalReview.tsx",
+        "sha256": "75d453b56adda429c1f912b86dd7a5ab7bf1e893e53f0541025fe75f1c87ba99"
+      },
+      {
+        "path": "src/components/keyframes/KeyframeProposalApprovals.tsx",
+        "sha256": "5d2ec9d8bd595a3ffbc16e1c7e5369111e8e58eda567187dc3dbceea6a8d6140"
+      },
+      {
+        "path": "src/components/keyframes/KeyframeProposalReview.tsx",
+        "sha256": "4bc6de6e1a00979c21a14763f81940e06dccd1eb7053d8ac32b667f604dba694"
+      },
+      {
+        "path": "src/connections/AiConnectionContext.tsx",
+        "sha256": "a236b5b1f4831002a5f7f96f56f5c47e4a072fdf219f39c46f658ee541026ab2"
+      },
+      {
+        "path": "src/connections/proposalBroker.ts",
+        "sha256": "e427b52476f79bb17cf6c5e546bc161512bba5a7423886d2354d3ef02a4210bb"
+      },
+      {
+        "path": "src/connections/proposalInbox.ts",
+        "sha256": "21223ed0b06bebfbce5321f65cc1bc2fa8c498c0d21b360858aa869e7ca86e1f"
+      },
+      {
+        "path": "src/connections/proposalReviewLock.ts",
+        "sha256": "56f7ebe9853482645dd24eb5ccd52ffbe35e9d194e38c46d584c2ddf0a143430"
+      },
+      {
+        "path": "src/domain/changeSetPlanner.ts",
+        "sha256": "e41db35ebf24cc7b2ab0a582d8ccf3d75533cb369a712c58b96da24d29d0ecab"
+      },
+      {
+        "path": "src/domain/mcpProtocol.ts",
+        "sha256": "5b0edf18b0d63e2bf59bd072e83871c769fdc131aeacbe293270452822ff39a2"
+      },
+      {
+        "path": "src/domain/proposalFeedback.ts",
+        "sha256": "71cbafd340faa60d16f0ca564c45c27c6abbef31bea8b8621add83db9258676c"
+      },
+      {
+        "path": "src/domain/proposalReadiness.ts",
+        "sha256": "7bc46063d5010642415d9f81d15ef9edd9dfd63f00845473fa4b342d9cae9307"
+      },
+      {
+        "path": "src/domain/proposalReview.ts",
+        "sha256": "b27d47eb091e2eef39be6a747056fb953ac9f17b1294721e13dc8710fa47a404"
+      },
+      {
+        "path": "src/screens/AiConnectionsScreen.tsx",
+        "sha256": "5dec8594a343f2c8bb6ccef379850e74796c425947d340fdfa471304e94b14d9"
+      },
+      {
+        "path": "src/storage/proposalReviewInbox.ts",
+        "sha256": "a1cfc31032f5402827c9b03d179ed681a77f687d2720bbc418822cfc908e3580"
+      },
+      {
+        "path": "src/types/changeSet.ts",
+        "sha256": "464def7a043c4088265eae3634912f706abfd47e15c95385f6fb7061f15877d1"
+      },
+      {
+        "path": "src/types/mcp.ts",
+        "sha256": "6123717084bb18313e9b599b22ab5840cb99c803740901260b53b60c4c542c04"
+      },
+      {
+        "path": "src/types/proposalReview.ts",
+        "sha256": "a2923287b63de1722bd6a257cd1f53c99493d6b2327178f1fce3cb8c78fe9efe"
+      }
+    ]
+  },
+  "hostedCI": {
+    "status": "not_yet_run",
+    "runUrl": null,
+    "reason": "Requires the final signed feature commit and pull request."
+  },
+  "commands": [
+    {
+      "command": "npm test -- --maxWorkers=2 --minWorkers=1 --reporter=default --reporter=junit --outputFile.junit=qa-results/proposal-review-workspace/vitest.xml",
+      "exitCode": 0,
+      "result": {
+        "files": 201,
+        "passed": 1622,
+        "failed": 0
+      },
+      "logSha256": "523f23b74202cf1f74e0ae2dc138adb96cd7db290b6179add37b900c3577f16c",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/full-unit-final.log"
+    },
+    {
+      "command": "npm run test:e2e -- --workers=2",
+      "exitCode": 0,
+      "result": {
+        "cases": 269,
+        "passed": 251,
+        "failed": 0,
+        "skipped": 18,
+        "flaky": 0,
+        "durationMs": 652551.801
+      },
+      "logSha256": "0152adc365f54930e90a54e3264dfc819488f60adc9df64a00db60281dc64dbd",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/full-browser-final.log"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "result": {},
+      "logSha256": "5adf8d20709638df757ec99acbb68cf2d7263b0df6fdf6916af125d6cc5ad35d",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/typecheck-final.log"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "result": {
+        "warning": "Existing >500 kB minified chunk warning"
+      },
+      "logSha256": "165a19fa05dbf4b48285b15b203435d560658f5157871c521787c17d241664e8",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/build-final2.log"
+    },
+    {
+      "command": "npm audit --omit=dev",
+      "exitCode": 0,
+      "result": {
+        "vulnerabilities": 0
+      },
+      "logSha256": "4b02d4a3c23d969c46bd2041360f80bfcb1fe760d9db864009acdd710f9de601",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/audit-app-final.log"
+    },
+    {
+      "command": "npm --prefix bridge run build -- --outdir qa-results/proposal-review-build",
+      "exitCode": 0,
+      "result": {
+        "isolatedOutput": true
+      },
+      "logSha256": "636e4fe329d77698ad77f6739e7f07bc35358190a78b969b5474272ef261c560",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/bridge-build.log"
+    },
+    {
+      "command": "npm --prefix bridge run typecheck",
+      "exitCode": 0,
+      "result": {},
+      "logSha256": "558e60ab5bd92d62515f99d34f19f25f859351ee7d9e36b164fcdb5ea494ce74",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/typecheck-bridge.log"
+    },
+    {
+      "command": "npm --prefix bridge test -- --maxWorkers=1 --minWorkers=1",
+      "exitCode": 0,
+      "result": {
+        "files": 14,
+        "passed": 74,
+        "failed": 0
+      },
+      "logSha256": "83b45b66b8b488b0a8bd05e260e05f4397c6358e98cee551ed44eed613403a4a",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/bridge-tests-final.log"
+    },
+    {
+      "command": "npm --prefix bridge audit --omit=dev",
+      "exitCode": 0,
+      "result": {
+        "vulnerabilities": 0
+      },
+      "logSha256": "4b02d4a3c23d969c46bd2041360f80bfcb1fe760d9db864009acdd710f9de601",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/audit-bridge-final.log"
+    },
+    {
+      "command": "dotnet run --project launcher/tests/Krakinai.BridgeLauncher.Tests.csproj",
+      "exitCode": 0,
+      "result": {
+        "passed": 38,
+        "failed": 0
+      },
+      "logSha256": "eaeab047bac4b75c81f99cdd2d89441ed8b391c32f3a934fd44a1cf21b88694e",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/native-tests-final.log"
+    },
+    {
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/blocking-mcp-workflow.test.mjs scripts/qa/keyframe-mcp-workflow.test.mjs scripts/qa/shared-mcp-workflow.test.mjs scripts/qa/shared-codex-client.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs",
+      "exitCode": 0,
+      "result": {
+        "passed": 87,
+        "failed": 0,
+        "scope": "Evidence-validator tests; not native pairing."
+      },
+      "logSha256": "1e9544e6ea7213b52d739951f6156fa39bc326cdc22b6d7c446953de38110ce2",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/qa-helpers-final.log"
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "result": {
+        "passed": 8,
+        "historicalChecks": 207,
+        "historicalScreenshots": 45
+      },
+      "logSha256": "fb4c178d621f5b45933353f101ea7f893d8ab94d0ce9e3a1660e7b4d216786e3",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/historical-qa-final.log"
+    },
+    {
+      "command": "git status --short",
+      "exitCode": 0,
+      "logSha256": "2798cde580e5123d5516da3eff968ba00a56a081a1f1782ff6bd8c4e4b6b5037",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/git-status-final.log"
+    },
+    {
+      "command": "git diff --name-status",
+      "exitCode": 0,
+      "logSha256": "5acc9bf3ab01c1f595c580d33ba63c46124ce29120749d79482a8e6dd86a430f",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/git-diff-name-status-final.log"
+    },
+    {
+      "command": "git diff --check",
+      "exitCode": 0,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "localLog": ".superpowers/sdd/2026-11-04-proposal-review-workspace/git-diff-check-final.log"
+    }
+  ],
+  "browser": {
+    "rawReportSha256": "ee214ca8bc65e8eee48e4f4fd3f18db9427498c815a5f638d63af0964f04b14f",
+    "workers": 2,
+    "cases": [
+      {
+        "id": "dee72c0b131e2f3f",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > permission workspace bulk selection covers hidden pages, preserves search selections and reflows",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "aba32f0888a405d7",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > oversized global and Full Access selections fail without a partial grant",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "990d6c8e6db2e8f5",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > actual SDK observes no draft grants, then all 65 matches only after one explicit Apply",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "8a40e4088912c98b",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > proposal arrival preserves permission focus and reviewed receipt grants are visible and revocable",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ba28b68281d34b94",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > permissions remain readable at 200-percent-equivalent reflow with DPR2",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "387e0e816ae2feaf",
+        "file": "ai-connections-workspace.spec.mjs",
+        "name": "ai-connections-workspace.spec.mjs > delayed connection startup locks permission changes before the native challenge arrives",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b6ac392a4c24ac48",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking keyboard edits preserve saved records and copy/download complete canonical outputs",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7c5f07e0cd4648df",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking preflight blocks assembly until the exact stale binding is explicitly repaired",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3ea956e7a8d205d6",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > manual output choice creates one immutable take and retains its exact unverified text",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9c58d0909cbb00b5",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > legacy Character scene behavior and output bytes remain unchanged without blocking",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e43a785793bb41bd",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > touch blocking authoring > places a participant with taps and saves only the explicit draft",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "58a1a14030bffe6c",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking authoring 1440 dpr1 > board, forms, focus and long-text reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d448c7a502bd147e",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking authoring 768 dpr1 > board, forms, focus and long-text reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e37b9666367d4c00",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking authoring 390 dpr1 > board, forms, focus and long-text reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f5ac572c41de2ef3",
+        "file": "blocking-authoring.spec.mjs",
+        "name": "blocking-authoring.spec.mjs > blocking authoring 720 dpr2 > board, forms, focus and long-text reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5b7a0cbc9f677a6b",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > saved blocking and captured comparisons are read-only, including filtered selection and legacy frames",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "83055721225b6d4b",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > a reordered project marks a captured pair stale instead of retargeting saved take IDs",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "14a1e9ac5beabb2c",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > managed copy keeps exact source context and recovers dirty blocking after browser Back/Forward",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9e0b39350fdec9ae",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > stale draft save retains local blocking text and the other tab record",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3cd7da3060508b23",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > saved blocking 1440 dpr1 > selected-take board and advisory pair reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b9d65d9840f61c8f",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > saved blocking 768 dpr1 > selected-take board and advisory pair reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "efe2b6540045558b",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > saved blocking 390 dpr1 > selected-take board and advisory pair reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "88c5e674a615850a",
+        "file": "blocking-continuity.spec.mjs",
+        "name": "blocking-continuity.spec.mjs > saved blocking 720 dpr2 > selected-take board and advisory pair reflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1bcddf0de4d0ea66",
+        "file": "blocking-conversion.spec.mjs",
+        "name": "blocking-conversion.spec.mjs > Direct Prompt keeps incomplete Blocking in a v5 planning download and resumes it without database writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "0a7b5563d00fc827",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: exact proposal, no preapproval writes, browser approval, immutable receipt/replay and revocation",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "219bf5ba7441f47a",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: explicit permission denial, stale source and a foreign write survive failed browser apply",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7b45295fefc93407",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: quota rejects an already reviewed batch and preserves current records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "dc1798e04e1008ac",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: order rejects an already reviewed batch and preserves current records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7ceffa79e27fe8a5",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: scope rejects an already reviewed batch and preserves current records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "23f48374c6a4a811",
+        "file": "blocking-mcp.spec.mjs",
+        "name": "blocking-mcp.spec.mjs > Blocking SDK: native acceptance review controls resolve a real inherited manual buffer before atomic save",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d4323966aa047f9d",
+        "file": "blocking-native.spec.mjs",
+        "name": "blocking-native.spec.mjs > Blocking actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "id": "8cee620c7c603e9f",
+        "file": "blocking-native.spec.mjs",
+        "name": "blocking-native.spec.mjs > Blocking actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "id": "f0535ee7cf68fc58",
+        "file": "blocking-shared-native.spec.mjs",
+        "name": "blocking-shared-native.spec.mjs > Blocking shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "status": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "id": "6a94325c6f17c13b",
+        "file": "blocking-upgrade.spec.mjs",
+        "name": "blocking-upgrade.spec.mjs > explicit header upgrade preserves real legacy records, late old-tab writes and media hashes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5f5a22292887c296",
+        "file": "blocking-upgrade.spec.mjs",
+        "name": "blocking-upgrade.spec.mjs > Cancel before consent and during blocked enable leaves version 1 writable and never upgrades later",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "fd62dfb54e2cffd3",
+        "file": "change-set-candidate-review.spec.mjs",
+        "name": "change-set-candidate-review.spec.mjs > deferred candidate review after reload exposes exact content before creating one unreviewed asset",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "299c5e4a6efd13db",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a shared scene revision changes only the explicitly chosen project and shot",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9b579001f8de59f2",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a pending original is linked later as a new immutable version without replacing its pending snapshot",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "98c3caa202c3c38e",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > 200 percent desktop reflow retains readable controls at 720 CSS pixels and DPR 2",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "36905f3a57f89358",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > append to an existing project preserves every prior shot,scene,draft and unrelated project",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "24833f6fb0b1c6c8",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > revision,restore and alternate take keep old snapshots and require separate preference and status approval",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b54624dc87e88406",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > mismatched project,shot and source scene blocks the complete batch",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e7ff75a44b2e5fda",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a second tab write invalidates an approved preview without losing the foreign write",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f2aaf35b5e4d8cb4",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a quota failure after queued writes rolls back the entire import",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a366f4221ad153e4",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a abort failure after queued writes rolls back the entire import",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "aab8548652cbf713",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > current media disappearance or MIME metadata mismatch blocks the batch without fabricated replacements",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e62a9eb526316a26",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > duplicate character and camera proposals need explicit reuse or separate-create acknowledgement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f0702ff2a9f61d50",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > a JSON file imports exact text and preserves it through clipboard,TXT and selected-take project ZIP",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f081a8ba47955177",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > context export remains read-only and independently protects full prompts,identity,notes and filenames",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "0e47a3710b4cb899",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > maximum operation count and long exact prompt previews remain collapsed,scrollable and keyboard accessible",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "0fdff546ea57ab8c",
+        "file": "change-set-regressions.spec.mjs",
+        "name": "change-set-regressions.spec.mjs > full backup restores receipts,candidates,scenes and media hashes,and replays after a whole browser restart",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "204caab7b286409d",
+        "file": "change-set-screenshots.spec.mjs",
+        "name": "change-set-screenshots.spec.mjs > change-set after workspace screenshots 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e04b1ac22ecae45b",
+        "file": "change-set-screenshots.spec.mjs",
+        "name": "change-set-screenshots.spec.mjs > change-set after workspace screenshots 1366",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "98eb76bdea8db456",
+        "file": "change-set-screenshots.spec.mjs",
+        "name": "change-set-screenshots.spec.mjs > change-set after workspace screenshots 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f6ecae3d212f9593",
+        "file": "change-set-screenshots.spec.mjs",
+        "name": "change-set-screenshots.spec.mjs > change-set after workspace screenshots 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "673ca69c57553a4a",
+        "file": "change-set.spec.mjs",
+        "name": "change-set.spec.mjs > canonical package preview and cancel do not write or install proposed assets",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1750c5ebaf57f922",
+        "file": "change-set.spec.mjs",
+        "name": "change-set.spec.mjs > MIDORI creates exactly fifteen ordered shots,60seconds,types2/9/4 and pending4,then replays without duplication",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "6fa5e230ff5066e4",
+        "file": "cinematography-screenshots.spec.mjs",
+        "name": "cinematography-screenshots.spec.mjs > cinematography after responsive screenshots 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "6b94d34212c78068",
+        "file": "cinematography-screenshots.spec.mjs",
+        "name": "cinematography-screenshots.spec.mjs > cinematography after responsive screenshots 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "76c7c8122fe32055",
+        "file": "cinematography-screenshots.spec.mjs",
+        "name": "cinematography-screenshots.spec.mjs > cinematography after responsive screenshots 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d646e9d564685a8e",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > explorer is read-only, searchable by aliases, collapsible, filtered and linked to independent owners",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ce79f9972307907d",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > composer applies only Camera, preserves exact reset and manual baseline, restores focus and rebases presets",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "15b7dd3777b3da7e",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > explainable motion advice allows rack focus, optical zoom, compound moves and staged holds",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "79098dad31af84aa",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > source graphics and footage use editing choices and retain original-media assembly safeguards",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "782c668cabb4723c",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > complete copy/download, immutable saved scenes and full-backup restoration preserve Camera metadata and media",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "23adb0eec1af31fb",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > core pack preview skips positive and ambiguous matches, installs only after confirmation and is idempotent",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c2b7744c681ee46a",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > library-first composition previews the existing fallback source draft before updating it",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d6bda933cb6f241a",
+        "file": "cinematography.spec.mjs",
+        "name": "cinematography.spec.mjs > manual scene-only Camera survives composing again and Reset without losing its authored text",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7dc330278e60db68",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > focused continuity views inspect frozen records and restore exact return context without writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7d60f036247b1a03",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > dirty desktop edits retain text on cancelled discard and only change explicit shot review metadata",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "07c42e9ad9914552",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > refresh, browser history and explicit global discard preserve exact context and source records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "28bea94c54b472c6",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > frame Clear after browser Back requires explicit discard of a dirty wardrobe review",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f56d6a06e108b2f6",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > continuity workspace keyboard, original preview and reflow at 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ccd631cc1835bc74",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > continuity workspace keyboard, original preview and reflow at 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c9b69e635c1eca89",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > continuity workspace keyboard, original preview and reflow at 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "caf38a09e0d55825",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > continuity workspace keyboard, original preview and reflow at 720",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "43957794bb568e0d",
+        "file": "continuity-workspace.spec.mjs",
+        "name": "continuity-workspace.spec.mjs > continuity at DPR2 reflow > outer and inner tab keys stay scoped at 720 CSS pixels",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "82a2a3ca804cbea1",
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "name": "dialogue-cover-screenshots.spec.mjs > dialogue and cover visual evidence 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9d805b83d80aae55",
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "name": "dialogue-cover-screenshots.spec.mjs > dialogue and cover visual evidence 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "50ae45575e130d6f",
+        "file": "dialogue-cover-screenshots.spec.mjs",
+        "name": "dialogue-cover-screenshots.spec.mjs > dialogue and cover visual evidence 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "75d17a694d1fdf30",
+        "file": "dialogue-cover.spec.mjs",
+        "name": "dialogue-cover.spec.mjs > delivery choices persist and exact Taglish directions reach every output and Script Board without rewriting saved scenes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1dd32cc54758eb31",
+        "file": "dialogue-cover.spec.mjs",
+        "name": "dialogue-cover.spec.mjs > custom-only, presets-only and clear performance keep spoken text exact and impose no default style",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3b460b0f73f628c1",
+        "file": "dialogue-cover.spec.mjs",
+        "name": "dialogue-cover.spec.mjs > cover search, relationship filtering, staged Use and both cancellation paths preserve originals",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a21aaaa4865236c8",
+        "file": "dialogue-cover.spec.mjs",
+        "name": "dialogue-cover.spec.mjs > bounded gallery, Covers grouping and native upload/cancel retain bytes and existing associations",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "8693cd486a5b0596",
+        "file": "dialogue-cover.spec.mjs",
+        "name": "dialogue-cover.spec.mjs > overview cover editor supplies project context and missing covers stay explicit on Escape",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bb82ca738c8029ec",
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "name": "direct-prompt-screenshots.spec.mjs > direct prompt after responsive screenshots 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "03ec7b58ef46b76d",
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "name": "direct-prompt-screenshots.spec.mjs > direct prompt after responsive screenshots 1366",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ad078053fc109cf2",
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "name": "direct-prompt-screenshots.spec.mjs > direct prompt after responsive screenshots 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "6a1ea9626212dd0a",
+        "file": "direct-prompt-screenshots.spec.mjs",
+        "name": "direct-prompt-screenshots.spec.mjs > direct prompt after responsive screenshots 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "66be36ceacb2b945",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > a shared saved scene revises the explicit project being viewed, preserving its original project",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1b0be33bfb5de7da",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > managed recipe editor and reviewed output reject another tab changes without replacing its draft",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c2bb5862e18a646e",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > direct prompt import saves without components and copies/downloads the exact complete original",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "eb2fb4d3e5a2c7a3",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > storyboard revision comparison preserves original text, fifteen planned shots, and preferred take",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ef2eb158930aeb46",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > restoring an earlier prompt creates version three and never silently selects it",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d268d7e431bd2e22",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > saved direct scenes expose a distinct alternate take workflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bc8658dc6a70949e",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > source media removed after selection blocks a claimed attachment, preserves draft, and accepts replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "281f58a7cdc57d0b",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > stale browser tab cannot overwrite a changed direct draft",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "8ff963585a34df80",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > quota and interrupted transactions roll back new scene and storyboard shot together",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3c8005ca775b508b",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > same-request saves are idempotent and cross-project revisions are rejected",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f2b8dba1fa1b47de",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > mixed library backup restores exact versions and original media into another isolated browser context",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "2c0d26338caa5ea1",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > project destination creates a new planned shot atomically without selecting it",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bfa8cff4172c472b",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > mode changes and saved-draft reload preserve earlier recipe and direct data",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "062e389ea27e663d",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > legacy recipe output hashes remain identical to the captured master baseline",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5c481428060aeaed",
+        "file": "direct-prompt.spec.mjs",
+        "name": "direct-prompt.spec.mjs > direct tabs, history focus and 200 percent equivalent reflow remain keyboard accessible",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d7bb63109a769c4c",
+        "file": "ensemble-mcp.spec.mjs",
+        "name": "ensemble-mcp.spec.mjs > B2 sdk-synthetic: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "55607a46058c8d82",
+        "file": "ensemble-mcp.spec.mjs",
+        "name": "ensemble-mcp.spec.mjs > B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "id": "2b9f913fb495e9ab",
+        "file": "ensemble-mcp.spec.mjs",
+        "name": "ensemble-mcp.spec.mjs > B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "id": "3150d0ccedd8fcb4",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > secondary wardrobe guides and historical templates survive production save, export and take comparison",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7de2bce1ee965081",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > deferred Outfit candidates can be reviewed later and reused without duplicating records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7942f2a7a061b7f3",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > a removed original blocks an ensemble narration draft and an explicit valid replacement permits assembly",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4d4b444265cecc5c",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > shared-file participant reference associations have distinct accessible controls",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "8c657aef84588b94",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > mixed legacy, v2 and ensemble backups survive UI restore, browser restart, exact replay and Project Export",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b2a7e76bc81b9f4d",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > ensemble recipe copies complete outputs and commits a new immutable revision with a parent-bound Outfit",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5165b4b2d57f5c84",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > all recipe rows and ensemble controls fit with alternate native button font metrics",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "235f975c6eb78d72",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > ensemble workspace reflows, locks identities and keeps focus at 1440px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "26b5b942c7cdc0de",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > ensemble workspace reflows, locks identities and keeps focus at 768px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a52b2dbb318c182e",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > ensemble workspace reflows, locks identities and keeps focus at 390px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "fa70bfc6c292e676",
+        "file": "ensemble-recipes.spec.mjs",
+        "name": "ensemble-recipes.spec.mjs > ensemble workspace reflows, locks identities and keeps focus at 720px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c6c957f24a061dc0",
+        "file": "keyframe-authoring.spec.mjs",
+        "name": "keyframe-authoring.spec.mjs > same shared editor adds an incomplete middle planning frame without changing saved Start/End, media or references",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1eb40a40ca4e8e7e",
+        "file": "keyframe-authoring.spec.mjs",
+        "name": "keyframe-authoring.spec.mjs > actual draft upload and explicit carry save a new take atomically with native image decode",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3ec020c9c8a51827",
+        "file": "keyframe-authoring.spec.mjs",
+        "name": "keyframe-authoring.spec.mjs > frame drawer contains focus, cancels dirty dismissal, and returns focus after explicit discard",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ac0b7be28d1aab57",
+        "file": "keyframe-backup.spec.mjs",
+        "name": "keyframe-backup.spec.mjs > C backup restores through actual confirmation controls with exact records, hashes and frame files",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ccaa5af4df0c2eea",
+        "file": "keyframe-backup.spec.mjs",
+        "name": "keyframe-backup.spec.mjs > frozen pre-C production build rejects actual C archive through its restore input before writes",
+        "status": "skipped",
+        "skipReason": "Requires the retained pre-C production build; no current-source substitute is accepted."
+      },
+      {
+        "id": "1b1e37f569082bd6",
+        "file": "keyframe-flow.spec.mjs",
+        "name": "keyframe-flow.spec.mjs > actual selected-file Flow preview/download preserves exact prompts/hashes and makes no provider request",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ddd42eef1ff0a5f9",
+        "file": "keyframe-flow.spec.mjs",
+        "name": "keyframe-flow.spec.mjs > native file input rejects corruption and preserves originals through upload, review and clear history",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "fcf390c98c72cb8c",
+        "file": "keyframe-mcp.spec.mjs",
+        "name": "keyframe-mcp.spec.mjs > v6 SDK: exact Aya middle frame, withheld text, zero preapproval writes, atomic browser approval, replay and revocation",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "88063c5c823516f6",
+        "file": "keyframe-mcp.spec.mjs",
+        "name": "keyframe-mcp.spec.mjs > v6 SDK: explicit frame proposal denial and stale-source rejection preserve foreign edits and original take",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bc54e8d9ffc831f3",
+        "file": "keyframe-mcp.spec.mjs",
+        "name": "keyframe-mcp.spec.mjs > v6 browser atomic apply rejects same-ID media drift without partial scenes, image events or receipt",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "eed2753d69c564ef",
+        "file": "keyframe-mcp.spec.mjs",
+        "name": "keyframe-mcp.spec.mjs > v6 browser atomic apply rejects injected quota failure without partial scenes, image events or receipt",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "758885fc06861033",
+        "file": "keyframe-media-races.spec.mjs",
+        "name": "keyframe-media-races.spec.mjs > native Chromium decodes original PNG/JPEG/WebP and commits exact hashes and history",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a436c11c6c33de74",
+        "file": "keyframe-media-races.spec.mjs",
+        "name": "keyframe-media-races.spec.mjs > two tabs retain an unsaved upload, draft image, cleared history and immutable scenes during an unrelated save/delete",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ca27778e55904390",
+        "file": "keyframe-media-races.spec.mjs",
+        "name": "keyframe-media-races.spec.mjs > native cross-tab Web Lock prevents same-ID same-size replacement during canonical preparation and commit",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c9aca396b7950638",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://127.0.0.1:4173",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "43b296898a2811a2",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > C native-scenario preflight: real browser grants and atomic scene/ledger checks at http://localhost:4173",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3fe5282a09d6be3c",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > Keyframes actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "id": "21141cba7c22fdee",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > Keyframes actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "id": "422a2e603a7dbb44",
+        "file": "keyframe-output.spec.mjs",
+        "name": "keyframe-output.spec.mjs > frame/video workspace keyboard, complete clipboard and layout 1440px DPR1",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "414549152757930b",
+        "file": "keyframe-output.spec.mjs",
+        "name": "keyframe-output.spec.mjs > frame/video workspace keyboard, complete clipboard and layout 768px DPR1",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3c1a1f283b421f81",
+        "file": "keyframe-output.spec.mjs",
+        "name": "keyframe-output.spec.mjs > frame/video workspace keyboard, complete clipboard and layout 390px DPR1",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "03e19bc91c10be59",
+        "file": "keyframe-output.spec.mjs",
+        "name": "keyframe-output.spec.mjs > frame/video workspace keyboard, complete clipboard and layout 720px DPR2",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "86c823e8f3d4406a",
+        "file": "keyframe-review.spec.mjs",
+        "name": "keyframe-review.spec.mjs > Output manual rejects an intervening draft write and preserves local work",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "359722d2305661c5",
+        "file": "keyframe-review.spec.mjs",
+        "name": "keyframe-review.spec.mjs > Output clear rejects an intervening draft write and preserves local work",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5b170579f06d5f72",
+        "file": "keyframe-review.spec.mjs",
+        "name": "keyframe-review.spec.mjs > Output plan rejects an intervening draft write and preserves local work",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1fe7846cddd5a214",
+        "file": "keyframe-review.spec.mjs",
+        "name": "keyframe-review.spec.mjs > Output explicitly removes the optional plan while retaining immutable scenes, references and media",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "90657afc1b464a2d",
+        "file": "keyframe-shared-native.spec.mjs",
+        "name": "keyframe-shared-native.spec.mjs > Keyframes shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "status": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "id": "31a895febfa4a7b9",
+        "file": "keyframe-upgrade.spec.mjs",
+        "name": "keyframe-upgrade.spec.mjs > C explicit header-only upgrade preserves version1 data and late writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c483ed09087092cc",
+        "file": "keyframe-upgrade.spec.mjs",
+        "name": "keyframe-upgrade.spec.mjs > Cancel never upgrades version1, including a blocked request released later",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "55eef6fc9717b767",
+        "file": "keyframe-upgrade.spec.mjs",
+        "name": "keyframe-upgrade.spec.mjs > C explicit header-only upgrade preserves version2 data and late writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "46a3e1beed568c2a",
+        "file": "keyframe-upgrade.spec.mjs",
+        "name": "keyframe-upgrade.spec.mjs > Cancel never upgrades version2, including a blocked request released later",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "6287f9d3b4d52f52",
+        "file": "local-mcp-failures.spec.mjs",
+        "name": "local-mcp-failures.spec.mjs > revoking permissions while the apply digest is paused prevents every write",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c255f27bfb9cda60",
+        "file": "local-mcp-failures.spec.mjs",
+        "name": "local-mcp-failures.spec.mjs > an injected quota error after initial writes rolls back the complete MCP batch and receipt",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4365b2b6a828ffb8",
+        "file": "local-mcp-failures.spec.mjs",
+        "name": "local-mcp-failures.spec.mjs > background arrival preserves the active draft and focus; disconnect restores dialog focus and revokes reads",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "09209c22250e283f",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > Windows production launcher pairs only after the real owned WPF verification window allows it",
+        "status": "skipped",
+        "skipReason": "Opt-in real WPF certification: KRAKINAI_NATIVE_QA=1 on Windows, with scripts trusted under the existing execution policy."
+      },
+      {
+        "id": "179c83c2956a2797",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged",
+        "status": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "id": "0895c5df101d0285",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > actual installed Codex CLI pairs through the signed Windows window and reads only the selected project",
+        "status": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "id": "e436d4ee1405f73a",
+        "file": "local-mcp-screenshots.spec.mjs",
+        "name": "local-mcp-screenshots.spec.mjs > AI Connections retains readable controls at four viewports in disconnected, connected, review and applied states",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "884ad656fbecf87f",
+        "file": "local-mcp-screenshots.spec.mjs",
+        "name": "local-mcp-screenshots.spec.mjs > 200 percent equivalent reflow and keyboard focus remain usable at 720 CSS pixels and DPR2",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "00a6643c1279175a",
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "name": "local-mcp-workflow-native.spec.mjs > actual CLI complete revision workflow at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "id": "834e51aae61e13f8",
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "name": "local-mcp-workflow-native.spec.mjs > actual CLI complete revision workflow at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "id": "deb23985cde6a646",
+        "file": "local-mcp.spec.mjs",
+        "name": "local-mcp.spec.mjs > SDK proposal requires trusted browser review and creates exact MIDORI records without widening scope",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f4b766853b449ebe",
+        "file": "local-mcp.spec.mjs",
+        "name": "local-mcp.spec.mjs > only the human-selected camera candidate is created and confirmed; Character proposal stays pending",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3eeaec7b8b66722d",
+        "file": "media-inspection-screenshots.spec.mjs",
+        "name": "media-inspection-screenshots.spec.mjs > media inspection visual evidence 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d78493d38da7d4f2",
+        "file": "media-inspection-screenshots.spec.mjs",
+        "name": "media-inspection-screenshots.spec.mjs > media inspection visual evidence 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a9377282e54341bb",
+        "file": "media-inspection-screenshots.spec.mjs",
+        "name": "media-inspection-screenshots.spec.mjs > media inspection visual evidence 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bb6721b3c2b49c77",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > camera and variant previews coordinate hover and explicit playback without selecting or writing",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "6618874a0f8ef484",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > image fit, zoom, scrolling, native size and reset preserve source dimensions and stored bytes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "22c18d48ee94c7db",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > fifty reference associations retain duplicate roles, paginate and preview independently of the featured item",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "02a9ec5a60ccd6e9",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > repeated image/video previews release URLs and pause detached players with heap observations",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9b716b32e88de150",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > eleven-shot List/Grid layout stays bounded at 1440x900",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "12a14cc442cd4728",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > eleven-shot List/Grid layout stays bounded at 768x1024",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f7ef3bf09a4f42f2",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > eleven-shot List/Grid layout stays bounded at 390x844",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "39dd1391aa337b81",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > eleven-shot List/Grid layout stays bounded at 720x450",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4b41bf0ad3d36836",
+        "file": "media-inspection.spec.mjs",
+        "name": "media-inspection.spec.mjs > touch and reduced motion > camera media has explicit touch Preview with no hover playback",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "cf3e6b4b2a648e6a",
+        "file": "output-workspace-screenshots.spec.mjs",
+        "name": "output-workspace-screenshots.spec.mjs > output workspace after screenshots 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "d68bd9a912b15d49",
+        "file": "output-workspace-screenshots.spec.mjs",
+        "name": "output-workspace-screenshots.spec.mjs > output workspace after screenshots 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ee3adf5774619b67",
+        "file": "output-workspace-screenshots.spec.mjs",
+        "name": "output-workspace-screenshots.spec.mjs > output workspace after screenshots 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1afdc8518f132834",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > laptop dialog keeps the final prompt line and every section link above its fixed footer",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e8f13b296cbba164",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > draft split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c77c400bccee3e0b",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > draft tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "349407633727d3bc",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > saved split: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "57401586a3165d0d",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > saved tabs: full viewer, clipboard payload and actual downloads match master bytes across every output",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "733e544e819fcc23",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > viewer keyboard navigation, section positioning and scroll lock preserve the scene context",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "31c1399817ded476",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > small-screen default, manual layout choice and mobile section selector reflow without overflow",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "89cd6770bc7dbf0e",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > stale copy started in the viewer opens one operable confirmation and preserves unsaved editing buffers",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f9a1ad79ee9b9e33",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > reference and sample previews use the existing associations without reassigning media",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "55196e5a09529455",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > complete long raw output and missing-media/empty states do not invent scene details",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f687682eeeb42245",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > an associated decodable result video is labeled Result and opens the existing explicit player",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "839899d69c3da10c",
+        "file": "output-workspace.spec.mjs",
+        "name": "output-workspace.spec.mjs > saved identity remains frozen and Edit a Copy creates an editable draft without changing the scene",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4c5dceb9b708f98f",
+        "file": "performance-studio-screenshots.spec.mjs",
+        "name": "performance-studio-screenshots.spec.mjs > Performance Studio after visual evidence 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3a502e8b0e9421b1",
+        "file": "performance-studio-screenshots.spec.mjs",
+        "name": "performance-studio-screenshots.spec.mjs > Performance Studio after visual evidence 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "22e55b848ca9b4b6",
+        "file": "performance-studio-screenshots.spec.mjs",
+        "name": "performance-studio-screenshots.spec.mjs > Performance Studio after visual evidence 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ecf68b4cf85937d9",
+        "file": "performance-studio.spec.mjs",
+        "name": "performance-studio.spec.mjs > version 2 acting persists through all outputs, Script Board, Edit a Copy and backup without rewriting any existing data",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "cb8f6fba9b53fc97",
+        "file": "performance-studio.spec.mjs",
+        "name": "performance-studio.spec.mjs > keyboard search, conflict explanation, per-field removal and Clear All work with reduced motion and no inferred defaults",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "dec4658e6697c34f",
+        "file": "performance-studio.spec.mjs",
+        "name": "performance-studio.spec.mjs > legacy selection bytes survive reload and UI search requires explicit replacement before new directions",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f9cdccf28684d464",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > review draft survives actual profile restart; fresh scope, approval, receipt and replay preserve immutable records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "5f2e21b7c382eca7",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > actual rejection controls share only explicitly entered feedback and current authorized status",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "0fbcce4f9a0f253f",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > expired saved package remains downloadable and requires explicit current-source renewal",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b8392f41cf473ebc",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > quota fallback is explicit and stale-tab cache changes stop rejection without library writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "fd20f2a2de2c4a36",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > bulk v1 review uses a bounded selected-item workspace at desktop tablet and mobile sizes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "25ac7dca573323a7",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > another tab cannot recover reject or remove a draft while its active Apply owns the review lock",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "82a2658e2bc793f3",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > eight successful batches retain removable packages and removing one admits the ninth without deleting saved records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "91d3c23109687bc8",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > a committed library transaction survives failed cache completion and recovers its real receipt without duplication",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "edcede255aa62e76",
+        "file": "proposal-review.spec.mjs",
+        "name": "proposal-review.spec.mjs > a real delayed Stage B Apply excludes another tab recovery rejection and removal until the commit finishes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "476dde26c612fa4f",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > recipe preview copies complete outputs, saves an immutable take and reopens as an editable recipe",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b070c7624716db5d",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > blocked recipe downloads preserve the full planning package with zero partial writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c323ddf8fc835e30",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > recipe revisions preserve frozen components and create alternate takes through actual review controls",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7668e2dc5df4c5c4",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > deleting a selected original blocks atomic save, preserves drafts and permits a valid explicit replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c6809428d5bb1598",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > recipe review reflows and preserves keyboard access at 1440px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f5fbfb00de109bcb",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > recipe review reflows and preserves keyboard access at 768px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "58d3c7877ea3a83f",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > recipe review reflows and preserves keyboard access at 390px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9610d30377539cb0",
+        "file": "recipe-change-sets.spec.mjs",
+        "name": "recipe-change-sets.spec.mjs > original MIME claims are checked against stored media before assembly",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "163e805eaaa21cd5",
+        "file": "recipe-conversion-native.spec.mjs",
+        "name": "recipe-conversion-native.spec.mjs > installed Codex ten-shot recipe lifecycle at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "id": "71e2f12cfee4d543",
+        "file": "recipe-conversion-native.spec.mjs",
+        "name": "recipe-conversion-native.spec.mjs > installed Codex ten-shot recipe lifecycle at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "id": "e3e497583660531c",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > guided mapping preserves the source, keeps full prose collapsed and downloads an approval-free package",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "91fb32f26cd538e9",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > conversion reviews uncertainty, copies every complete mode, atomically saves on the same shot and replays without duplication",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "622e9432a606a067",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > a missing selected original blocks conversion and an actual valid replacement makes it reviewable",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b1d65306c5a1ec3b",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > a late scene write failure rolls back every store and a fresh explicit review can retry",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "8ecbfb5fe96f0cf1",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > guided mapping and complete review are keyboard-accessible without page clipping at 1440px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4af789d51681b474",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > guided mapping and complete review are keyboard-accessible without page clipping at 768px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3c91d69c644c4c17",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > guided mapping and complete review are keyboard-accessible without page clipping at 390px",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bb459c38efd5cb96",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > explicit reusable editing preserves converted snapshots and the original preferred take",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1aa968526241a91c",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > a delayed file read cannot overwrite newer mapping edits or write records",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f4485fc7229a6bae",
+        "file": "recipe-conversion.spec.mjs",
+        "name": "recipe-conversion.spec.mjs > removing mapped cues and participants through guided controls remains reviewable",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7de06b3615c788e6",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 sdk-existing: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1b44fb5a0eba5f70",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      },
+      {
+        "id": "c0c0a2d8542142a5",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      },
+      {
+        "id": "2c288e539a620504",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 same-batch create/reuse/defer uses exact approved IDs without scope expansion",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e69f8f73c0a07ce2",
+        "file": "scene-workflows.spec.mjs",
+        "name": "scene-workflows.spec.mjs > canonical output copy, save, and small legacy backup roundtrip",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b14f6e5456ee3ec7",
+        "file": "scene-workflows.spec.mjs",
+        "name": "scene-workflows.spec.mjs > duplicate save requires an explicit decision",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3da039e75a38dcf3",
+        "file": "scene-workflows.spec.mjs",
+        "name": "scene-workflows.spec.mjs > storyboard order and collection return survive navigation",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "01364aca2558d401",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > MIDORI graphic shot: exact outputs, local save/copy, ordered storyboard and original bytes in every archive",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "bd4a1362349950c3",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > source picker validates upload, replaces/reuses originals, removes reversibly and restores keyboard preview focus",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c20f320487b7ff0a",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > voiceover needs no graphic character, on-camera remains blocked, missing or wrong stored sources cannot save",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c0aac5ac7e7a0891",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > assembly rechecks stored source: deleted original blocks navigation until replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "deb409c25b978e97",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > assembly rechecks stored source: stale deleted original blocks navigation until replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c60c1acf187a24d1",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > assembly rechecks stored source: unsupported MIME blocks navigation until replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "59cf315345481c97",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > assembly rechecks stored source: inconsistent metadata blocks navigation until replacement",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "be2f2afb0182234c",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > review regressions: refreshed saved copies exclude inactive negatives and Output pack edits remain restorable",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "1101c7edb0c9f06c",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > MIDORI responsive builder and output at 1440x900",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "ef20bfdf9b6814c8",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > MIDORI responsive builder and output at 768x1024",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "4c8464fe38da9d62",
+        "file": "shot-types.spec.mjs",
+        "name": "shot-types.spec.mjs > MIDORI responsive builder and output at 390x844",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "74b54f6bde958dc5",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > eleven real video shots hover, reset, expand and preserve all records and media hashes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c46080c2a373a2d3",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > reduced motion disables hover and explicit Preview stays usable",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "9668e9015f327135",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > secondary actions, drag grip and keyboard ordering preserve saved takes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "54ab14920f367794",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > continuity forms stack, footer and focus remain reachable at 1440x900",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a5d3208a90579948",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > continuity forms stack, footer and focus remain reachable at 768x1024",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "b8026de477a19cad",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > continuity forms stack, footer and focus remain reachable at 390x844",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "3459e1fa8b5c3584",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > continuity forms stack, footer and focus remain reachable at 720x450",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "037594899ca392d8",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > Preflight keeps Aya/Joy P005, exact expandable evidence, source selection and saved-scene edit copy",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "21296d9b116fbbee",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > corrupt video stays recoverable through an explicit preview without browser errors or writes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "72752994d319e7cf",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > rejected hover playback is handled and unmount pauses, resets and revokes the original object URL",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f586bb99cda09f61",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > wardrobe and transition saves change only explicit project metadata, preserving all frozen scenes and media",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "0c97677fc87c38ec",
+        "file": "storyboard-cleanup.spec.mjs",
+        "name": "storyboard-cleanup.spec.mjs > touch collection media > uses visible Preview rather than hover and never navigates on playback",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f33285fc8e1996f6",
+        "file": "storyboard-screenshots.spec.mjs",
+        "name": "storyboard-screenshots.spec.mjs > storyboard visual evidence 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "2bed53fe340c137a",
+        "file": "storyboard-screenshots.spec.mjs",
+        "name": "storyboard-screenshots.spec.mjs > storyboard visual evidence 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7ff5a3ca6721d45f",
+        "file": "storyboard-screenshots.spec.mjs",
+        "name": "storyboard-screenshots.spec.mjs > storyboard visual evidence 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "20b807022473a196",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > long take names and IDs stay inside the dialog at 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c560f4b691c0b84d",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > long take names and IDs stay inside the dialog at 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e20abc9cc19e9adb",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > long take names and IDs stay inside the dialog at 390",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "f39ea027ab9b06c7",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > drops decodable JPG, PNG, WebP, MP4 and WebM through the existing media pipeline",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "87dcafa3709e1842",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > editor drop validates per file, skips repeated bytes, preserves cover and persists dragged order",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c6b0e1364356d428",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > variant file input shares the pipeline, maximum handling and keyboard ordering",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "e1fc01a706ef195f",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > library tags expand, search, select several and clear while preserving search, sorting and stored tags",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "230f55f12eefe6b5",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > reference dialog preserves explicit order, exact downloads and historical read-only controls",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "2972fac52d5ef54a",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > take preference, project note, comparison and removal keep immutable source scenes",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "c54344565f594b9d",
+        "file": "uiux-polish.spec.mjs",
+        "name": "uiux-polish.spec.mjs > identity approval and stale fallback preserve canonical outputs and saved generation snapshots",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "7e69e4bf8896b272",
+        "file": "uiux-screenshots.spec.mjs",
+        "name": "uiux-screenshots.spec.mjs > polish visual evidence 1440",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a9649e1ac1089016",
+        "file": "uiux-screenshots.spec.mjs",
+        "name": "uiux-screenshots.spec.mjs > polish visual evidence 768",
+        "status": "expected",
+        "skipReason": null
+      },
+      {
+        "id": "a7af39f1bb5d10e9",
+        "file": "uiux-screenshots.spec.mjs",
+        "name": "uiux-screenshots.spec.mjs > polish visual evidence 390",
+        "status": "expected",
+        "skipReason": null
+      }
+    ],
+    "nativeAndManualSkips": [
+      {
+        "id": "d4323966aa047f9d",
+        "file": "blocking-native.spec.mjs",
+        "name": "blocking-native.spec.mjs > Blocking actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "id": "8cee620c7c603e9f",
+        "file": "blocking-native.spec.mjs",
+        "name": "blocking-native.spec.mjs > Blocking actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "id": "f0535ee7cf68fc58",
+        "file": "blocking-shared-native.spec.mjs",
+        "name": "blocking-shared-native.spec.mjs > Blocking shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "status": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "id": "55607a46058c8d82",
+        "file": "ensemble-mcp.spec.mjs",
+        "name": "ensemble-mcp.spec.mjs > B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "id": "2b9f913fb495e9ab",
+        "file": "ensemble-mcp.spec.mjs",
+        "name": "ensemble-mcp.spec.mjs > B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "status": "skipped",
+        "skipReason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "id": "ccaa5af4df0c2eea",
+        "file": "keyframe-backup.spec.mjs",
+        "name": "keyframe-backup.spec.mjs > frozen pre-C production build rejects actual C archive through its restore input before writes",
+        "status": "skipped",
+        "skipReason": "Requires the retained pre-C production build; no current-source substitute is accepted."
+      },
+      {
+        "id": "3fe5282a09d6be3c",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > Keyframes actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "id": "21141cba7c22fdee",
+        "file": "keyframe-native.spec.mjs",
+        "name": "keyframe-native.spec.mjs > Keyframes actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "id": "90657afc1b464a2d",
+        "file": "keyframe-shared-native.spec.mjs",
+        "name": "keyframe-shared-native.spec.mjs > Keyframes shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "status": "skipped",
+        "skipReason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "id": "09209c22250e283f",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > Windows production launcher pairs only after the real owned WPF verification window allows it",
+        "status": "skipped",
+        "skipReason": "Opt-in real WPF certification: KRAKINAI_NATIVE_QA=1 on Windows, with scripts trusted under the existing execution policy."
+      },
+      {
+        "id": "179c83c2956a2797",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged",
+        "status": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "id": "0895c5df101d0285",
+        "file": "local-mcp-native.spec.mjs",
+        "name": "local-mcp-native.spec.mjs > actual installed Codex CLI pairs through the signed Windows window and reads only the selected project",
+        "status": "skipped",
+        "skipReason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "id": "00a6643c1279175a",
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "name": "local-mcp-workflow-native.spec.mjs > actual CLI complete revision workflow at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "id": "834e51aae61e13f8",
+        "file": "local-mcp-workflow-native.spec.mjs",
+        "name": "local-mcp-workflow-native.spec.mjs > actual CLI complete revision workflow at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "id": "163e805eaaa21cd5",
+        "file": "recipe-conversion-native.spec.mjs",
+        "name": "recipe-conversion-native.spec.mjs > installed Codex ten-shot recipe lifecycle at http://127.0.0.1:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "id": "71e2f12cfee4d543",
+        "file": "recipe-conversion-native.spec.mjs",
+        "name": "recipe-conversion-native.spec.mjs > installed Codex ten-shot recipe lifecycle at http://localhost:4173",
+        "status": "skipped",
+        "skipReason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "id": "1b44fb5a0eba5f70",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      },
+      {
+        "id": "c0c0a2d8542142a5",
+        "file": "recipe-mcp.spec.mjs",
+        "name": "recipe-mcp.spec.mjs > B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation",
+        "status": "skipped",
+        "skipReason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      }
+    ]
+  },
+  "unitReportSha256": "a16df14ac21db8d53c8b7d4cd858050943a74eee658f920127a43711f6de9706",
+  "screenshots": [
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/before-1440.png",
+      "bytes": 136681,
+      "sha256": "11f1ce1a243bc60f0b541a5d77ab922711ebe6b309da9670f5de13bd2ec6f81d",
+      "width": 1440,
+      "kind": "before"
+    },
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/before-768.png",
+      "bytes": 134398,
+      "sha256": "6fdfc389b02e4ba6a7984d59e6b3816f0cdbcc3a2184631e08a62589c4071c3d",
+      "width": 768,
+      "kind": "before"
+    },
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/before-390.png",
+      "bytes": 89961,
+      "sha256": "94b01eda24de727977ef16dc9773a85ca7974345035830ecf4e6ce34f5d7a5df",
+      "width": 390,
+      "kind": "before"
+    },
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/after-1440.png",
+      "bytes": 138119,
+      "sha256": "ce72b99bdaea8f2c2cb510e4f9e3cb36f129867e82bacdaa1f9e5d76068c84e8",
+      "width": 1440,
+      "kind": "after"
+    },
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/after-768.png",
+      "bytes": 115001,
+      "sha256": "5a7b137db2b3e434daf1b002723f970a50b969d8a61d2a206c869926b924d2a5",
+      "width": 768,
+      "kind": "after"
+    },
+    {
+      "path": "docs/qa/screenshots/proposal-review-workspace/after-390.png",
+      "bytes": 73845,
+      "sha256": "f9964b622eb4ec37d8b631bf5e52f49b6ec6e348e16df243b3124615b857da6a",
+      "width": 390,
+      "kind": "after"
+    }
+  ],
+  "sdkCallEvidence": [
+    {
+      "scenario": "active-apply-lock",
+      "sourceSha256": "f5289dc7e5e6a89eaa31a1454a79b9bec12f1d137b7aa9adee912dfdf8a3a891",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "c72fb36a38c574bfd0e14524cc1467a8949f310b034591ff05b1e70d26cb05f5",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_get_project",
+          "received": true,
+          "responseSha256": "a5ec5536198e1a340190baf137f7ba596e52547e020cad1d5a24a8e082d4635c",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "9c565aa738ce246f9414c62008b441be4b7085b6419f1e5116d618730a20f873",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "bulk-layout",
+      "sourceSha256": "95ed963524c938c831ffce5632016b4281db87760cda44fa5038a456c2d9fcd2",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "29256885bb39ee5d8088fc93d23eabf1d2b289fefbfb84e3e98b5d4b67ac4c86",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "delayed-apply-owner",
+      "sourceSha256": "13ca2ab90d47f1d97ce2aa457283e7b435e1465251aa61328e7f38ad76d5ed4d",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "8771d9beb70f3d303f639e3750c541b07fe193df9644766e5464af786499e061",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "delayed-apply-recovery",
+      "sourceSha256": "e4f7586f2e6cecac3cc2dba7e1d3b747861e559e89f96a5368d6b49e35d791a5",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "f3548eb676b2a3fb6e022654cacf0867a4381a83546d195ea637408537572bf6",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "eight-successes",
+      "sourceSha256": "1409155708b5fcf046a26ea4fa78543989d0bd1129745718fee713284099a53c",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "09759e15ee7332eedd990f358cd82c408c70b6854378620185cb1b062c3f7b83",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "52ea3f7ad1361c2ca263bb8c70e2ab1c9aea784b59d472f1ad3e357c0b770641",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "2e99d2b06e74ee6aa72ca9dd2c403973f64053f17e665cbfe115d19ff6066c94",
+          "ok": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "89793e51a4ec7b8f0f67112c1d3a7696d2f15359350617586e19ee8de9cbea99",
+          "ok": true
+        },
+        {
+          "id": 5,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "0928dc1de6d9e269da0c66d0808f6c217cc8b9227acfbea93c42173ccf5ad85e",
+          "ok": true
+        },
+        {
+          "id": 6,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "038ee9a5e8096e181e5c467d44ffaf39127062c1dffed2a436d11a228fc0d580",
+          "ok": true
+        },
+        {
+          "id": 7,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "33db572077c8b64bad4442dca21de077ce2c800793db2fdb510e36e3a0b576dc",
+          "ok": true
+        },
+        {
+          "id": 8,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "1d57c1aed72a8949ea1928c65d6e203b74ee387c2f5eb191b6a932f58263c6a3",
+          "ok": true
+        },
+        {
+          "id": 9,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "b967e9049d67c12d806b4bf88720a064066e03114d5f085a42fce187103d8998",
+          "ok": false,
+          "errorCode": "QUEUE_FULL"
+        },
+        {
+          "id": 10,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "ff58b625f3d6581378fb3002ca4a455679e1e54394563df4fa680c651e8e92de",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "expiry",
+      "sourceSha256": "0c4e0391f65cfb11498111464ab224d1e494d30d0f1ec5ba060c7ca139431ef6",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": []
+    },
+    {
+      "scenario": "feedback",
+      "sourceSha256": "a1b4a081d9dde6753bbf9e5f45a0013cbb8b5792bae238074cbb19a4980661e9",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "c72fb36a38c574bfd0e14524cc1467a8949f310b034591ff05b1e70d26cb05f5",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_get_project",
+          "received": true,
+          "responseSha256": "a5ec5536198e1a340190baf137f7ba596e52547e020cad1d5a24a8e082d4635c",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "281911ac4197cb6db98ac9d5e841aa0059ae38072c12e07edb8a5114fab58c9d",
+          "ok": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "a11e16f411b44bd8c1e285aad90b7e85a5e64e74a22f97dfb7cd09105a7e7b01",
+          "ok": true
+        },
+        {
+          "id": 5,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "d2b99eb91ff0e137068ba7e8da9dd75e4fb8d783025aa12c14fef3e1e24ae7e8",
+          "ok": false,
+          "errorCode": "PERMISSION_DENIED"
+        },
+        {
+          "id": 6,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "d584c24ee85af69ab2da9d0189d775465ffce404f08c8b8f0ab788ec079ba984",
+          "ok": true
+        },
+        {
+          "id": 7,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "cdd3b100b213a8481b850de56e645fc93c998b3cb618aa975aadac25313797e3",
+          "ok": true
+        },
+        {
+          "id": 8,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "5de10be9769e96105bebc8b989ef7e26647a9c424f21b3bc09ebb703c5740a0e",
+          "ok": true
+        },
+        {
+          "id": 9,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "92c853bd928b2e4a91671f78f03dd989bc40fae773835c44c3adb457c2b6feff",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "quota-stale-tab",
+      "sourceSha256": "addd56cac763a926e9d5e4c03f6f1ca5a17644475f3961aceba06d9f7ea55d08",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "c72fb36a38c574bfd0e14524cc1467a8949f310b034591ff05b1e70d26cb05f5",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_get_project",
+          "received": true,
+          "responseSha256": "a5ec5536198e1a340190baf137f7ba596e52547e020cad1d5a24a8e082d4635c",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "b64b960708aa42241a41ac1591a0702fdf5e13542b52bae621b0e729a0ae17d2",
+          "ok": true
+        },
+        {
+          "id": 4,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "044506657ade0593a35fbff30e420f21863234ff2c0e4a421e1558d48d4fb295",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "restart-after",
+      "sourceSha256": "1895e0d96498aa2d6ffaabcf539f40a0f4c7c8a48dbfb8d9f52cea8facacbcc8",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "eac7e58206cdb888cc45ace9b889cb0db585a13cab19dc1964b73b9e1f54b313",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "a3a1f4706225d7969a90859a13a6d7edb0fc247bf13d2abf0a8f9e7f64662330",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "restart-before",
+      "sourceSha256": "059c5f7ee401db798eeb2278784e4c5953503fb9dfe91f396333a548d6debc92",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "c72fb36a38c574bfd0e14524cc1467a8949f310b034591ff05b1e70d26cb05f5",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_get_project",
+          "received": true,
+          "responseSha256": "a5ec5536198e1a340190baf137f7ba596e52547e020cad1d5a24a8e082d4635c",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "22fdcb8c9bb63497c9a3c10914a9640b2c38f965b24c4420f7688669850a191b",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "uncertain-after-reload",
+      "sourceSha256": "a7b6780cd064ea898bf001c5118be47adc99134b952ed9ce79cc6d26e9073d1e",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_proposal_status",
+          "received": true,
+          "responseSha256": "89c15801f057121782e34e3c86cfa1e5a9a2a7f4e9d22feec221b69e59c85b11",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "0f126b54d38ffb4c28dac1d2db8b621b5ee78f5aeaedaaa4c17582d73a3682d0",
+          "ok": true
+        }
+      ]
+    },
+    {
+      "scenario": "uncertain-before-reload",
+      "sourceSha256": "1d53a260312ace9c4f2e5f0d293173fb6df4b1fe2a753a68d28edd1e42017192",
+      "kind": "Actual SDK calls with synthetic verifier; no native/installed-CLI claim",
+      "calls": [
+        {
+          "id": 1,
+          "tool": "krakinai_get_scene",
+          "received": true,
+          "responseSha256": "c72fb36a38c574bfd0e14524cc1467a8949f310b034591ff05b1e70d26cb05f5",
+          "ok": true
+        },
+        {
+          "id": 2,
+          "tool": "krakinai_get_project",
+          "received": true,
+          "responseSha256": "a5ec5536198e1a340190baf137f7ba596e52547e020cad1d5a24a8e082d4635c",
+          "ok": true
+        },
+        {
+          "id": 3,
+          "tool": "krakinai_submit_change_set",
+          "received": true,
+          "responseSha256": "e3bc955642717275e4ac3c4c57f492d703dcc4b71dfb46bbeb2011ded0c6f79c",
+          "ok": true
+        }
+      ]
+    }
+  ],
+  "protectedSource": [
+    {
+      "path": "src/domain/validation.ts",
+      "sha256": "8d7022fe037bd0dafc55c1dd6786be53b62b4d3a0b32e073cb1aa79fa4978232",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "src/storage/db.ts",
+      "sha256": "52df1e37c89d84014d44b80e7d30b640dc060c516b99446c6b792f2830739bd0",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "src/storage/changeSets.ts",
+      "sha256": "58033ea01cf198cd1fa7c8f863d464cfe82de08cf4a1d7af908569eed40fb2fe",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "src/domain/promptAssembler.ts",
+      "sha256": "482cb3a8925421ec3f7f554799ac8ff0fbf2d686678edd5530b896b20e667fc3",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "src/domain/changeSetSchema.ts",
+      "sha256": "d4eec0a5a395f251787876392f9abf20abd2a38c864069e40af97f66cf5f3b6e",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "c4e5413b3d4535ee9a1cfacf7760b5344cf3d35a55e5390a3a32d35524e39d34",
+      "unchangedAgainstBase": true
+    },
+    {
+      "path": "bridge/package-lock.json",
+      "sha256": "faeddcda4c48831aa03d71ae50af8d0acfc92e633cffe8b6fa462db7d4ddcd04",
+      "unchangedAgainstBase": true
+    }
+  ],
+  "intendedFiles": [
+    "README.md",
+    "docs/agent-authoring-guide.md",
+    "docs/local-codex-mcp.md",
+    "docs/proposal-review.md",
+    "docs/qa/proposal-review-workspace-results.json",
+    "docs/qa/proposal-review-workspace.md",
+    "docs/qa/screenshots/proposal-review-workspace/after-1440.png",
+    "docs/qa/screenshots/proposal-review-workspace/after-390.png",
+    "docs/qa/screenshots/proposal-review-workspace/after-768.png",
+    "docs/qa/screenshots/proposal-review-workspace/before-1440.png",
+    "docs/qa/screenshots/proposal-review-workspace/before-390.png",
+    "docs/qa/screenshots/proposal-review-workspace/before-768.png",
+    "docs/superpowers/plans/2026-11-04-proposal-review-workspace.md",
+    "docs/superpowers/specs/2026-11-04-proposal-review-workspace-design.md",
+    "e2e/blocking-native-fixture.mjs",
+    "e2e/ensemble-fixture.mjs",
+    "e2e/ensemble-mcp.spec.mjs",
+    "e2e/keyframe-fixture.mjs",
+    "e2e/local-mcp-fixture.mjs",
+    "e2e/local-mcp.spec.mjs",
+    "e2e/proposal-review.spec.mjs",
+    "e2e/recipe-change-set-fixture.mjs",
+    "e2e/recipe-conversion-fixture.mjs",
+    "e2e/recipe-mcp.spec.mjs",
+    "src/__tests__/mcpBroker.test.ts",
+    "src/__tests__/proposalFeedback.test.ts",
+    "src/__tests__/proposalReadiness.test.ts",
+    "src/__tests__/proposalReview.test.ts",
+    "src/__tests__/proposalReviewBroker.test.ts",
+    "src/__tests__/proposalReviewError.test.tsx",
+    "src/__tests__/proposalReviewInbox.test.ts",
+    "src/__tests__/proposalReviewLock.test.ts",
+    "src/__tests__/proposalReviewWorkspace.test.tsx",
+    "src/components/ChangeSetPreview.tsx",
+    "src/components/McpProposalReview.tsx",
+    "src/components/OutfitReviewDecisions.tsx",
+    "src/components/RecipeOperationPreview.tsx",
+    "src/components/aiConnections/IncomingProposals.tsx",
+    "src/components/aiConnections/ProposalIssues.tsx",
+    "src/components/aiConnections/ProposalOperationDetail.tsx",
+    "src/components/aiConnections/ProposalRejectionDialog.tsx",
+    "src/components/aiConnections/ProposalReviewWorkspace.tsx",
+    "src/components/aiConnections/ReviewPromptText.tsx",
+    "src/components/aiConnections/proposalReview.css",
+    "src/components/blocking/BlockingOutputReview.tsx",
+    "src/components/blocking/BlockingProposalReview.tsx",
+    "src/components/keyframes/KeyframeProposalApprovals.tsx",
+    "src/components/keyframes/KeyframeProposalReview.tsx",
+    "src/connections/AiConnectionContext.tsx",
+    "src/connections/proposalBroker.ts",
+    "src/connections/proposalInbox.ts",
+    "src/connections/proposalReviewLock.ts",
+    "src/domain/changeSetPlanner.ts",
+    "src/domain/mcpProtocol.ts",
+    "src/domain/proposalFeedback.ts",
+    "src/domain/proposalReadiness.ts",
+    "src/domain/proposalReview.ts",
+    "src/screens/AiConnectionsScreen.tsx",
+    "src/storage/proposalReviewInbox.ts",
+    "src/types/changeSet.ts",
+    "src/types/mcp.ts",
+    "src/types/proposalReview.ts"
+  ],
+  "preservation": {
+    "realLibraryTouched": false,
+    "globalCodexConfigChanged": false,
+    "liveReleaseActivated": false,
+    "nativeSignaturesChanged": false,
+    "qaProfilesDeleted": false,
+    "mainDbVersion": 3,
+    "mainStoreCount": 8,
+    "reviewDbVersion": 1,
+    "reviewStoreCount": 1
+  },
+  "limitations": [
+    "SDK synthetic verification is not fresh signed native or installed-CLI certification.",
+    "18 browser gates are explicitly skipped; their exact names/reasons are listed.",
+    "Manual screen-reader, virtual-keyboard and system clipboard audits are not claimed.",
+    "Review drafts are excluded from library backups; browser-origin storage can be cleared.",
+    "Lifecycle transitions/Apply require Web Locks; missing support fails closed."
+  ],
+  "priorRuns": [
+    {
+      "name": "Initial focused browser attempt1",
+      "passed": 1,
+      "failed": 4,
+      "retained": true
+    },
+    {
+      "name": "Full browser attempt1",
+      "interrupted": true,
+      "countedAsPass": false
+    },
+    {
+      "name": "Full browser attempt2",
+      "passed": 247,
+      "failed": 4,
+      "skipped": 18,
+      "retained": true,
+      "cause": "Legacy UI harness assumptions; corrected focused reruns passed."
+    },
+    {
+      "name": "Final full browser run",
+      "passed": 251,
+      "failed": 0,
+      "skipped": 18,
+      "exitCode": 0
+    },
+    {
+      "name": "First staged diff whitespace check",
+      "exitCode": 2,
+      "cause": "A CRLF ending on the new broker test final line; normalized to LF."
+    }
+  ],
+  "runtime": {
+    "node": "22.23.3",
+    "playwright": "1.64.1",
+    "chromium": "156.0.8078.4",
+    "playwrightChromiumRevision": "1248"
+  },
+  "ciArtifactWriter": {
+    "exitCode": 0,
+    "bytes": 58795,
+    "maximumBytes": 65536,
+    "unitCases": 1622,
+    "browserCases": 269,
+    "hostedRun": false
+  }
+}

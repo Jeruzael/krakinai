@@ -22,11 +22,13 @@ export function RecipeOperationPreview({
   changeSet,
   approval,
   findings,
+  view='all',
 }: {
   row: ImportOperationPreview;
   changeSet: ChangeSet;
   approval: ChangeSetApproval;
   findings: ImportFinding[];
+  view?:'all'|'components'|'outputs';
 }) {
   const [mode, setMode] = useState<OutputMode>("full"),
     [status, setStatus] = useState("");
@@ -83,7 +85,7 @@ export function RecipeOperationPreview({
       {resolved?.previousEnsemble&&<details><summary>Previous frozen participants and cues (unchanged)</summary><EnsembleSummary ensemble={resolved.previousEnsemble} label="Previous ensemble"/></details>}
       {resolved?.ensemble&&<EnsembleSummary ensemble={resolved.ensemble}/>}
       {!resolved?.ensemble&&operation.ensemble&&<details><summary>Unresolved participant and cue requests</summary><pre>{JSON.stringify(operation.ensemble,null,2)}</pre></details>}
-      <div className="import-recipe-components">
+      {view!=='outputs'&&<><div className="import-recipe-components">
         <table aria-label="Resolved recipe components">
           <thead>
             <tr>
@@ -236,7 +238,8 @@ export function RecipeOperationPreview({
           again. Optional reference guides never replace a required original.
         </p>
       </details>
-      {outputs && (
+      </>}
+      {view!=='components'&&outputs && (
         <div className="import-recipe-outputs">
           <CinematographyTabs
             id={id}
