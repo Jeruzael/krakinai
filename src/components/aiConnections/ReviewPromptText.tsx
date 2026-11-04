@@ -1,0 +1,7 @@
+import React,{useRef,useState} from 'react';
+import {downloadBlobAsFile} from '../../hooks/useObjectUrl';
+export function ReviewPromptText({label,text}:{label:string;text:string|undefined}){
+  const field=useRef<HTMLTextAreaElement>(null),[status,setStatus]=useState('');
+  const copy=async()=>{try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(text??'');setStatus('Complete text copied.');}catch{field.current?.focus();field.current?.select();setStatus('Copy is unavailable. The complete text is selected for manual copying.');}};
+  return <section className="pr-prompt"><div className="pr-prompt-heading"><strong>{label}</strong>{text!==undefined&&<div className="pr-prompt-tools"><span className="muted-text">{text.length.toLocaleString()} characters</span><button type="button" className="btn btn-secondary btn-sm" aria-label={'Copy '+label} onClick={()=>void copy()}>Copy</button><button type="button" className="btn btn-secondary btn-sm" aria-label={'Download '+label} onClick={()=>downloadBlobAsFile(new Blob([text],{type:'text/plain;charset=utf-8'}),'krakinai-'+label.replace(/[^a-zA-Z0-9._-]/g,'_')+'.txt')}>Download</button></div>}</div>{text===undefined?<p className="muted-text">Not available in this preview. Complete the required inputs and revalidate.</p>:<textarea ref={field} className="textarea" readOnly aria-label={label} value={text} rows={7}/>}<p role="status" className="pr-inline-status">{status}</p></section>;
+}

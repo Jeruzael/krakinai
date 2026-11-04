@@ -12,6 +12,7 @@ export function OutfitReviewDecisions({
   snapshot,
   disabled,
   onApproval,
+  operationId,
 }: {
   changeSet: ChangeSet;
   approval: ChangeSetApproval;
@@ -19,12 +20,13 @@ export function OutfitReviewDecisions({
   snapshot: LibrarySnapshot;
   disabled: boolean;
   onApproval: (approval: ChangeSetApproval) => void;
+  operationId?:string;
 }) {
   const [reuseIntent, setReuseIntent] = useState<Record<string, boolean>>({});
   const operations = changeSet.operations.filter(
     (o) =>
       o.type === "variant.propose" || o.type === "variant.review_candidate",
-  );
+  ).filter(o=>!operationId||o.operationId===operationId);
   if (!operations.length) return null;
   const choice = (
     id: string,

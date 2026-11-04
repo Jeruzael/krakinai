@@ -974,7 +974,7 @@ export function planChangeSet(
       media: state.media,
       allowMissingCastSources: true,
     });
-    if (error) finding(undefined, "PROJECT_VALIDATION", error);
+    if (error) plan.findings.push({severity:'blocking',code:'PROJECT_VALIDATION',message:error,projectId:id});
     plan.projectRevisions[id] = {
       before: initialRevisions.get(id) ?? 0,
       after: c.project!.revision,

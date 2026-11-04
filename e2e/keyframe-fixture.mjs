@@ -1,5 +1,5 @@
 import {expect} from '@playwright/test';
-import {selectMcpRecord,applyMcpPermissions} from './local-mcp-fixture.mjs';
+import {selectMcpRecord,applyMcpPermissions,openMcpProposal} from './local-mcp-fixture.mjs';
 export async function seedKeyframes(page,{twoFrames=false}={}){
  await page.goto('/__qa_ready');const ids=await page.evaluate(async twoFrames=>{
   const bitmap=createImageBitmap,locks=navigator.locks,{seedKeyframeStorage}=await import('/src/__tests__/fixtures/keyframeStorageFixture.ts'),f=await seedKeyframeStorage(),{writeRecord}=await import('/src/__tests__/fixtures/ensembleStorageFixture.ts');if(bitmap!==createImageBitmap||locks!==navigator.locks)throw Error('Native media or locks replaced.');
@@ -24,6 +24,6 @@ export async function keyframePackage(bridge,ids,label='sdk'){
  return{schema:'krakinai.change-set.v6',changeSetId:'synthetic-keyframe-'+label,source:{kind:'codex',label:'Synthetic exact Aya Shot09 acceptance'},operations:[{operationId:'add-middle',type:'scene.revise_recipe',clientRef:'new-take',project:{id:ids.projectId,expectedRevision:project.data.expectedRevision},shot:{id:ids.shotId},sceneId:ids.sceneId,expectedHeadId:source.data.expectedHeadId,expectedSourceRevision:source.data.expectedSourceRevision,expectedSourceRecipeDigest:source.data.expectedSourceRecipeDigest,expectedBlockingDigest:source.data.expectedBlockingDigest,expectedKeyframeDigest:source.data.expectedKeyframeDigest,keyframes:{version:1,expectedBaseDigest:source.data.expectedKeyframeDigest,frameUpserts:[middle],frameOrder:['start','middle','end']},videoDecision:'keep_exact_unverified'}]};
 }
 export async function approveKeyframeProposal(page,proposalId,{apply=true}={}){
- await page.getByRole('tab',{name:'Incoming Proposals',exact:true}).click();await page.locator('button[data-proposal-id="'+proposalId+'"]').click();await page.getByRole('region',{name:'Frame proposal review',exact:true}).waitFor();
+ await openMcpProposal(page,proposalId);await page.getByRole('button',{name:'Review add-middle',exact:true}).click();await page.getByRole('tab',{name:'Frames',exact:true}).click();await page.getByRole('region',{name:'Frame proposal review',exact:true}).waitFor();
  for(const label of ['Approve storyboard changes','Approve new immutable scenes','Approve Blocking changes','Approve keyframe and image-prompt changes','Approve frame video decision'])await page.getByLabel(label,{exact:true}).check();await page.getByLabel('I reviewed this exact proposal',{exact:true}).check();await expect(page.getByRole('button',{name:'Apply reviewed batch',exact:true})).toBeEnabled();if(apply){await page.getByRole('button',{name:'Apply reviewed batch',exact:true}).click();await page.getByRole('heading',{name:'Import receipt',exact:true}).waitFor();}
 }

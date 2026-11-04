@@ -111,6 +111,13 @@ export async function setMcpFlag(page, label, enabled = true) {
   await page.getByRole('tab', { name: 'Connection', exact: true }).click();
 }
 export async function showMcpProposals(page) { await page.getByRole('tab', { name: 'Incoming Proposals', exact: true }).click(); }
+export async function openMcpProposal(page,id) {
+  await showMcpProposals(page);
+  const back=page.getByRole('button',{name:'Back to proposals',exact:true});
+  if(await back.isVisible())await back.click();
+  await page.locator(`button[data-proposal-id="${id}"]`).click();
+  await page.getByRole('heading',{name:'Review incoming changes',exact:true}).waitFor();
+}
 export async function selectMcpReceipt(page, receipt) {
   await openMcpPermissions(page);
   await page.getByRole('button', { name: /^Receipt recovery category,/ }).click();
@@ -121,8 +128,12 @@ export async function selectMcpReceipt(page, receipt) {
 }
 export async function approveMcpContent(page, { beforeApply } = {}) {
   await showMcpProposals(page);
-  for (const label of ['Approve storyboard changes', 'Approve new immutable scenes']) { const check = page.getByLabel(label, { exact: true }); if (await check.count()) { await check.check(); await expect(check).toBeChecked(); } }
-  await page.getByLabel('I reviewed this exact proposal', { exact: true }).check();
+  const issues=page.getByRole('button',{name:'Issues & approvals',exact:true}),dialog=page.getByRole('dialog',{name:'Issues and approvals',exact:true});
+  if(await issues.isVisible()&&!await page.getByLabel('I reviewed this exact proposal',{exact:true}).isVisible())await issues.click();
+  const controls=await dialog.isVisible()?dialog:page;
+  for (const label of ['Approve storyboard changes', 'Approve new immutable scenes']) { const check = controls.getByLabel(label, { exact: true }); if (await check.count()) { await check.check(); await expect(check).toBeChecked(); } }
+  await controls.getByLabel('I reviewed this exact proposal', { exact: true }).check();
+  if(await dialog.isVisible())await page.keyboard.press('Escape');
   if (beforeApply) await beforeApply();
   await page.getByRole('button', { name: 'Apply reviewed batch', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Import receipt', exact: true })).toBeVisible();

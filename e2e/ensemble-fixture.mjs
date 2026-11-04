@@ -310,6 +310,7 @@ export function ensembleBrowserRecipe(
   };
 }
 export async function chooseOutfitCreate(page, id = "outfit") {
+  if(await page.locator('.pr-workspace').count())await page.getByRole('button',{name:'Review '+id,exact:true}).click();
   const summary = page.getByText("Outfit variant decisions (1)", {
     exact: true,
   });

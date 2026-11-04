@@ -25,10 +25,12 @@ export async function configureBlockingNative(page,ids){
  const picker=page.getByRole('region',{name:'Blocking authoring text record selection',exact:true});await picker.getByLabel('Search Blocking authoring text',{exact:true}).fill(ids.sceneId);await picker.locator('.ai-record-row').filter({hasText:ids.sceneId}).getByRole('checkbox').check();await applyMcpPermissions(page);await page.getByRole('tab',{name:'Connection',exact:true}).click();
 }
 export async function approveBlockingNative(page,proposalId,{beforeDecision}={}){
- await showMcpProposals(page);await page.locator('button[data-proposal-id="'+proposalId+'"]').click();await page.getByRole('region',{name:'Blocking proposal turn',exact:true}).waitFor();
+ await showMcpProposals(page);await page.locator('button[data-proposal-id="'+proposalId+'"]').click();if(await page.locator('.pr-workspace').count()){await page.getByRole('button',{name:'Review turn',exact:true}).click();await page.getByRole('tab',{name:'Video',exact:true}).click();}await page.getByRole('region',{name:'Blocking proposal turn',exact:true}).waitFor();
  await expect(page.getByRole('combobox',{name:'Full output decision',exact:true})).toHaveValue('');await expect(page.getByLabel('I reviewed this exact proposal',{exact:true})).not.toBeChecked();
  if(beforeDecision)await beforeDecision();
  await page.getByRole('combobox',{name:'Full output decision',exact:true}).selectOption('canonical');await expect(page.getByRole('combobox',{name:'Full output decision',exact:true})).toBeEnabled();
- for(const label of ['Approve storyboard changes','Approve new immutable scenes','Approve blocking changes']){await page.getByLabel(label,{exact:true}).check();await expect(page.getByLabel(label,{exact:true})).toBeEnabled();}
- await page.getByLabel('I reviewed this exact proposal',{exact:true}).check();await page.getByRole('button',{name:'Apply reviewed batch',exact:true}).click();await expect(page.getByRole('heading',{name:'Import receipt',exact:true})).toBeVisible();
+ if(!await page.getByLabel('Approve storyboard changes',{exact:true}).isVisible())await page.getByRole('button',{name:'Issues & approvals',exact:true}).click();
+ const dialog=page.getByRole('dialog',{name:'Issues and approvals',exact:true}),controls=await dialog.isVisible()?dialog:page;
+ for(const label of ['Approve storyboard changes','Approve new immutable scenes','Approve blocking changes']){await controls.getByLabel(label,{exact:true}).check();await expect(controls.getByLabel(label,{exact:true})).toBeEnabled();}
+ await controls.getByLabel('I reviewed this exact proposal',{exact:true}).check();if(await dialog.isVisible())await page.keyboard.press('Escape');await page.getByRole('button',{name:'Apply reviewed batch',exact:true}).click();await expect(page.getByRole('heading',{name:'Import receipt',exact:true})).toBeVisible();
 }

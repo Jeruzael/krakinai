@@ -21,6 +21,7 @@ import {
   beginWriteObservation,
   observedWrites,
   openRecipeOperation,
+  closeRecipeOperation,
 } from "./recipe-change-set-fixture.mjs";
 const evidence = async (name, value) => {
   await mkdir("qa-results/local-mcp", { recursive: true });
@@ -163,9 +164,7 @@ for (const mode of [
         .getByRole("textbox", { name: "Recipe Full output recipe" })
         .inputValue();
       expect(expectedFull).toContain("PRIVATE_B1_IDENTITY_SENTINEL");
-      await page
-        .getByRole("button", { name: "Close operation", exact: true })
-        .click();
+      await closeRecipeOperation(page);
       expect(await observedWrites(page)).toEqual([]);
       await approveMcpContent(page);
       const after = await readRecipeLibrary(page),
@@ -288,9 +287,11 @@ test("B1 same-batch create/reuse/defer uses exact approved IDs without scope exp
       page.getByRole("button", { name: "Apply reviewed batch", exact: true }),
     ).toBeDisabled();
     expect(await readRecipeLibrary(page)).toEqual(before);
-    await page
-      .getByText("Reusable asset decisions (3)", { exact: true })
-      .click();
+    const reviewCandidate=async id=>{
+      await page.getByRole('button',{name:'Review '+id,exact:true}).click();
+      if(!await page.getByRole('combobox',{name:'Decision for '+id,exact:true}).isVisible())await page.getByText('Reusable asset decisions (1)',{exact:true}).click();
+    };
+    await reviewCandidate('new-environment');
     await page
       .getByRole("combobox", {
         name: "Decision for new-environment",
@@ -304,6 +305,7 @@ test("B1 same-batch create/reuse/defer uses exact approved IDs without scope exp
       })
       .selectOption("environment");
     for (const id of ["new-character", "new-action"]) {
+      await reviewCandidate(id);
       await page
         .getByRole("combobox", { name: "Decision for " + id, exact: true })
         .selectOption("create");
