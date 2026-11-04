@@ -25,25 +25,25 @@ async function proof(page){return page.evaluate(async name=>{
  records.media=await Promise.all(records.media.map(async({blob,...record})=>({...record,sha256:[...new Uint8Array(await crypto.subtle.digest('SHA-256',await blob.arrayBuffer()))].map(v=>v.toString(16).padStart(2,'0')).join('')})));
  return {version,records};
 },name);}
-for(const version of [1,2]){
+for(const version of [1,2,3]){
  test(`C explicit header-only upgrade preserves version${version} data and late writes`,async({page,context})=>{
   await seedOld(page,version);const before=await proof(page),app=await context.newPage();await app.goto('/#/');
-  await expect(app.getByRole('heading',{name:'Enable the keyframe-compatible library?'})).toBeVisible();expect(await proof(page)).toEqual(before);
+  await expect(app.getByRole('heading',{name:'Enable the updated library format?'})).toBeVisible();expect(await proof(page)).toEqual(before);
   const download=app.waitForEvent('download');await app.getByRole('button',{name:'Download pre-upgrade full backup'}).click();
   await expect(app.getByRole('status')).toContainText('media hashes checked');
   const archive=await readFile(await(await download).path()),manifest=JSON.parse(strFromU8(unzipSync(archive)['manifest.json']));
   expect(manifest.scenes).toEqual(before.records.scenes);expect(manifest.drafts).toEqual(before.records.drafts);expect(await proof(page)).toEqual(before);
-  await app.getByRole('button',{name:'Enable keyframe-compatible library'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
+  await app.getByRole('checkbox',{name:'I saved a pre-upgrade full backup'}).check();await app.getByRole('button',{name:'Enable updated library format'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
   await page.evaluate(async()=>{const tx=window.oldCUpgradeConnection.transaction('drafts','readwrite'),r=tx.objectStore('drafts').get('blocking-draft');r.onsuccess=()=>tx.objectStore('drafts').put({...r.result,reviewNotes:'Preserved late old-build draft'});await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});});
   const late=await proof(page);await page.evaluate(()=>{window.oldCUpgradeConnection.close();window.oldCUpgradeConnection=null;});
-  await expect(app.getByRole('heading',{name:'Enable the keyframe-compatible library?'})).toHaveCount(0);const after=await proof(app);
-  expect(after.version).toBe(3);expect(after.records).toEqual(late.records);await app.reload();expect((await proof(app)).records).toEqual(late.records);
-  for(const oldVersion of [1,2])expect(await app.evaluate(async({name,oldVersion})=>{const r=indexedDB.open(name,oldVersion);return new Promise(resolve=>{r.onerror=()=>resolve(r.error.name);r.onsuccess=()=>{r.result.close();resolve('unexpected-open');};});},{name,oldVersion})).toBe('VersionError');
+  await expect(app.getByRole('heading',{name:'Enable the updated library format?'})).toHaveCount(0);const after=await proof(app);
+  expect(after.version).toBe(4);expect(after.records).toEqual(late.records);await app.reload();expect((await proof(app)).records).toEqual(late.records);
+  for(const oldVersion of [1,2,3])expect(await app.evaluate(async({name,oldVersion})=>{const r=indexedDB.open(name,oldVersion);return new Promise(resolve=>{r.onerror=()=>resolve(r.error.name);r.onsuccess=()=>{r.result.close();resolve('unexpected-open');};});},{name,oldVersion})).toBe('VersionError');
  });
  test(`Cancel never upgrades version${version}, including a blocked request released later`,async({page,context})=>{
   await seedOld(page,version);const before=await proof(page),app=await context.newPage();await app.goto('/#/');
   await app.getByRole('button',{name:'Cancel',exact:true}).click();expect(await proof(page)).toEqual(before);
-  await app.getByRole('button',{name:'Enable keyframe-compatible library'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
+  await app.getByRole('checkbox',{name:'I saved a pre-upgrade full backup'}).check();await app.getByRole('button',{name:'Enable updated library format'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
   await app.getByRole('button',{name:'Cancel',exact:true}).click();await expect(app.getByRole('status')).toContainText('not changed');
   await page.evaluate(()=>{window.oldCUpgradeConnection.close();window.oldCUpgradeConnection=null;});expect(await proof(page)).toEqual(before);
  });

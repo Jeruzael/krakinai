@@ -1,3 +1,4 @@
+import {logicalImportReceipt} from '../domain/changeSetLedger';
 import {it,expect,vi,afterAll} from 'vitest';
 import {makeBlockingFixture} from './fixtures/blockingFixture';
 import {blockingChangeScenario} from './fixtures/blockingChangeSetFixture';
@@ -35,7 +36,7 @@ it('keeps pre-C frozen video/document bytes, v1-v5 schemas and actual v5 receipt
  const receipt=await applyApprovedChangeSet(preview,preview.approvedDigest),after=await getAllSnapshot();
  expect(await applyApprovedChangeSet(preview,preview.approvedDigest)).toEqual(receipt);
  expect(await getAllSnapshot()).toEqual(after);
- const captured={syntheticOnly:true,sourceCommit:'e3012123647d9989a923936090102fadd58378a5',legacyBaselineSha256:sha(JSON.parse(readFileSync(resolve('src/__tests__/fixtures/blocking-legacy-baseline.json'),'utf8'))),documents:{plain:document(plain),blocking:document(f.draft)},schemaHashes,v5:{packageDigest:preview.packageDigest,approvedDigest:preview.approvedDigest,receipt,receiptSha256:sha(receipt),savedOutputs:after.scenes.map(s=>({id:s.id,outputs:s.outputs}))}};
+ const captured={syntheticOnly:true,sourceCommit:'e3012123647d9989a923936090102fadd58378a5',legacyBaselineSha256:sha(JSON.parse(readFileSync(resolve('src/__tests__/fixtures/blocking-legacy-baseline.json'),'utf8'))),documents:{plain:document(plain),blocking:document(f.draft)},schemaHashes,v5:{packageDigest:preview.packageDigest,approvedDigest:preview.approvedDigest,receipt:logicalImportReceipt(receipt),receiptSha256:sha(logicalImportReceipt(receipt)),savedOutputs:after.scenes.map(s=>({id:s.id,outputs:s.outputs}))}};
  if(env.KRAKINAI_CAPTURE_KEYFRAME_BASELINE==='synthetic-before-implementation'){
   if(existsSync(path))throw Error('Refusing to overwrite the frozen C compatibility baseline.');
   writeFileSync(path,JSON.stringify(captured,null,2)+'\n');

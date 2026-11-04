@@ -1,3 +1,4 @@
+import {importBatchChecks} from '../domain/importBatchChecks';
 import { getAllSnapshot } from '../storage/db';
 import { previewChangeSet, applyApprovedChangeSet } from '../storage/changeSets';
 import { parseChangeSet } from '../domain/changeSetValidation';
@@ -122,7 +123,7 @@ export class ProposalBroker {
           const current=['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema)?await this.#deps.readState():state;this.#assert(context);if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema))assertProposalScope(pkg,this.#scope,current,new Set(),readOnlyDerivation);
           const keyframes=pkg.schema==='krakinai.change-set.v6'?await keyframeMcpPreview(preview,this.#scope,current,args.projection as FrameMcpProjection|undefined):undefined;this.#assert(context);
           if(args.projection&&!keyframes)throw new McpError('INVALID_REQUEST','Frame projection requires a v6 proposal.');
-          return resultData({...(keyframes?{keyframes}:{}), changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}),...(pkg.schema==='krakinai.change-set.v5'?{blocking:blockingMcpPreview(preview,this.#scope,current)}:{}) });
+          return resultData({batchChecks:importBatchChecks(preview),...(keyframes?{keyframes}:{}), changeSetId: pkg.changeSetId, packageDigest: digest, operationCount: pkg.operations.length, requestedOperations: pkg.operations.map(op => ({ operationId: op.operationId, type: op.type })), reviewRequired: true,...(pkg.schema==='krakinai.change-set.v4'?{conversions:conversionMcpPreview(preview,this.#scope)}:{}),...(pkg.schema==='krakinai.change-set.v5'?{blocking:blockingMcpPreview(preview,this.#scope,current)}:{}) });
         }
         const existing = [...this.#proposals.values()].find(p => p.changeSetId === pkg.changeSetId);
         if (existing) {
@@ -207,7 +208,7 @@ export class ProposalBroker {
   }
   #status(p: McpProposalView) {
     const record=this.#inbox.record(p.id),feedback=record?feedbackForCurrentContext(record,this.#feedbackShares.get(p.id),{sessionId:this.#session,scopeEpoch:this.#scope.epoch}):undefined;
-    return { proposalId:p.id,changeSetId:p.changeSetId,packageDigest:p.packageDigest,status:p.status,expiresAt:new Date(p.expiresAt).toISOString(),...(feedback?{feedback}:{}) };
+    return { proposalId:p.id,changeSetId:p.changeSetId,packageDigest:p.packageDigest,status:p.status,expiresAt:new Date(p.expiresAt).toISOString(),...(p.status!=='applied'?{batchChecks:importBatchChecks(p.preview)}:{}),...(feedback?{feedback}:{}) };
   }
   async rejectWithFeedback(id:string,text:string,share:boolean,event:Event):Promise<void>{
     this.#trusted(event);const context=this.#current();

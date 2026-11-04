@@ -81,7 +81,7 @@ it("rejects invalid ledger metadata before replacing a valid library and still a
   const bad = zipSync(entries);
   expect((await validateBackupZip(bad)).valid).toBe(false);
   await expect(restoreFullBackupZip(bad)).rejects.toThrow(
-    /ledger|version|schema/i,
+    /ledger|version|schema|feature/i,
   );
   expect(await getAllSnapshot()).toEqual(before);
   expect((await validateBackupZip(legacy)).valid).toBe(true);

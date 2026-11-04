@@ -29,7 +29,7 @@ import {
 import { validatePhase4Record } from '../domain/phase4Validation';
 import {isDirectPrompt,validateDirectAttachments} from '../domain/directPrompt';
 import {validateSceneRevisionGraph} from '../domain/sceneRevisions';
-import {validateImportLedger} from '../domain/changeSetLedger';
+import {validateImportLedger,prepareImportLedger} from '../domain/changeSetLedger';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
 import {
   collectReferencedMediaIds,
@@ -136,6 +136,7 @@ export async function exportFullBackupZip(): Promise<Uint8Array> {
 
 /** Existing archive implementation, shared with the read-only compatibility gate. */
 export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint8Array>{
+  if(snap.preferences.aiImports)await prepareImportLedger(snap.preferences.aiImports);
   const files: Record<string, Uint8Array> = {};
   const mediaEntries: SerializedMediaManifestEntry[] = [];
   const cChecksums=hasCBackupFeature(detectBackupFeatures(snap));
@@ -264,7 +265,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
   }
 
   if(manifest.preferences?.aiImports!==undefined){
-    try{validateImportLedger(manifest.preferences.aiImports);}catch(error){return {valid:false,error:`Invalid import ledger: ${(error as Error).message}`};}
+    try{validateImportLedger(manifest.preferences.aiImports);await prepareImportLedger(manifest.preferences.aiImports);}catch(error){return {valid:false,error:`Invalid import ledger: ${(error as Error).message}`};}
   }
   for (const record of [...manifest.assets, ...manifest.drafts, ...manifest.scenes, ...manifest.templates]) {
     const error = validatePhase4Record(record);

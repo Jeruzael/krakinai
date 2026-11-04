@@ -20,6 +20,8 @@ For example, **Running / Paired / Connected (4)** means the bridge is running, y
 
 [Review incoming proposals](docs/proposal-review.md) in a compact selected-item workspace with all remaining blockers and approvals visible. Saved local drafts have a 24-hour review window and explicit renewal; reconnection never restores approval. Reject locally or explicitly share a rejection comment with authorized Codex clients. Review drafts are separate from library backups.
 
+[Import history and storage checks](docs/import-history.md) explains compact receipts, independent capacity limits and the protected format upgrade. Review **Storage check** before approval; successful frame derivation alone does not establish that the complete batch fits.
+
 Updating this repository does not update an existing portable launcher folder, shortcut or Codex registration. Follow [switching to the shared release](docs/desktop-bridge-launcher.md#switching-to-the-shared-release) when upgrading. If a copied bridge exits immediately with `HOST_EXITED`, see the [portable-package repair guidance](docs/desktop-bridge-launcher.md#incomplete-portable-package-host_exited).
 
 ---

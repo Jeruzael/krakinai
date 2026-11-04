@@ -5,6 +5,7 @@ import type {
   ChangeSetPlan,
   ChangeSetReceipt,
   ImportLedger,
+  LegacyChangeSetReceipt,
 } from "../types/changeSet";
 import type { Preferences } from "../types/domain";
 import {
@@ -17,7 +18,26 @@ import {
 import { parseChangeSet, validateJsonRule } from "./changeSetValidation";
 import {CHANGE_SET_V6_SCHEMA} from './changeSetSchema';
 import {canonicalStringify} from './changeSetCanonical';
-export const MAX_IMPORT_LEDGER_BYTES = 4 * 1024 * 1024;
+import {decodeImportEvidence,verifyImportEvidence,MAX_RECEIPT_EVIDENCE_BYTES,MAX_EXPANDED_IMPORT_EVIDENCE_BYTES} from './importEvidence';
+import {ImportAdmissionError} from './importAdmission';
+export const MAX_IMPORT_LEDGER_BYTES = 8 * 1024 * 1024;
+export const LEGACY_IMPORT_LEDGER_BYTES=4*1024*1024;
+/** Private expansion for validation only; public MCP projections never call this. */
+export function logicalImportReceipt(receipt:ChangeSetReceipt):LegacyChangeSetReceipt{
+ if(receipt.version!==4)return receipt;
+ if(!['krakinai.change-set.v5','krakinai.change-set.v6'].includes(receipt.changeSetSchema)||'reviewedContent'in receipt)throw Error('Invalid compact receipt schema or duplicate evidence.');
+ const {reviewedEvidence,...base}=receipt;
+ return {...base,version:receipt.changeSetSchema==='krakinai.change-set.v6'?3:2,reviewedContent:decodeImportEvidence(reviewedEvidence)} as LegacyChangeSetReceipt;
+}
+export const importLedgerExpandedBytes=(ledger:ImportLedger)=>ledger.receipts.reduce((n,r)=>n+(r.version===4?r.reviewedEvidence.uncompressedBytes:r.version===1?0:new TextEncoder().encode(r.reviewedContent).length),0);
+export interface VerifiedImportLedger{comparison:string;expandedBytes:number}
+/** Hash/framing verification occurs before a transaction; no decoded history is cached. */
+export async function prepareImportLedger(ledger:ImportLedger):Promise<VerifiedImportLedger>{
+ validateImportLedger(ledger);
+ const captured=structuredClone(ledger),comparison=canonicalStringify(captured),expandedBytes=importLedgerExpandedBytes(captured);
+ for(const receipt of captured.receipts)if(receipt.version===4)await verifyImportEvidence(receipt.reviewedEvidence);
+ return {comparison,expandedBytes};
+}
 const text = (max: number): JsonRule => ({ type: "string", maxLength: max });
 const obj = (
   properties: Record<string, JsonRule>,
@@ -183,14 +203,17 @@ export function validateImportLedger(
 ): asserts value is ImportLedger {
   if (
     new TextEncoder().encode(JSON.stringify(value)).length >
-    MAX_IMPORT_LEDGER_BYTES
+    ((value as {version?:number})?.version===4?MAX_IMPORT_LEDGER_BYTES:LEGACY_IMPORT_LEDGER_BYTES)
   )
-    throw Error(
-      "Import history exceeds its 4 MiB limit; no receipts were dropped.",
+    throw new ImportAdmissionError('LEDGER_CAPACITY',
+      `Import history exceeds its ${(value as {version?:number})?.version===4?8:4} MiB limit; no receipts were dropped.`,
     );
+  const proposed=value as ImportLedger;
+  if(Array.isArray(proposed?.receipts)&&proposed.receipts.length>1000)throw new ImportAdmissionError('LEDGER_RECEIPT_CAPACITY','Import history exceeds its 1,000 receipt limit; no receipts were dropped.');
+  if(Array.isArray(proposed?.candidates)&&proposed.candidates.length+(proposed.variantCandidates?.length??0)>250)throw new ImportAdmissionError('LEDGER_CANDIDATE_CAPACITY','Combined import candidate capacity limit is 250; no candidates were dropped.');
   validateJsonRule(
     obj({
-      version: { enum: [1,2,3] },
+      version: { enum: [1,2,3,4] },
       receipts: { type: "array", maxItems: 1000 },
       candidates: { type: "array", maxItems: 250 },
       variantCandidates:{type:'array',maxItems:250},
@@ -200,10 +223,13 @@ export function validateImportLedger(
   );
   const ledger = value as ImportLedger,
     seen = new Set<string>();
-  if(ledger.candidates.length+(ledger.variantCandidates?.length??0)>250)throw Error('Combined import candidate capacity limit is 250; no candidates were dropped.');
-  for (const receipt of ledger.receipts) {
+  let expandedBytes=0;
+  for (const storedReceipt of ledger.receipts) {
+    if(storedReceipt.version===4&&ledger.version!==4)throw Error('Compact receipt v4 requires protected ledger v4.');
+    const receipt=logicalImportReceipt(storedReceipt);
+    if(receipt.version!==1){const bytes=new TextEncoder().encode(receipt.reviewedContent).length;if(bytes>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY','Receipt review evidence exceeds its 4 MiB expanded limit.');expandedBytes+=bytes;if(expandedBytes>MAX_EXPANDED_IMPORT_EVIDENCE_BYTES)throw new ImportAdmissionError('LEDGER_EVIDENCE_CAPACITY','Import review evidence exceeds its 32 MiB aggregate expanded limit.');}
     if(receipt.version===2&&ledger.version<2)throw Error('Receipt v2 requires ledger v2.');
-    if(receipt.version===3&&ledger.version!==3)throw Error('Receipt v3 requires ledger v3.');
+    if(receipt.version===3&&ledger.version<3)throw Error('Receipt v3 requires ledger v3 or newer.');
     validateJsonRule(
       obj(
         {
@@ -429,8 +455,14 @@ export function appendImportReceipt(
   plan: ChangeSetPlan,
   receipt: ChangeSetReceipt,
 ): ImportLedger {
+  const next=prospectiveImportLedger(previous,plan,receipt);
+  validateImportLedger(next);
+  return next;
+}
+/** Build only; callers must validate before any persistent write. */
+export function prospectiveImportLedger(previous:ImportLedger,plan:ChangeSetPlan,receipt:ChangeSetReceipt):ImportLedger{
   const next = structuredClone(previous);
-  if(receipt.version>next.version)next.version=receipt.version;
+  next.version=4;
   for (const candidate of plan.candidates) {
     const i = next.candidates.findIndex((c) => c.id === candidate.id);
     if (i < 0) next.candidates.push(structuredClone(candidate));
@@ -438,7 +470,6 @@ export function appendImportReceipt(
   }
   if(plan.variantCandidates?.length){next.variantCandidates??=[];for(const candidate of plan.variantCandidates){const index=next.variantCandidates.findIndex(c=>c.id===candidate.id);if(index<0)next.variantCandidates.push(structuredClone(candidate));else next.variantCandidates[index]=structuredClone(candidate)}}
   next.receipts.push(structuredClone(receipt));
-  validateImportLedger(next);
   return next;
 }
 
