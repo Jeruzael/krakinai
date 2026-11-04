@@ -32,7 +32,7 @@ function findingTab(code:string):ProposalDetailTab{
   return 'summary';
 }
 function remedy(f:ImportFinding){
-  if(/BACKUP_METADATA_CAPACITY|LEDGER_CAPACITY/.test(f.code))return 'Request a smaller batch. The existing backup and receipt limits remain unchanged.';
+  if(/BACKUP_METADATA_CAPACITY|LEDGER_|RECEIPT_EVIDENCE_CAPACITY/.test(f.code))return 'Open Batch & project checks → Storage check to identify the exceeded allowance. Revalidate after revising the package; splitting may not reduce cumulative history. No receipt is removed automatically.';
   if(f.code.startsWith('APPROVAL_'))return 'Review and confirm the corresponding approval below. Confirmation does not resolve data conflicts.';
   if(f.code==='PROJECT_VALIDATION')return 'Inspect the Batch project details. A revised package may be needed; no shot is assumed to own this error.';
   if(/MANUAL|DECISION/.test(f.code))return 'Open the affected item and review the exact output or candidate decision.';
@@ -51,6 +51,7 @@ export function proposalReadiness(preview:ChangeSetPreview|undefined,context:Rev
     if(operationId)(byOperation[operationId]??=[]).push(item);else batch.push(item);
   }
   const lifecycleIssue=(code:string,message:string)=>lifecycle.push({id:code,kind:'lifecycle',code,message,target:{kind:'batch',tab:'summary'},remedy:message});
+  if(preview?.capacity?.status==='not_calculable'&&!preview.replay)lifecycleIssue('CAPACITY_NOT_CALCULABLE','Resolve the listed inputs and revalidate to calculate capacity before applying.');
   if(!context.connected||!context.currentBinding)lifecycleIssue('CONNECTION_REQUIRED','Pair in KRAKINAI, review the selected permissions, then revalidate this saved draft.');
   if(context.now>=context.expiresAt||context.status==='expired')lifecycleIssue('REVIEW_WINDOW_EXPIRED','The review window expired. Explicitly revalidate for another day; no previous approval is restored.');
   if(!preview||context.needsRevalidation||context.status==='conflict')lifecycleIssue('REVALIDATION_REQUIRED','Revalidate against current records and permissions before approving.');

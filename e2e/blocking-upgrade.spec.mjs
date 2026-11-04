@@ -26,25 +26,25 @@ async function proof(page){return page.evaluate(async name=>{
 },database);}
 test('explicit header upgrade preserves real legacy records, late old-tab writes and media hashes',async({page,context})=>{
  await legacy(page);const initial=await proof(page),app=await context.newPage();await app.goto('/#/');
- await expect(app.getByRole('heading',{name:'Enable the keyframe-compatible library?'})).toBeVisible();
+ await expect(app.getByRole('heading',{name:'Enable the updated library format?'})).toBeVisible();
  expect(await proof(page)).toEqual(initial);
  const downloaded=app.waitForEvent('download');await app.getByRole('button',{name:'Download pre-upgrade full backup'}).click();
  await expect(app.getByRole('status')).toContainText('media hashes checked');
  const bytes=await readFile(await(await downloaded).path()),manifest=JSON.parse(strFromU8(unzipSync(bytes)['manifest.json']));
  expect(manifest.schemaVersion).toBe(1);expect(manifest.scenes).toEqual(initial.records.scenes);expect(manifest.drafts).toEqual(initial.records.drafts);expect(manifest.preferences).toEqual(initial.records.preferences[0]);expect(await proof(page)).toEqual(initial);
- await app.getByRole('button',{name:'Enable keyframe-compatible library'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
+ await app.getByRole('checkbox',{name:'I saved a pre-upgrade full backup'}).check();await app.getByRole('button',{name:'Enable updated library format'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
  await page.evaluate(async()=>{const db=window.legacyConnection,tx=db.transaction('assets','readwrite'),r=tx.objectStore('assets').get('environment');r.onsuccess=()=>tx.objectStore('assets').put({...r.result,notes:'Late legacy-tab write must remain.'});await new Promise((resolve,reject)=>{tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});});
  const before=await proof(page);await page.evaluate(()=>{window.legacyConnection.close();window.legacyConnection=null;});
- await expect(app.getByRole('heading',{name:'Enable the keyframe-compatible library?'})).toHaveCount(0);
- const after=await proof(app);expect(after.version).toBe(3);expect(after.records).toEqual(before.records);
+ await expect(app.getByRole('heading',{name:'Enable the updated library format?'})).toHaveCount(0);
+ const after=await proof(app);expect(after.version).toBe(4);expect(after.records).toEqual(before.records);
  await app.reload();await expect(app.getByRole('button',{name:'Scene Builder',exact:true}).first()).toBeVisible();expect((await proof(app)).records).toEqual(before.records);
  expect(await app.evaluate(async name=>{const r=indexedDB.open(name,1);return new Promise(resolve=>{r.onerror=()=>resolve(r.error.name);r.onsuccess=()=>{r.result.close();resolve('unexpected-open');};});},database)).toBe('VersionError');
 });
 test('Cancel before consent and during blocked enable leaves version 1 writable and never upgrades later',async({page,context})=>{
  await legacy(page);const before=await proof(page),app=await context.newPage();await app.goto('/#/');
  await app.getByRole('button',{name:'Cancel',exact:true}).click();expect(await proof(page)).toEqual(before);
- await app.getByRole('button',{name:'Enable keyframe-compatible library'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
+ await app.getByRole('checkbox',{name:'I saved a pre-upgrade full backup'}).check();await app.getByRole('button',{name:'Enable updated library format'}).click();await expect(app.getByRole('status')).toContainText('older KRAKINAI tabs');
  await app.getByRole('button',{name:'Cancel',exact:true}).click();await expect(app.getByRole('status')).toContainText('not changed');
  await page.evaluate(()=>{window.legacyConnection.close();window.legacyConnection=null;});expect(await proof(page)).toEqual(before);
- await app.reload();await expect(app.getByRole('heading',{name:'Enable the keyframe-compatible library?'})).toBeVisible();expect(await proof(page)).toEqual(before);
+ await app.reload();await expect(app.getByRole('heading',{name:'Enable the updated library format?'})).toBeVisible();expect(await proof(page)).toEqual(before);
 });

@@ -1,0 +1,1278 @@
+{
+  "schema": "krakinai.qa.import-history.v1",
+  "scope": {
+    "kind": "Local dirty feature-working-tree verification before owner-signed commit",
+    "baseCommit": "4d9fc3dbbc252803011f1fa02253f1154920c063",
+    "branch": "codex/import-history-storage",
+    "workingTreeDirty": true,
+    "platform": "Windows",
+    "node": "22.23.3",
+    "npm": "10.9.9",
+    "browser": "HeadlessChrome/156.0.8078.4",
+    "realLibraryTouched": false,
+    "liveUpgradePerformed": false,
+    "installedCliNativeAcceptanceClaimed": false,
+    "hostedCi": "Not run at local capture. Final signed-head Linux/Windows runs are reported separately in the PR."
+  },
+  "commands": [
+    {
+      "command": "npm test -- --maxWorkers=2 --minWorkers=1 --reporter=default --reporter=json --reporter=junit --outputFile.json=.superpowers/sdd/2026-11-05-import-history-storage/app-final-verified.json --outputFile.junit=qa-results/vitest.xml",
+      "exitCode": 0,
+      "passed": 1656,
+      "files": 210,
+      "durationMs": 298830,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/app-final-verified.txt"
+    },
+    {
+      "command": "npm --prefix bridge test",
+      "exitCode": 0,
+      "passed": 74,
+      "files": 14,
+      "durationMs": 25930,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/bridge-final.txt"
+    },
+    {
+      "command": "npm --prefix bridge run typecheck",
+      "exitCode": 0,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/typecheck-bridge.txt"
+    },
+    {
+      "command": "dotnet run --project launcher/tests/Krakinai.BridgeLauncher.Tests.csproj",
+      "exitCode": 0,
+      "passed": 38,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/launcher-final.txt"
+    },
+    {
+      "command": "npm run typecheck",
+      "exitCode": 0,
+      "durationMs": 15712,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/typecheck-final-verified.txt"
+    },
+    {
+      "command": "npm run build",
+      "exitCode": 0,
+      "durationMs": 27533,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/build-final-verified.txt"
+    },
+    {
+      "command": "node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/blocking-mcp-workflow.test.mjs scripts/qa/keyframe-mcp-workflow.test.mjs scripts/qa/shared-mcp-workflow.test.mjs scripts/qa/shared-codex-client.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs e2e/import-history-resources.test.mjs",
+      "exitCode": 0,
+      "durationMs": 5483,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/helpers-final-verified.txt",
+      "passed": 89,
+      "failed": 0
+    },
+    {
+      "command": "npm audit --omit=dev --json",
+      "exitCode": 0,
+      "durationMs": 1707,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/audit-app-final-verified.txt"
+    },
+    {
+      "command": "npm --prefix bridge audit --omit=dev --json",
+      "exitCode": 0,
+      "durationMs": 1650,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/audit-bridge-final-verified.txt"
+    },
+    {
+      "command": "npm run test:qa",
+      "exitCode": 0,
+      "durationMs": 894,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/qa-final-verified.txt",
+      "passed": 8,
+      "historicalChecks": 207,
+      "historicalScreenshots": 45
+    },
+    {
+      "command": "npm run test:e2e",
+      "environment": {
+        "KRAKINAI_IMPORT_HISTORY_RUN_ID": "final-verified-20261105"
+      },
+      "exitCode": 0,
+      "passed": 262,
+      "skipped": 18,
+      "failed": 0,
+      "flaky": 0,
+      "durationMs": 1280117.554,
+      "log": ".superpowers/sdd/2026-11-05-import-history-storage/browser-final-verified.txt"
+    },
+    {
+      "command": "python scripts/qa/verify-import-history-archives.py qa-results/import-history-storage/final-verified-20261105",
+      "exitCode": 0,
+      "passed": 4,
+      "report": "qa-results/import-history-storage/final-verified-20261105/independent-readback.json"
+    },
+    {
+      "command": "node scripts/qa/ci-summary.mjs",
+      "exitCode": 0,
+      "summaryBytes": 61127,
+      "maxBytes": 65536,
+      "report": "qa-results/summary.json"
+    }
+  ],
+  "verifiedSourceFiles": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "a62fa742dd8547481610b621f1ea219c3f242e0d6f1dea59e726c3761d07c4f9"
+    },
+    {
+      "path": "e2e/blocking-upgrade.spec.mjs",
+      "sha256": "187cdfd776faab5ab9bcbc83b7da0f7edff01e99eb78ef6db53bee845cc8e7c0"
+    },
+    {
+      "path": "e2e/import-history-resources.mjs",
+      "sha256": "7e8cd0bb09c0824c9adfe8c492db6f9625a3090793a34f1fdc1c2fcc7560761d"
+    },
+    {
+      "path": "e2e/import-history-resources.test.mjs",
+      "sha256": "2f9aeb08acad57ee43bfb4a9dcc4ce16b1bfdd8962448635f68c2216512d2c27"
+    },
+    {
+      "path": "e2e/import-history.spec.mjs",
+      "sha256": "997ea6cc7879dfb9e4144b0a4c30a1fbf54584a24542342da331285bd4c095ed"
+    },
+    {
+      "path": "e2e/keyframe-upgrade.spec.mjs",
+      "sha256": "723776e8c9e1263def6d6afc342486d2e46d6392d196f6c9b4997efb746a09be"
+    },
+    {
+      "path": "scripts/qa/keyframe-mcp-workflow.mjs",
+      "sha256": "5d9053c05c8aa99fd36ac6b1862325fde53d77badb1263324e2c2f88dc0d8d9b"
+    },
+    {
+      "path": "scripts/qa/verify-import-history-archives.py",
+      "sha256": "95327b3b6e2886f184cf7d32dc6d9cfbb0e2529944a6bf179f3170c407f0d590"
+    },
+    {
+      "path": "src/__tests__/blockingBackup.test.ts",
+      "sha256": "fa77ea8ffcd5d0ce622ac31527a8b3ec82cabc27166278c13ae1b74702673163"
+    },
+    {
+      "path": "src/__tests__/blockingChangeSetStorage.test.ts",
+      "sha256": "504fb46e1e4d50f8d5db6ddabd754d1429ed1f0325891f7971d1be7b1660331d"
+    },
+    {
+      "path": "src/__tests__/changeSetBackup.test.ts",
+      "sha256": "b64642523e1a5f60c5c150a3bff7d1675078e556680fa7d891e5e48acce4dc84"
+    },
+    {
+      "path": "src/__tests__/changeSetStorage.test.ts",
+      "sha256": "b37135a97d7149f6183e662a3b9b874d537acf0e2980644cdae1c55567a759aa"
+    },
+    {
+      "path": "src/__tests__/compactImportBackup.test.ts",
+      "sha256": "b641b764b7980f64ad4d725b79af5a5a2df2d467856ca6b8a10e099aa8374789"
+    },
+    {
+      "path": "src/__tests__/compactImportLedger.test.ts",
+      "sha256": "36cc51603ecbeb5322b2ad00a2c83e825f02b7aaa8f7545b2c005d907ec70e72"
+    },
+    {
+      "path": "src/__tests__/compactImportStorage.test.ts",
+      "sha256": "adfd7c68d6668aaa15a4a2c4de678050c1b595aa10eb8aae55b91aefe3654f4e"
+    },
+    {
+      "path": "src/__tests__/compactLibraryCompatibility.test.ts",
+      "sha256": "b85081200b0e715b80632424ca62feea26dc6ddac82a7dfe232defaa3b2be3ff"
+    },
+    {
+      "path": "src/__tests__/fixtures/importHistoryFixture.ts",
+      "sha256": "468c77d9a783f596c143f2617691e29dfba20fe9f0f90104b7574d6cbbc9f810"
+    },
+    {
+      "path": "src/__tests__/importCapacityBounds.test.ts",
+      "sha256": "864818d5392eba016380a98404840b8bae6f8e2d8b6e66f3ac00a638601e4e41"
+    },
+    {
+      "path": "src/__tests__/importCapacityMcp.test.ts",
+      "sha256": "d23f1a3c9c29c332545d6b234663a0dd6ce90f24a3b26fbf48bd4f952ee52968"
+    },
+    {
+      "path": "src/__tests__/importCapacityUi.test.tsx",
+      "sha256": "d113cc6efd6b50d1616bc62d8e97ae20567f2e822a41396904b3ef5cf81f9f4c"
+    },
+    {
+      "path": "src/__tests__/importEvidence.test.ts",
+      "sha256": "b072ce11a72c6b552f6661fe6ba55cf1c35d8f7f4ef593dfc4c25b751b58d463"
+    },
+    {
+      "path": "src/__tests__/importHistoryBulk.test.ts",
+      "sha256": "4d54f6d4076d3a7052ea393f7199a8e209cd4a19b8ace37d41475a2ea2d1508f"
+    },
+    {
+      "path": "src/__tests__/keyframeChangeSetStorage.test.ts",
+      "sha256": "9c5cd97bc4924bbc67e63cc1f8f8f39575518138a4b78709520ae3abbe978d0d"
+    },
+    {
+      "path": "src/__tests__/keyframeLedger.test.ts",
+      "sha256": "450bb34e360a857a4e39239e9fc4db3731522e1be1be8a8a72094c988012394c"
+    },
+    {
+      "path": "src/__tests__/keyframeLegacy.test.ts",
+      "sha256": "db8c0259cb4b29a03ba00d74ec8f546aa6e44b22d7bc6424c841b0b8de036ab5"
+    },
+    {
+      "path": "src/__tests__/keyframeLibraryCompatibility.test.ts",
+      "sha256": "92929df0b4d0743fdea5eb6c4c3f2b9a7dad1de1c9e04028a78a355b78e2b4eb"
+    },
+    {
+      "path": "src/__tests__/libraryCompatibility.test.ts",
+      "sha256": "2516d770d9d3170ec7aaaa0c800f0e6fb8fcacb8f2d025af1615fcf99974debc"
+    },
+    {
+      "path": "src/__tests__/libraryCompatibilityGate.test.tsx",
+      "sha256": "1fda0f16405bf11d3214db22490a75016efd04d27125445e88a596508b77e079"
+    },
+    {
+      "path": "src/components/ChangeSetPreview.tsx",
+      "sha256": "ecb576420026af226812bc91b2410c1ef2b66a0e8dbd3451df8ea8fe51ac84c0"
+    },
+    {
+      "path": "src/components/ImportCapacity.tsx",
+      "sha256": "49563cd786d5198ad25c2c721c45d1fb26f0cd05ef3275e96fd1115e0825e7ab"
+    },
+    {
+      "path": "src/components/ImportReceipt.tsx",
+      "sha256": "dd69a4556fab806ff1ebd9ed3c9bebf9b251b8ec21e9239c06f613b0d1cd6a8a"
+    },
+    {
+      "path": "src/components/LibraryCompatibilityGate.tsx",
+      "sha256": "e02df6c4be3abe261fe11fec036ac702d67e664195f79f24cdd8b96b36652edb"
+    },
+    {
+      "path": "src/components/aiConnections/ProposalReviewWorkspace.tsx",
+      "sha256": "ff578b137190a4d48bc12fc5726846440c01fdaf1ddfc75982cc5025c78e0fce"
+    },
+    {
+      "path": "src/connections/proposalBroker.ts",
+      "sha256": "3d18af2bb7ef177c8739b17d728586b8671b3b725d7d8297d72548e86452900b"
+    },
+    {
+      "path": "src/domain/backupFeatures.ts",
+      "sha256": "2a8291ea311fb1ee49eb3b7ef5b02580cd6190fe1d5b8f911d26873f9d25c970"
+    },
+    {
+      "path": "src/domain/changeSetCapacity.ts",
+      "sha256": "20d09cd496809a8b141f41f7d5eee1d3dd1b07a14df04ca360df0bc6d892265e"
+    },
+    {
+      "path": "src/domain/changeSetLedger.ts",
+      "sha256": "17e4e0ce0a7f5b0ce2dfc4e84811e22e45e51db16ceaa0e462f4e9d6164e755c"
+    },
+    {
+      "path": "src/domain/importAdmission.ts",
+      "sha256": "f0a07f48cdc98bf1fe75ebe8d5ac1cf4cf9c3cc26897b9a6a7532193873a99e6"
+    },
+    {
+      "path": "src/domain/importBatchChecks.ts",
+      "sha256": "89dae596eea249dd6bd0b56c3c75356284736e993bab3c455ce2c54b18924b1d"
+    },
+    {
+      "path": "src/domain/importEvidence.ts",
+      "sha256": "091c7093f30aec94f6a0181dcca942a9e41d1bf77afa1ae0e57e3a60bfde0eba"
+    },
+    {
+      "path": "src/domain/mcpReads.ts",
+      "sha256": "f9550a4f1b83556c854e7bf34d665fe1fe1e717e65c38e7be69772fc8261ec04"
+    },
+    {
+      "path": "src/domain/proposalReadiness.ts",
+      "sha256": "5ba2efac5c5059a4edd0ffafd82cffdc333cfb701d370c55a9c364e805ffc4c8"
+    },
+    {
+      "path": "src/storage/backup.ts",
+      "sha256": "79ca530a408a9bb2328504a2096bb88a9248c8d1ce1ae3f193ffd074f8b5ccd1"
+    },
+    {
+      "path": "src/storage/changeSets.ts",
+      "sha256": "f2848758fcf296d2da0fcdbfb7913330528605e20fd6b3743699de17a28ac1b6"
+    },
+    {
+      "path": "src/storage/db.ts",
+      "sha256": "5175c6395c7ca8327c1204b76c8b9ab8b968df2774d7add73c0f9db0fa16f085"
+    },
+    {
+      "path": "src/storage/libraryCompatibility.ts",
+      "sha256": "a14ce5dfb4457042604a856a306295be7d03ae40f6144c4135b6ef0b5dd53cf3"
+    },
+    {
+      "path": "src/types/changeSet.ts",
+      "sha256": "f654b06252d101698cd744ff7b64fc464b7355d47d222270ff02b676acd5e477"
+    }
+  ],
+  "app": {
+    "passed": 1656,
+    "failed": 0,
+    "files": 268,
+    "reportedDurationMs": 298830,
+    "observedTestWindowMs": 298780.8759765625,
+    "report": ".superpowers/sdd/2026-11-05-import-history-storage/app-final-verified.json",
+    "sha256": "cea840dd1629ffc98f0a02a8af91e26784a7af4a0a6dd42154c227c726e982cf"
+  },
+  "browser": {
+    "total": 280,
+    "startTime": "2026-11-04T20:45:09.357Z",
+    "duration": 1280117.554,
+    "expected": 262,
+    "skipped": 18,
+    "unexpected": 0,
+    "flaky": 0,
+    "retries": 0,
+    "explicitSkips": [
+      {
+        "name": "Blocking actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "reason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "name": "Blocking actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "reason": "Acceptance incomplete unless separately run with a Valid signed helper/driver and isolated native pairing."
+      },
+      {
+        "name": "Blocking shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "reason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "name": "B2 signed-native-ipv4: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "reason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "name": "B2 signed-native-localhost: actual stdio SDK revision, Outfit, browser approval, receipt and revocation",
+        "reason": "Requires opt-in Valid signed Windows helper and retained synthetic profile."
+      },
+      {
+        "name": "frozen pre-C production build rejects actual C archive through its restore input before writes",
+        "reason": "Requires the retained pre-C production build; no current-source substitute is accepted."
+      },
+      {
+        "name": "Keyframes actual installed CLI and signed Windows pairing at http://127.0.0.1:4173",
+        "reason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "name": "Keyframes actual installed CLI and signed Windows pairing at http://localhost:4173",
+        "reason": "Incomplete until separately executed with the signed candidate and manual native confirmation."
+      },
+      {
+        "name": "Keyframes shared desktop: actual two-client reads survive one departure and last-client loss revokes pairing",
+        "reason": "Separate manual signed-launcher acceptance; not an automated passing substitute."
+      },
+      {
+        "name": "Windows production launcher pairs only after the real owned WPF verification window allows it",
+        "reason": "Opt-in real WPF certification: KRAKINAI_NATIVE_QA=1 on Windows, with scripts trusted under the existing execution policy."
+      },
+      {
+        "name": "native Windows Deny leaves the production bridge unpaired and the synthetic library unchanged",
+        "reason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "name": "actual installed Codex CLI pairs through the signed Windows window and reads only the selected project",
+        "reason": "Opt-in signed real Windows verifier and installed CLI; no substitute verifier."
+      },
+      {
+        "name": "actual CLI complete revision workflow at http://127.0.0.1:4173",
+        "reason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "name": "actual CLI complete revision workflow at http://localhost:4173",
+        "reason": "Requires actual installed CLI and Valid signed Windows verifier/driver; no injected verifier."
+      },
+      {
+        "name": "installed Codex ten-shot recipe lifecycle at http://127.0.0.1:4173",
+        "reason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "name": "installed Codex ten-shot recipe lifecycle at http://localhost:4173",
+        "reason": "Requires actual installed Codex CLI and Valid signed Windows verifier/driver, never an injected verifier."
+      },
+      {
+        "name": "B1 signed-native-ipv4: actual SDK preview, browser approval, receipt, replay and revocation",
+        "reason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      },
+      {
+        "name": "B1 signed-native-localhost: actual SDK preview, browser approval, receipt, replay and revocation",
+        "reason": "Opt-in real Valid signed Windows helper/driver; synthetic profiles only."
+      }
+    ],
+    "report": "qa-results/playwright.json",
+    "sha256": "3f73e4b93485bc83f0140e3930e93d3bc67a46f3c923247442797e9c3cc4afc5"
+  },
+  "limits": {
+    "storedLedgerBytes": 8388608,
+    "perReceiptExpandedBytes": 4194304,
+    "aggregateExpandedEvidenceBytes": 33554432,
+    "receipts": 1000,
+    "combinedCandidates": 250,
+    "fullBackupManifestBytes": 20971520,
+    "projectExportBytesUnchanged": 134217728
+  },
+  "mcpBrowserWorkflow": {
+    "kind": "Actual MCP SDK calls and browser approval in an isolated synthetic profile; not installed CLI/native acceptance",
+    "shots": 15,
+    "frames": 33,
+    "operations": 30,
+    "sizing": {
+      "storedReceiptBytes": 151958,
+      "expandedEvidenceBytes": 1715608,
+      "storedLedgerBytes": 8382337,
+      "sourceEvidenceSha256": "a87694d04a545a59ca1c6ac31adc790ffd17ddec45ec7fe846a6486de3645fe0",
+      "mediaHashes": [
+        {
+          "id": "blocking-media",
+          "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831"
+        }
+      ],
+      "outputSha256": "fb3c911c8a5f615d574e5712a337f8c619474e13a82372128015f3f2fe9c9e38"
+    },
+    "correlatedCalls": [
+      {
+        "phase": "before-restart",
+        "id": 1,
+        "tool": "krakinai_preview_change_set",
+        "received": true,
+        "responseSha256": "f021e5a18fcdb72aeb4031fed98aa13d1b549f25143c4d946d9a3e9b16e8ed8b",
+        "ok": true
+      },
+      {
+        "phase": "before-restart",
+        "id": 2,
+        "tool": "krakinai_submit_change_set",
+        "received": true,
+        "responseSha256": "f33821b231c425ea0a07fea48beb1069925a99cfb5f615e03f2b3c755e1d7e93",
+        "ok": true
+      },
+      {
+        "phase": "before-restart",
+        "id": 3,
+        "tool": "krakinai_get_proposal_status",
+        "received": true,
+        "responseSha256": "ecd56e6a0999645c21701bbacc2beda3f635c20959680a5c1e6011c6703eba72",
+        "ok": true
+      },
+      {
+        "phase": "before-restart",
+        "id": 4,
+        "tool": "krakinai_submit_change_set",
+        "received": true,
+        "responseSha256": "894ee51ffe38f28dc92d6027e2b3e68d90bab733dac45815026193cb9c1f8dee",
+        "ok": true
+      },
+      {
+        "phase": "after-restart",
+        "id": 1,
+        "tool": "krakinai_get_import_receipt",
+        "received": true,
+        "responseSha256": "809f6e280b7ad9788dbe3fa0f63ab8b8c1fec65214ed77b47d173ece010ce5ee",
+        "ok": true
+      },
+      {
+        "phase": "after-restart",
+        "id": 2,
+        "tool": "krakinai_submit_change_set",
+        "received": true,
+        "responseSha256": "cd93326f63a2cca598437e1ef719ec249ea7eb7ff90829cfed608cc99c41f758",
+        "ok": true
+      }
+    ]
+  },
+  "mcpBlockedWorkflow": {
+    "kind": "Actual SDK synthetic transport",
+    "calls": [
+      {
+        "id": 1,
+        "tool": "krakinai_preview_change_set",
+        "received": true,
+        "responseSha256": "d61127758200d048ceccc2735ca0beac5a119d3fc0cd6cf4dbc8fb0486f5a930",
+        "ok": true
+      },
+      {
+        "id": 2,
+        "tool": "krakinai_submit_change_set",
+        "received": true,
+        "responseSha256": "eb781394bbd681bc17c2d82d68ceade6242c14e782a6b306b97157996d83b756",
+        "ok": true
+      },
+      {
+        "id": 3,
+        "tool": "krakinai_get_proposal_status",
+        "received": true,
+        "responseSha256": "bf153bafc429b6196afd73bbb157cf947f3087fab4f01edefebe2dd4c4047e98",
+        "ok": true
+      }
+    ],
+    "storedLedgerBytes": 8388608,
+    "frameDerivation": "shared",
+    "batch": "blocked",
+    "libraryUnchanged": true
+  },
+  "boundaryMeasurements": [
+    {
+      "mode": "stored-8MiB",
+      "storedLedgerBytes": 8388608,
+      "expandedEvidenceBytes": 8386577,
+      "receipts": 3,
+      "archiveBytes": 13762,
+      "archiveSha256": "999d12cbbcc51615a96b6df5dbe975c89d981e5c3f5db27307789e1984cd220d",
+      "overflowRejected": true,
+      "restoreExact": true,
+      "memory": {
+        "kind": "Observed aggregate working set/RSS; not an allocation proof or total-system peak",
+        "peakObservedBytes": 652210176,
+        "sampleCount": 5,
+        "samplingIntervalMs": 500,
+        "processCount": 4,
+        "durationMs": 3109,
+        "browser": "HeadlessChrome/156.0.8078.4",
+        "platform": "win32"
+      }
+    },
+    {
+      "mode": "expanded-32MiB",
+      "storedLedgerBytes": 50850,
+      "expandedEvidenceBytes": 33554432,
+      "receipts": 8,
+      "archiveBytes": 4650,
+      "archiveSha256": "2dd844dea4e6a1d58b7f26b2d6f293630850c37239e212bb7a8418bc2ee62a4b",
+      "overflowRejected": true,
+      "restoreExact": true,
+      "memory": {
+        "kind": "Observed aggregate working set/RSS; not an allocation proof or total-system peak",
+        "peakObservedBytes": 575963136,
+        "sampleCount": 8,
+        "samplingIntervalMs": 500,
+        "processCount": 4,
+        "durationMs": 4089,
+        "browser": "HeadlessChrome/156.0.8078.4",
+        "platform": "win32"
+      }
+    },
+    {
+      "mode": "high-entropy-4MiB",
+      "storedLedgerBytes": 4652881,
+      "expandedEvidenceBytes": 4194304,
+      "receipts": 1,
+      "archiveBytes": 3599064,
+      "archiveSha256": "44aaed427177f8fcc3a825ac0dbe3ce86688c4ecad55fee6aaee765d7c82f2fb",
+      "overflowRejected": true,
+      "restoreExact": true,
+      "memory": {
+        "kind": "Observed aggregate working set/RSS; not an allocation proof or total-system peak",
+        "peakObservedBytes": 781545472,
+        "sampleCount": 59,
+        "samplingIntervalMs": 500,
+        "processCount": 4,
+        "durationMs": 30091,
+        "browser": "HeadlessChrome/156.0.8078.4",
+        "platform": "win32"
+      }
+    }
+  ],
+  "boundaryProcessRestart": [
+    {
+      "mode": "stored-8MiB",
+      "storedBytes": 8388608,
+      "historySha256": "189afa7e01a2041be25546efbdf7fd942d91d9e3c72ac176c999d7bbb1b0849f",
+      "processRestartPreserved": true
+    },
+    {
+      "mode": "expanded-32MiB",
+      "storedBytes": 50850,
+      "historySha256": "d130e7674b9767b55cfee9907a0eba05da602f69929ca253207a7e4efe5860be",
+      "processRestartPreserved": true
+    }
+  ],
+  "independentReadback": {
+    "reader": "Python zipfile/zlib/hashlib (independent of fflate)",
+    "passed": 4,
+    "archives": [
+      {
+        "file": "bulk.zip",
+        "archiveBytes": 212944,
+        "archiveSha256": "7e75e94b4359dfa55734fbea5491a855c56f791e4f067c2758ee5300171f6284",
+        "manifestBytes": 9666669,
+        "storedLedgerBytes": 8382337,
+        "expandedEvidenceBytes": 9942907,
+        "receipts": 6,
+        "frameResults": 33,
+        "mediaHashes": [
+          {
+            "id": "blocking-media",
+            "sha256": "205c6d1c09217b785f566c681e2e68e4fddc044f0a39e6e3ccc1942e233fa831",
+            "mimeType": "image/png",
+            "bytes": 99
+          }
+        ],
+        "evidenceHashes": [
+          {
+            "changeSetId": "synthetic-old-v5",
+            "sha256": "76a17a6670c76f29d00d3b98fe80cf7435b24ff633d0c758e7d813d83d714696",
+            "bytes": 57
+          },
+          {
+            "changeSetId": "synthetic-old-v6",
+            "sha256": "ef7ffe45c00729f3d3038eb8a08cda4a25059557d0c93eb92526862b4f6ab728",
+            "bytes": 60
+          },
+          {
+            "changeSetId": "boundary-one",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "boundary-two",
+            "sha256": "80e918b8b26140b92cd02b26ab59ecb216ef9eff3fbf5482041eda3ae3425153",
+            "bytes": 4032878
+          },
+          {
+            "changeSetId": "synthetic-history-bulk-15",
+            "sha256": "a87694d04a545a59ca1c6ac31adc790ffd17ddec45ec7fe846a6486de3645fe0",
+            "bytes": 1715608
+          }
+        ],
+        "zipCrcVerified": true
+      },
+      {
+        "file": "expanded-32MiB.zip",
+        "archiveBytes": 4650,
+        "archiveSha256": "2dd844dea4e6a1d58b7f26b2d6f293630850c37239e212bb7a8418bc2ee62a4b",
+        "manifestBytes": 70491,
+        "storedLedgerBytes": 50850,
+        "expandedEvidenceBytes": 33554432,
+        "receipts": 8,
+        "frameResults": 0,
+        "mediaHashes": [],
+        "evidenceHashes": [
+          {
+            "changeSetId": "expanded-0",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-1",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-2",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-3",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-4",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-5",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-6",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "expanded-7",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          }
+        ],
+        "zipCrcVerified": true
+      },
+      {
+        "file": "high-entropy-4MiB.zip",
+        "archiveBytes": 3599064,
+        "archiveSha256": "44aaed427177f8fcc3a825ac0dbe3ce86688c4ecad55fee6aaee765d7c82f2fb",
+        "manifestBytes": 4669400,
+        "storedLedgerBytes": 4652881,
+        "expandedEvidenceBytes": 4194304,
+        "receipts": 1,
+        "frameResults": 0,
+        "mediaHashes": [],
+        "evidenceHashes": [
+          {
+            "changeSetId": "incompressible",
+            "sha256": "3760f771816fcd1a58ebe79ae8c1598eacc050813dece45f6920bd2c50bfddbf",
+            "bytes": 4194304
+          }
+        ],
+        "zipCrcVerified": true
+      },
+      {
+        "file": "stored-8MiB.zip",
+        "archiveBytes": 13762,
+        "archiveSha256": "999d12cbbcc51615a96b6df5dbe975c89d981e5c3f5db27307789e1984cd220d",
+        "manifestBytes": 8406280,
+        "storedLedgerBytes": 8388608,
+        "expandedEvidenceBytes": 8386577,
+        "receipts": 3,
+        "frameResults": 0,
+        "mediaHashes": [],
+        "evidenceHashes": [
+          {
+            "changeSetId": "boundary-one",
+            "sha256": "8f5258428d074f94fa60082753ccde006444a34a8af3c15d38ee133bf5091882",
+            "bytes": 4194304
+          },
+          {
+            "changeSetId": "boundary-two",
+            "sha256": "3efffb7748ff9fee9bcbc10710f65531e817d3d24d962558f354cb73381d9247",
+            "bytes": 4192273
+          }
+        ],
+        "zipCrcVerified": true
+      }
+    ]
+  },
+  "decoderAllocationObservation": {
+    "kind": "Opaque synthetic expansion bomb, not valid prompt text or media; constructors captured before fflate import",
+    "compressedBytes": 65238,
+    "sourceExpandedBytes": 67108864,
+    "rejectedCases": 27,
+    "tinyDeclaredCase": {
+      "declaredBytes": 32,
+      "sourceExpandedBytes": 67108864,
+      "repetitions": 1,
+      "rejected": 1,
+      "callbackHighWater": 247940,
+      "largest": 524288,
+      "total": 1263829,
+      "calls": 19,
+      "sizes": {
+        "0": 1,
+        "2": 2,
+        "4": 5,
+        "8": 2,
+        "19": 1,
+        "32": 1,
+        "288": 1,
+        "32768": 1,
+        "65238": 1,
+        "131072": 1,
+        "247940": 1,
+        "262144": 1,
+        "524288": 1
+      }
+    },
+    "fullDeclaredCase": {
+      "declaredBytes": 4194304,
+      "sourceExpandedBytes": 67108864,
+      "repetitions": 1,
+      "rejected": 1,
+      "callbackHighWater": 264192,
+      "largest": 4194304,
+      "total": 27119571,
+      "calls": 124,
+      "sizes": {
+        "0": 1,
+        "1": 15,
+        "2": 2,
+        "4": 5,
+        "8": 2,
+        "19": 1,
+        "257": 15,
+        "288": 1,
+        "32768": 16,
+        "65238": 1,
+        "131072": 1,
+        "163840": 15,
+        "247940": 1,
+        "262144": 1,
+        "264192": 15,
+        "327680": 15,
+        "524288": 1,
+        "655360": 15,
+        "4194304": 1
+      }
+    },
+    "memory": {
+      "kind": "Observed aggregate working set/RSS; not an allocation proof or total-system peak",
+      "peakObservedBytes": 309383168,
+      "sampleCount": 3,
+      "samplingIntervalMs": 500,
+      "processCount": 4,
+      "durationMs": 2210,
+      "browser": "HeadlessChrome/156.0.8078.4",
+      "platform": "win32"
+    },
+    "notUniversalAllocationProof": true
+  },
+  "representativePrepareApply": {
+    "kind": "Synthetic Stage B storage API prepare/Apply; actual MCP/browser approval certified separately",
+    "authorizationCount": 1,
+    "scenes": 15,
+    "frames": 33,
+    "storedLedgerBytes": 8382325,
+    "expandedReceiptBytes": 1715608,
+    "storedReceiptBytes": 151962,
+    "evidenceSha256": "fee9887bd06baf87ab75447cb8b99dbc3735419133558302f2bbbcfe398f4520",
+    "packageDigest": "dbd13e3a19db2ebaa4204978631df1a17e1099d1f82f5dd3f2381811f4180aed",
+    "unrelatedScenesPreserved": true,
+    "memory": {
+      "kind": "Observed aggregate working set/RSS; not an allocation proof or total-system peak",
+      "peakObservedBytes": 903487488,
+      "sampleCount": 8,
+      "samplingIntervalMs": 500,
+      "processCount": 4,
+      "durationMs": 4333,
+      "browser": "HeadlessChrome/156.0.8078.4",
+      "platform": "win32"
+    }
+  },
+  "screenshots": [
+    {
+      "path": "docs/qa/screenshots/import-history-storage/manual-1280.png",
+      "bytes": 94019,
+      "width": 1280,
+      "height": 720,
+      "sha256": "442f6ab059d9130f93a491cc6e19fd37be0067bf149d76973427be63315f6ae0"
+    },
+    {
+      "path": "docs/qa/screenshots/import-history-storage/manual-1440.png",
+      "bytes": 112526,
+      "width": 1440,
+      "height": 900,
+      "sha256": "48cdfe3fc7e81867c71682ecc184a54b43e780623c37cc7ac4d8ffce55807692"
+    },
+    {
+      "path": "docs/qa/screenshots/import-history-storage/manual-390.png",
+      "bytes": 43019,
+      "width": 390,
+      "height": 844,
+      "sha256": "e1db5a25809a0642430e83b5d22db3a26fd1f9354fa78a13ba77e953983b5549"
+    },
+    {
+      "path": "docs/qa/screenshots/import-history-storage/review-1440.png",
+      "bytes": 132814,
+      "width": 1440,
+      "height": 900,
+      "sha256": "2a113da4fbd1d637898a4aaeaab3c2015eef2783027e2fac5527f843c6574684"
+    },
+    {
+      "path": "docs/qa/screenshots/import-history-storage/review-390.png",
+      "bytes": 48497,
+      "width": 390,
+      "height": 844,
+      "sha256": "99a5d33c3a1748fdf927016f02d5ae60686325ad31cc9a8230fc91e6b86e3b5d"
+    },
+    {
+      "path": "docs/qa/screenshots/import-history-storage/review-768.png",
+      "bytes": 68290,
+      "width": 768,
+      "height": 900,
+      "sha256": "bb99570d33c4d2010e35a6d5f79977d12aebfeef2ee50599bded16f84edc1134"
+    }
+  ],
+  "retainedRawEvidence": [
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/blocked-sdk.json",
+      "bytes": 794,
+      "sha256": "be51adee5869ea3eac9b17b221fbfc8048bc383d2cea9bc84f40bd380bfffca6"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/boundary-resources.json",
+      "bytes": 2178,
+      "sha256": "a6309d6407ab0aa87f3588fd2ae9f17c8624bf58fc0b9893410b3484633b7020"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/boundary-restart.json",
+      "bytes": 757,
+      "sha256": "df8424a858765f30ce0870dc6feb228a58fb5ee26fe423bc62a737aa348e9b9b"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/bulk-sdk.json",
+      "bytes": 2366,
+      "sha256": "27f7782d60f93a82509a85f3b05081826533759908802ddc478acaecae57ee6a"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/decoder-allocations.json",
+      "bytes": 17353,
+      "sha256": "6c0c62f8d7a15c982fd9c9fa7f423c3f7801e816cab3c700651400df9fcb2b46"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/independent-readback.json",
+      "bytes": 4923,
+      "sha256": "a7f1be3a615a5a935bb8d2cb3f3f3135dbdfea1f582e3c7dcbab69496871f805"
+    },
+    {
+      "path": "qa-results/import-history-storage/final-verified-20261105/representative-apply-resources.json",
+      "bytes": 799,
+      "sha256": "9817bdda509ac829e589fcaa7af956c848a02a87703840989586dd0489205ad3"
+    }
+  ],
+  "warnings": {
+    "appActDiagnostics": {
+      "Warning: An update to MediaThumbnail inside a test was not wrapped in act(...).": 21,
+      "Warning: An update to FrameWorkspace inside a test was not wrapped in act(...).": 3,
+      "Warning: An update to AiRecipeBuilderScreen inside a test was not wrapped in act(...).": 3,
+      "Warning: An update to SceneBuilderScreen inside a test was not wrapped in act(...).": 6
+    },
+    "build": [
+      "Mixed static/dynamic-import notices; dynamic imports do not move these modules into separate chunks.",
+      "Vite chunk over 500 kB advisory."
+    ],
+    "playwright": [
+      "NO_COLOR ignored because FORCE_COLOR is set."
+    ],
+    "auditVulnerabilities": {
+      "app": 0,
+      "bridge": 0
+    }
+  },
+  "failedAttempts": [
+    {
+      "stage": "preliminary app compatibility expectations",
+      "passed": 1640,
+      "failed": 5
+    },
+    {
+      "stage": "concurrent heavy app run",
+      "passed": 1648,
+      "failed": 6
+    },
+    {
+      "stage": "pre-correction browser run",
+      "passedBeforeCancellation": 130,
+      "completed": false
+    },
+    {
+      "stage": "first complete post-review browser run",
+      "exitCode": 1,
+      "passed": 257,
+      "failed": 2,
+      "skipped": 18,
+      "total": 277,
+      "duration": "19.9m",
+      "report": ".superpowers/sdd/2026-11-05-import-history-storage/browser-first-full-results.json"
+    },
+    {
+      "stage": "traced layout diagnosis",
+      "exitCode": 1,
+      "passed": 14,
+      "failed": 2,
+      "cause": "Top-level Storage check squeezed operation buttons below the footer; actual pointer interception recorded."
+    },
+    {
+      "stage": "new layout regression before fix",
+      "exitCode": 1,
+      "failed": 1
+    },
+    {
+      "stage": "focused corrected layout",
+      "exitCode": 0,
+      "passed": 5,
+      "durationSeconds": 22.4
+    }
+  ],
+  "remainingRisks": [
+    "Deferred minor: a prior Fits capacity label can remain during pending/failed recalculation; independent Apply disabling/revalidation remains enforced.",
+    "No installed CLI, new signed-native or AllSigned acceptance claimed for this browser-only patch. No launcher/global configuration/policy changes.",
+    "Only pinned Chromium demonstrated; strict native DecompressionStream is required and unsupported browsers fail closed. Low-memory devices and other engines are unverified.",
+    "Limits remain finite, old receipts are retained rather than retrospectively compacted, and the real blocked proposal has not been retried.",
+    "Existing bulk multi-revise preparation/project-revision mismatch is outside scope; tested bulk path is scene.create_recipe.",
+    "Substantial observed process memory; sums of working sets are neither unique RAM nor absolute peaks. No large-media or ZIP64 certification.",
+    "Protected database v4 has no in-place downgrade. Live upgrade requires a saved pre-upgrade backup and separate owner action.",
+    "Ignored profiles, ZIPs, traces and reports retained; no unauthorized cleanup."
+  ],
+  "localDocumentationChecks": {
+    "links": 68,
+    "missing": 0
+  },
+  "changedFiles": [
+    {
+      "status": "M",
+      "path": ".github/workflows/ci.yml"
+    },
+    {
+      "status": "M",
+      "path": "README.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/agent-authoring-guide.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/import-history.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/proposal-review.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/import-history-storage-results.json"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/import-history-storage.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/manual-1280.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/manual-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/manual-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/review-1440.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/review-390.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/qa/screenshots/import-history-storage/review-768.png"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/plans/2026-11-05-import-history-storage.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/superpowers/specs/2026-11-05-import-history-storage-design.md"
+    },
+    {
+      "status": "M",
+      "path": "e2e/blocking-upgrade.spec.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/import-history-resources.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/import-history-resources.test.mjs"
+    },
+    {
+      "status": "A",
+      "path": "e2e/import-history.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "e2e/keyframe-upgrade.spec.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/qa/keyframe-mcp-workflow.mjs"
+    },
+    {
+      "status": "A",
+      "path": "scripts/qa/verify-import-history-archives.py"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/blockingBackup.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/blockingChangeSetStorage.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/changeSetBackup.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/changeSetStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/compactImportBackup.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/compactImportLedger.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/compactImportStorage.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/compactLibraryCompatibility.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/fixtures/importHistoryFixture.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/importCapacityBounds.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/importCapacityMcp.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/importCapacityUi.test.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/importEvidence.test.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/__tests__/importHistoryBulk.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/keyframeChangeSetStorage.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/keyframeLedger.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/keyframeLegacy.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/keyframeLibraryCompatibility.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/libraryCompatibility.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/__tests__/libraryCompatibilityGate.test.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ChangeSetPreview.tsx"
+    },
+    {
+      "status": "A",
+      "path": "src/components/ImportCapacity.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/ImportReceipt.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/LibraryCompatibilityGate.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/components/aiConnections/ProposalReviewWorkspace.tsx"
+    },
+    {
+      "status": "M",
+      "path": "src/connections/proposalBroker.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/backupFeatures.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetCapacity.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/changeSetLedger.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/importAdmission.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/importBatchChecks.ts"
+    },
+    {
+      "status": "A",
+      "path": "src/domain/importEvidence.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/mcpReads.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/domain/proposalReadiness.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/backup.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/changeSets.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/db.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/storage/libraryCompatibility.ts"
+    },
+    {
+      "status": "M",
+      "path": "src/types/changeSet.ts"
+    }
+  ],
+  "preservedGeneratedBaselines": 16,
+  "preservationChecks": {
+    "validationTsDiffEmpty": true,
+    "noDependencyManifestChanges": true,
+    "stagedBinaryTypes": [
+      "synthetic PNG screenshots"
+    ],
+    "noProfilesZipCredentialsCertificatesOrSigningKeys": true,
+    "realLibraryAndBlockedProposalsUnchanged": true
+  },
+  "ciBudgetFollowup": {
+    "implementationCommit": "60979d86ca65bb4d5705a6521ed1103a1b6d406e",
+    "workflow": "CI",
+    "runId": 41914083090,
+    "runConclusion": "cancelled",
+    "windowsConclusion": "success",
+    "linuxConclusion": "cancelled",
+    "allSubstantiveLinuxSteps": "success",
+    "linuxCounts": {
+      "appPassed": 1656,
+      "bridgePassed": 70,
+      "bridgePlatformSkipped": 4,
+      "helpersPassed": 88,
+      "helpersPlatformSkipped": 1,
+      "browserPassed": 262,
+      "browserExplicitSkipped": 18,
+      "independentArchivesPassed": 4
+    },
+    "browserReportedMinutes": 16.4,
+    "chromiumInstallApproxSeconds": 311,
+    "oldJobBudgetMinutes": 25,
+    "newJobBudgetMinutes": 35,
+    "diagnosis": "Run concluded cancelled around the configured job budget after all substantive steps and artifact uploads succeeded. Budget exhaustion inferred from timing; cancellation annotation not exposed by connector. Not counted as a green workflow.",
+    "verification": "YAML parsed; changing only this job-budget scalar makes old/new workflow objects equal. All 46 application/test/QA-helper source hashes remain unchanged. Original verifiedSourceFiles describe the local pre-signing capture, including the prior 25-minute workflow.",
+    "individualTestTimeoutsAssertionsCommandsPermissionsAndApplicationLimitsChanged": false,
+    "newWorkflowSha256": "6ae757b17f2444ba6754f5c632d6baf522523f79909cb755d3a2457fb2750a9c",
+    "hostedInstallAdvisories": {
+      "developmentTree": {
+        "moderate": 3,
+        "high": 1,
+        "critical": 2
+      },
+      "production": 0,
+      "dependencyFilesChanged": false
+    },
+    "finalSignedHeadCi": "Pending follow-up signature and hosted rerun; report separately in PR evidence comment."
+  }
+}

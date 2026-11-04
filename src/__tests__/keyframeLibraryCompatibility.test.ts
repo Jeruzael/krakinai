@@ -23,11 +23,11 @@ it.each([1,2])('reads a complete pre-enable version%i backup without upgrading',
  expect(await compat.readLegacyRecordsForBackup()).toEqual(before);
  expect(await compat.inspectLibraryCompatibility()).toBe('legacy-v'+version);
 });
-it.each([1,2])('upgrades version%i to 3 with exact keys, unknown fields and original blob bytes',async version=>{
+it.each([1,2])('upgrades version%i to 4 with exact keys, unknown fields and original blob bytes',async version=>{
  const old=await seed(version),before=await snapshot(old);old.close();
  await compat.enableBlockingLibrary({onBlocked:()=>{throw Error('unexpected blocked');}});
  const current=await compat.openProtectedDatabase();connections.push(current);
- expect(current.version).toBe(3);expect([...current.objectStoreNames]).toEqual(stores.slice().sort());
+ expect(current.version).toBe(4);expect([...current.objectStoreNames]).toEqual(stores.slice().sort());
  expect(await snapshot(current)).toEqual(before);
  expect(new Uint8Array(await (await snapshot(current)).media[0].blob.arrayBuffer())).toEqual(new Uint8Array([1,2,3,4]));
  for(const oldVersion of [1,2])await expect(request(factory.open(name,oldVersion))).rejects.toMatchObject({name:'VersionError'});
@@ -37,7 +37,7 @@ it('preserves a late B-tab write while a C upgrade waits for it to close',async(
  const enabling=compat.enableBlockingLibrary({onBlocked:unblock});await blocked;
  const tx=old.transaction('drafts','readwrite'),finished=done(tx);tx.objectStore('drafts').put({id:'late-draft',text:'user work remains'});await finished;
  const before=await snapshot(old);old.close();await enabling;
- const current=await compat.openProtectedDatabase();connections.push(current);expect(current.version).toBe(3);expect(await snapshot(current)).toEqual(before);
+ const current=await compat.openProtectedDatabase();connections.push(current);expect(current.version).toBe(4);expect(await snapshot(current)).toEqual(before);
 });
 it('cancels a blocked B upgrade and aborts it even when the old tab later closes',async()=>{
  const old=await seed(2),before=await snapshot(old),controller=new AbortController();let unblock!:()=>void;
@@ -45,14 +45,14 @@ it('cancels a blocked B upgrade and aborts it even when the old tab later closes
  const enabling=compat.enableBlockingLibrary({signal:controller.signal,onBlocked:unblock}).then(()=> 'committed',(error:Error)=>error.name);
  await blocked;controller.abort();expect(await enabling).toBe('AbortError');old.close();
  const preserved=await raw(2);expect(await snapshot(preserved)).toEqual(before);expect(preserved.version).toBe(2);preserved.close();
- await compat.enableBlockingLibrary({onBlocked:()=>{}});expect(await compat.inspectLibraryCompatibility()).toBe('current-v3');
+ await compat.enableBlockingLibrary({onBlocked:()=>{}});expect(await compat.inspectLibraryCompatibility()).toBe('current-v4');
 });
 it('discards a rejected normal-open cache so explicit enable can be followed by a valid open',async()=>{
  const old=await seed(2);await expect(compat.openProtectedDatabase()).rejects.toThrow();old.close();
- await compat.enableBlockingLibrary({onBlocked:()=>{}});const current=await compat.openProtectedDatabase();connections.push(current);expect(current.version).toBe(3);
+ await compat.enableBlockingLibrary({onBlocked:()=>{}});const current=await compat.openProtectedDatabase();connections.push(current);expect(current.version).toBe(4);
 });
 it('closes a C cached connection when a newer version opens and refuses to downgrade',async()=>{
- const current=await compat.openProtectedDatabase();connections.push(current);const future=await raw(4);
+ const current=await compat.openProtectedDatabase();connections.push(current);const future=await raw(5);
  expect(()=>current.transaction('assets','readwrite')).toThrow();expect(await compat.inspectLibraryCompatibility()).toBe('unsupported');
  await expect(compat.openProtectedDatabase()).rejects.toThrow(/newer|unsupported/i);future.close();
 });

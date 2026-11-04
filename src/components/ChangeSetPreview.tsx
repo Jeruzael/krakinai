@@ -1,4 +1,5 @@
 import { requiresStoryboardApproval } from "../domain/changeSetLedger";
+import {ImportCapacity} from './ImportCapacity';
 import React, { useState } from "react";
 import type {
   ChangeSetApproval,
@@ -240,6 +241,7 @@ export function ChangeSetPreview({
           className="card import-approvals"
           aria-label="Explicit import approvals"
         >
+          {!approvalsOnly&&<ImportCapacity capacity={preview.capacity}/>}
           <h3>Approve separately</h3>
           {changeSet.schema==='krakinai.change-set.v5'&&changeSet.operations.some(isRecipeOperation)&&<label className="import-check"><input type="checkbox" disabled={disabled} checked={approval.blocking??false} onChange={e=>onApproval({...approval,blocking:e.target.checked})}/>Approve blocking changes</label>}
           <p className="muted-text">

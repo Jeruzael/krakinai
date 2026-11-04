@@ -334,10 +334,12 @@ export interface ChangeSetReceiptBase {
   operations: ImportOperationResult[];
   projectRevisions: Record<string, { before: number; after: number }>;
 }
-export type ChangeSetReceipt=ChangeSetReceiptBase&({version:1}|{version:2;changeSetSchema:'krakinai.change-set.v5';/** Canonical, non-executable review evidence including complete reviewed buffers. */reviewedContent:string}|{version:3;changeSetSchema:'krakinai.change-set.v6';reviewedContent:string;frameResults:{operationId:string;sceneId:string;frameIds:string[];associationIds:string[]}[]});
+export type LegacyChangeSetReceipt=ChangeSetReceiptBase&({version:1}|{version:2;changeSetSchema:'krakinai.change-set.v5';/** Canonical, non-executable review evidence including complete reviewed buffers. */reviewedContent:string}|{version:3;changeSetSchema:'krakinai.change-set.v6';reviewedContent:string;frameResults:{operationId:string;sceneId:string;frameIds:string[];associationIds:string[]}[]});
+export type CompactChangeSetReceipt=ChangeSetReceiptBase&{version:4;reviewedEvidence:import('../domain/importEvidence').CompactImportEvidence}&({changeSetSchema:'krakinai.change-set.v5'}|{changeSetSchema:'krakinai.change-set.v6';frameResults:Extract<LegacyChangeSetReceipt,{version:3}>['frameResults']});
+export type ChangeSetReceipt=LegacyChangeSetReceipt|CompactChangeSetReceipt;
 export interface ImportLedger {
   variantCandidates?:ImportVariantCandidate[];
-  version: 1|2|3;
+  version: 1|2|3|4;
   receipts: ChangeSetReceipt[];
   candidates: ImportCandidate[];
 }
@@ -399,6 +401,7 @@ export interface ChangeSetPlan {
   };
 }
 export interface ChangeSetPreview {
+  capacity?:import('../domain/importAdmission').ImportCapacity;
   version: 1;
   changeSet: ChangeSet;
   approval: ChangeSetApproval;

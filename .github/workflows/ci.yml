@@ -18,7 +18,11 @@ jobs:
   verify:
     name: Build, typecheck, unit and browser smoke
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # Complete cold browser installation, full regressions and evidence uploads.
+    # Individual test timeouts and assertions remain unchanged.
+    timeout-minutes: 35
+    env:
+      KRAKINAI_IMPORT_HISTORY_RUN_ID: ci-${{ github.run_id }}
 
     steps:
       - name: Checkout exact revision
@@ -59,7 +63,7 @@ jobs:
           npm audit --omit=dev
 
       - name: Run unit and component tests
-        run: npm test -- --reporter=default --reporter=junit --outputFile.junit=qa-results/vitest.xml
+        run: npm test -- --maxWorkers=2 --minWorkers=1 --reporter=default --reporter=junit --outputFile.junit=qa-results/vitest.xml
 
       - name: Run TypeScript typecheck
         run: npm run typecheck
@@ -79,13 +83,33 @@ jobs:
           fi
 
       - name: Test installed-CLI evidence validation
-        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/blocking-mcp-workflow.test.mjs scripts/qa/keyframe-mcp-workflow.test.mjs scripts/qa/shared-mcp-workflow.test.mjs scripts/qa/shared-codex-client.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs
+        run: node --test scripts/qa/mcp-codex-cli.test.mjs scripts/qa/mcp-cli-workflow.test.mjs scripts/qa/mcp-recipe-workflow.test.mjs scripts/qa/blocking-mcp-workflow.test.mjs scripts/qa/keyframe-mcp-workflow.test.mjs scripts/qa/shared-mcp-workflow.test.mjs scripts/qa/shared-codex-client.test.mjs scripts/qa/launcher-release.test.mjs scripts/qa/launcher-port-probe.test.mjs scripts/qa/launcher-windows-probe.test.mjs e2e/import-history-resources.test.mjs
 
       - name: Install pinned Chromium
         run: npx playwright install --with-deps chromium
 
       - name: Run synthetic browser smoke
         run: npm run test:e2e
+
+      - name: Independently read synthetic import-history archives
+        run: python scripts/qa/verify-import-history-archives.py qa-results/import-history-storage/ci-${{ github.run_id }}
+
+      - name: Upload synthetic import-history evidence
+        if: always()
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f
+        with:
+          name: import-history-evidence-${{ github.run_id }}
+          path: |
+            qa-results/import-history-storage/ci-${{ github.run_id }}/bulk-sdk.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/blocked-sdk.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/boundary-resources.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/boundary-restart.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/independent-readback.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/decoder-allocations.json
+            qa-results/import-history-storage/ci-${{ github.run_id }}/representative-apply-resources.json
+            docs/qa/screenshots/import-history-storage/*.png
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Summarize synthetic test evidence
         if: always()

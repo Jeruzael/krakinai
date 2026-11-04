@@ -340,7 +340,7 @@ it("reports a full durable ledger during preview rather than enabling an impossi
       { ...input, changeSetId: "capacity-next" },
       allContentApproval(),
     );
-  expect(blockers(preview).some((f) => f.code === "LEDGER_CAPACITY")).toBe(
+  expect(blockers(preview).some((f) => f.code === "LEDGER_RECEIPT_CAPACITY")).toBe(
     true,
   );
   expect(await getAllSnapshot()).toEqual(before);

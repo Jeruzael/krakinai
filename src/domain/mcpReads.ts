@@ -2,7 +2,7 @@ import type { ChangeSetReceipt, ChangeSetState } from '../types/changeSet';
 import type { McpScope } from '../types/mcp';
 import { buildAiContext, projectAiContextLink, projectAiContextProject } from './aiContext';
 import { changeSetDigest } from './changeSetCanonical';
-import { readImportLedger } from './changeSetLedger';
+import { readImportLedger,prepareImportLedger } from './changeSetLedger';
 import { getProjectShots } from './projectStoryboard';
 import { revisionRoot } from './sceneRevisions';
 import { SLOT_TO_CATEGORY } from './validation';
@@ -24,8 +24,9 @@ async function page<T>(items: T[], args: Record<string, unknown>, scope: McpScop
   return { items: items.slice(offset, offset + limit), nextCursor: offset + limit < items.length ? btoa(JSON.stringify({ offset: offset + limit, epoch: scope.epoch, signature })) : null };
 }
 export function receiptProjection(receipt: ChangeSetReceipt, state: ChangeSetState) {
+  const logicalVersion=receipt.version===4?(receipt.changeSetSchema==='krakinai.change-set.v6'?3:2):receipt.version;
   const sceneIds = Object.values(receipt.idMappings).filter(m => m.kind === 'scene').map(m => m.id);
-  return { ...(receipt.version!==1?{version:receipt.version,changeSetSchema:receipt.changeSetSchema}:{}),...(receipt.version===3?{frameResults:structuredClone(receipt.frameResults)}:{}),changeSetId: receipt.changeSetId, packageDigest: receipt.packageDigest, approvedDigest: receipt.approvedDigest, appliedAt: receipt.appliedAt,
+  return { ...(receipt.version!==1?{version:logicalVersion,changeSetSchema:receipt.changeSetSchema}:{}),...((receipt.version===3||receipt.version===4&&receipt.changeSetSchema==='krakinai.change-set.v6')?{frameResults:structuredClone(receipt.frameResults)}:{}),changeSetId: receipt.changeSetId, packageDigest: receipt.packageDigest, approvedDigest: receipt.approvedDigest, appliedAt: receipt.appliedAt,
     idMappings: structuredClone(receipt.idMappings), operations: structuredClone(receipt.operations), projectRevisions: structuredClone(receipt.projectRevisions),
     scenes: sceneIds.map(id => { const scene = state.scenes.find(s => s.id === id); return scene ? { id, available: true, rootSceneId: revisionRoot(scene), parentSceneId: scene.sceneRevision?.parentSceneId, sequence: scene.sceneRevision?.sequence ?? 1, restoredFromSceneId: scene.sceneRevision?.restoredFromSceneId, pendingInputs: (scene.pendingInputs ?? []).map(p => ({ kind: p.kind })) } : { id, available: false }; }) };
 }
@@ -70,7 +71,8 @@ export async function readMcpTool(tool: McpToolName, raw: unknown, scope: McpSco
     result = { ...selected, items: selected.items.map(r => ({ kind: r.kind, ...(r.kind === 'asset' ? doc.assets : r.kind === 'variant' ? doc.variants : doc.templates).find(a => a.id === r.id) })), trust: 'untrusted_user_content' };
   } else if (tool === 'krakinai_get_shot_types') result = { items: SHOT_TYPES.map(type => ({ type, label: SHOT_TYPE_LABELS[type], description: SHOT_TYPE_DESCRIPTIONS[type], rules: getShotTypeRules({ shotType: type }) })) };
   else if (tool === 'krakinai_get_import_receipt') {
-    const receipt = readImportLedger(state.preferences).receipts.find(r => r.changeSetId === args.changeSetId && r.packageDigest === args.packageDigest);
+    const verifiedLedger=readImportLedger(state.preferences);await prepareImportLedger(verifiedLedger);
+    const receipt = verifiedLedger.receipts.find(r => r.changeSetId === args.changeSetId && r.packageDigest === args.packageDigest);
     if (!receipt || !canReadReceipt(receipt, scope, state)) throw new McpError('RECEIPT_UNAVAILABLE', 'Select this exact import receipt in AI Connections before requesting its confirmed IDs.');
     result = receiptProjection(receipt, state);
   } else throw new McpError('UNKNOWN_TOOL');

@@ -115,11 +115,19 @@ export async function clearAllStoresForTesting(): Promise<void> {
 
 export async function initializeDatabase(): Promise<LibrarySnapshot> {
   const db = await openDatabase();
+  const {prepareImportLedger,readImportLedger}=await import('../domain/changeSetLedger');
+  const {canonicalStringify}=await import('../domain/changeSetCanonical');
+  const checkTx=db.transaction('preferences','readonly');
+  const checkedPreferences=await getFromStore<Preferences>(checkTx.objectStore('preferences'),'app_preferences');
+  await txDone(checkTx);
+  const checkedLedger=readImportLedger(checkedPreferences??({} as Preferences));
+  const verifiedHistory=await prepareImportLedger(checkedLedger);
   const tx = db.transaction(STORE_NAMES, 'readwrite');
   const prefStore = tx.objectStore('preferences');
   const tplStore = tx.objectStore('templates');
 
   let prefs = await getFromStore<Preferences>(prefStore, 'app_preferences');
+  if(canonicalStringify(readImportLedger(prefs??({} as Preferences)))!==verifiedHistory.comparison){tx.abort();throw Error('Import history changed during startup verification. Reopen the library; no startup records were changed.');}
   const now = new Date().toISOString();
   if (!prefs) {
     prefs = {

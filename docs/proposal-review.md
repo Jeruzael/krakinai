@@ -52,3 +52,5 @@ All 13 authenticated MCP tools and change-set input contracts v1–v6 remain sup
 ```
 
 Agents must not treat a comment as approval, renew on the user's behalf, infer permissions from a cached draft, or claim success from submission alone. Read an authorized confirmed receipt before reporting saved IDs. Prefer Recipe/Build from Assets and preserve unrelated frames, takes and reusable identities.
+
+See [import history and storage checks](import-history.md) for the separate production-history limits. MCP `batchChecks` reports whole-batch blockers; a successfully derived frame and `review_required` status do not mean the batch was applied. History usage stays in the browser. Cached review content and its 24-hour lifetime do not reserve storage or restore approval.

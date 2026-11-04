@@ -1,4 +1,4 @@
-import { validateChangeSetBackupCapacity } from "../domain/changeSetCapacity";
+import { validateChangeSetBackupCapacity,assessImportCapacity } from "../domain/changeSetCapacity";
 import { isRecipeOperation } from "../types/changeSet";
 import { recipeReviewedProjection,ensembleReviewedProjection } from "../domain/changeSetRecipeContent";
 import type {
@@ -25,10 +25,14 @@ import type {SavedScene}from'../types/domain';
 import {
   appendImportReceipt,
   readImportLedger,
+  prepareImportLedger,
   validateChangeSetApproval,
 } from "../domain/changeSetLedger";
 import {prepareKeyframeChangeSet,keyframeReviewedProjection} from '../domain/keyframeChangeSet';
 import {frameReceiptResults} from '../domain/keyframeReceipt';
+import {encodeImportEvidence,verifyImportEvidence} from '../domain/importEvidence';
+import type {ImportCapacity} from '../domain/importAdmission';
+import {ImportAdmissionError} from '../domain/importAdmission';
 import {withStableLibraryMedia} from './mediaPreparationLock';
 const request = <T>(r: IDBRequest<T>) =>
   new Promise<T>((resolve, reject) => {
@@ -57,7 +61,12 @@ async function readBlockingProofs(input:ChangeSet):Promise<BlockingSourceProofs>
  const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(tx.objectStore('scenes').get(id))));await completion;
  return prepareBlockingSources(scenes.filter((s):s is SavedScene=>!!s));
 }
-const receiptVersion=(input:ChangeSet,plan:ChangeSetPlan,state:ChangeSetState)=>input.schema==='krakinai.change-set.v6'?{version:3 as const,changeSetSchema:'krakinai.change-set.v6' as const,reviewedContent:canonicalStringify(keyframeReviewedProjection(plan)),frameResults:frameReceiptResults(input,plan,state)}:input.schema==='krakinai.change-set.v5'?{version:2 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedContent:canonicalStringify(blockingReviewedProjection(plan))}:{version:1 as const};
+const evidenceText=(input:ChangeSet,plan:ChangeSetPlan)=>input.schema==='krakinai.change-set.v6'?canonicalStringify(keyframeReviewedProjection(plan)):input.schema==='krakinai.change-set.v5'?canonicalStringify(blockingReviewedProjection(plan)):undefined;
+async function receiptVersion(input:ChangeSet,plan:ChangeSetPlan,state:ChangeSetState){
+ if(input.schema==='krakinai.change-set.v6')return{version:4 as const,changeSetSchema:'krakinai.change-set.v6' as const,reviewedEvidence:await encodeImportEvidence(evidenceText(input,plan)!),frameResults:frameReceiptResults(input,plan,state)};
+ if(input.schema==='krakinai.change-set.v5')return{version:4 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedEvidence:await encodeImportEvidence(evidenceText(input,plan)!)};
+ return{version:1 as const};
+}
 const signedContent = (
   input: Pick<
     ChangeSetPreview,
@@ -133,6 +142,7 @@ async function previewChangeSetInternal(
       (r) => r.changeSetId === changeSet.changeSetId,
     ),
     allocation = allocate(changeSet);
+  await prepareImportLedger(ledger);
   if (existing) {
     if (existing.packageDigest !== packageDigest)
       throw Error(
@@ -162,13 +172,15 @@ async function previewChangeSetInternal(
   const plan = planChangeSet(changeSet, decisions, snapshot, allocation,conversionProofs,blockingProofs,keyframeContext),
     draft = { changeSet, approval: decisions, allocation, plan };
   const approvedDigest = await changeSetDigest(signedContent(draft));
+  let capacity:ImportCapacity=assessImportCapacity(snapshot,plan,ledger,allocation.preparedAt);
   if (
     !plan.findings.some(
       (f) => f.severity === "blocking" && !f.code.startsWith("APPROVAL_"),
     )
   ) {
+    try {
     const receipt: ChangeSetReceipt = {
-      ...receiptVersion(changeSet,plan,snapshot),
+      ...await receiptVersion(changeSet,plan,snapshot),
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,
@@ -181,25 +193,15 @@ async function previewChangeSetInternal(
       operations: structuredClone(plan.results),
       projectRevisions: structuredClone(plan.projectRevisions),
     };
-    try {
-      const next = appendImportReceipt(ledger, plan, receipt);
-      validateChangeSetBackupCapacity(
-        snapshot,
-        plan,
-        next,
-        allocation.preparedAt,
-      );
+      capacity=assessImportCapacity(snapshot,plan,ledger,allocation.preparedAt,receipt);
+      plan.findings.push(...capacity.findings);
     } catch (error) {
-      plan.findings.push({
-        severity: "blocking",
-        code: (error as Error).message.includes("backup metadata")
-          ? "BACKUP_METADATA_CAPACITY"
-          : "LEDGER_CAPACITY",
-        message: (error as Error).message,
-      });
+      if(!(error instanceof ImportAdmissionError))throw error;
+      const finding={severity:'blocking' as const,code:error.code,message:error.message};
+      plan.findings.push(finding);capacity={...capacity,status:'blocked',findings:[finding]};
     }
   }
-  return { version: 1, ...draft, packageDigest, approvedDigest };
+  return { version: 1, ...draft, packageDigest, approvedDigest,capacity };
 }
 async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
   const [
@@ -289,6 +291,9 @@ async function applyApprovedChangeSetInternal(
   const conversionProofs=await readConversionProofs(changeSet);
   const blockingProofs=await readBlockingProofs(changeSet);
   const keyframeContext=changeSet.schema==='krakinai.change-set.v6'?await prepareKeyframeChangeSet(changeSet,prepared.approval,await getAllSnapshot(),prepared.allocation,conversionProofs,blockingProofs):undefined;
+  const verificationState=await getAllSnapshot(),verifiedLedger=await prepareImportLedger(readImportLedger(verificationState.preferences));
+  const verifiedEvidence=prepared.replay?undefined:await receiptVersion(changeSet,prepared.plan,verificationState);
+  const verifiedText=prepared.replay?undefined:evidenceText(changeSet,prepared.plan);
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -318,10 +323,16 @@ async function applyApprovedChangeSetInternal(
         throw Error(
           "Change-set ID was already used with different content or approvals.",
         );
-      checkSynchronousAuthorization(state, authorize);
       await completion;
+      // A concurrent identical writer may have committed since our preparation.
+      // This branch performs no writes; verify its actual receipt after the tx.
+      if(previous.version===4)await verifyImportEvidence(previous.reviewedEvidence);
+      const freshState=await getAllSnapshot(),currentReceipt=readImportLedger(freshState.preferences).receipts.find(r=>r.changeSetId===previous.changeSetId);
+      if(!currentReceipt||canonicalStringify(currentReceipt)!==canonicalStringify(previous))throw Error('The confirmed receipt changed during verification. Revalidate before recovery.');
+      checkSynchronousAuthorization(freshState,authorize);
       return structuredClone(previous);
     }
+    if(canonicalStringify(ledger)!==verifiedLedger.comparison)throw Error('Import history changed during verification. Revalidate capacity and approve again; nothing was applied.');
     if (prepared.replay)
       throw Error(
         "The previous receipt is unavailable; preview this package again.",
@@ -337,8 +348,11 @@ async function applyApprovedChangeSetInternal(
       throw Error(
         "Relevant project, scene, asset or media state changed after preview. Nothing was applied; preview and approve again.",
       );
+    if(evidenceText(changeSet,plan)!==verifiedText)throw Error('Reviewed evidence changed at the atomic boundary. Revalidate and review again.');
+    if(verifiedEvidence?.version===4&&verifiedEvidence.changeSetSchema==='krakinai.change-set.v6'&&canonicalStringify(frameReceiptResults(changeSet,plan,state))!==canonicalStringify(verifiedEvidence.frameResults))throw Error('Exact frame receipt results changed. Revalidate and review again.');
+    if(!verifiedEvidence)throw Error('Missing verified receipt preparation.');
     const receipt: ChangeSetReceipt = {
-      ...receiptVersion(changeSet,plan,state),
+      ...verifiedEvidence,
       changeSetId: changeSet.changeSetId,
       packageDigest,
       approvedDigest,
