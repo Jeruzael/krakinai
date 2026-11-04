@@ -18,7 +18,9 @@ jobs:
   verify:
     name: Build, typecheck, unit and browser smoke
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    # Complete cold browser installation, full regressions and evidence uploads.
+    # Individual test timeouts and assertions remain unchanged.
+    timeout-minutes: 35
     env:
       KRAKINAI_IMPORT_HISTORY_RUN_ID: ci-${{ github.run_id }}
 

@@ -1237,5 +1237,42 @@
     ],
     "noProfilesZipCredentialsCertificatesOrSigningKeys": true,
     "realLibraryAndBlockedProposalsUnchanged": true
+  },
+  "ciBudgetFollowup": {
+    "implementationCommit": "60979d86ca65bb4d5705a6521ed1103a1b6d406e",
+    "workflow": "CI",
+    "runId": 41914083090,
+    "runConclusion": "cancelled",
+    "windowsConclusion": "success",
+    "linuxConclusion": "cancelled",
+    "allSubstantiveLinuxSteps": "success",
+    "linuxCounts": {
+      "appPassed": 1656,
+      "bridgePassed": 70,
+      "bridgePlatformSkipped": 4,
+      "helpersPassed": 88,
+      "helpersPlatformSkipped": 1,
+      "browserPassed": 262,
+      "browserExplicitSkipped": 18,
+      "independentArchivesPassed": 4
+    },
+    "browserReportedMinutes": 16.4,
+    "chromiumInstallApproxSeconds": 311,
+    "oldJobBudgetMinutes": 25,
+    "newJobBudgetMinutes": 35,
+    "diagnosis": "Run concluded cancelled around the configured job budget after all substantive steps and artifact uploads succeeded. Budget exhaustion inferred from timing; cancellation annotation not exposed by connector. Not counted as a green workflow.",
+    "verification": "YAML parsed; changing only this job-budget scalar makes old/new workflow objects equal. All 46 application/test/QA-helper source hashes remain unchanged. Original verifiedSourceFiles describe the local pre-signing capture, including the prior 25-minute workflow.",
+    "individualTestTimeoutsAssertionsCommandsPermissionsAndApplicationLimitsChanged": false,
+    "newWorkflowSha256": "6ae757b17f2444ba6754f5c632d6baf522523f79909cb755d3a2457fb2750a9c",
+    "hostedInstallAdvisories": {
+      "developmentTree": {
+        "moderate": 3,
+        "high": 1,
+        "critical": 2
+      },
+      "production": 0,
+      "dependencyFilesChanged": false
+    },
+    "finalSignedHeadCi": "Pending follow-up signature and hosted rerun; report separately in PR evidence comment."
   }
 }
