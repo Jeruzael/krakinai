@@ -33,11 +33,11 @@ it('supports explicit Start/End using the same original bytes without losing eit
  project.project!.frameProduction!.imageEvents.push({...source,id:'synthetic-end',frameId:'end'});project.project!.frameProduction!.active.push({shotId:selection.shotId,sceneId:selection.sceneId,frameId:'end',eventId:'synthetic-end'});project.project!.frameProduction!.revision++;
  const plan=await planFlowHandoff({...selection,frames:[{frameId:'middle',role:'start'},{frameId:'end',role:'end'}]},state);expect(plan.complete).toBe(true);expect(plan.files).toHaveLength(1);expect(plan.associations.map(row=>row.role)).toEqual(['start','end']);
 });
-it('enforces 128 MiB media, 16 MiB text and 2000 entries before oversized allocation',async()=>{
- expect([PROJECT_EXPORT_MEDIA_LIMIT,PROJECT_EXPORT_TEXT_LIMIT,PROJECT_EXPORT_ENTRY_LIMIT]).toEqual([128*1024**2,16*1024**2,2000]);
+it('enforces 128 MiB media, 64 MiB text and 2000 entries before oversized allocation',async()=>{
+ expect([PROJECT_EXPORT_MEDIA_LIMIT,PROJECT_EXPORT_TEXT_LIMIT,PROJECT_EXPORT_ENTRY_LIMIT]).toEqual([128*1024**2,64*1024**2,2000]);
  const {state,selection}=await fixture(),media=state.media.find(m=>m.id===state.collections[0].project!.frameProduction!.imageEvents[0].mediaId)!;const old=media.byteSize;media.byteSize=PROJECT_EXPORT_MEDIA_LIMIT+1;
  await expect(planFlowHandoff(selection,state)).rejects.toThrow(/128 MiB/);media.byteSize=old;
- state.scenes.find(s=>s.id===selection.sceneId)!.outputs.full='x'.repeat(PROJECT_EXPORT_TEXT_LIMIT+1);await expect(planFlowHandoff(selection,state)).rejects.toThrow(/16 MiB/);
+ state.scenes.find(s=>s.id===selection.sceneId)!.outputs.full='x'.repeat(PROJECT_EXPORT_TEXT_LIMIT+1);await expect(planFlowHandoff(selection,state)).rejects.toThrow(/64 MiB/);
  const {state:many,selection:pick}=await fixture(),scene=many.scenes.find(s=>s.id===pick.sceneId)!;scene.referencePack!.entries=Array.from({length:2000},(_,i)=>({...scene.referencePack!.entries[0],associationId:'synthetic-ref-'+i,mediaId:'synthetic-file-'+i}));
  many.media=scene.referencePack!.entries.map(entry=>({...many.media[0],id:entry.mediaId,byteSize:1}));await expect(planFlowHandoff({...pick,mode:'ingredients',frames:[],referenceAssociationIds:scene.referencePack!.entries.map(e=>e.associationId)},many)).rejects.toThrow(/2000/);
 });

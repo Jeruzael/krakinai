@@ -18,7 +18,7 @@ import { getActiveReferencePack, getActiveSceneSlots, getActiveSourceMediaLinks,
 import { getDownloadFilename, getMediaDisplayName, validateExportFilename } from './mediaNaming';
 
 export const PROJECT_EXPORT_MEDIA_LIMIT = 128 * 1024 * 1024;
-export const PROJECT_EXPORT_TEXT_LIMIT = 16 * 1024 * 1024;
+export const PROJECT_EXPORT_TEXT_LIMIT = 64 * 1024 * 1024;
 export const PROJECT_EXPORT_ENTRY_LIMIT = 2000;
 export interface ProjectExportOptions { excludedAssociationIds?: string[]; includeGenerationJson?: boolean; onProgress?: (stage:string)=>void; signal?: AbortSignal }
 export interface ProjectExportAssociation { frameId?:string;frameEventId?:string;sha256AtCapture?:string; participantId?:string; id:string; shotId?:string; sceneId?:string; associationId:string; mediaId:string; role?:MediaRole; purpose?:string; sourceSlot?:string; sourceId?:string; sourceTitle?:string; order:number; altText?:string; displayName:string; requestedFilename:string; capturedFilename?:string; capturedExportFilename?:string; namesCaptured?:true; originalFilename?:string; mimeType?:string; missing:boolean; excluded:boolean; archivePath?:string; sha256?:string }
@@ -33,7 +33,7 @@ const truncateUtf8=(value:string,maxBytes:number)=>{let output='',used=0;for(con
 const stableComponent=(prefix:string,id:string)=>{const suffix=stable(id);return `${truncateUtf8(prefix,240-new TextEncoder().encode(suffix).length-1)}-${suffix}`;};
 const mimeExtension:Record<string,string>={'image/jpeg':'jpg','image/jpg':'jpg','image/png':'png','image/webp':'webp','image/svg+xml':'svg','video/mp4':'mp4','video/webm':'webm'};
 const boundedName=(name:string,mime:string)=>{ try { validateExportFilename(name,mime); if(new TextEncoder().encode(name).length<=120) return name; } catch { /* legacy originals may have unsafe names */ } const ext=mimeExtension[mime];if(!ext) throw new Error(`Unsupported media MIME type for project export: ${mime}.`);let base=truncateUtf8(slug(name.replace(/\.[^.]*$/,''),48),100);if(/^(con|prn|aux|nul|com[1-9]|lpt[1-9])$/i.test(base))base=`file-${base}`;return `${base}.${ext}`; };
-const textBound=(value:unknown,limit:number):number=>{ let bound=4096; const add=(n:number)=>{bound+=n;if(bound>limit) throw new Error('Project export exceeds the 16 MiB generated text limit.');};const walk=(v:unknown)=>{ if(typeof v==='string') add(v.length*24+8); else if(Array.isArray(v)){add(v.length*32+16);v.forEach(walk);} else if(v && typeof v==='object' && !(v instanceof Blob)){const entries=Object.entries(v);add(entries.length*64+16);for(const [key,item] of entries){add(key.length*24);walk(item);}} else add(32);}; walk(value); return bound; };
+const textBound=(value:unknown,limit:number):number=>{ let bound=4096; const add=(n:number)=>{bound+=n;if(bound>limit) throw new Error('Project export exceeds the 64 MiB generated text limit.');};const walk=(v:unknown)=>{ if(typeof v==='string') add(v.length*24+8); else if(Array.isArray(v)){add(v.length*32+16);v.forEach(walk);} else if(v && typeof v==='object' && !(v instanceof Blob)){const entries=Object.entries(v);add(entries.length*64+16);for(const [key,item] of entries){add(key.length*24);walk(item);}} else add(32);}; walk(value); return bound; };
 const aborted=(signal?:AbortSignal)=>{if(signal?.aborted) throw new DOMException('Project export cancelled.','AbortError');};
 
 function collect(collection:Collection,snapshot:LibrarySnapshot,options:ProjectExportOptions={},availableSceneIds=new Set(snapshot.scenes.map(scene=>scene.id))) {
@@ -81,7 +81,7 @@ export async function buildProjectExport(collection:Collection,snapshot:LibraryS
  const initialPlan=planProjectExport(collection,snapshot,options);
  if(initialPlan.estimatedMediaBytes>PROJECT_EXPORT_MEDIA_LIMIT) throw new Error('Project export exceeds 128 MiB selected media. Exclude associations to reduce it.');
  if(initialPlan.estimatedEntries>PROJECT_EXPORT_ENTRY_LIMIT) throw new Error('Project export exceeds 2000 ZIP entries.');
- if(initialPlan.estimatedTextUpperBound>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 16 MiB generated text limit.');
+ if(initialPlan.estimatedTextUpperBound>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 64 MiB generated text limit.');
  const initial=collect(collection,snapshot,options);
  const selectedSceneIds=new Set(initial.shots.map(shot=>shot.selectedSceneId).filter(Boolean));
  const selectedMediaIds=new Set(initial.associations.map(a=>a.mediaId));
@@ -90,12 +90,12 @@ export async function buildProjectExport(collection:Collection,snapshot:LibraryS
  const plan=initialPlan;
  if(plan.estimatedMediaBytes>PROJECT_EXPORT_MEDIA_LIMIT) throw new Error('Project export exceeds 128 MiB selected media. Exclude associations to reduce it.');
  if(plan.estimatedEntries>PROJECT_EXPORT_ENTRY_LIMIT) throw new Error('Project export exceeds 2000 ZIP entries.');
- if(plan.estimatedTextUpperBound>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 16 MiB generated text limit.');
+ if(plan.estimatedTextUpperBound>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 64 MiB generated text limit.');
  const missing=associations.filter(a=>a.missing&&!a.excluded);
  if(missing.length) throw new Error(`Missing selected original media: ${missing.map(a=>`${a.id} (${a.mediaId})`).join('; ')}. Exclude each missing association explicitly to continue.`);
  const root=stableComponent(slug(captured.collection.name),captured.collection.id);
  const files:Record<string,Uint8Array>={}; let textBytes=0; const paths=new Set<string>();
- const addText=(path:string,value:string)=>{ const lower=path.toLowerCase();if(paths.has(lower)) throw new Error(`Duplicate ZIP path: ${path}`);paths.add(lower);const bytes=strToU8(value);textBytes+=bytes.length;if(textBytes>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 16 MiB generated text limit.');files[path]=bytes;};
+ const addText=(path:string,value:string)=>{ const lower=path.toLowerCase();if(paths.has(lower)) throw new Error(`Duplicate ZIP path: ${path}`);paths.add(lower);const bytes=strToU8(value);textBytes+=bytes.length;if(textBytes>PROJECT_EXPORT_TEXT_LIMIT) throw new Error('Project export exceeds the 64 MiB generated text limit.');files[path]=bytes;};
  const records:ProjectExportManifest['shots']=[];
  const storyboard=[`# ${captured.collection.name}`,'',captured.collection.description,''];
  for(const [index,shot] of shots.entries()){

@@ -9,11 +9,11 @@ vi.mock('../context/LibraryContext',()=>({useLibrary:()=>library}));
 afterEach(()=>cleanup());
 
 it('shows an actionable planning limit error without crashing the dialog',()=>{
- const scene={id:'scene-1',title:'Scene',slots:{},settings:{},outputs:{full:'x'.repeat(800_000),structured:'',compact:''},references:[],resultMediaLinks:[]} as unknown as SavedScene;
+ const scene={id:'scene-1',title:'Scene',slots:{},settings:{},outputs:{full:'x'.repeat(3_000_000),structured:'',compact:''},references:[],resultMediaLinks:[]} as unknown as SavedScene;
  const collection={id:'project',name:'Film',description:'',members:[],createdAt:'',updatedAt:'',project:{version:1,revision:1,shots:[{id:'shot',order:0,code:'01',title:'Shot',takeSceneIds:[scene.id],selectedSceneId:scene.id,status:'prompt_ready'}]}} as Collection;
  library.snapshot={scenes:[scene],media:[]};
  render(<ProjectExportDialog collection={collection} onClose={vi.fn()}/>);
- expect(screen.getByRole('alert')).toHaveTextContent('16 MiB');
+ expect(screen.getByRole('alert')).toHaveTextContent('64 MiB');
  expect(screen.getByRole('button',{name:'Export project ZIP'})).toBeDisabled();
  expect(screen.getByRole('button',{name:'Close'})).toBeEnabled();
 });
