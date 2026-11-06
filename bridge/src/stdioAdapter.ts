@@ -141,7 +141,16 @@ export function startStdioAdapter(options: AdapterOptions) {
   const transport = new StdioServerTransport(process.stdin.pipe(admission), process.stdout, { maxBufferSize: MCP_LIMITS.frame });
   handle = serveStdio(() => {
     const server = new McpServer({ name: 'krakinai-local-codex', version: '1.0.0' });
-    registerKrakinaiTools(server, (name, args) => adapter.dispatch(name, args));
+    registerKrakinaiTools(server, (name, args) => { adapter.initialized(); return adapter.dispatch(name, args); });
+    const raw = server.server as unknown as { _oninitialize?: (request: unknown) => Promise<unknown>; _ondiscover?: () => unknown };
+    if (typeof raw._oninitialize === 'function') {
+      const original = raw._oninitialize.bind(server.server);
+      raw._oninitialize = async (request: unknown) => { const result = await original(request); adapter.initialized(); return result; };
+    }
+    if (typeof raw._ondiscover === 'function') {
+      const original = raw._ondiscover.bind(server.server);
+      raw._ondiscover = () => { const result = original(); adapter.initialized(); return result; };
+    }
     server.server.oninitialized = () => adapter.initialized(); server.server.onclose = () => void stop(); return server;
   }, { legacy: 'serve', transport, maxSubscriptions: 0, onerror: () => { console.error('KRAKINAI_PROTOCOL_ERROR'); void stop(1); } });
   process.on('SIGINT', () => void stop()); process.on('SIGTERM', () => void stop());
