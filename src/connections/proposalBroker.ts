@@ -6,8 +6,8 @@ import { changeSetDigest } from '../domain/changeSetCanonical';
 import { readImportLedger } from '../domain/changeSetLedger';
 import { assertProposalScope, canReadReceipt, emptyMcpScope, validateMcpScope } from '../domain/mcpScope';
 import { readMcpTool, receiptProjection } from '../domain/mcpReads';
-import { MCP_LIMITS, McpError, resultData, resultError, validateToolArgs, type McpCommand, type McpResult } from '../domain/mcpProtocol';
-import { emptyChangeSetApproval, type ChangeSetApproval, type ChangeSetState } from '../types/changeSet';
+import { MCP_LIMITS, McpError, resultData, resultError, validateToolArgs, type McpCommand, type McpResult, type McpToolName } from '../domain/mcpProtocol';
+import { emptyChangeSetApproval, type ChangeSet, type ChangeSetApproval, type ChangeSetState } from '../types/changeSet';
 import type { McpProposalView, McpScope, ReceiptGrant } from '../types/mcp';
 import {conversionMcpPreview}from'../domain/recipeConversionMcp';
 import {requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain/mcpCapabilities';
@@ -18,8 +18,34 @@ import {REVIEW_WINDOW_MS,reviewWindowExpired,validateReviewFeedback} from '../do
 import {feedbackForCurrentContext,type ReviewFeedbackShare} from '../domain/proposalFeedback';
 import type {ReviewInbox,ReviewProgress,InvalidReviewDraft} from '../types/proposalReview';
 import {withProposalReviewLock} from './proposalReviewLock';
+import {
+  createEmptyDraftChangeSet,
+  stageProjectOperation,
+  stageShotOperation,
+  stageShotOrderOperation,
+  stageShotStatusOperation,
+  stageAssetCandidateOperation,
+  stageOutfitVariantOperation,
+  stageSceneRecipeOperation,
+  stageSceneEnsembleOperation,
+  stageSceneDialogueOperation,
+  stageCameraCompositionOperation,
+  stageDirectToRecipeOperation,
+  stageSceneBlockingOperation,
+  stageKeyframePlanOperation,
+  stageFrameImageOperation,
+} from '../domain/mcpGranularStaging';
+import {
+  readAssetDetail,
+  readCatalogPresets,
+  readProjectContinuity,
+  readSpatialContinuity,
+  readSceneAssemblyPreview,
+  readSavedScenesList,
+  readExportedScenePrompts,
+} from '../domain/mcpGranularReads';
 
-interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void>; inbox?:ReviewInbox; origin?:string;reviewLock:typeof withProposalReviewLock }
+interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void>; inbox?:ReviewInbox|ProposalInbox; origin?:string;reviewLock:typeof withProposalReviewLock }
 interface Consent { digest: string; packageDigest: string; sessionId: string; scopeEpoch: number; expiresAt: number; used: boolean }
 interface ScopeContext { sessionId?: string; epoch: number }
 export interface BrokerView { connected: boolean; sessionId?: string; scope: McpScope; proposals: McpProposalView[]; approvedReceiptGrants: ReceiptGrant[]; inboxError?:string; invalidDrafts?:InvalidReviewDraft[] }
@@ -34,7 +60,12 @@ export class ProposalBroker {
   #inbox:ProposalInbox; #initialized?:Promise<void>;
   #feedbackShares=new Map<string,ReviewFeedbackShare>();
   #view: BrokerView = { connected: false, scope: emptyMcpScope(), proposals: [], approvedReceiptGrants: [] };
-  constructor(dependencies: Partial<Dependencies> = {}) { this.#deps = { readState: getAllSnapshot, preview: previewChangeSet, apply: applyApprovedChangeSet, now: Date.now, isSessionLive: () => true, onApplied: async () => {},reviewLock:withProposalReviewLock, ...dependencies };this.#inbox=new ProposalInbox(this.#deps.inbox,this.#deps.origin??'http://localhost:5173',()=>this.#deps.now()); }
+  constructor(dependencies: Partial<Dependencies> = {}) {
+    this.#deps = { readState: getAllSnapshot, preview: previewChangeSet, apply: applyApprovedChangeSet, now: Date.now, isSessionLive: () => true, onApplied: async () => {},reviewLock:withProposalReviewLock, ...dependencies };
+    this.#inbox = dependencies.inbox instanceof ProposalInbox
+      ? dependencies.inbox
+      : new ProposalInbox(dependencies.inbox, this.#deps.origin ?? 'http://localhost:5173', () => this.#deps.now());
+  }
   #locked<T>(id:string,work:()=>Promise<T>):Promise<T>{return this.#deps.inbox?this.#deps.reviewLock(id,work):work();}
   subscribe = (listener: () => void) => { this.#listeners.add(listener); return () => { this.#listeners.delete(listener); }; };
   getState = (): BrokerView => this.#view;
@@ -86,8 +117,46 @@ export class ProposalBroker {
     try {
       this.expire(); const context = this.#current(); this.#assert(context); if (sessionId !== context.sessionId) throw new McpError('DISCONNECTED');
       this.#activity = this.#deps.now(); const args = validateToolArgs(command.tool, command.args);
-      if(command.tool==='krakinai_submit_change_set'||command.tool==='krakinai_get_proposal_status'){await this.initializeInbox();this.#assert(context);}
+      if(command.tool==='krakinai_submit_change_set'||command.tool==='krakinai_get_proposal_status'||command.tool==='krakinai_list_proposals'||command.tool==='krakinai_discard_proposal'||command.tool.startsWith('krakinai_stage_')){await this.initializeInbox();this.#assert(context);}
       if(args.target||args.projection||('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v6'))requireKeyframeCapabilities(this.#capabilities);
+      if (command.tool === 'krakinai_list_proposals') {
+        if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
+        const items = [...this.#proposals.values()]
+          .filter((p) => !p.sessionId || p.sessionId === sessionId)
+          .map((p) => ({
+            proposalId: p.id,
+            changeSetId: p.changeSetId,
+            title: p.preview?.changeSet.title ?? this.#inbox.record(p.id)?.changeSet.title ?? 'Proposal',
+            status: p.status,
+            operationCount:
+              p.preview?.changeSet.operations.length ??
+              this.#inbox.record(p.id)?.changeSet.operations.length ??
+              0,
+            expiresAt: p.expiresAt,
+          }));
+        return resultData({ items });
+      }
+      if (command.tool === 'krakinai_discard_proposal') {
+        if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
+        const proposalId = String(args.proposalId);
+        const p = this.#proposals.get(proposalId);
+        if (!p || (p.sessionId && p.sessionId !== sessionId)) throw new McpError('PERMISSION_DENIED');
+        if (p.status === 'applied' || p.status === 'applying') {
+          throw new McpError('CONFLICT', 'Applied or applying proposals cannot be discarded.');
+        }
+        await this.#inbox.discard(proposalId);
+        this.#proposals.delete(proposalId);
+        this.#reviewed.delete(proposalId);
+        this.#consents.delete(proposalId);
+        this.#receiptGrants.delete(proposalId);
+        this.#reuse.delete(proposalId);
+        this.#feedbackShares.delete(proposalId);
+        this.#emit();
+        return resultData({ discarded: true, proposalId });
+      }
+      if (command.tool.startsWith('krakinai_stage_')) {
+        return await this.#handleGranularStage(command.tool, args, sessionId, context);
+      }
       if (command.tool === 'krakinai_get_proposal_status') {
         if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
         const p = this.#proposal(String(args.proposalId));
@@ -146,8 +215,208 @@ export class ProposalBroker {
         if (preview.replay && canReadReceipt(preview.replay, this.#effectiveScope(), state)) { p.status = 'applied'; p.receipt = structuredClone(preview.replay); }
         this.#proposals.set(p.id, p); this.#emit(); return resultData(p.receipt ? { ...this.#status(p), receipt: receiptProjection(p.receipt, state) } : this.#status(p));
       }
+      if (command.tool === 'krakinai_get_asset') {
+        const result = readAssetDetail(state, this.#effectiveScope(), args as { id: string });
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_list_catalog_presets') {
+        const result = readCatalogPresets(args as { catalog: 'cinematography' | 'performance' | 'shot_types' });
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_get_project_continuity') {
+        const result = readProjectContinuity(state, this.#effectiveScope(), args as { projectId: string });
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_check_spatial_continuity') {
+        let stagedChangeSet: ChangeSet | undefined;
+        if (args.changeSetId) {
+          const p = [...this.#proposals.values()].find((p) => p.changeSetId === args.changeSetId);
+          stagedChangeSet = p?.preview?.changeSet ?? this.#inbox.findByChangeSetId(String(args.changeSetId))?.changeSet;
+        }
+        const result = readSpatialContinuity(
+          state,
+          this.#effectiveScope(),
+          args as { projectId: string; changeSetId?: string },
+          stagedChangeSet,
+        );
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_preview_scene_assembly') {
+        let stagedChangeSet: ChangeSet | undefined;
+        if (args.changeSetId) {
+          const p = [...this.#proposals.values()].find((p) => p.changeSetId === args.changeSetId);
+          stagedChangeSet = p?.preview?.changeSet ?? this.#inbox.findByChangeSetId(String(args.changeSetId))?.changeSet;
+        }
+        const result = readSceneAssemblyPreview(
+          state,
+          this.#effectiveScope(),
+          args as { sceneId?: string; changeSetId?: string; sceneClientRef?: string },
+          stagedChangeSet,
+        );
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_list_saved_scenes') {
+        const result = readSavedScenesList(state, this.#effectiveScope(), args);
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_export_scene_prompts') {
+        const result = readExportedScenePrompts(state, this.#effectiveScope(), args as { sceneIds: string[] });
+        this.#assert(context);
+        return resultData(result);
+      }
       const data = await readMcpTool(command.tool, args, this.#effectiveScope(), state); this.#assert(context); return resultData(data);
     } catch (error) { return resultError(error); }
+  }
+  async #handleGranularStage(
+    tool: McpToolName,
+    args: Record<string, unknown>,
+    sessionId: string,
+    context: ScopeContext,
+  ): Promise<McpResult> {
+    if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
+
+    if (tool === 'krakinai_stage_scene_blocking') {
+      requireBlockingCapabilities(this.#capabilities);
+      if (!('allowBlockingProposals' in this.#scope) || !this.#scope.allowBlockingProposals) throw new McpError('PERMISSION_DENIED');
+    }
+    if (tool === 'krakinai_stage_keyframe_plan' || tool === 'krakinai_stage_frame_image') {
+      requireKeyframeCapabilities(this.#capabilities);
+      if (!('allowKeyframeProposals' in this.#scope) || !this.#scope.allowKeyframeProposals) throw new McpError('PERMISSION_DENIED');
+    }
+
+    const changeSetId = String(args.changeSetId);
+    const existing = [...this.#proposals.values()].find((p) => p.changeSetId === changeSetId);
+    if (existing) {
+      if (existing.status === 'applied' || existing.status === 'applying') {
+        throw new McpError('CONFLICT', 'Applied or applying proposals cannot be modified.');
+      }
+    }
+    const inboxRecord = this.#inbox.findByChangeSetId(changeSetId);
+    if (inboxRecord && ['applied', 'applying'].includes(inboxRecord.disposition)) {
+      throw new McpError('CONFLICT', 'Applied or applying proposals cannot be modified.');
+    }
+
+    let draft: ChangeSet;
+    if (existing?.preview?.changeSet) {
+      draft = structuredClone(existing.preview.changeSet);
+    } else if (inboxRecord?.changeSet) {
+      draft = structuredClone(inboxRecord.changeSet);
+    } else {
+      draft = createEmptyDraftChangeSet(
+        changeSetId,
+        typeof args.title === 'string' ? args.title : undefined,
+        typeof args.description === 'string' ? args.description : undefined,
+      );
+    }
+
+    let staged: { changeSet: ChangeSet; operationId: string };
+    switch (tool) {
+      case 'krakinai_stage_project':
+        staged = stageProjectOperation(draft, args);
+        break;
+      case 'krakinai_stage_shot':
+        staged = stageShotOperation(draft, args);
+        break;
+      case 'krakinai_stage_shot_order':
+        staged = stageShotOrderOperation(draft, args);
+        break;
+      case 'krakinai_stage_shot_status':
+        staged = stageShotStatusOperation(draft, args);
+        break;
+      case 'krakinai_stage_asset_candidate':
+        staged = stageAssetCandidateOperation(draft, args);
+        break;
+      case 'krakinai_stage_outfit_variant':
+        staged = stageOutfitVariantOperation(draft, args);
+        break;
+      case 'krakinai_stage_scene_recipe':
+        staged = stageSceneRecipeOperation(draft, args);
+        break;
+      case 'krakinai_stage_scene_ensemble':
+        staged = stageSceneEnsembleOperation(draft, args);
+        break;
+      case 'krakinai_stage_scene_dialogue':
+        staged = stageSceneDialogueOperation(draft, args);
+        break;
+      case 'krakinai_stage_camera_composition':
+        staged = stageCameraCompositionOperation(draft, args);
+        break;
+      case 'krakinai_stage_direct_to_recipe':
+        staged = stageDirectToRecipeOperation(draft, args);
+        break;
+      case 'krakinai_stage_scene_blocking':
+        staged = stageSceneBlockingOperation(draft, args);
+        break;
+      case 'krakinai_stage_keyframe_plan':
+        staged = stageKeyframePlanOperation(draft, args);
+        break;
+      case 'krakinai_stage_frame_image':
+        staged = stageFrameImageOperation(draft, args);
+        break;
+      default:
+        throw new McpError('UNKNOWN_TOOL');
+    }
+
+    if (staged.changeSet.schema === 'krakinai.change-set.v5') {
+      requireBlockingCapabilities(this.#capabilities);
+      if (!('allowBlockingProposals' in this.#scope) || !this.#scope.allowBlockingProposals) throw new McpError('PERMISSION_DENIED');
+    }
+    if (staged.changeSet.schema === 'krakinai.change-set.v6') {
+      requireKeyframeCapabilities(this.#capabilities);
+      if (!('allowKeyframeProposals' in this.#scope) || !this.#scope.allowKeyframeProposals) throw new McpError('PERMISSION_DENIED');
+    }
+
+    const state = await this.#deps.readState();
+    this.#assert(context);
+    assertProposalScope(staged.changeSet, this.#scope, state);
+
+    if (!existing && !inboxRecord && this.#proposals.size >= MCP_LIMITS.proposals) {
+      throw new McpError('QUEUE_FULL', 'Download or remove an existing saved review before submitting another proposal.');
+    }
+
+    const preview = await this.#deps.preview(staged.changeSet);
+    this.#assert(context);
+
+    const record = await this.#inbox.upsertDraftChangeSet(staged.changeSet);
+    this.#assert(context);
+    const digest = await changeSetDigest(record.changeSet);
+    this.#assert(context);
+
+    const p: McpProposalView = {
+      id: record.id,
+      changeSetId: record.changeSet.changeSetId,
+      packageDigest: digest,
+      sessionId,
+      scopeEpoch: context.epoch,
+      receivedAt: record.firstReceivedAt,
+      expiresAt: record.expiresAt,
+      status: 'review_required',
+      preview: structuredClone(preview),
+      needsRevalidation: false,
+    };
+    this.#proposals.set(p.id, p);
+    this.#reviewed.delete(record.id);
+    this.#consents.delete(record.id);
+    this.#emit();
+
+    return resultData({
+      proposalId: record.id,
+      changeSetId: record.changeSet.changeSetId,
+      schema: record.changeSet.schema,
+      packageDigest: record.packageDigest,
+      operationCount: record.changeSet.operations.length,
+      stagedOperationId: staged.operationId,
+      status: 'review_required',
+      expiresAt: record.expiresAt,
+      summary: preview.plan?.summary,
+      batchChecks: importBatchChecks(preview),
+    });
   }
   async #prepareSaved(p:McpProposalView,context:ScopeContext,options:{renew?:boolean;reconsider?:boolean}={}){
     return this.#locked(p.id,()=>this.#prepareSavedLocked(p,context,options));
