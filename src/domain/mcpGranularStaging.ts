@@ -68,6 +68,7 @@ function ensureCameraAliases(): void {
     'worms-eye': 'camera-placement.worms-eye-angle',
     single: 'framing.single',
     'dirty-single': 'framing.dirty-single',
+    'angle.dirty-single': 'framing.dirty-single',
     'two-shot': 'framing.two-shot',
     'three-shot': 'framing.three-shot-group-shot',
     ots: 'framing.over-the-shoulder',
@@ -100,10 +101,6 @@ function ensureCameraAliases(): void {
     'rack-focus': 'focus.rack-focus-focus-pull',
   };
 
-  for (const [k, v] of Object.entries(directAliases)) {
-    CAMERA_ALIAS_MAP.set(k.toLowerCase().trim(), v);
-  }
-
   for (const t of CINEMATOGRAPHY_TECHNIQUES) {
     if (t.owner === 'camera' && t.kind === 'technique' && t.dimension) {
       CAMERA_ALIAS_MAP.set(t.id.toLowerCase().trim(), t.id);
@@ -112,6 +109,10 @@ function ensureCameraAliases(): void {
         CAMERA_ALIAS_MAP.set(a.toLowerCase().trim(), t.id);
       }
     }
+  }
+
+  for (const [k, v] of Object.entries(directAliases)) {
+    CAMERA_ALIAS_MAP.set(k.toLowerCase().trim(), v);
   }
 }
 

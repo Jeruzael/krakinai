@@ -772,7 +772,7 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
       };
       broker.connect('session-recipe', scope, 20000);
 
-      // Stage recipe with inline camera composition using aliases ('EWS', 'high-angle', 'crane', 'deep-focus')
+      // Stage recipe with inline camera composition using aliases ('EWS', 'high-angle', 'crane', 'deep-focus', 'angle.dirty-single')
       const r1 = await broker.handle(
         {
           requestId: 'rec-1',
@@ -785,7 +785,7 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
             title: 'Establishing Nave',
             settings: { aspectRatio: '16:9', durationSeconds: 6 },
             cameraComposition: {
-              techniqueIds: ['EWS', 'high-angle', 'crane', 'deep-focus'],
+              techniqueIds: ['EWS', 'high-angle', 'crane', 'deep-focus', 'angle.dirty-single'],
             },
             sceneInstructions: 'Initial instructions',
             avoidText: 'No cuts, no music',
@@ -840,8 +840,9 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
       expect(op.cameraComposition).toBeDefined(); // preserved!
       expect(op.cameraComposition.techniqueIds).toContain('shot-size.extreme-wide-extreme-long-shot');
       expect(op.cameraComposition.techniqueIds).toContain('camera-placement.high-angle');
-      expect(op.cameraComposition.techniqueIds).toContain('rig.crane');
+      expect(op.cameraComposition.techniqueIds).toContain('movement.crane-rise-descent');
       expect(op.cameraComposition.techniqueIds).toContain('focus.deep-focus');
+      expect(op.cameraComposition.techniqueIds).toContain('framing.dirty-single');
     });
 
     it('krakinai_stage_storyboard_batch stages full multi-shot package atomically with zero errors', async () => {
