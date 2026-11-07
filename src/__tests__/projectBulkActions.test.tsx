@@ -7,11 +7,26 @@ import type {Collection,SavedScene} from '../types/domain';
 const c:Collection={id:'c',name:'Film',description:'',members:[],createdAt:'',updatedAt:'',project:{version:1,revision:2,shots:[{id:'a',order:0,code:'01',title:'A',takeSceneIds:[],status:'planned'}]}};
 const other:Collection={...c,id:'other',name:'Other project',project:{version:1,revision:0,shots:[]}};
 const scene:SavedScene={id:'s',title:'Scene',slots:{},extraRequiredSlots:[],sceneInstructions:'',settings:{},outputs:{full:'Exact',structured:'',compact:''},manualOutputs:{},references:[],resultMediaLinks:[],reviewNotes:'',reviewStatus:'unreviewed',revision:1,createdAt:'',updatedAt:''};
+const archivedScene:SavedScene={...scene,id:'archived',title:'Archived Scene',archivedAt:'2026-11-07T12:00:00.000Z'};
 const copyTextMock=vi.hoisted(()=>vi.fn());
-vi.mock('../context/LibraryContext',()=>({useLibrary:()=>({snapshot:{collections:[c,other],scenes:[scene]},copyText:copyTextMock,showToast:vi.fn()})}));
+const deleteMock=vi.hoisted(()=>vi.fn());
+const archiveMock=vi.hoisted(()=>vi.fn());
+vi.mock('../storage/projectBulk', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../storage/projectBulk')>();
+  return {
+    ...actual,
+    bulkDeleteSavedScenes: deleteMock,
+    bulkSetScenesArchived: archiveMock,
+  };
+});
+vi.mock('../context/LibraryContext',()=>({useLibrary:()=>({snapshot:{collections:[c,other],scenes:[scene,archivedScene]},copyText:copyTextMock,showToast:vi.fn()})}));
 import {ProjectBulkActions} from '../components/ProjectBulkActions';
 import {SceneBulkActions} from '../components/SceneBulkActions';
-beforeEach(()=>copyTextMock.mockReset());
+beforeEach(()=>{
+  copyTextMock.mockReset();
+  deleteMock.mockReset();
+  archiveMock.mockReset();
+});
 
 it('shows explicit project bulk targets, selected count, and confirmation before association removal',async()=>{
  const user=userEvent.setup();render(<ProjectBulkActions collection={c} selectedShotIds={['a']} onClear={()=>{}} onChanged={async()=>{}}/>);
@@ -50,4 +65,34 @@ it('starts only one copy action for two clicks in the same render',async()=>{
  const button=screen.getByRole('button',{name:'Copy Prompts'});
  await act(async()=>{fireEvent.click(button);fireEvent.click(button);});
  expect(copyTextMock).toHaveBeenCalledTimes(1);
+});
+
+it('supports archiving, unarchiving, and confirmation-guarded deletion of selected scenes', async () => {
+ const user = userEvent.setup();
+ const onClear = vi.fn();
+ const onChanged = vi.fn().mockResolvedValue(undefined);
+ deleteMock.mockResolvedValue(undefined);
+ archiveMock.mockResolvedValue([scene]);
+
+ const { rerender } = render(<SceneBulkActions selectedSceneIds={['s']} onClear={onClear} onChanged={onChanged} />);
+ expect(screen.getByRole('button', { name: 'Archive Selected' })).toBeInTheDocument();
+ expect(screen.getByRole('button', { name: 'Delete Selected' })).toBeInTheDocument();
+ expect(screen.queryByRole('button', { name: 'Unarchive Selected' })).not.toBeInTheDocument();
+
+ await user.click(screen.getByRole('button', { name: 'Archive Selected' }));
+ expect(archiveMock).toHaveBeenCalledWith({ sceneIds: ['s'], archived: true });
+
+ await user.click(screen.getByRole('button', { name: 'Delete Selected' }));
+ expect(screen.getByRole('dialog', { name: /delete selected scenes/i })).toBeInTheDocument();
+ await user.click(screen.getByRole('button', { name: 'Cancel' }));
+ expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+
+ await user.click(screen.getByRole('button', { name: 'Delete Selected' }));
+ await user.click(screen.getByRole('button', { name: 'Confirm Delete Selected Scenes' }));
+ expect(deleteMock).toHaveBeenCalledWith({ sceneIds: ['s'] });
+
+ rerender(<SceneBulkActions selectedSceneIds={['archived']} onClear={onClear} onChanged={onChanged} />);
+ expect(screen.getByRole('button', { name: 'Unarchive Selected' })).toBeInTheDocument();
+ await user.click(screen.getByRole('button', { name: 'Unarchive Selected' }));
+ expect(archiveMock).toHaveBeenCalledWith({ sceneIds: ['archived'], archived: false });
 });

@@ -293,6 +293,7 @@ interface SavedSceneBase extends Omit<SceneAuthoringFields, 'authoringMode' | 'd
   resultMediaLinks: MediaLink[];
   reviewNotes: string;
   reviewStatus: ReviewStatus;
+  archivedAt?: string;
   revision: number;
   createdAt: string;
   updatedAt: string;

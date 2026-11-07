@@ -1,5 +1,5 @@
 import type {Collection,ProductionStatus,ProjectShot,SavedScene} from '../types/domain';
-import {getProjectShots,projectMembersFromShots} from '../domain/projectStoryboard';
+import {getProjectShots,projectMembersFromShots,removeTakeFromProject} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
 import {generateId,openDatabase} from './db';
 import {retireUnavailableFrameImages} from '../domain/frameImageAssociations';
@@ -67,6 +67,61 @@ export function bulkAssignSceneStatus({collectionId,sceneIds,status}:{collection
   if(matching.every(s=>s.status===status))return raw;
   return changed(c,shots.map(s=>matching.includes(s)?{...s,status}:s));
  });
+}
+
+export async function bulkSetScenesArchived({sceneIds,archived}:{sceneIds:string[];archived:boolean}):Promise<SavedScene[]>{
+ const ids=selected(sceneIds,'scene');
+ if(typeof archived!=='boolean')throw new Error('Invalid archived state.');
+ const db=await openDatabase();const tx=db.transaction('scenes','readwrite');const completion=done(tx);
+ try{
+  const store=tx.objectStore('scenes');
+  const now=new Date().toISOString();
+  const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(store.get(id))));
+  if(scenes.some(s=>!s))throw new Error('One or more selected saved scenes no longer exist. Refresh the library.');
+  const updatedList:SavedScene[]=[];
+  for(const scene of scenes as SavedScene[]){
+   const updated={...scene,updatedAt:now};
+   if(archived){
+    updated.archivedAt=scene.archivedAt??now;
+   }else{
+    delete updated.archivedAt;
+   }
+   store.put(updated);
+   updatedList.push(updated);
+  }
+  await completion;
+  return updatedList;
+ }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+}
+
+export async function bulkDeleteSavedScenes({sceneIds}:{sceneIds:string[]}):Promise<void>{
+ const ids=selected(sceneIds,'scene');
+ const db=await openDatabase();const tx=db.transaction(['scenes','collections'],'readwrite');const completion=done(tx);
+ try{
+  const sceneStore=tx.objectStore('scenes');const colStore=tx.objectStore('collections');
+  const allScenes=await request<SavedScene[]>(sceneStore.getAll());
+  const sceneMap=new Map(allScenes.map(s=>[s.id,s]));
+  if(ids.some(id=>!sceneMap.has(id)))throw new Error('One or more selected saved scenes no longer exist. Refresh the library.');
+  for(const id of ids)sceneStore.delete(id);
+  const deleteSet=new Set(ids);
+  const remainingScenes=allScenes.filter(s=>!deleteSet.has(s.id));
+  const currentCollections=await request<Collection[]>(colStore.getAll());
+  const now=new Date().toISOString();
+  for(const col of currentCollections){
+   let updated=col;
+   for(const id of ids){
+    if(updated.members.some(m=>m.type==='scene'&&m.id===id)||updated.project?.shots.some(s=>s.takeSceneIds.includes(id))){
+     updated=removeTakeFromProject(updated,id,remainingScenes);
+    }
+   }
+   if(updated!==col){
+    const error=validateProject(updated,remainingScenes);
+    if(error)throw new Error(error);
+    colStore.put({...updated,updatedAt:now});
+   }
+  }
+  await completion;
+ }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
 }
 export function formatSelectedPrompts(scenes:SavedScene[]):string{
  if(!scenes.length)throw new Error('Select at least one saved scene.');
