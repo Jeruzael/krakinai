@@ -34,6 +34,7 @@ import {
   stageSceneBlockingOperation,
   stageKeyframePlanOperation,
   stageFrameImageOperation,
+  stageStoryboardBatchOperation,
 } from '../domain/mcpGranularStaging';
 import {
   readAssetDetail,
@@ -283,11 +284,20 @@ export class ProposalBroker {
   ): Promise<McpResult> {
     if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
 
-    if (tool === 'krakinai_stage_scene_blocking') {
+    if (
+      tool === 'krakinai_stage_scene_blocking' ||
+      (args.blocking !== undefined) ||
+      (Array.isArray(args.scenes) && args.scenes.some((s: any) => s && s.blocking !== undefined))
+    ) {
       requireBlockingCapabilities(this.#capabilities);
       if (!('allowBlockingProposals' in this.#scope) || !this.#scope.allowBlockingProposals) throw new McpError('PERMISSION_DENIED');
     }
-    if (tool === 'krakinai_stage_keyframe_plan' || tool === 'krakinai_stage_frame_image') {
+    if (
+      tool === 'krakinai_stage_keyframe_plan' ||
+      tool === 'krakinai_stage_frame_image' ||
+      (args.keyframes !== undefined || args.keyframePlan !== undefined) ||
+      (Array.isArray(args.scenes) && args.scenes.some((s: any) => s && (s.keyframes !== undefined || s.keyframePlan !== undefined)))
+    ) {
       requireKeyframeCapabilities(this.#capabilities);
       if (!('allowKeyframeProposals' in this.#scope) || !this.#scope.allowKeyframeProposals) throw new McpError('PERMISSION_DENIED');
     }
@@ -319,6 +329,9 @@ export class ProposalBroker {
 
     let staged: { changeSet: ChangeSet; operationId: string };
     switch (tool) {
+      case 'krakinai_stage_storyboard_batch':
+        staged = stageStoryboardBatchOperation(draft, args);
+        break;
       case 'krakinai_stage_project':
         staged = stageProjectOperation(draft, args);
         break;
@@ -414,6 +427,7 @@ export class ProposalBroker {
       packageDigest: record.packageDigest,
       operationCount: record.changeSet.operations.length,
       stagedOperationId: staged.operationId,
+      ...('stagedCounts' in staged ? { stagedCounts: (staged as any).stagedCounts } : {}),
       status: 'review_required',
       expiresAt: record.expiresAt,
       summary: preview.plan?.summary,

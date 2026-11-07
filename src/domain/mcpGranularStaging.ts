@@ -15,8 +15,127 @@ import type { BlockingPatchV1 } from '../types/blockingChangeSet';
 import type { KeyframePlanV1, KeyframePatchV1 } from '../types/keyframes';
 import { NULL_BLOCKING_DIGEST } from './blockingPatch';
 import { McpError } from './mcpProtocol';
+import { CINEMATOGRAPHY_TECHNIQUES, getCinematographyTechnique } from './cinematographyRegistry';
 
 const DEFAULT_DIGEST = '0'.repeat(64);
+
+const CAMERA_ALIAS_MAP = new Map<string, string>();
+
+function ensureCameraAliases(): void {
+  if (CAMERA_ALIAS_MAP.size > 0) return;
+  const directAliases: Record<string, string> = {
+    ews: 'shot-size.extreme-wide-extreme-long-shot',
+    els: 'shot-size.extreme-wide-extreme-long-shot',
+    'extreme-wide': 'shot-size.extreme-wide-extreme-long-shot',
+    'extreme wide': 'shot-size.extreme-wide-extreme-long-shot',
+    'extreme-long-shot': 'shot-size.extreme-wide-extreme-long-shot',
+    ws: 'shot-size.wide-long-shot',
+    ls: 'shot-size.wide-long-shot',
+    'wide-shot': 'shot-size.wide-long-shot',
+    'wide shot': 'shot-size.wide-long-shot',
+    'long-shot': 'shot-size.wide-long-shot',
+    fs: 'shot-size.full-shot',
+    'full-shot': 'shot-size.full-shot',
+    'full shot': 'shot-size.full-shot',
+    mws: 'shot-size.medium-full-medium-long-shot',
+    'medium-wide': 'shot-size.medium-full-medium-long-shot',
+    'medium wide': 'shot-size.medium-full-medium-long-shot',
+    ms: 'shot-size.medium-shot',
+    'medium-shot': 'shot-size.medium-shot',
+    'medium shot': 'shot-size.medium-shot',
+    mcu: 'shot-size.medium-close-up',
+    'medium-close-up': 'shot-size.medium-close-up',
+    'medium close up': 'shot-size.medium-close-up',
+    cu: 'shot-size.close-up',
+    'close-up': 'shot-size.close-up',
+    'close up': 'shot-size.close-up',
+    bcu: 'shot-size.big-close-up',
+    'big-close-up': 'shot-size.big-close-up',
+    ecu: 'shot-size.extreme-close-up',
+    'extreme-close-up': 'shot-size.extreme-close-up',
+    'eye-level': 'camera-placement.eye-level',
+    'eye level': 'camera-placement.eye-level',
+    'high-angle': 'camera-placement.high-angle',
+    'high angle': 'camera-placement.high-angle',
+    'low-angle': 'camera-placement.low-angle',
+    'low angle': 'camera-placement.low-angle',
+    dutch: 'camera-placement.dutch-canted-angle-left-or-right',
+    'dutch-angle': 'camera-placement.dutch-canted-angle-left-or-right',
+    'dutch angle': 'camera-placement.dutch-canted-angle-left-or-right',
+    'dutch-tilt': 'camera-placement.dutch-canted-angle-left-or-right',
+    overhead: 'camera-placement.overhead-birds-eye',
+    'birds-eye': 'camera-placement.overhead-birds-eye',
+    'worms-eye': 'camera-placement.worms-eye-angle',
+    single: 'framing.single',
+    'dirty-single': 'framing.dirty-single',
+    'two-shot': 'framing.two-shot',
+    'three-shot': 'framing.three-shot-group-shot',
+    ots: 'framing.over-the-shoulder',
+    'over-the-shoulder': 'framing.over-the-shoulder',
+    pov: 'framing.point-of-view',
+    'point-of-view': 'framing.point-of-view',
+    symmetrical: 'composition.centered-symmetrical-composition',
+    centered: 'composition.centered-symmetrical-composition',
+    static: 'movement.static-locked-off-camera',
+    'locked-off': 'movement.static-locked-off-camera',
+    'push-in': 'movement.push-in-dolly-in',
+    'dolly-in': 'movement.push-in-dolly-in',
+    'pull-back': 'movement.pull-out-dolly-out',
+    'pull-out': 'movement.pull-out-dolly-out',
+    'dolly-out': 'movement.pull-out-dolly-out',
+    pan: 'movement.pan',
+    'whip-pan': 'movement.whip-pan-swish-pan',
+    tilt: 'movement.tilt',
+    tracking: 'movement.tracking-trucking',
+    trucking: 'movement.tracking-trucking',
+    crane: 'movement.crane-rise-descent',
+    jib: 'movement.crane-rise-descent',
+    handheld: 'movement.handheld-organic-camera',
+    steadicam: 'rig.steadicam-camera-stabilizer',
+    'deep-focus': 'focus.deep-focus',
+    deep: 'focus.deep-focus',
+    'shallow-dof': 'focus.shallow-depth-of-field',
+    shallow: 'focus.shallow-depth-of-field',
+    bokeh: 'focus.shallow-depth-of-field',
+    'rack-focus': 'focus.rack-focus-focus-pull',
+  };
+
+  for (const [k, v] of Object.entries(directAliases)) {
+    CAMERA_ALIAS_MAP.set(k.toLowerCase().trim(), v);
+  }
+
+  for (const t of CINEMATOGRAPHY_TECHNIQUES) {
+    if (t.owner === 'camera' && t.kind === 'technique' && t.dimension) {
+      CAMERA_ALIAS_MAP.set(t.id.toLowerCase().trim(), t.id);
+      CAMERA_ALIAS_MAP.set(t.name.toLowerCase().trim(), t.id);
+      for (const a of t.aliases) {
+        CAMERA_ALIAS_MAP.set(a.toLowerCase().trim(), t.id);
+      }
+    }
+  }
+}
+
+function resolveCameraTechniqueId(raw: string): string | null {
+  ensureCameraAliases();
+  const trimmed = raw.trim();
+  const existing = getCinematographyTechnique(trimmed);
+  if (existing && existing.owner === 'camera' && existing.kind === 'technique' && existing.dimension) {
+    return existing.id;
+  }
+  const lower = trimmed.toLowerCase();
+  if (CAMERA_ALIAS_MAP.has(lower)) {
+    return CAMERA_ALIAS_MAP.get(lower)!;
+  }
+  const clean = lower.replace(/[^a-z0-9]+/g, '-');
+  if (CAMERA_ALIAS_MAP.has(clean)) {
+    return CAMERA_ALIAS_MAP.get(clean)!;
+  }
+  const noDashes = lower.replace(/[^a-z0-9]+/g, ' ').trim();
+  if (CAMERA_ALIAS_MAP.has(noDashes)) {
+    return CAMERA_ALIAS_MAP.get(noDashes)!;
+  }
+  return null;
+}
 
 export function normalizeShotType(input?: string): ShotType {
   if (!input) return 'character_scene';
@@ -477,6 +596,76 @@ export function stageOutfitVariantOperation(
   return upsertOperation(draft, op);
 }
 
+function normalizeParticipants(rawParticipants: any[]): any[] {
+  return rawParticipants.map((p: any) => {
+    let character = p.character;
+    if (!character && p.characterAsset) {
+      character =
+        'id' in p.characterAsset
+          ? { asset: { id: p.characterAsset.id }, expectedRevision: p.characterAsset.expectedRevision ?? 1 }
+          : { asset: { ref: p.characterAsset.ref } };
+    }
+    let wardrobe = p.wardrobe;
+    if (wardrobe === undefined) {
+      if (p.outfitVariant) {
+        wardrobe =
+          'id' in p.outfitVariant
+            ? { variant: { id: p.outfitVariant.id }, expectedRevision: p.outfitVariant.expectedRevision ?? 1 }
+            : { variant: { ref: p.outfitVariant.ref } };
+      }
+    }
+    return {
+      id: String(p.id),
+      character,
+      wardrobe,
+      role: p.role ?? p.label,
+      presence: p.presence ?? 'on_camera',
+      performanceNotes: p.performanceNotes,
+      identitySource: p.identitySource,
+    };
+  });
+}
+
+function normalizeKeyframes(rawInput?: unknown): Record<string, unknown> {
+  const raw = (rawInput ?? {}) as Record<string, unknown>;
+  const rawFrames = Array.isArray(raw.frames) ? raw.frames : (Array.isArray(raw.frameUpserts) ? raw.frameUpserts : []);
+  const frameUpserts = rawFrames.map((f: any, i: number) => ({
+    id: String(f.id || `frame-${i + 1}`),
+    label: typeof f.label === 'string' ? f.label : null,
+    role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
+    visualInstructions: f.beatDescription || f.visualInstructions || null,
+  }));
+
+  return {
+    version: 1,
+    expectedBaseDigest: typeof raw.expectedBaseDigest === 'string' && /^[a-f0-9]{64}$/.test(raw.expectedBaseDigest)
+      ? raw.expectedBaseDigest
+      : NULL_BLOCKING_DIGEST,
+    ...(frameUpserts.length > 0 ? { frameUpserts } : {}),
+  };
+}
+
+function normalizeProjectTarget(target?: unknown, defaultRef = 'proj-main'): ProjectTarget {
+  if (!target || typeof target !== 'object') return { ref: defaultRef };
+  const t = target as Record<string, unknown>;
+  if (typeof t.ref === 'string') return { ref: t.ref };
+  if (typeof t.id === 'string') {
+    return {
+      id: t.id,
+      expectedRevision: typeof t.expectedRevision === 'number' ? t.expectedRevision : 1,
+    };
+  }
+  return { ref: defaultRef };
+}
+
+function normalizeRecordTarget(target?: unknown, defaultRef = 'ref-1'): RecordTarget {
+  if (!target || typeof target !== 'object') return { ref: defaultRef };
+  const t = target as Record<string, unknown>;
+  if (typeof t.ref === 'string') return { ref: t.ref };
+  if (typeof t.id === 'string') return { id: t.id };
+  return { ref: defaultRef };
+}
+
 export function stageSceneRecipeOperation(
   draft: ChangeSet,
   args: Record<string, unknown>,
@@ -485,45 +674,173 @@ export function stageSceneRecipeOperation(
   const operationId = String(args.operationId || `op-${clientRef}`);
   const mode = String(args.mode || 'create');
 
+  const existingOp = draft.operations.find(
+    (o) =>
+      (o.clientRef && o.clientRef === clientRef) ||
+      (o.operationId && o.operationId === operationId),
+  ) as RecipeSceneOperation | undefined;
+
+  const rawSlots = args.slots as Record<string, unknown> | undefined;
   const assetRefs = Array.isArray(args.assetRefs)
     ? (args.assetRefs as ImportedAssetLink[])
-    : normalizeAssetRefsFromSlots(args.slots as Record<string, unknown> | undefined);
+    : (rawSlots ? normalizeAssetRefsFromSlots(rawSlots) : existingOp?.assetRefs);
 
-  let op: ChangeOperation;
+  const settings = args.settings
+    ? normalizeSceneSettings(args.settings as Record<string, unknown>)
+    : (existingOp?.settings ?? normalizeSceneSettings());
+
+  let op: RecipeSceneOperation;
 
   if (mode === 'revise' || mode === 'take') {
     op = {
       operationId,
       type: mode === 'revise' ? 'scene.revise_recipe' : 'scene.create_recipe_take',
       clientRef,
-      project: args.project as ProjectTarget,
-      shot: args.shot as RecordTarget,
-      sceneId: String(args.sceneId),
-      expectedHeadId: String(args.expectedHeadId || args.sceneId),
-      title: typeof args.title === 'string' ? args.title : undefined,
-      shotType: args.shotType ? normalizeShotType(String(args.shotType)) : undefined,
-      settings: args.settings ? normalizeSceneSettings(args.settings as Record<string, unknown>) : undefined,
-      assetRefs: assetRefs.length > 0 ? assetRefs : undefined,
-      sceneInstructions: typeof args.sceneInstructions === 'string' ? args.sceneInstructions : undefined,
-      avoidText: typeof args.avoidText === 'string' ? args.avoidText : undefined,
+      project: normalizeProjectTarget(args.project ?? existingOp?.project, 'proj-main'),
+      shot: normalizeRecordTarget(args.shot ?? existingOp?.shot, 'shot-01'),
+      sceneId: String(args.sceneId || (existingOp && 'sceneId' in existingOp ? existingOp.sceneId : '')),
+      expectedHeadId: String(args.expectedHeadId || args.sceneId || (existingOp && 'expectedHeadId' in existingOp ? existingOp.expectedHeadId : '')),
+      title: typeof args.title === 'string' ? args.title : existingOp?.title,
+      shotType: args.shotType ? normalizeShotType(String(args.shotType)) : existingOp?.shotType,
+      settings,
+      assetRefs: assetRefs && assetRefs.length > 0 ? assetRefs : undefined,
+      sceneInstructions: typeof args.sceneInstructions === 'string' ? args.sceneInstructions : existingOp?.sceneInstructions,
+      avoidText: typeof args.avoidText === 'string' ? args.avoidText : existingOp?.avoidText,
+      cameraComposition: args.cameraComposition !== undefined ? normalizeCameraComposition(args.cameraComposition) : existingOp?.cameraComposition,
+      overrides: (args.overrides as any) ?? existingOp?.overrides,
+      ensemble: existingOp?.ensemble,
+      dialogue: existingOp?.dialogue,
+      blocking: existingOp?.blocking,
+      keyframes: existingOp?.keyframes,
     };
   } else {
     op = {
       operationId,
       type: 'scene.create_recipe',
       clientRef,
-      project: args.project as ProjectTarget,
-      shot: args.shot as RecordTarget,
-      title: String(args.title || 'Untitled Recipe Take'),
-      shotType: normalizeShotType(args.shotType ? String(args.shotType) : undefined),
-      settings: normalizeSceneSettings(args.settings as Record<string, unknown>),
-      assetRefs: assetRefs.length > 0 ? assetRefs : undefined,
-      sceneInstructions: typeof args.sceneInstructions === 'string' ? args.sceneInstructions : undefined,
-      avoidText: typeof args.avoidText === 'string' ? args.avoidText : undefined,
+      project: normalizeProjectTarget(args.project ?? existingOp?.project, 'proj-main'),
+      shot: normalizeRecordTarget(args.shot ?? existingOp?.shot, 'shot-01'),
+      title: String(args.title || existingOp?.title || 'Untitled Recipe Take'),
+      shotType: normalizeShotType(args.shotType ? String(args.shotType) : (existingOp?.shotType ? String(existingOp.shotType) : undefined)),
+      settings,
+      assetRefs: assetRefs && assetRefs.length > 0 ? assetRefs : undefined,
+      sceneInstructions: typeof args.sceneInstructions === 'string' ? args.sceneInstructions : existingOp?.sceneInstructions,
+      avoidText: typeof args.avoidText === 'string' ? args.avoidText : existingOp?.avoidText,
+      cameraComposition: args.cameraComposition !== undefined ? normalizeCameraComposition(args.cameraComposition) : existingOp?.cameraComposition,
+      overrides: (args.overrides as any) ?? existingOp?.overrides,
+      ensemble: existingOp?.ensemble,
+      dialogue: existingOp?.dialogue,
+      blocking: existingOp?.blocking,
+      keyframes: existingOp?.keyframes,
     };
   }
 
-  return upsertOperation(draft, op);
+  // Inline blocking
+  if (args.blocking !== undefined) {
+    op.blocking = normalizeBlockingPatch(args.blocking) as any;
+  }
+
+  // Inline keyframes
+  const rawKeyframes = args.keyframes ?? args.keyframePlan;
+  if (rawKeyframes !== undefined) {
+    op.keyframes = normalizeKeyframes(rawKeyframes) as any;
+  }
+
+  // Inline ensemble or participants
+  const rawEnsemble = (args.ensemble ?? {}) as Record<string, unknown>;
+  const rawParticipants = Array.isArray(args.participants)
+    ? args.participants
+    : (Array.isArray(rawEnsemble.participants)
+      ? rawEnsemble.participants
+      : (Array.isArray(rawEnsemble.participantUpserts) ? rawEnsemble.participantUpserts : undefined));
+
+  if (rawParticipants) {
+    const participantUpserts = normalizeParticipants(rawParticipants);
+    const primaryParticipantId = typeof args.primaryParticipantId === 'string'
+      ? args.primaryParticipantId
+      : (typeof rawEnsemble.primaryParticipantId === 'string' ? rawEnsemble.primaryParticipantId : op.ensemble?.primaryParticipantId);
+
+    op.ensemble = {
+      version: 1,
+      ...(participantUpserts.length > 0 ? { participantUpserts } : (op.ensemble?.participantUpserts ? { participantUpserts: op.ensemble.participantUpserts } : {})),
+      ...(primaryParticipantId !== undefined ? { primaryParticipantId } : {}),
+      ...(op.ensemble?.dialogueCues ? { dialogueCues: op.ensemble.dialogueCues } : {}),
+    };
+  }
+
+  // Inline dialogue or dialogueCues
+  const rawDialogueCues = Array.isArray(args.dialogueCues)
+    ? args.dialogueCues
+    : (Array.isArray(rawEnsemble.dialogueCues) ? rawEnsemble.dialogueCues : undefined);
+
+  const clampTiming = (t?: any) => {
+    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, settings.durationSeconds) };
+    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
+    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
+    if (start >= settings.durationSeconds) start = Math.max(0, settings.durationSeconds - 1);
+    if (end > settings.durationSeconds) end = settings.durationSeconds;
+    if (end <= start) end = Math.min(settings.durationSeconds, start + 0.5);
+    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
+  };
+
+  if (rawDialogueCues) {
+    const cues = rawDialogueCues.map((c, i) => ({
+      id: String(c.id || `cue-${i + 1}`),
+      speaker: String(c.speaker || c.speakerParticipantId || 'Speaker'),
+      line: String(c.line || c.lineText || ''),
+      timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
+      ...(c.speakerParticipantId || c.participantId ? { participantId: String(c.speakerParticipantId || c.participantId) } : {}),
+      ...(c.mode ? { mode: c.mode } : {}),
+      ...(c.deliveryNotes ? { deliveryNotes: c.deliveryNotes } : {}),
+      ...(c.language ? { language: c.language } : {}),
+      ...(c.captionPreference ? { captionPreference: c.captionPreference } : {}),
+      ...(c.performanceDirection ? { performanceDirection: c.performanceDirection } : {}),
+    }));
+
+    op.ensemble = {
+      version: 1,
+      ...(op.ensemble?.participantUpserts ? { participantUpserts: op.ensemble.participantUpserts } : {}),
+      ...(op.ensemble?.primaryParticipantId ? { primaryParticipantId: op.ensemble.primaryParticipantId } : {}),
+      dialogueCues: cues as any,
+    };
+    delete (op as any).dialogue;
+    delete (op as any).identitySource;
+  } else if (args.dialogue !== undefined && args.dialogue !== null) {
+    if (op.ensemble) {
+      const d = args.dialogue as Record<string, unknown>;
+      const cue = {
+        id: String(d.id || 'cue-1'),
+        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
+        line: String(d.line || d.lineText || ''),
+        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
+        ...(d.speakerParticipantId || d.participantId ? { participantId: String(d.speakerParticipantId || d.participantId) } : {}),
+        ...(d.mode ? { mode: d.mode } : {}),
+        ...(d.deliveryNotes ? { deliveryNotes: d.deliveryNotes } : {}),
+        ...(d.language ? { language: d.language } : {}),
+        ...(d.captionPreference ? { captionPreference: d.captionPreference } : {}),
+        ...(d.performanceDirection ? { performanceDirection: d.performanceDirection } : {}),
+      };
+      op.ensemble = {
+        ...op.ensemble,
+        version: 1,
+        dialogueCues: [cue as any],
+      };
+      delete (op as any).dialogue;
+      delete (op as any).identitySource;
+    } else {
+      op.dialogue = args.dialogue as any;
+    }
+  }
+
+  // If ensemble is present, strip character/wardrobe slots from assetRefs
+  if (op.ensemble && op.assetRefs) {
+    const filtered = op.assetRefs.filter((r) => r.slot !== 'character' && (r.slot as string) !== 'wardrobe');
+    op.assetRefs = filtered.length > 0 ? filtered : undefined;
+    delete (op as any).dialogue;
+    delete (op as any).identitySource;
+  }
+
+  return upsertOperation(draft, op as unknown as ChangeOperation);
 }
 
 function findStagedRecipeOperation(
@@ -623,6 +940,17 @@ export function stageSceneDialogueOperation(
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
   let updatedOp: RecipeSceneOperation = { ...op };
+  const durationSeconds = op.settings?.durationSeconds ?? 8;
+
+  const clampTiming = (t?: any) => {
+    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, durationSeconds) };
+    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
+    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
+    if (start >= durationSeconds) start = Math.max(0, durationSeconds - 1);
+    if (end > durationSeconds) end = durationSeconds;
+    if (end <= start) end = Math.min(durationSeconds, start + 0.5);
+    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
+  };
 
   if (Array.isArray(args.dialogueCues)) {
     const dialogueCues = (args.dialogueCues as Array<Record<string, unknown>>).map((c, i) => {
@@ -632,14 +960,10 @@ export function stageSceneDialogueOperation(
         id: String(c.id || `cue-${i + 1}`),
         speaker,
         line,
+        timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
       };
       if (typeof c.speakerParticipantId === 'string' || typeof c.participantId === 'string') {
         cueObj.participantId = c.speakerParticipantId || c.participantId;
-      }
-      if (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number') {
-        cueObj.timing = { startSeconds: c.startSeconds, endSeconds: c.endSeconds };
-      } else if (c.timing && typeof c.timing === 'object') {
-        cueObj.timing = c.timing;
       }
       if (typeof c.mode === 'string') {
         cueObj.mode = c.mode;
@@ -668,13 +992,53 @@ export function stageSceneDialogueOperation(
         dialogueCues: dialogueCues as any,
       },
     };
-  }
+    delete (updatedOp as any).dialogue;
+    delete (updatedOp as any).identitySource;
+  } else if (args.dialogue !== undefined && args.dialogue !== null) {
+    if (updatedOp.ensemble) {
+      const d = args.dialogue as Record<string, unknown>;
+      const cueObj: Record<string, unknown> = {
+        id: String(d.id || 'cue-1'),
+        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
+        line: String(d.line || d.lineText || ''),
+        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
+      };
+      if (typeof d.speakerParticipantId === 'string' || typeof d.participantId === 'string') {
+        cueObj.participantId = d.speakerParticipantId || d.participantId;
+      }
+      if (typeof d.mode === 'string') {
+        cueObj.mode = d.mode;
+      }
+      if (typeof d.deliveryNotes === 'string') {
+        cueObj.deliveryNotes = d.deliveryNotes;
+      }
+      if (typeof d.language === 'string') {
+        cueObj.language = d.language;
+      }
+      if (typeof d.captionPreference === 'string') {
+        cueObj.captionPreference = d.captionPreference;
+      }
+      if (d.performanceDirection) {
+        cueObj.performanceDirection = d.performanceDirection;
+      }
 
-  if (args.dialogue !== undefined) {
-    updatedOp = {
-      ...updatedOp,
-      dialogue: args.dialogue as any,
-    };
+      updatedOp = {
+        ...updatedOp,
+        ensemble: {
+          version: 1,
+          ...(updatedOp.ensemble?.participantUpserts ? { participantUpserts: updatedOp.ensemble.participantUpserts } : {}),
+          ...(updatedOp.ensemble?.primaryParticipantId ? { primaryParticipantId: updatedOp.ensemble.primaryParticipantId } : {}),
+          dialogueCues: [cueObj as any],
+        },
+      };
+      delete (updatedOp as any).dialogue;
+      delete (updatedOp as any).identitySource;
+    } else {
+      updatedOp = {
+        ...updatedOp,
+        dialogue: args.dialogue as any,
+      };
+    }
   }
 
   const operations = [...draft.operations];
@@ -692,10 +1056,13 @@ export function stageSceneDialogueOperation(
 function normalizeCameraComposition(input?: unknown): CameraCompositionChoice | null {
   if (!input || typeof input !== 'object') return null;
   const c = input as Record<string, unknown>;
-  if (c.version === 1 && Array.isArray(c.techniqueIds)) {
-    return c as unknown as CameraCompositionChoice;
+  let techniqueIds: string[] = [];
+
+  if (Array.isArray(c.techniqueIds)) {
+    techniqueIds = (c.techniqueIds as string[])
+      .map(resolveCameraTechniqueId)
+      .filter((id): id is string => Boolean(id));
   }
-  const techniqueIds: string[] = Array.isArray(c.techniqueIds) ? [...(c.techniqueIds as string[])] : [];
 
   if (techniqueIds.length === 0) {
     if (typeof c.shotSize === 'string') {
@@ -712,9 +1079,11 @@ function normalizeCameraComposition(input?: unknown): CameraCompositionChoice | 
     }
   }
 
+  const unique = Array.from(new Set(techniqueIds));
+
   return {
     version: 1,
-    techniqueIds,
+    techniqueIds: unique,
     ...(c.parameters && typeof c.parameters === 'object' ? { parameters: c.parameters as any } : {}),
     ...(typeof c.arrangement === 'string' ? { arrangement: c.arrangement as any } : {}),
     ...(typeof c.includeBaseText === 'boolean' ? { includeBaseText: c.includeBaseText } : {}),
@@ -962,4 +1331,71 @@ export function stageFrameImageOperation(
       };
 
   return upsertOperation(draft, op);
+}
+
+export function stageStoryboardBatchOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): {
+  changeSet: ChangeSet;
+  operationId: string;
+  stagedCounts: { assets: number; variants: number; projects: number; shots: number; scenes: number };
+} {
+  let currentDraft = structuredClone(draft);
+  const changeSetId = String(args.changeSetId);
+  if (typeof args.title === 'string') currentDraft.title = args.title;
+  if (typeof args.description === 'string') currentDraft.description = args.description;
+
+  let assets = 0;
+  let variants = 0;
+  let projects = 0;
+  let shots = 0;
+  let scenes = 0;
+
+  for (const a of (Array.isArray(args.assets) ? args.assets : [])) {
+    const res = stageAssetCandidateOperation(currentDraft, { ...a, changeSetId });
+    currentDraft = res.changeSet;
+    assets++;
+  }
+
+  for (const v of (Array.isArray(args.variants) ? args.variants : [])) {
+    const res = stageOutfitVariantOperation(currentDraft, { ...v, changeSetId });
+    currentDraft = res.changeSet;
+    variants++;
+  }
+
+  let defaultProjectTarget: ProjectTarget | undefined;
+  if (args.project && typeof args.project === 'object') {
+    const p = args.project as Record<string, unknown>;
+    const res = stageProjectOperation(currentDraft, { ...p, changeSetId });
+    currentDraft = res.changeSet;
+    defaultProjectTarget = p.id ? { id: String(p.id) } : { ref: String(p.clientRef || `proj-${p.id || 'main'}`) };
+    projects++;
+  }
+
+  for (const s of (Array.isArray(args.shots) ? args.shots : [])) {
+    const shotObj = { ...s, changeSetId };
+    if (!shotObj.project && defaultProjectTarget) {
+      shotObj.project = defaultProjectTarget;
+    }
+    const res = stageShotOperation(currentDraft, shotObj);
+    currentDraft = res.changeSet;
+    shots++;
+  }
+
+  for (const sc of (Array.isArray(args.scenes) ? args.scenes : [])) {
+    const sceneObj = { ...sc, changeSetId };
+    if (!sceneObj.project && defaultProjectTarget) {
+      sceneObj.project = defaultProjectTarget;
+    }
+    const res = stageSceneRecipeOperation(currentDraft, sceneObj);
+    currentDraft = res.changeSet;
+    scenes++;
+  }
+
+  return {
+    changeSet: currentDraft,
+    operationId: `op-batch-${changeSetId}`,
+    stagedCounts: { assets, variants, projects, shots, scenes },
+  };
 }
