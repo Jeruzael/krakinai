@@ -132,6 +132,8 @@ export class ProposalBroker {
               p.preview?.changeSet.operations.length ??
               this.#inbox.record(p.id)?.changeSet.operations.length ??
               0,
+            blockingFindingCount:
+              p.preview?.plan.findings.filter((f) => f.severity === 'blocking').length ?? 0,
             expiresAt: p.expiresAt,
           }));
         return resultData({ items });

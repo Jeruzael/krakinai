@@ -1,13 +1,16 @@
 import type {
   ChangeSet,
   ChangeSetState,
+  RecipeSceneOperation,
 } from '../types/changeSet';
-import type { Collection, MediaAsset, PromptAsset, SavedScene, Template, Variant } from '../types/domain';
+import type { BuilderSlot, Collection, ComponentSnapshot, MediaAsset, PromptAsset, SavedScene, SceneDraft, Template, Variant } from '../types/domain';
 import type { McpScope } from '../types/mcp';
 import { McpError } from './mcpProtocol';
 import { authorizedSceneIds, denyScope } from './mcpScope';
 import { buildContinuityWorkspace } from './continuityWorkspace';
 import { buildBlockingFinalReview } from './blockingReview';
+import { applyBlockingPatch, NULL_BLOCKING_DIGEST } from './blockingPatch';
+import { assembleScenePrompt, createSnapshotFromAsset } from './promptAssembler';
 import { runScenePreflight } from './scenePreflight';
 import { formatSelectedPrompts } from '../storage/projectBulk';
 import { SHOT_TYPES, SHOT_TYPE_DESCRIPTIONS, SHOT_TYPE_LABELS, getShotTypeRules } from './shotTypeRules';
@@ -198,11 +201,76 @@ export function readProjectContinuity(
   };
 }
 
+function buildStagedRecipeDraft(
+  op: RecipeSceneOperation,
+  snapshot: GranularSnapshot,
+  stagedChangeSet?: ChangeSet,
+): { draft: SceneDraft; referencedExistingAssetIds: string[] } {
+  const slots: Partial<Record<BuilderSlot, ComponentSnapshot>> = {};
+  const referencedExistingAssetIds: string[] = [];
+
+  for (const link of op.assetRefs ?? []) {
+    if ('id' in link.asset) {
+      const targetId = link.asset.id;
+      referencedExistingAssetIds.push(targetId);
+      const asset = snapshot.assets.find((a) => a.id === targetId);
+      if (asset) {
+        slots[link.slot] = createSnapshotFromAsset(asset);
+      }
+    } else if ('ref' in link.asset && stagedChangeSet) {
+      const targetRef = link.asset.ref;
+      const candidate = stagedChangeSet.operations.find(
+        (c) => c.type === 'asset.propose' && (c.clientRef === targetRef || c.operationId === targetRef),
+      );
+      if (candidate && candidate.type === 'asset.propose') {
+        slots[link.slot] = {
+          slot: link.slot,
+          sourceType: 'asset',
+          sourceId: candidate.clientRef || candidate.operationId,
+          sourceRevision: 1,
+          sourceTitle: candidate.title,
+          promptText: candidate.promptText,
+          mediaLinks: [],
+        };
+      }
+    }
+  }
+
+  const draft: SceneDraft = {
+    id: `staged_${op.clientRef || op.operationId}`,
+    inputRevision: 1,
+    updatedAt: '2026-01-01T00:00:00.000Z',
+    authoringMode: 'recipe',
+    title: op.title || 'Staged Scene Recipe',
+    shotType: op.shotType || 'character_scene',
+    slots,
+    extraRequiredSlots: [],
+    sceneInstructions: op.sceneInstructions || '',
+    avoidText: op.avoidText,
+    settings: op.settings || { aspectRatio: '16:9', durationSeconds: 8 },
+    dialogue: op.dialogue ?? undefined,
+    manualOutputs: {},
+    resultMediaLinks: [],
+    reviewNotes: '',
+    reviewStatus: 'unreviewed',
+  };
+
+  if (op.blocking) {
+    try {
+      draft.blocking = applyBlockingPatch(undefined, op.blocking, draft, NULL_BLOCKING_DIGEST);
+    } catch {
+      // Keep draft without blocking if patch cannot bind yet during incremental authoring
+    }
+  }
+
+  return { draft, referencedExistingAssetIds };
+}
+
 export function readSpatialContinuity(
   snapshot: GranularSnapshot,
   scope: McpScope,
-  args: { projectId: string },
-  _stagedChangeSet?: ChangeSet,
+  args: { projectId: string; changeSetId?: string },
+  stagedChangeSet?: ChangeSet,
 ): Record<string, unknown> {
   if (!scope.projectIds.includes(args.projectId)) {
     denyScope();
@@ -214,7 +282,42 @@ export function readSpatialContinuity(
     denyScope();
   }
 
-  const review = buildBlockingFinalReview([collection], snapshot.scenes, []);
+  const newScenes: SavedScene[] = [];
+  let effectiveCollection = collection;
+
+  if (stagedChangeSet && collection.project) {
+    const clonedCollection = structuredClone(collection);
+    for (const op of stagedChangeSet.operations) {
+      if (
+        (op.type === 'scene.create_recipe' ||
+          op.type === 'scene.revise_recipe' ||
+          op.type === 'scene.create_recipe_take' ||
+          op.type === 'scene.convert_direct_to_recipe') &&
+        'id' in op.project &&
+        op.project.id === collection.id &&
+        op.blocking
+      ) {
+        const { draft } = buildStagedRecipeDraft(op, snapshot, stagedChangeSet);
+        const shotId = 'id' in op.shot ? op.shot.id : op.shot.ref;
+        const shot = clonedCollection.project?.shots.find((s) => s.id === shotId);
+        const stagedScene = {
+          ...draft,
+          id: draft.id,
+          createdAt: draft.updatedAt,
+          revision: 1,
+          outputs: { full: '', structured: '', compact: '' },
+          references: [],
+        } as unknown as SavedScene;
+        newScenes.push(stagedScene);
+        if (shot && !shot.takeSceneIds.includes(stagedScene.id)) {
+          shot.takeSceneIds.push(stagedScene.id);
+        }
+      }
+    }
+    effectiveCollection = clonedCollection;
+  }
+
+  const review = buildBlockingFinalReview([effectiveCollection], snapshot.scenes, newScenes);
   const comparisons = review[0]?.comparisons ?? [];
   const findings = comparisons.flatMap((c) => c.comparison?.findings ?? []);
 
@@ -229,10 +332,50 @@ export function readSceneAssemblyPreview(
   snapshot: GranularSnapshot,
   scope: McpScope,
   args: { sceneId?: string; changeSetId?: string; sceneClientRef?: string },
-  _stagedChangeSet?: ChangeSet,
+  stagedChangeSet?: ChangeSet,
 ): Record<string, unknown> {
+  if (!args.sceneId && args.changeSetId && args.sceneClientRef) {
+    if (!stagedChangeSet || stagedChangeSet.changeSetId !== args.changeSetId) {
+      throw new McpError('NOT_FOUND', `Staged proposal "${args.changeSetId}" was not found.`);
+    }
+    const op = stagedChangeSet.operations.find(
+      (o) =>
+        (o.clientRef === args.sceneClientRef || o.operationId === args.sceneClientRef) &&
+        (o.type === 'scene.create_recipe' ||
+          o.type === 'scene.revise_recipe' ||
+          o.type === 'scene.create_recipe_take' ||
+          o.type === 'scene.convert_direct_to_recipe'),
+    ) as RecipeSceneOperation | undefined;
+    if (!op) {
+      throw new McpError('NOT_FOUND', `No staged scene recipe matches sceneClientRef "${args.sceneClientRef}".`);
+    }
+
+    const { draft, referencedExistingAssetIds } = buildStagedRecipeDraft(op, snapshot, stagedChangeSet);
+    const allAssetsAuthorized = referencedExistingAssetIds.every((id) => scope.assetIds.includes(id));
+    if (!allAssetsAuthorized) {
+      denyScope();
+    }
+
+    const assembled = assembleScenePrompt(draft);
+    const preflightFindings = runScenePreflight(draft as any);
+    const canReadFullPrompt = Boolean(scope.includeAssetText && allAssetsAuthorized);
+
+    return {
+      changeSetId: stagedChangeSet.changeSetId,
+      sceneClientRef: args.sceneClientRef,
+      title: draft.title,
+      shotType: draft.shotType,
+      authoringMode: draft.authoringMode,
+      valid: assembled.valid,
+      assemblyErrors: assembled.errors,
+      preflightFindings,
+      assembledPrompt: canReadFullPrompt ? assembled.outputs.full : undefined,
+      fullPromptDisclosure: canReadFullPrompt ? 'disclosed' : 'withheld',
+    };
+  }
+
   if (!args.sceneId) {
-    throw new McpError('INVALID_REQUEST', 'sceneId is required for assembly preview.');
+    throw new McpError('INVALID_REQUEST', 'Provide either sceneId or both changeSetId and sceneClientRef for assembly preview.');
   }
 
   const authorized = authorizedSceneIds(scope, snapshot as ChangeSetState);

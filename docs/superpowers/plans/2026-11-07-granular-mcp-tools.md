@@ -70,7 +70,7 @@
   - `stageKeyframePlanOperation(draft: ChangeSet, args: Record<string, unknown>): { changeSet: ChangeSet; operationId: string }`
   - `stageFrameImageOperation(draft: ChangeSet, args: Record<string, unknown>): { changeSet: ChangeSet; operationId: string }`
 
-- [ ] **Step 1: Write failing unit tests in `src/__tests__/mcpGranularStaging.test.ts`**
+- [x] **Step 1: Write failing unit tests in `src/__tests__/mcpGranularStaging.test.ts`**
 
 ```typescript
 import { describe, expect, it } from 'vitest';
@@ -284,12 +284,12 @@ describe('mcpGranularStaging', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularStaging.test.ts`
 Expected: FAIL with `Cannot find module '../domain/mcpGranularStaging'`
 
-- [ ] **Step 3: Implement `src/domain/mcpGranularStaging.ts`**
+- [x] **Step 3: Implement `src/domain/mcpGranularStaging.ts`**
 
 Implement the pure staging functions in `src/domain/mcpGranularStaging.ts`:
 - Assign deterministic operation priority buckets for canonical sorting:
@@ -306,12 +306,12 @@ Implement the pure staging functions in `src/domain/mcpGranularStaging.ts`:
   - `'krakinai.change-set.v3'` otherwise.
 - When `stageSceneEnsembleOperation`, `stageSceneDialogueOperation`, `stageCameraCompositionOperation`, `stageSceneBlockingOperation`, or `stageKeyframePlanOperation` cannot find a scene operation matching `sceneClientRef` (by `clientRef` or `operationId`), throw `mcpError('NOT_FOUND', 'No staged scene recipe matches sceneClientRef. Call krakinai_stage_scene_recipe first.', { sceneClientRef })`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularStaging.test.ts`
 Expected: PASS (4 passed)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/domain/mcpGranularStaging.ts src/__tests__/mcpGranularStaging.test.ts
@@ -337,7 +337,7 @@ git commit -m "feat(mcp): add incremental proposal staging engine"
   - `readSavedScenesList(snapshot: LibrarySnapshot, scope: McpScope, args: { query?: string; archiveFilter?: 'active' | 'archived' | 'all'; shotType?: string; reviewStatus?: string; cursor?: string; limit?: number }): Record<string, unknown>`
   - `readExportedScenePrompts(snapshot: LibrarySnapshot, scope: McpScope, args: { sceneIds: string[] }): Record<string, unknown>`
 
-- [ ] **Step 1: Write failing unit tests in `src/__tests__/mcpGranularReads.test.ts`**
+- [x] **Step 1: Write failing unit tests in `src/__tests__/mcpGranularReads.test.ts`**
 
 ```typescript
 import { describe, expect, it } from 'vitest';
@@ -520,12 +520,12 @@ describe('mcpGranularReads', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularReads.test.ts`
 Expected: FAIL with `Cannot find module '../domain/mcpGranularReads'`
 
-- [ ] **Step 3: Implement `src/domain/mcpGranularReads.ts`**
+- [x] **Step 3: Implement `src/domain/mcpGranularReads.ts`**
 
 Implement the 7 read/inspection functions in `src/domain/mcpGranularReads.ts`:
 - `readAssetDetail`: Check `isAssetAuthorized(scope, asset.id)`. Return base fields (`id`, `kind`, `title`, `tags`, `isFavorite`, `revision`, `parentCharacterId`, `createdAt`, `updatedAt`), include `promptText`/`compactText`/`description` only when `scope.includeAssetText` is true, include `notes` only when `scope.includeNotes` is true, include full `identityAnchor` only when `scope.includeCharacterIdentity` is true (otherwise `{ status: asset.identityAnchor.status, redacted: true }`), and attach authorized child `Outfits` in `outfitVariants`.
@@ -536,12 +536,12 @@ Implement the 7 read/inspection functions in `src/domain/mcpGranularReads.ts`:
 - `readSavedScenesList`: Filter `snapshot.scenes` by `isSceneAuthorized(scope, scene.id)`, `archiveFilter` (`'active'` default -> `!scene.archivedAt`, `'archived'` -> `Boolean(scene.archivedAt)`, `'all'` -> all), `query`, `shotType`, and `reviewStatus`, then paginate.
 - `readExportedScenePrompts`: Verify every ID in `args.sceneIds` is in `scope.authorizedSceneIds` and `scope.fullPromptSceneIds` (throwing `PERMISSION_DENIED` otherwise), then format with `formatSelectedPrompts(scenes)`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularReads.test.ts`
 Expected: PASS (4 passed)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/domain/mcpGranularReads.ts src/__tests__/mcpGranularReads.test.ts
@@ -565,7 +565,7 @@ git commit -m "feat(mcp): add granular read and inspection projections"
   - `ProposalInbox.upsertDraftChangeSet(changeSet: ChangeSet): Promise<ProposalRecord>` in `src/connections/proposalInbox.ts`
   - `ProposalInbox.discard(proposalId: string): Promise<{ discarded: true; proposalId: string }>` in `src/connections/proposalInbox.ts`
 
-- [ ] **Step 1: Write failing test for in-place draft upsert and approval reset in `src/__tests__/mcpGranularBroker.test.ts`**
+- [x] **Step 1: Write failing test for in-place draft upsert and approval reset in `src/__tests__/mcpGranularBroker.test.ts`**
 
 ```typescript
 import { describe, expect, it } from 'vitest';
@@ -618,12 +618,12 @@ describe('ProposalInbox granular draft upsert & discard', () => {
 });
 ```
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularBroker.test.ts`
 Expected: FAIL with `inbox.upsertDraftChangeSet is not a function`
 
-- [ ] **Step 3: Implement `allowPackageUpdate` in `ReviewInboxRepository` and `upsertDraftChangeSet` + `discard` in `ProposalInbox`**
+- [x] **Step 3: Implement `allowPackageUpdate` in `ReviewInboxRepository` and `upsertDraftChangeSet` + `discard` in `ProposalInbox`**
 
 1. In `src/types/proposalReview.ts`, add `allowPackageUpdate?: boolean;` to `ReviewUpdateOptions`.
 2. In `src/storage/proposalReviewInbox.ts`, inside `update(id, patch, options)`:
@@ -641,12 +641,12 @@ Expected: FAIL with `inbox.upsertDraftChangeSet is not a function`
      - If `disposition === 'applying' || disposition === 'applied'`, throw `mcpError('CONFLICT', 'Applied or applying proposals cannot be discarded.', { proposalId })`.
      - Call `await this.remove(record.id)` and return `{ discarded: true, proposalId: record.id }`.
 
-- [ ] **Step 4: Run test to verify it passes**
+- [x] **Step 4: Run test to verify it passes**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularBroker.test.ts`
 Expected: PASS (1 passed)
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/types/proposalReview.ts src/storage/proposalReviewInbox.ts src/connections/proposalInbox.ts src/__tests__/mcpGranularBroker.test.ts
@@ -671,7 +671,7 @@ git commit -m "feat(mcp): support in-place draft proposal updates and inbox disc
   - Complete routing in `ProposalBroker.handle(command, sessionId)` in `src/connections/proposalBroker.ts`
   - Accurate `readOnlyHint` annotations in `bridge/src/registerTools.ts`
 
-- [ ] **Step 1: Expand `src/__tests__/mcpGranularBroker.test.ts` with end-to-end broker tests for the new tools and capability/scope gates**
+- [x] **Step 1: Expand `src/__tests__/mcpGranularBroker.test.ts` with end-to-end broker tests for the new tools and capability/scope gates**
 
 Add tests to `src/__tests__/mcpGranularBroker.test.ts` covering:
 1. Full incremental workflow via `broker.handle`: `krakinai_stage_project` -> `krakinai_stage_asset_candidate` -> `krakinai_stage_shot` -> `krakinai_stage_scene_recipe` -> `krakinai_stage_scene_ensemble` -> `krakinai_stage_scene_dialogue` -> `krakinai_stage_camera_composition` -> `krakinai_list_proposals` -> `krakinai_discard_proposal`.
@@ -681,12 +681,12 @@ Add tests to `src/__tests__/mcpGranularBroker.test.ts` covering:
 3. Read tool routing through `broker.handle`: `krakinai_get_asset`, `krakinai_list_catalog_presets`, `krakinai_get_project_continuity`, `krakinai_check_spatial_continuity`, `krakinai_preview_scene_assembly`, `krakinai_list_saved_scenes`, and `krakinai_export_scene_prompts`.
 4. Rejecting `krakinai_stage_*` or `krakinai_discard_proposal` when a proposal's disposition is `applied`.
 
-- [ ] **Step 2: Run test to verify it fails**
+- [x] **Step 2: Run test to verify it fails**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularBroker.test.ts`
 Expected: FAIL with `Tool argument validation failed` / unknown tool names
 
-- [ ] **Step 3: Register the 23 tools in `src/domain/mcpProtocol.ts`, wire them in `src/connections/proposalBroker.ts`, and update `bridge/src/registerTools.ts`**
+- [x] **Step 3: Register the 23 tools in `src/domain/mcpProtocol.ts`, wire them in `src/connections/proposalBroker.ts`, and update `bridge/src/registerTools.ts`**
 
 1. In `src/domain/mcpProtocol.ts`:
    - Add the 23 tool names to `MCP_TOOL_NAMES`:
@@ -709,7 +709,7 @@ Expected: FAIL with `Tool argument validation failed` / unknown tool names
 4. In `src/__tests__/blockingMcpCapabilities.test.ts`:
    - Update `expect(MCP_TOOL_NAMES).toHaveLength(13)` to `expect(MCP_TOOL_NAMES).toHaveLength(36)`.
 
-- [ ] **Step 4: Run tests and TypeScript check to verify everything passes**
+- [x] **Step 4: Run tests and TypeScript check to verify everything passes**
 
 Run: `cmd /c npx vitest run src/__tests__/mcpGranularStaging.test.ts src/__tests__/mcpGranularReads.test.ts src/__tests__/mcpGranularBroker.test.ts src/__tests__/blockingMcpCapabilities.test.ts`
 Expected: PASS (all tests green)
@@ -717,7 +717,7 @@ Expected: PASS (all tests green)
 Run: `cmd /c npx tsc --noEmit`
 Expected: Exit code 0
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/domain/mcpProtocol.ts src/connections/proposalBroker.ts bridge/src/registerTools.ts src/__tests__/blockingMcpCapabilities.test.ts src/__tests__/mcpGranularBroker.test.ts

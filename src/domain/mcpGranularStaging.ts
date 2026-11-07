@@ -557,15 +557,33 @@ export function stageSceneEnsembleOperation(
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
   const rawParticipants = Array.isArray(args.participants) ? args.participants : [];
-  const participantUpserts = rawParticipants.map((p: any) => ({
-    id: String(p.id),
-    character: p.character ?? (p.characterAsset ? { asset: p.characterAsset, expectedRevision: p.characterAsset.expectedRevision ?? 1 } : undefined),
-    wardrobe: p.wardrobe !== undefined ? p.wardrobe : (p.outfitVariant ? { variant: p.outfitVariant, expectedRevision: p.outfitVariant.expectedRevision ?? 1 } : null),
-    role: p.role ?? p.label,
-    presence: p.presence ?? 'on_camera',
-    performanceNotes: p.performanceNotes,
-    identitySource: p.identitySource,
-  }));
+  const participantUpserts = rawParticipants.map((p: any) => {
+    let character = p.character;
+    if (!character && p.characterAsset) {
+      character =
+        'id' in p.characterAsset
+          ? { asset: { id: p.characterAsset.id }, expectedRevision: p.characterAsset.expectedRevision ?? 1 }
+          : { asset: { ref: p.characterAsset.ref } };
+    }
+    let wardrobe = p.wardrobe;
+    if (wardrobe === undefined) {
+      if (p.outfitVariant) {
+        wardrobe =
+          'id' in p.outfitVariant
+            ? { variant: { id: p.outfitVariant.id }, expectedRevision: p.outfitVariant.expectedRevision ?? 1 }
+            : { variant: { ref: p.outfitVariant.ref } };
+      }
+    }
+    return {
+      id: String(p.id),
+      character,
+      wardrobe,
+      role: p.role ?? p.label,
+      presence: p.presence ?? 'on_camera',
+      performanceNotes: p.performanceNotes,
+      identitySource: p.identitySource,
+    };
+  });
 
   const removeParticipantIds = Array.isArray(args.removeParticipantIds) ? (args.removeParticipantIds as string[]) : undefined;
   const primaryParticipantId = typeof args.primaryParticipantId === 'string' ? args.primaryParticipantId : undefined;
@@ -623,8 +641,17 @@ export function stageSceneDialogueOperation(
       } else if (c.timing && typeof c.timing === 'object') {
         cueObj.timing = c.timing;
       }
-      if (typeof c.targetParticipantId === 'string') {
-        cueObj.targetParticipantId = c.targetParticipantId;
+      if (typeof c.mode === 'string') {
+        cueObj.mode = c.mode;
+      }
+      if (typeof c.deliveryNotes === 'string') {
+        cueObj.deliveryNotes = c.deliveryNotes;
+      }
+      if (typeof c.language === 'string') {
+        cueObj.language = c.language;
+      }
+      if (typeof c.captionPreference === 'string') {
+        cueObj.captionPreference = c.captionPreference;
       }
       if (c.performanceDirection) {
         cueObj.performanceDirection = c.performanceDirection;

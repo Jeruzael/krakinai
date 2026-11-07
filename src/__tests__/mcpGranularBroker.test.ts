@@ -271,6 +271,54 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     );
     expect(p4.ok).toBe(true);
 
+    // 4b. Stage scene ensemble, dialogue, and camera composition
+    const p4Ensemble = await broker.handle(
+      {
+        requestId: 'r4-ens',
+        tool: 'krakinai_stage_scene_ensemble',
+        args: {
+          changeSetId: 'cs-broker-1',
+          sceneClientRef: 'scene-s01',
+          primaryParticipantId: 'p-hero',
+          participants: [
+            { id: 'p-hero', characterAsset: { ref: 'char-hero' }, label: 'Hero Cat' },
+          ],
+        },
+      },
+      'test-session',
+    );
+    expect(p4Ensemble.ok).toBe(true);
+
+    const p4Dialogue = await broker.handle(
+      {
+        requestId: 'r4-dlg',
+        tool: 'krakinai_stage_scene_dialogue',
+        args: {
+          changeSetId: 'cs-broker-1',
+          sceneClientRef: 'scene-s01',
+          dialogueCues: [
+            { id: 'cue-1', speakerParticipantId: 'p-hero', lineText: 'Meow.', startSeconds: 1, endSeconds: 3 },
+          ],
+        },
+      },
+      'test-session',
+    );
+    expect(p4Dialogue.ok).toBe(true);
+
+    const p4Cam = await broker.handle(
+      {
+        requestId: 'r4-cam',
+        tool: 'krakinai_stage_camera_composition',
+        args: {
+          changeSetId: 'cs-broker-1',
+          sceneClientRef: 'scene-s01',
+          cameraComposition: { shotSize: 'medium_close_up' },
+        },
+      },
+      'test-session',
+    );
+    expect(p4Cam.ok).toBe(true);
+
     // 5. List proposals
     const listRes = await broker.handle(
       {
@@ -283,8 +331,9 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     expect(listRes.ok).toBe(true);
     if (!listRes.ok) return;
     expect((listRes.data as any).items).toHaveLength(1);
+    expect(typeof (listRes.data as any).items[0].blockingFindingCount).toBe('number');
 
-    // 6. Granular read tools
+    // 6. All 7 granular read tools through broker.handle
     const assetRes = await broker.handle(
       {
         requestId: 'r6',
@@ -315,6 +364,56 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     );
     expect(scenesRes.ok).toBe(true);
 
+    const contRes = await broker.handle(
+      {
+        requestId: 'r8-cont',
+        tool: 'krakinai_get_project_continuity',
+        args: { projectId: 'proj-1' },
+      },
+      'test-session',
+    );
+    expect(contRes.ok).toBe(true);
+
+    const spatialRes = await broker.handle(
+      {
+        requestId: 'r8-spat',
+        tool: 'krakinai_check_spatial_continuity',
+        args: { projectId: 'proj-1', changeSetId: 'cs-broker-1' },
+      },
+      'test-session',
+    );
+    expect(spatialRes.ok).toBe(true);
+
+    const assemblyExistingRes = await broker.handle(
+      {
+        requestId: 'r8-asm-1',
+        tool: 'krakinai_preview_scene_assembly',
+        args: { sceneId: 'scene-1' },
+      },
+      'test-session',
+    );
+    expect(assemblyExistingRes.ok).toBe(true);
+
+    const assemblyStagedRes = await broker.handle(
+      {
+        requestId: 'r8-asm-2',
+        tool: 'krakinai_preview_scene_assembly',
+        args: { changeSetId: 'cs-broker-1', sceneClientRef: 'scene-s01' },
+      },
+      'test-session',
+    );
+    expect(assemblyStagedRes.ok).toBe(true);
+
+    const exportRes = await broker.handle(
+      {
+        requestId: 'r8-exp',
+        tool: 'krakinai_export_scene_prompts',
+        args: { sceneIds: ['scene-1'] },
+      },
+      'test-session',
+    );
+    expect(exportRes.ok).toBe(true);
+
     // 7. Discard proposal
     const discardRes = await broker.handle(
       {
@@ -337,6 +436,73 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     expect(listAfter.ok).toBe(true);
     if (!listAfter.ok) return;
     expect((listAfter.data as any).items).toHaveLength(0);
+  });
+
+  it('rejects krakinai_stage_* and krakinai_discard_proposal with CONFLICT when proposal disposition is applied', async () => {
+    const repo = new MemoryReviewInbox();
+    const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => Date.now());
+    const broker = new ProposalBroker({
+      readState: async () => mockState,
+      now: () => Date.now(),
+      inbox,
+    });
+
+    const scope = {
+      ...emptyMcpScope(),
+      allowProposals: true,
+      allowNewProjects: true,
+      projectIds: ['proj-1'],
+    };
+    broker.connect('session-applied', scope);
+
+    const staged = await broker.handle(
+      {
+        requestId: 'ap-1',
+        tool: 'krakinai_stage_project',
+        args: {
+          changeSetId: 'cs-applied-1',
+          clientRef: 'proj-ap',
+          name: 'Applied Project',
+        },
+      },
+      'session-applied',
+    );
+    expect(staged.ok).toBe(true);
+    if (!staged.ok) return;
+    const proposalId = (staged.data as any).proposalId;
+
+    // Mark record as applied in inbox
+    await inbox.update(proposalId, { disposition: 'applied' }, { finishApply: true });
+
+    const stageAfterApplied = await broker.handle(
+      {
+        requestId: 'ap-2',
+        tool: 'krakinai_stage_project',
+        args: {
+          changeSetId: 'cs-applied-1',
+          clientRef: 'proj-ap',
+          name: 'Mutated After Applied',
+        },
+      },
+      'session-applied',
+    );
+    expect(stageAfterApplied.ok).toBe(false);
+    if (!stageAfterApplied.ok) {
+      expect(stageAfterApplied.error.code).toBe('CONFLICT');
+    }
+
+    const discardAfterApplied = await broker.handle(
+      {
+        requestId: 'ap-3',
+        tool: 'krakinai_discard_proposal',
+        args: { proposalId },
+      },
+      'session-applied',
+    );
+    expect(discardAfterApplied.ok).toBe(false);
+    if (!discardAfterApplied.ok) {
+      expect(discardAfterApplied.error.code).toBe('CONFLICT');
+    }
   });
 
   it('enforces v5 blocking and v6 keyframe capability gates on granular staging tools', async () => {
