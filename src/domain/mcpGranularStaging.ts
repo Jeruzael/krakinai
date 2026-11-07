@@ -774,12 +774,13 @@ export function stageSceneRecipeOperation(
     : (Array.isArray(rawEnsemble.dialogueCues) ? rawEnsemble.dialogueCues : undefined);
 
   const clampTiming = (t?: any) => {
-    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, settings.durationSeconds) };
+    const maxDuration = settings.durationSeconds ?? 60;
+    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, maxDuration) };
     let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
     let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
-    if (start >= settings.durationSeconds) start = Math.max(0, settings.durationSeconds - 1);
-    if (end > settings.durationSeconds) end = settings.durationSeconds;
-    if (end <= start) end = Math.min(settings.durationSeconds, start + 0.5);
+    if (start >= maxDuration) start = Math.max(0, maxDuration - 1);
+    if (end > maxDuration) end = maxDuration;
+    if (end <= start) end = Math.min(maxDuration, start + 0.5);
     return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
   };
 
@@ -1369,7 +1370,7 @@ export function stageStoryboardBatchOperation(
     const p = args.project as Record<string, unknown>;
     const res = stageProjectOperation(currentDraft, { ...p, changeSetId });
     currentDraft = res.changeSet;
-    defaultProjectTarget = p.id ? { id: String(p.id) } : { ref: String(p.clientRef || `proj-${p.id || 'main'}`) };
+    defaultProjectTarget = normalizeProjectTarget(p, String(p.clientRef || 'proj-main'));
     projects++;
   }
 

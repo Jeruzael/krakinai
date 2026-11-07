@@ -148,11 +148,23 @@ graph TD
 
 ---
 
-## 5. Incremental Storyboard Authoring via `krakinai_stage_*` Tools
+## 5. Storyboard Authoring via Batch & Granular Staging Tools
 
-In older versions of KRAKINAI, an AI agent had to author an entire 18-shot episode by constructing a monolithic 80 KB `ChangeSet` JSON file in a single tool call. If one field was wrong, the entire episode failed validation.
+AI agents can author storyboards using either **Atomic Batch Staging** (`krakinai_stage_storyboard_batch`) or **Granular Step-by-Step Staging**:
 
-With KRAKINAI's **Granular MCP Tools**, an agent authors storyboards **shot-by-shot and layer-by-layer**:
+### A. Atomic Batch Staging (`krakinai_stage_storyboard_batch`)
+For large sequences and full multi-shot episodes (e.g. from Phase 3 Director Storyboards), an AI agent can stage the entire project container, candidate assets (base characters, wardrobe states, environments, styles), shot list, and composite scene recipes in a single atomic tool call:
+
+```mermaid
+flowchart TD
+    Director["Phase 3 Director Storyboard\n(35 Shots + 12 Production Layers)"] --> Batch["krakinai_stage_storyboard_batch\n(Project + Assets + Shots + Composite Recipes)"]
+    Batch --> Inbox["ProposalReviewInbox\nSingle Draft Proposal\nZero Schema Collisions | Instant Preview"]
+```
+
+The batch staging engine automatically sorts operations into dependency-safe order, normalizes camera shorthand aliases to official catalog IDs, handles multi-actor ensemble participants and spoken dialogue cues, and validates duration boundaries.
+
+### B. Granular Step-by-Step Staging (`krakinai_stage_*`)
+For iterative revisions, shot additions, or granular dialogue tweaks, agents author storyboards **shot-by-shot and layer-by-layer**:
 
 ```mermaid
 flowchart TD

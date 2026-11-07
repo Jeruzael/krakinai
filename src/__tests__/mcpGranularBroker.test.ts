@@ -628,23 +628,10 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
 
   describe('Composite & Batch Storyboard Staging (Phase 4 support)', () => {
     it('auto-converts single dialogue into ensemble.dialogueCues without schema conflict and clamps timing', async () => {
-      const inbox = new MemoryReviewInbox();
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
       const broker = new ProposalBroker({
         readState: async () => mockState,
-        preview: async (cs) => ({
-          approvedDigest: '1'.repeat(64),
-          changeSet: cs,
-          plan: {
-            summary: { createdScenes: 1, updatedScenes: 0, createdShots: 1, updatedShots: 0, createdProjects: 0, updatedProjects: 0, createdCandidates: 2, candidatePromotions: 0, directToRecipeConversions: 0, pendingInputCount: 0 },
-            findings: [],
-          },
-          allocation: { preparedAt: '2026-01-01T00:00:00Z', allocatedIds: [] },
-        }),
-        apply: async () => ({
-          apiVersion: 'krakinai.mcp.v1',
-          ok: true,
-          data: { changeSetId: 'cs-dialogue-fix', packageDigest: '1'.repeat(64), appliedAt: '2026-01-01T00:00:00Z', createdRecords: [] },
-        }),
         now: () => 1000,
         inbox,
       });
@@ -757,7 +744,7 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
         'session-dialogue',
       );
       expect(statusRes.ok).toBe(true);
-      const pkg = inbox.records.get((res.data as any).proposalId)?.changeSet;
+      const pkg = repo.records.get((res.data as any).proposalId)?.changeSet;
       expect(pkg).toBeDefined();
       const sceneOp = pkg?.operations.find((o) => o.clientRef === 'scene-d1') as any;
       expect(sceneOp).toBeDefined();
@@ -769,18 +756,10 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     });
 
     it('supports non-destructive recipe re-staging and camera technique aliases', async () => {
-      const inbox = new MemoryReviewInbox();
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
       const broker = new ProposalBroker({
         readState: async () => mockState,
-        preview: async (cs) => ({
-          approvedDigest: '2'.repeat(64),
-          changeSet: cs,
-          plan: {
-            summary: { createdScenes: 1, updatedScenes: 0, createdShots: 1, updatedShots: 0, createdProjects: 0, updatedProjects: 0, createdCandidates: 0, candidatePromotions: 0, directToRecipeConversions: 0, pendingInputCount: 0 },
-            findings: [],
-          },
-          allocation: { preparedAt: '2026-01-01T00:00:00Z', allocatedIds: [] },
-        }),
         now: () => 1000,
         inbox,
       });
@@ -851,8 +830,9 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
         'session-recipe',
       );
       expect(r2.ok).toBe(true);
+      if (!r2.ok) throw new Error('Expected r2 ok');
 
-      const pkg = inbox.records.get((r2.data as any).proposalId)?.changeSet;
+      const pkg = repo.records.get((r2.data as any).proposalId)?.changeSet;
       const op = pkg?.operations.find((o) => o.clientRef === 'scene-c1') as any;
       expect(op.sceneInstructions).toBe('Updated instructions with 3-plane crowd staging');
       expect(op.title).toBe('Establishing Nave (Updated)');
@@ -865,29 +845,10 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     });
 
     it('krakinai_stage_storyboard_batch stages full multi-shot package atomically with zero errors', async () => {
-      const inbox = new MemoryReviewInbox();
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
       const broker = new ProposalBroker({
         readState: async () => mockState,
-        preview: async (cs) => ({
-          approvedDigest: '3'.repeat(64),
-          changeSet: cs,
-          plan: {
-            summary: {
-              createdScenes: 2,
-              updatedScenes: 0,
-              createdShots: 2,
-              updatedShots: 0,
-              createdProjects: 1,
-              updatedProjects: 0,
-              createdCandidates: 5,
-              candidatePromotions: 0,
-              directToRecipeConversions: 0,
-              pendingInputCount: 0,
-            },
-            findings: [],
-          },
-          allocation: { preparedAt: '2026-01-01T00:00:00Z', allocatedIds: [] },
-        }),
         now: () => 1000,
         inbox,
       });
@@ -980,21 +941,16 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
         scenes: 2,
       });
 
-      const pkg = inbox.records.get(data.proposalId)?.changeSet;
+      const pkg = repo.records.get(data.proposalId)?.changeSet;
       expect(pkg).toBeDefined();
       expect(pkg?.operations.length).toBe(10); // 5 assets + 1 project + 2 shots + 2 scenes
     });
 
     it('krakinai_stage_storyboard_batch rejects blocking proposals without v5 scope', async () => {
-      const inbox = new MemoryReviewInbox();
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
       const broker = new ProposalBroker({
         readState: async () => mockState,
-        preview: async (cs) => ({
-          approvedDigest: '4'.repeat(64),
-          changeSet: cs,
-          plan: { summary: {} as any, findings: [] },
-          allocation: { preparedAt: '2026-01-01T00:00:00Z', allocatedIds: [] },
-        }),
         now: () => 1000,
         inbox,
       });

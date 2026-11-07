@@ -81,7 +81,7 @@ krakinai/
 │   │   ├── changeSetCanonical.ts   # Canonical JSON sorting & SHA-256 hashing
 │   │   ├── continuityWorkspace.ts  # Cast Bible & transition tracking
 │   │   ├── blockingContinuity.ts   # 180-degree rule & screen direction analysis
-│   │   └── mcpProtocol.ts          # 36 MCP tool schemas & argument validation
+│   │   └── mcpProtocol.ts          # 37 MCP tool schemas & argument validation
 │   │
 │   ├── storage/             # IndexedDB repositories and transactions
 │   │   ├── db.ts                   # krakinai_db initialization & snapshot loaders
