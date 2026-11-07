@@ -18,3 +18,5 @@ playwright-report/
 Thumbs.db
 *.local
 /playwright.performance.local.mjs
+docs/manual/dist/
+.superpowers/
