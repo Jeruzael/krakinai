@@ -2,6 +2,8 @@ import { CollectionMembershipBadge } from '../components/CollectionMembershipBad
 import { SceneBulkActions } from '../components/SceneBulkActions';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
+  Archive,
+  ArchiveRestore,
   Copy,
   Edit3,
   ExternalLink,
@@ -22,6 +24,7 @@ import {
   toggleAssetFavorite,
   toggleVariantFavorite,
 } from '../storage/db';
+import { bulkSetScenesArchived } from '../storage/projectBulk';
 import { ORDERED_BUILDER_SLOTS } from '../domain/promptAssembler';
 
 interface LibraryScreenProps {
@@ -49,6 +52,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   } = useLibrary();
 
   const [scenesSearch, setScenesSearch] = useState('');
+  const [scenesArchiveFilter, setScenesArchiveFilter] = useState<
+    'active' | 'archived' | 'all'
+  >('active');
   const [selectedSceneIds, setSelectedSceneIds] = useState<Set<string>>(
     new Set()
   );
@@ -57,11 +63,21 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
   }, [mode, category]);
   useEffect(() => {
     setSelectedSceneIds((previous) => {
-      const ids = new Set(snapshot?.scenes.map((scene) => scene.id) ?? []);
-      const next = [...previous].filter((id) => ids.has(id));
+      const allowedIds = new Set(
+        (snapshot?.scenes ?? [])
+          .filter((scene) =>
+            scenesArchiveFilter === 'active'
+              ? !scene.archivedAt
+              : scenesArchiveFilter === 'archived'
+                ? Boolean(scene.archivedAt)
+                : true
+          )
+          .map((scene) => scene.id)
+      );
+      const next = [...previous].filter((id) => allowedIds.has(id));
       return next.length === previous.size ? previous : new Set(next);
     });
-  }, [snapshot?.scenes]);
+  }, [snapshot?.scenes, scenesArchiveFilter]);
 
   useEffect(() => {
     if (browseState.scrollY > 0) {
@@ -151,6 +167,8 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
       .split(/\s+/)
       .filter(Boolean);
     const matched = snapshot.scenes.filter((s) => {
+      if (scenesArchiveFilter === 'active' && s.archivedAt) return false;
+      if (scenesArchiveFilter === 'archived' && !s.archivedAt) return false;
       if (tokens.length === 0) return true;
       const hay = `${s.title} ${s.outputs.full} ${s.reviewNotes}`.toLowerCase();
       return tokens.every((tok) => hay.includes(tok));
@@ -161,7 +179,7 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
         return b.createdAt.localeCompare(a.createdAt);
       return b.updatedAt.localeCompare(a.updatedAt);
     });
-  }, [snapshot, mode, scenesSearch, browseState.sortBy]);
+  }, [snapshot, mode, scenesSearch, browseState.sortBy, scenesArchiveFilter]);
 
   if (!snapshot) return null;
 
@@ -235,6 +253,26 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
               value={scenesSearch}
               onChange={(e) => setScenesSearch(e.target.value)}
             />
+          </div>
+          <div>
+            <label htmlFor="scenes-archive-filter" style={{ display: 'none' }}>
+              Filter saved scenes
+            </label>
+            <select
+              id="scenes-archive-filter"
+              aria-label="Filter saved scenes"
+              className="select"
+              value={scenesArchiveFilter}
+              onChange={(e) =>
+                setScenesArchiveFilter(
+                  e.target.value as 'active' | 'archived' | 'all'
+                )
+              }
+            >
+              <option value="active">Active scenes</option>
+              <option value="archived">Archived scenes</option>
+              <option value="all">All scenes</option>
+            </select>
           </div>
           <div>
             <label htmlFor="scenes-sort" style={{ display: 'none' }}>
@@ -366,6 +404,9 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
                       <span className="badge badge-primary">
                         {slotCount} slots
                       </span>
+                      {Boolean(scene.archivedAt) && (
+                        <span className="badge">Archived</span>
+                      )}
                       <span
                         className={`badge ${
                           scene.reviewStatus === 'user-approved'
@@ -433,6 +474,38 @@ export const LibraryScreen: React.FC<LibraryScreenProps> = ({
                         }
                       >
                         <FolderPlus size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        aria-label={
+                          scene.archivedAt
+                            ? `Unarchive saved scene ${scene.title}`
+                            : `Archive saved scene ${scene.title}`
+                        }
+                        title={
+                          scene.archivedAt ? 'Unarchive scene' : 'Archive scene'
+                        }
+                        onClick={async () => {
+                          const willArchive = !scene.archivedAt;
+                          await bulkSetScenesArchived({
+                            sceneIds: [scene.id],
+                            archived: willArchive,
+                          });
+                          await refreshSnapshot();
+                          showToast(
+                            willArchive
+                              ? 'Archived saved scene.'
+                              : 'Unarchived saved scene.',
+                            'success'
+                          );
+                        }}
+                      >
+                        {scene.archivedAt ? (
+                          <ArchiveRestore size={14} />
+                        ) : (
+                          <Archive size={14} />
+                        )}
                       </button>
                       <button
                         type="button"

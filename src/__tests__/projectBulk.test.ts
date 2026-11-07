@@ -1,7 +1,8 @@
 import {beforeEach,expect,it,vi} from 'vitest';
 import {addProjectShot} from '../storage/projects';
 import {clearAllStoresForTesting,createCollection,getAllSnapshot,openDatabase} from '../storage/db';
-import {bulkUpdateProjectShots,bulkAddScenesToCollection,bulkAssignSceneStatus,formatSelectedPrompts} from '../storage/projectBulk';
+import {bulkUpdateProjectShots,bulkAddScenesToCollection,bulkAssignSceneStatus,bulkDeleteSavedScenes,bulkSetScenesArchived,formatSelectedPrompts} from '../storage/projectBulk';
+import {exportSnapshotBackupZip,validateBackupZip} from '../storage/backup';
 import type {SavedScene} from '../types/domain';
 
 beforeEach(clearAllStoresForTesting);
@@ -75,4 +76,65 @@ it('exports exact full Unicode outputs without trimming and rejects oversized ex
  expect(formatSelectedPrompts([one])).toContain(one.outputs.full);
  const giant=scene('giant');giant.outputs.full='x'.repeat(17*1024*1024);
  expect(()=>formatSelectedPrompts([giant])).toThrow(/too large/i);
+});
+
+it('archives and unarchives selected scenes atomically while preserving project shot takes and immutable fields', async () => {
+ const one = scene('one'), two = scene('two');
+ await putScenes(one, two);
+ const c = await createCollection({ name: 'Film' });
+ await bulkAddScenesToCollection({ collectionId: c.id, sceneIds: [one.id, two.id] });
+
+ const archived = await bulkSetScenesArchived({ sceneIds: [one.id, two.id], archived: true });
+ expect(archived.every(s => typeof s.archivedAt === 'string' && Number.isFinite(Date.parse(s.archivedAt!)))).toBe(true);
+ const snapAfterArchive = await getAllSnapshot();
+ expect(snapAfterArchive.collections[0].project!.shots.map(s => s.selectedSceneId)).toEqual([one.id, two.id]);
+
+ await expect(bulkSetScenesArchived({ sceneIds: [one.id, 'missing'], archived: false })).rejects.toThrow(/saved scenes/i);
+ expect((await getAllSnapshot()).scenes.every(s => Boolean(s.archivedAt))).toBe(true);
+
+ const unarchived = await bulkSetScenesArchived({ sceneIds: [one.id], archived: false });
+ expect('archivedAt' in unarchived[0]).toBe(false);
+ expect((await getAllSnapshot()).scenes.find(s => s.id === two.id)?.archivedAt).toBeDefined();
+});
+
+it('deletes multiple selected scenes atomically, unlinks multiple takes from the same shot, and aborts on missing scene', async () => {
+ const one = scene('one'), two = scene('two'), three = scene('three');
+ await putScenes(one, two, three);
+ const c = await createCollection({ name: 'Film' });
+ await addProjectShot({ collectionId: c.id, title: 'Shot 1', sceneId: one.id });
+ const current = (await getAllSnapshot()).collections[0];
+ const shot = current.project!.shots[0];
+ const db = await openDatabase();
+ const tx = db.transaction('collections', 'readwrite');
+ tx.objectStore('collections').put({
+   ...current,
+   project: { ...current.project!, shots: [{ ...shot, takeSceneIds: [one.id, two.id], selectedSceneId: one.id }] },
+   members: [{ type: 'scene', id: one.id, addedAt: '' }, { type: 'scene', id: two.id, addedAt: '' }],
+ });
+ await new Promise<void>(r => tx.oncomplete = () => r());
+
+ await expect(bulkDeleteSavedScenes({ sceneIds: [one.id, 'missing'] })).rejects.toThrow(/saved scenes/i);
+ expect((await getAllSnapshot()).scenes).toHaveLength(3);
+
+ await bulkDeleteSavedScenes({ sceneIds: [one.id, two.id] });
+ const after = await getAllSnapshot();
+ expect(after.scenes.map(s => s.id)).toEqual([three.id]);
+ expect(after.collections[0].project!.shots[0].takeSceneIds).toEqual([]);
+ expect(after.collections[0].project!.shots[0].selectedSceneId).toBeUndefined();
+ expect(after.collections[0].project!.shots[0].status).toBe('planned');
+});
+
+it('accepts valid archivedAt in backup archives and rejects invalid archivedAt', async () => {
+ const one = scene('one');
+ one.archivedAt = new Date().toISOString();
+ await putScenes(one);
+ const validZip = await exportSnapshotBackupZip(await getAllSnapshot());
+ expect((await validateBackupZip(validZip)).valid).toBe(true);
+
+ const invalidSnap = await getAllSnapshot();
+ (invalidSnap.scenes[0] as any).archivedAt = 'not-a-valid-date';
+ const invalidZip = await exportSnapshotBackupZip(invalidSnap);
+ const result = await validateBackupZip(invalidZip);
+ expect(result.valid).toBe(false);
+ expect(result.error).toMatch(/archivedAt/i);
 });

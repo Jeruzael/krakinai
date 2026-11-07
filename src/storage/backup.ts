@@ -286,6 +286,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     }
     if (scene.sourceDraftInputRevision !== undefined && (!Number.isSafeInteger(scene.sourceDraftInputRevision) || scene.sourceDraftInputRevision < 0)) return { valid: false, error: 'Invalid scene sourceDraftInputRevision.' };
     if (scene.saveDecision !== undefined && scene.saveDecision !== 'version' && scene.saveDecision !== 'take') return { valid: false, error: 'Invalid scene saveDecision.' };
+    if (scene.archivedAt !== undefined && (typeof scene.archivedAt !== 'string' || !scene.archivedAt.trim() || scene.archivedAt.length > 100 || !Number.isFinite(Date.parse(scene.archivedAt)))) return { valid: false, error: 'Invalid scene archivedAt.' };
   }
   const revisionGraphError=validateSceneRevisionGraph(manifest.scenes);
   if(revisionGraphError)return {valid:false,error:revisionGraphError};
