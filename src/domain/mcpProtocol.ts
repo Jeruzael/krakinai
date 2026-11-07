@@ -10,6 +10,19 @@ export const MCP_TOOL_NAMES = [
   'krakinai_search_assets', 'krakinai_get_shot_types', 'krakinai_preview_change_set',
   'krakinai_submit_change_set', 'krakinai_get_proposal_status',
   'krakinai_get_import_receipt', 'krakinai_get_generation_prompt',
+  // Workstream 1: Inbox & Project/Shot Staging
+  'krakinai_list_proposals', 'krakinai_discard_proposal',
+  'krakinai_stage_project', 'krakinai_stage_shot', 'krakinai_stage_shot_order', 'krakinai_stage_shot_status',
+  // Workstream 2: Assets, Variants & Presets
+  'krakinai_get_asset', 'krakinai_list_catalog_presets', 'krakinai_stage_asset_candidate', 'krakinai_stage_outfit_variant',
+  // Workstream 3: Scene Recipes & Assembly
+  'krakinai_stage_scene_recipe', 'krakinai_stage_scene_ensemble', 'krakinai_stage_scene_dialogue',
+  'krakinai_stage_camera_composition', 'krakinai_stage_direct_to_recipe', 'krakinai_preview_scene_assembly',
+  // Workstream 4: Continuity, Blocking & Keyframes
+  'krakinai_get_project_continuity', 'krakinai_check_spatial_continuity',
+  'krakinai_stage_scene_blocking', 'krakinai_stage_keyframe_plan', 'krakinai_stage_frame_image',
+  // Workstream 5: Saved Scenes
+  'krakinai_list_saved_scenes', 'krakinai_export_scene_prompts',
 ] as const;
 export type McpToolName = typeof MCP_TOOL_NAMES[number];
 export class McpError extends Error {
@@ -46,6 +59,179 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   krakinai_get_proposal_status: schema({ proposalId: idSchema,projection:frameProjectionSchema }, ['proposalId']),
   krakinai_get_import_receipt: schema({ changeSetId: idSchema, packageDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' } }, ['changeSetId', 'packageDigest']),
   krakinai_get_generation_prompt: schema({ sceneId: idSchema,target:imageTargetSchema }, ['sceneId']),
+
+  // Workstream 1: Inbox & Project/Shot Staging
+  krakinai_list_proposals: schema(pageFields),
+  krakinai_discard_proposal: schema({ proposalId: idSchema }, ['proposalId']),
+  krakinai_stage_project: schema({
+    changeSetId: idSchema,
+    title: { type: 'string', maxLength: 200 },
+    projectId: idSchema,
+    clientRef: idSchema,
+    name: { type: 'string', minLength: 1, maxLength: 200 },
+    description: { type: 'string', maxLength: 2000 },
+    planningNotes: { type: 'string', maxLength: 4000 },
+    expectedRevision: { type: 'integer', minimum: 0 },
+  }, ['changeSetId', 'name']),
+  krakinai_stage_shot: schema({
+    changeSetId: idSchema,
+    project: { type: 'object' },
+    shotId: idSchema,
+    clientRef: idSchema,
+    code: { type: 'string', minLength: 1, maxLength: 30 },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    plannedShotType: { type: 'string', maxLength: 100 },
+    plannedDurationSeconds: { type: 'number', minimum: 0 },
+    continuityNotes: { type: 'string', maxLength: 4000 },
+    expectedRevision: { type: 'integer', minimum: 0 },
+  }, ['changeSetId', 'project', 'code', 'title']),
+  krakinai_stage_shot_order: schema({
+    changeSetId: idSchema,
+    project: { type: 'object' },
+    shots: { type: 'array' },
+    expectedRevision: { type: 'integer', minimum: 0 },
+  }, ['changeSetId', 'project', 'shots']),
+  krakinai_stage_shot_status: schema({
+    changeSetId: idSchema,
+    project: { type: 'object' },
+    shot: { type: 'object' },
+    status: { type: 'string', enum: ['draft', 'planned', 'ready', 'generated', 'approved', 'archived'] },
+    expectedStatus: { type: 'string', enum: ['draft', 'planned', 'ready', 'generated', 'approved', 'archived'] },
+    selectedScene: { type: 'object' },
+    expectedSelectedSceneId: idSchema,
+  }, ['changeSetId', 'project', 'shot']),
+
+  // Workstream 2: Assets, Variants & Presets
+  krakinai_get_asset: schema({ id: idSchema }, ['id']),
+  krakinai_list_catalog_presets: schema({
+    catalog: { type: 'string', enum: ['cinematography', 'performance', 'shot_types'] },
+  }, ['catalog']),
+  krakinai_stage_asset_candidate: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    kind: { type: 'string', enum: ['Characters', 'Wardrobe', 'Actions', 'Environments', 'Camera', 'Lighting', 'Style', 'characters', 'wardrobe', 'actions', 'environments', 'camera', 'lighting', 'styles', 'character', 'action', 'environment', 'style'] },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    promptText: { type: 'string', minLength: 1, maxLength: 4000 },
+    description: { type: 'string', maxLength: 2000 },
+    tags: { type: 'array' },
+    notes: { type: 'string', maxLength: 4000 },
+  }, ['changeSetId', 'clientRef', 'kind', 'title', 'promptText']),
+  krakinai_stage_outfit_variant: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    parentCharacterId: idSchema,
+    expectedParentRevision: { type: 'integer', minimum: 0 },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    promptText: { type: 'string', minLength: 1, maxLength: 4000 },
+    description: { type: 'string', maxLength: 2000 },
+    tags: { type: 'array' },
+    notes: { type: 'string', maxLength: 4000 },
+  }, ['changeSetId', 'clientRef', 'parentCharacterId', 'title', 'promptText']),
+
+  // Workstream 3: Scene Recipes & Assembly
+  krakinai_stage_scene_recipe: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    project: { type: 'object' },
+    shot: { type: 'object' },
+    sceneId: idSchema,
+    expectedHeadId: idSchema,
+    mode: { type: 'string', enum: ['create', 'revise', 'take'] },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    shotType: { type: 'string', maxLength: 100 },
+    settings: { type: 'object' },
+    slots: { type: 'object' },
+    sceneInstructions: { type: 'string', maxLength: 4000 },
+    avoidText: { type: 'string', maxLength: 2000 },
+    overrides: { type: 'object' },
+    expectedSourceRecipeDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+    expectedBlockingDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+    expectedSourceRevision: { type: 'integer', minimum: 1 },
+  }, ['changeSetId', 'clientRef', 'project', 'shot', 'title']),
+  krakinai_stage_scene_ensemble: schema({
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+    participants: { type: 'array' },
+    primaryParticipantId: idSchema,
+    removeParticipantIds: { type: 'array' },
+  }, ['changeSetId', 'sceneClientRef', 'participants']),
+  krakinai_stage_scene_dialogue: schema({
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+    dialogue: { type: 'object' },
+    dialogueCues: { type: 'array' },
+  }, ['changeSetId', 'sceneClientRef']),
+  krakinai_stage_camera_composition: schema({
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+    cameraComposition: { type: 'object' },
+  }, ['changeSetId', 'sceneClientRef', 'cameraComposition']),
+  krakinai_stage_direct_to_recipe: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    project: { type: 'object' },
+    shot: { type: 'object' },
+    sceneId: idSchema,
+    expectedHeadId: idSchema,
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    shotType: { type: 'string', maxLength: 100 },
+    settings: { type: 'object' },
+    slots: { type: 'object' },
+    conversion: { type: 'object' },
+    sceneInstructions: { type: 'string', maxLength: 4000 },
+    avoidText: { type: 'string', maxLength: 2000 },
+    overrides: { type: 'object' },
+    expectedSourceRecipeDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+    expectedBlockingDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+    expectedSourceRevision: { type: 'integer', minimum: 1 },
+  }, ['changeSetId', 'clientRef', 'project', 'shot', 'sceneId', 'expectedHeadId', 'title', 'conversion']),
+  krakinai_preview_scene_assembly: schema({
+    sceneId: idSchema,
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+  }),
+
+  // Workstream 4: Continuity, Blocking & Keyframes
+  krakinai_get_project_continuity: schema({ projectId: idSchema }, ['projectId']),
+  krakinai_check_spatial_continuity: schema({
+    projectId: idSchema,
+    changeSetId: idSchema,
+  }, ['projectId']),
+  krakinai_stage_scene_blocking: schema({
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+    blocking: { type: 'object' },
+    expectedSourceTokens: { type: 'object' },
+  }, ['changeSetId', 'sceneClientRef', 'blocking']),
+  krakinai_stage_keyframe_plan: schema({
+    changeSetId: idSchema,
+    sceneClientRef: idSchema,
+    keyframePlan: { type: 'object' },
+    expectedSourceTokens: { type: 'object' },
+  }, ['changeSetId', 'sceneClientRef', 'keyframePlan']),
+  krakinai_stage_frame_image: schema({
+    changeSetId: idSchema,
+    project: { type: 'object' },
+    shot: { type: 'object' },
+    scene: { type: 'object' },
+    frameId: idSchema,
+    mediaId: idSchema,
+    action: { type: 'string', enum: ['link', 'clear'] },
+    expectedAssociationRevision: { type: 'integer', minimum: 0 },
+    expectedFrameDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId', 'project', 'shot', 'scene', 'frameId']),
+
+  // Workstream 5: Saved Scenes
+  krakinai_list_saved_scenes: schema({
+    query: { type: 'string', maxLength: 200 },
+    archiveFilter: { type: 'string', enum: ['active', 'archived', 'all'] },
+    shotType: { type: 'string', maxLength: 100 },
+    reviewStatus: { type: 'string', maxLength: 50 },
+    ...pageFields,
+  }),
+  krakinai_export_scene_prompts: schema({
+    sceneIds: { type: 'array' },
+  }, ['sceneIds']),
 };
 export function validateToolArgs(name: McpToolName, value: unknown): Record<string, unknown> {
   if (!MCP_TOOL_NAMES.includes(name)) throw new McpError('UNKNOWN_TOOL');
@@ -54,7 +240,10 @@ export function validateToolArgs(name: McpToolName, value: unknown): Record<stri
   for (const [key, entry] of Object.entries(value)) {
     const field = rule.properties[key] as { type: string; pattern?: string; maxLength?: number; minLength?: number; minimum?: number; maximum?: number; enum?: string[] };
     if (field.type === 'object') { record(entry); continue; }
-    if (field.type === 'integer') { if (!Number.isSafeInteger(entry) || (entry as number) < field.minimum! || (entry as number) > field.maximum!) throw new McpError('INVALID_REQUEST'); }
+    if (field.type === 'array') { if (!Array.isArray(entry)) throw new McpError('INVALID_REQUEST'); continue; }
+    if (field.type === 'boolean') { if (typeof entry !== 'boolean') throw new McpError('INVALID_REQUEST'); continue; }
+    if (field.type === 'integer') { if (!Number.isSafeInteger(entry) || (field.minimum !== undefined && (entry as number) < field.minimum) || (field.maximum !== undefined && (entry as number) > field.maximum)) throw new McpError('INVALID_REQUEST'); }
+    else if (field.type === 'number') { if (typeof entry !== 'number' || !Number.isFinite(entry) || (field.minimum !== undefined && entry < field.minimum) || (field.maximum !== undefined && entry > field.maximum)) throw new McpError('INVALID_REQUEST'); }
     else if (typeof entry !== 'string' || entry.length > (field.maxLength ?? Infinity) || entry.length < (field.minLength ?? 0) || (field.pattern && !new RegExp(field.pattern).test(entry)) || (field.enum && !field.enum.includes(entry))) throw new McpError('INVALID_REQUEST');
   }
   if('target'in value){const t=value.target;record(t);exactKeys(t,['kind','keyframeId','mode'],['kind','keyframeId','mode']);if(t.kind!=='image'||typeof t.keyframeId!=='string'||!/^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$/.test(t.keyframeId)||!['full','compact'].includes(String(t.mode)))throw new McpError('INVALID_REQUEST');}

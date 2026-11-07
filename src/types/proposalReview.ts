@@ -31,7 +31,7 @@ export interface ReviewDraftRecord {
 }
 export interface InvalidReviewDraft {id:string;error:string}
 export interface ReviewInboxContents {records:ReviewDraftRecord[];invalid:InvalidReviewDraft[]}
-export interface ReviewUpdateOptions {renew?:boolean;reconsider?:boolean;finishApply?:boolean}
+export interface ReviewUpdateOptions {renew?:boolean;reconsider?:boolean;finishApply?:boolean;allowPackageUpdate?:boolean}
 export interface ReviewInbox {
   list():Promise<ReviewInboxContents>;
   create(record:ReviewDraftRecord):Promise<ReviewDraftRecord>;

@@ -1,5 +1,6 @@
 import {createReviewDraft,validateReviewDraft,REVIEW_INBOX_MAX_ITEMS} from '../domain/proposalReview';
 import {McpError} from '../domain/mcpProtocol';
+import {changeSetDigest} from '../domain/changeSetCanonical';
 import type {ChangeSet} from '../types/changeSet';
 import type {McpProposalView} from '../types/mcp';
 import type {ReviewDraftRecord,ReviewInbox,ReviewUpdateOptions,InvalidReviewDraft} from '../types/proposalReview';
@@ -28,7 +29,48 @@ export class ProposalInbox {
   }
   all(){return [...this.records.values()].map(r=>structuredClone(r));}
   record(id:string){const r=this.records.get(id);return r?structuredClone(r):undefined;}
+  findByChangeSetId(changeSetId:string):ReviewDraftRecord|undefined{
+    const r=[...this.records.values()].find(rec=>rec.changeSetId===changeSetId);
+    return r?structuredClone(r):undefined;
+  }
   annotate(p:McpProposalView){p.draft=this.record(p.id);p.persisted=this.persisted.has(p.id);p.cacheError=this.errors.get(p.id);}
+  async upsertDraftChangeSet(changeSet:ChangeSet):Promise<ReviewDraftRecord>{
+    await this.initialize();
+    const existing=this.findByChangeSetId(changeSet.changeSetId);
+    if(!existing){
+      return this.admit(changeSet);
+    }
+    if(existing.disposition==='applying'||existing.disposition==='applied'){
+      throw new McpError('CONFLICT','Cannot modify a proposal that is already applying or applied.');
+    }
+    const packageDigest=await changeSetDigest(changeSet);
+    const updated=await this.update(
+      existing.id,
+      {
+        changeSet:structuredClone(changeSet),
+        packageDigest,
+        disposition:'review',
+        progress:{
+          ...existing.progress,
+          draftDecisions:undefined,
+        },
+      },
+      {allowPackageUpdate:true},
+    );
+    return updated;
+  }
+  async discard(idOrChangeSetId:string):Promise<{discarded:true;proposalId:string}>{
+    await this.initialize();
+    const record=this.records.get(idOrChangeSetId)||this.findByChangeSetId(idOrChangeSetId);
+    if(!record){
+      throw new McpError('NOT_FOUND',`Proposal "${idOrChangeSetId}" was not found in the Review Inbox.`);
+    }
+    if(record.disposition==='applying'||record.disposition==='applied'){
+      throw new McpError('CONFLICT',`Proposal "${record.id}" is already applying or applied and cannot be discarded.`);
+    }
+    await this.remove(record.id);
+    return {discarded:true,proposalId:record.id};
+  }
   async admit(changeSet:ChangeSet):Promise<ReviewDraftRecord>{
     await this.initialize();if(this.error)throw new McpError('QUEUE_FULL','Local review drafts could not be loaded. Resolve the inbox storage error before submitting.');
     if(this.records.size+this.invalid.length>=REVIEW_INBOX_MAX_ITEMS)throw new McpError('QUEUE_FULL','The local review inbox is full. Download or remove an existing draft.');

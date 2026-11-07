@@ -54,7 +54,8 @@ export class ReviewInboxRepository implements ReviewInbox{
       const old=rows.find(r=>r.id===checked.id);
       if(!old)throw Error('The saved review was removed or is missing.');
       if(old.revision!==expectedRevision)throw Error('The saved review changed in another tab. Reload before editing.');
-      if(old.packageDigest!==checked.packageDigest||old.changeSetId!==checked.changeSetId||old.origin!==checked.origin||old.firstReceivedAt!==checked.firstReceivedAt)throw Error('Saved package identity cannot be changed.');
+      if(!options.allowPackageUpdate&&(old.packageDigest!==checked.packageDigest||old.changeSetId!==checked.changeSetId||old.origin!==checked.origin||old.firstReceivedAt!==checked.firstReceivedAt))throw Error('Saved package identity cannot be changed.');
+      if(options.allowPackageUpdate&&(old.disposition==='applying'||old.disposition==='applied'))throw Error('Applied or applying packages cannot be modified.');
       if(old.disposition==='applying'&&!options.finishApply)throw Error('This package is applying. Check its actual outcome before editing.');
       if(old.disposition==='rejected'&&checked.disposition!=='rejected'&&!options.reconsider)throw Error('A rejected package needs explicit reconsideration.');
       if(old.disposition==='applied'&&checked.disposition!=='applied'&&!options.finishApply)throw Error('Applied review needs authoritative receipt recovery.');
