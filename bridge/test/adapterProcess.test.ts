@@ -6,7 +6,7 @@ import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 import { describe, expect, it } from 'vitest';
 const entry = () => resolve(process.env.KRAKINAI_TEST_BRIDGE_DIST ?? 'dist', 'krakinai-stdio-adapter.mjs');
 describe('compiled persistent adapter SDK process', () => {
-  it.skipIf(process.platform !== 'win32')('registers all thirteen tools while the configured native launcher is absent', async () => {
+  it.skipIf(process.platform !== 'win32')('registers all tools while the configured native launcher is absent', async () => {
     const parent = resolve(process.env.KRAKINAI_PRIVATE_CONFIG_TEST_ROOT ?? 'qa-results/desktop-launcher-adapter', 'sdk'); await mkdir(parent, { recursive: true });
     const directory = await mkdtemp(resolve(parent, 'sdk-')), config = resolve(directory, 'settings.json');
     await writeFile(config, JSON.stringify({ formatVersion: 1, installationId: '1234567890abcdef1234567890abcdef', nativeExecutable: resolve(directory, 'absent.exe'), approvedSignerThumbprint: 'A'.repeat(40), appOrigin: 'http://localhost:5173', relayPort: 4180 }));
@@ -14,7 +14,7 @@ describe('compiled persistent adapter SDK process', () => {
     let diagnostic = ''; transport.stderr?.on('data', bytes => diagnostic += String(bytes));
     const client = new Client({ name: 'synthetic-launcher-sdk', version: '1.0.0' });
     try {
-      await client.connect(transport); const tools = await client.listTools(); expect(tools.tools).toHaveLength(13);
+      await client.connect(transport); const tools = await client.listTools(); expect(tools.tools).toHaveLength(36);
       const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
       expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
       expect(authoring.description).toContain('explicit user request');
