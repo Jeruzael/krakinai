@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:qa": "node --test scripts/qa/reconcile-results.test.mjs && node scripts/qa/reconcile-results.mjs --check",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "docs:manual": "node scripts/build-manual-pdf.mjs"
   },
   "dependencies": {
     "fflate": "^0.8.2",
