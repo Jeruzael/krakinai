@@ -556,11 +556,11 @@ export function resolveLibraryAssets(
       const itemBaseTitleNorm = normalizeBaseTitle(item.title);
 
       const matchedVariant = parentVariants.find(
-        (v) => normalize(v.name) === itemTitleNorm || normalizeBaseTitle(v.name) === itemBaseTitleNorm,
+        (v) => normalize(v.title) === itemTitleNorm || normalizeBaseTitle(v.title) === itemBaseTitleNorm,
       );
 
       if (matchedVariant) {
-        const isExact = normalize(matchedVariant.name) === itemTitleNorm;
+        const isExact = normalize(matchedVariant.title) === itemTitleNorm;
         return {
           clientRef: item.clientRef,
           kind: item.kind,
@@ -569,7 +569,7 @@ export function resolveLibraryAssets(
           recommendedAction: 'reuse',
           matchedRecord: {
             id: matchedVariant.id,
-            title: matchedVariant.name,
+            title: matchedVariant.title,
             revision: matchedVariant.revision,
             parentAssetId: matchedVariant.parentCharacterId,
             matchReason: isExact ? 'Matching variant title' : 'Matching base title',

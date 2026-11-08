@@ -2,6 +2,7 @@ import type {ChangeSet,ChangeSetApproval,ChangeSetPreview,ImportFinding,Candidat
 import type {ProposalStatus} from '../types/mcp';
 import type {LibrarySnapshot} from '../storage/db';
 import {canonicalStringify} from './changeSetCanonical';
+import {findCandidateMatches} from './changeSetCandidates';
 export type ProposalDetailTab='summary'|'recipe'|'blocking'|'frames'|'video'|'data';
 export interface ReviewIssueTarget {kind:'batch'|'operation';operationId?:string;tab:ProposalDetailTab}
 export interface ProposalReviewIssue {
@@ -302,6 +303,54 @@ export function buildBulkCreateApproval(
       nextAssetDecisions[candidate.operationId] = { action: 'create' };
     } else if (candidate.kind === 'variant') {
       nextVariantDecisions[candidate.operationId] = { action: 'create' };
+    }
+  }
+
+  return applyCandidateDecisionWithSafeguards(
+    preview.changeSet,
+    preview.approval,
+    nextAssetDecisions,
+    nextVariantDecisions,
+  );
+}
+
+export function buildAutoResolveAllApproval(
+  preview: ChangeSetPreview,
+  snapshot?: Pick<LibrarySnapshot, 'assets' | 'templates' | 'preferences'>,
+): ChangeSetApproval {
+  const nextAssetDecisions = { ...preview.approval.assetDecisions };
+  const nextVariantDecisions = { ...(preview.approval.variantDecisions ?? {}) };
+  const scopedAssets = snapshot?.assets ?? [];
+  const scopedTemplates = snapshot?.templates ?? [];
+
+  for (const op of preview.changeSet.operations) {
+    if (op.type === 'asset.propose') {
+      const currentDecision = nextAssetDecisions[op.operationId];
+      if (!currentDecision || currentDecision.action === 'defer' || (currentDecision.action === 'reuse' && !currentDecision.assetId)) {
+        const candidate = {
+          kind: op.kind,
+          title: op.title,
+          promptText: op.promptText ?? '',
+          tags: op.tags ?? [],
+        };
+        const matches = findCandidateMatches(candidate, { assets: scopedAssets, templates: scopedTemplates });
+        if (matches.length > 0) {
+          nextAssetDecisions[op.operationId] = {
+            action: 'reuse',
+            assetId: matches[0].id,
+            expectedRevision: matches[0].revision,
+          };
+        } else {
+          nextAssetDecisions[op.operationId] = {
+            action: 'create',
+          };
+        }
+      }
+    } else if (op.type === 'variant.propose') {
+      const currentDecision = nextVariantDecisions[op.operationId];
+      if (!currentDecision || currentDecision.action === 'defer' || (currentDecision.action === 'reuse' && !currentDecision.variantId)) {
+        nextVariantDecisions[op.operationId] = { action: 'create' };
+      }
     }
   }
 

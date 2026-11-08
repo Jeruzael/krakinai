@@ -458,13 +458,7 @@ export class ProposalBroker {
     if(p.status==='applying')throw new McpError('REVIEW_REQUIRED','This proposal is applying. Wait for its actual result.');
     const state=await this.#deps.readState();this.#assert(context);
     // Cached decisions are review hints, never fresh grants or accepted manual-output decisions.
-    const savedDecisions = record.progress?.draftDecisions;
-    const approval: ChangeSetApproval = savedDecisions ? {
-      ...buildSmartInitialApproval(record.changeSet, state, this.#scope),
-      ...(savedDecisions.assetDecisions ? { assetDecisions: savedDecisions.assetDecisions as any } : {}),
-      ...(savedDecisions.variantDecisions ? { variantDecisions: savedDecisions.variantDecisions as any } : {}),
-    } : buildSmartInitialApproval(record.changeSet, state, this.#scope);
-    const reuse = new Set(Object.values(approval.assetDecisions).filter(d => d.action === 'reuse' && d.assetId).map(d => d.assetId!));
+    const approval = emptyChangeSetApproval(), reuse = new Set<string>();
     const historical=readImportLedger(state.preferences).receipts.find(r=>r.changeSetId===record.changeSetId);
     if(historical){
       if(historical.packageDigest!==record.packageDigest)throw new McpError('CONFLICT','The committed change-set ID identifies different content.');

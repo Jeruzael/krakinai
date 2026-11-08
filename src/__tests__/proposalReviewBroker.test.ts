@@ -6,7 +6,7 @@ import {REVIEW_WINDOW_MS} from '../domain/proposalReview';
 import {emptyMcpScope} from '../domain/mcpScope';
 import {clearAllStoresForTesting,initializeDatabase,getAllSnapshot,openDatabase} from '../storage/db';
 import {midoriChangeSet,syntheticCamera} from './fixtures/changeSetFixture';
-import type {McpCommand} from '../domain/mcpProtocol';
+import {type McpCommand, MCP_LIMITS} from '../domain/mcpProtocol';
 let now:number,inbox:ReviewInboxRepository;
 const allowed=()=>({...emptyMcpScope(),assetIds:['asset_synthetic_camera'],allowNewProjects:true,allowProposals:true});
 const submit=(changeSet=midoriChangeSet()):McpCommand=>({requestId:crypto.randomUUID(),tool:'krakinai_submit_change_set',args:{changeSet}});
@@ -56,7 +56,7 @@ it('leaves rejected saved packages rejected rather than implicitly reconsidering
 });
 it('keeps ten-minute review available while retaining the independent session idle limit',async()=>{
  const broker=make();broker.connect('first',allowed());await broker.handle(submit(),'first');now+=600001;broker.expire();
- expect(broker.getState().proposals[0].status).toBe('review_required');now+=300000;broker.expire();
+ expect(broker.getState().proposals[0].status).toBe('review_required');now+=MCP_LIMITS.idleMs+1;broker.expire();
  expect(broker.getState().connected).toBe(false);expect((await inbox.list()).records).toHaveLength(1);
 });
 it('shows expiry after a day even when disconnected, without deleting the package',async()=>{

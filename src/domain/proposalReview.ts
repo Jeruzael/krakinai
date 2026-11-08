@@ -73,15 +73,15 @@ export function buildSmartInitialApproval(
   scope?: McpScope,
 ): ChangeSetApproval {
   const approval: ChangeSetApproval = {
-    storyboard: true,
-    scenes: true,
-    preferred: true,
-    statuses: true,
+    storyboard: false,
+    scenes: false,
+    preferred: false,
+    statuses: false,
     assetDecisions: {},
     variantDecisions: {},
     allowDuplicateSceneOperations: [],
-    ...(changeSet.schema === 'krakinai.change-set.v5' || changeSet.schema === 'krakinai.change-set.v6' ? { blocking: true } : {}),
-    ...(changeSet.schema === 'krakinai.change-set.v6' ? { keyframes: true, frameImages: true, frameVideo: true } : {}),
+    ...(changeSet.schema === 'krakinai.change-set.v5' || changeSet.schema === 'krakinai.change-set.v6' ? { blocking: false } : {}),
+    ...(changeSet.schema === 'krakinai.change-set.v6' ? { keyframes: false, frameImages: false, frameVideo: false } : {}),
   };
 
   const scopedAssets = scope ? (state.assets ?? []).filter((a) => scope.assetIds.includes(a.id)) : (state.assets ?? []);
@@ -116,8 +116,8 @@ export function buildSmartInitialApproval(
         (!parentId || v.parentCharacterId === parentId)
       );
       const matched = scopedVariants.find((v) =>
-        normalize(v.name) === normalize((op as any).label) ||
-        normalizeBaseTitle(v.name) === normalizeBaseTitle((op as any).label)
+        normalize(v.title) === normalize((op as any).label || (op as any).title) ||
+        normalizeBaseTitle(v.title) === normalizeBaseTitle((op as any).label || (op as any).title)
       );
       if (matched) {
         approval.variantDecisions![op.operationId] = {

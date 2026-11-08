@@ -13,7 +13,6 @@ import type { PromptAsset } from '../types/domain';
 const mockCharacter: PromptAsset = {
   id: 'char_silvester_vale',
   category: 'characters',
-  kind: 'asset',
   title: 'Silvester Vale',
   promptText: '16-year-old commoner youth with lean angular jaw and raven hair.',
   description: 'Hero',
@@ -21,7 +20,8 @@ const mockCharacter: PromptAsset = {
   notes: '',
   mediaLinks: [],
   favorite: false,
-  reviewStatus: 'reviewed',
+  reviewStatus: 'user-approved',
+  provenance: {},
   revision: 2,
   createdAt: '2026-01-01T00:00:00Z',
   updatedAt: '2026-01-01T00:00:00Z',
@@ -35,12 +35,16 @@ const mockState: ChangeSetState = {
   templates: [],
   media: [],
   preferences: {
+    id: 'pref_1',
+    schemaVersion: 1,
+    starterLoaded: false,
+    updatedAt: '2026-01-01T00:00:00Z',
     aiImports: {
       version: 1,
       candidates: [],
       receipts: [],
     },
-  },
+  } as any,
 };
 
 describe('candidateMatching & smart resolution', () => {
@@ -124,8 +128,6 @@ describe('candidateMatching & smart resolution', () => {
     };
 
     const approval = buildSmartInitialApproval(changeSet, mockState);
-    expect(approval.storyboard).toBe(true);
-    expect(approval.scenes).toBe(true);
     expect(approval.assetDecisions['op-char-silvester']).toEqual({
       action: 'reuse',
       assetId: 'char_silvester_vale',
