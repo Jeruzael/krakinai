@@ -66,6 +66,16 @@ export function ProposalOperationDetail({row,preview,snapshot,tab,disabled,onApp
               onChange={e=>{
                 const act=e.target.value as CandidateDecision['action'];
                 if(act==='reuse'){
+                  const matches = preview.plan.operations.find(r => r.operationId === candidateItem.operationId)?.matches ?? [];
+                  if (matches.length > 0) {
+                    if (candidateItem.kind === 'variant') {
+                      const nextVar = { ...(preview.approval.variantDecisions ?? {}), [candidateItem.operationId]: { action: 'reuse' as const, variantId: matches[0].id, expectedRevision: matches[0].revision } };
+                      onApproval(applyCandidateDecisionWithSafeguards(preview.changeSet, preview.approval, preview.approval.assetDecisions, nextVar));
+                    } else {
+                      const nextAsset = { ...preview.approval.assetDecisions, [candidateItem.operationId]: { action: 'reuse' as const, assetId: matches[0].id, expectedRevision: matches[0].revision } };
+                      onApproval(applyCandidateDecisionWithSafeguards(preview.changeSet, preview.approval, nextAsset, preview.approval.variantDecisions));
+                    }
+                  }
                   if(onSelectOperation)onSelectOperation(candidateItem.operationId);
                   return;
                 }

@@ -394,6 +394,21 @@ export function ChangeSetPreview({
                           }));
                           if (action !== "reuse") {
                             choice(op.operationId, { action });
+                          } else {
+                            const defaultMatch = matches[0]
+                              ? available.find((a) => a.id === matches[0].id) ?? {
+                                  id: matches[0].id,
+                                  title: matches[0].title,
+                                  revision: matches[0].revision,
+                                }
+                              : undefined;
+                            if (defaultMatch) {
+                              choice(op.operationId, {
+                                action: "reuse",
+                                assetId: defaultMatch.id,
+                                expectedRevision: defaultMatch.revision,
+                              });
+                            }
                           }
                         }}
                       >

@@ -332,4 +332,19 @@ it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, a
       'op-env-sacred-hall': { action: 'create' },
     }),
   }));
+
+  // Auto-selection of matched candidate when choosing "reuse"
+  onApproval.mockClear();
+  await user.click(within(ensembleSection).getByRole('button', { name: 'Review op-char-silvester' }));
+  const charDecisionSelect = screen.getByLabelText('Decision for op-char-silvester');
+  await user.selectOptions(charDecisionSelect, 'reuse');
+  expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
+    assetDecisions: expect.objectContaining({
+      'op-char-silvester': expect.objectContaining({
+        action: 'reuse',
+        assetId: 'existing-char',
+        expectedRevision: 1,
+      }),
+    }),
+  }));
 });
