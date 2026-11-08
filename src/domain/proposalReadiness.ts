@@ -1,5 +1,7 @@
-import type {ChangeSetPreview,ImportFinding} from '../types/changeSet';
+import type {ChangeSet,ChangeSetApproval,ChangeSetPreview,ImportFinding,CandidateDecision} from '../types/changeSet';
 import type {ProposalStatus} from '../types/mcp';
+import type {LibrarySnapshot} from '../storage/db';
+import {canonicalStringify} from './changeSetCanonical';
 export type ProposalDetailTab='summary'|'recipe'|'blocking'|'frames'|'video'|'data';
 export interface ReviewIssueTarget {kind:'batch'|'operation';operationId?:string;tab:ProposalDetailTab}
 export interface ProposalReviewIssue {
@@ -14,6 +16,281 @@ export interface ProposalReadiness {
   conflicts:ProposalReviewIssue[];approvals:ProposalReviewIssue[];advisories:ProposalReviewIssue[];lifecycle:ProposalReviewIssue[];
   batch:ProposalReviewIssue[];byOperation:Record<string,ProposalReviewIssue[]>;
   conflictCount:number;approvalCount:number;confirmationRequired:boolean;canApply:boolean;busy:boolean;warnings:string[];
+}
+
+export type OutfitCandidateDecision = NonNullable<ChangeSetApproval['variantDecisions']>[string];
+
+export interface CandidateBlockerItem {
+  operationId: string;
+  clientRef?: string;
+  kind: 'asset' | 'variant';
+  candidateKind: string;
+  title: string;
+  promptText: string;
+  decision: CandidateDecision | OutfitCandidateDecision;
+  matchesCount: number;
+  dependentSceneIds: string[];
+  isBlocking: boolean;
+  canBulkCreate: boolean;
+}
+
+export interface CandidateDependencyAnalysis {
+  candidates: CandidateBlockerItem[];
+  blockingCandidates: CandidateBlockerItem[];
+  bulkCreatableCandidates: CandidateBlockerItem[];
+  byClientRef: Record<string, CandidateBlockerItem>;
+  byOperationId: Record<string, CandidateBlockerItem>;
+  referencedCandidateOpIdsByScene: Record<string, string[]>;
+}
+
+export function analyzeProposalCandidateBlockers(
+  preview?: ChangeSetPreview,
+  snapshot?: Pick<LibrarySnapshot, 'assets' | 'preferences'>,
+): CandidateDependencyAnalysis {
+  const empty: CandidateDependencyAnalysis = {
+    candidates: [],
+    blockingCandidates: [],
+    bulkCreatableCandidates: [],
+    byClientRef: Object.create(null),
+    byOperationId: Object.create(null),
+    referencedCandidateOpIdsByScene: Object.create(null),
+  };
+  if (!preview) return empty;
+
+  const changeSet = preview.changeSet;
+  const plan = preview.plan;
+  const approval = preview.approval;
+
+  const candidates: CandidateBlockerItem[] = [];
+  const candidateOps: { item: CandidateBlockerItem; op: any }[] = [];
+
+  for (const op of changeSet.operations) {
+    if (op.type === 'asset.propose') {
+      const decision = approval.assetDecisions?.[op.operationId] ?? { action: 'defer' };
+      const matches = plan.operations.find(r => r.operationId === op.operationId)?.matches ?? [];
+      const item: CandidateBlockerItem = {
+        operationId: op.operationId,
+        clientRef: op.clientRef,
+        kind: 'asset',
+        candidateKind: op.kind,
+        title: op.title || op.operationId,
+        promptText: op.promptText || '',
+        decision,
+        matchesCount: matches.length,
+        dependentSceneIds: [],
+        isBlocking: false,
+        canBulkCreate: decision.action === 'defer' && matches.length === 0,
+      };
+      candidates.push(item);
+      candidateOps.push({ item, op });
+    } else if (op.type === 'asset.review_candidate') {
+      const decision = approval.assetDecisions?.[op.operationId] ?? { action: 'defer' };
+      const matches = plan.operations.find(r => r.operationId === op.operationId)?.matches ?? [];
+      const c = snapshot?.preferences?.aiImports?.candidates?.find(x => x.id === (op as any).candidateId);
+      const item: CandidateBlockerItem = {
+        operationId: op.operationId,
+        clientRef: undefined,
+        kind: 'asset',
+        candidateKind: c?.kind ?? 'asset',
+        title: c?.title ?? op.operationId,
+        promptText: c?.promptText ?? '',
+        decision,
+        matchesCount: matches.length,
+        dependentSceneIds: [],
+        isBlocking: false,
+        canBulkCreate: decision.action === 'defer' && matches.length === 0,
+      };
+      candidates.push(item);
+      candidateOps.push({ item, op });
+    } else if (op.type === 'variant.propose') {
+      const decision = approval.variantDecisions?.[op.operationId] ?? { action: 'defer' };
+      const matches = plan.operations.find(r => r.operationId === op.operationId)?.matches ?? [];
+      const parentOk = !snapshot || !op.parentCharacterId || (snapshot.assets ?? []).some(a => a.id === op.parentCharacterId);
+      const item: CandidateBlockerItem = {
+        operationId: op.operationId,
+        clientRef: op.clientRef,
+        kind: 'variant',
+        candidateKind: op.variantType || 'Outfit',
+        title: op.title || op.operationId,
+        promptText: op.promptText || '',
+        decision,
+        matchesCount: matches.length,
+        dependentSceneIds: [],
+        isBlocking: false,
+        canBulkCreate: decision.action === 'defer' && matches.length === 0 && parentOk,
+      };
+      candidates.push(item);
+      candidateOps.push({ item, op });
+    } else if (op.type === 'variant.review_candidate') {
+      const decision = approval.variantDecisions?.[op.operationId] ?? { action: 'defer' };
+      const matches = plan.operations.find(r => r.operationId === op.operationId)?.matches ?? [];
+      const vc = snapshot?.preferences?.aiImports?.variantCandidates?.find(x => x.id === (op as any).candidateId);
+      const item: CandidateBlockerItem = {
+        operationId: op.operationId,
+        clientRef: undefined,
+        kind: 'variant',
+        candidateKind: 'Outfit',
+        title: vc?.title ?? op.operationId,
+        promptText: vc?.promptText ?? '',
+        decision,
+        matchesCount: matches.length,
+        dependentSceneIds: [],
+        isBlocking: false,
+        canBulkCreate: decision.action === 'defer' && matches.length === 0,
+      };
+      candidates.push(item);
+      candidateOps.push({ item, op });
+    }
+  }
+
+  const byClientRef: Record<string, CandidateBlockerItem> = Object.create(null);
+  const byOperationId: Record<string, CandidateBlockerItem> = Object.create(null);
+  for (const { item } of candidateOps) {
+    if (item.clientRef) byClientRef[item.clientRef] = item;
+    byOperationId[item.operationId] = item;
+  }
+
+  const findCandidate = (ref: string): CandidateBlockerItem | undefined => {
+    return byClientRef[ref] ?? byOperationId[ref] ?? candidateOps.find(({ op }) => (op as any).candidateId === ref)?.item;
+  };
+
+  const referencedCandidateOpIdsByScene: Record<string, string[]> = Object.create(null);
+
+  for (const op of changeSet.operations) {
+    if (!op.type.startsWith('scene.')) continue;
+    const sceneOpId = op.operationId;
+    const referencedOpIds: string[] = [];
+
+    const addRef = (ref?: string) => {
+      if (!ref) return;
+      const candidate = findCandidate(ref);
+      if (candidate) {
+        if (!candidate.dependentSceneIds.includes(sceneOpId)) {
+          candidate.dependentSceneIds.push(sceneOpId);
+        }
+        if (!referencedOpIds.includes(candidate.operationId)) {
+          referencedOpIds.push(candidate.operationId);
+        }
+      }
+    };
+
+    if (Array.isArray((op as any).assetRefs)) {
+      for (const link of (op as any).assetRefs) {
+        if (link?.asset && 'ref' in link.asset) {
+          addRef(link.asset.ref);
+        }
+      }
+    }
+
+    if (Array.isArray((op as any).variantRefs)) {
+      for (const link of (op as any).variantRefs) {
+        if (link) {
+          if ('ref' in link) addRef((link as any).ref);
+          else if (link.variant && 'ref' in link.variant) addRef(link.variant.ref);
+          else if (link.variantId) addRef(link.variantId);
+        }
+      }
+    }
+
+    const ensemble = (op as any).ensemble;
+    if (ensemble && Array.isArray(ensemble.participantUpserts)) {
+      for (const p of ensemble.participantUpserts) {
+        if (p?.character?.asset && 'ref' in p.character.asset) {
+          addRef(p.character.asset.ref);
+        }
+        if (p?.wardrobe) {
+          if ('asset' in p.wardrobe && p.wardrobe.asset && 'ref' in p.wardrobe.asset) {
+            addRef(p.wardrobe.asset.ref);
+          } else if ('variant' in p.wardrobe && p.wardrobe.variant && 'ref' in p.wardrobe.variant) {
+            addRef(p.wardrobe.variant.ref);
+          } else if ('ref' in p.wardrobe) {
+            addRef(p.wardrobe.ref);
+          }
+        }
+      }
+    }
+
+    if (referencedOpIds.length > 0) {
+      referencedCandidateOpIdsByScene[sceneOpId] = referencedOpIds;
+    }
+  }
+
+  for (const c of candidates) {
+    c.isBlocking = c.dependentSceneIds.length > 0 && c.decision.action === 'defer';
+  }
+
+  const blockingCandidates = candidates.filter(c => c.isBlocking);
+  const bulkCreatableCandidates = candidates.filter(c => c.canBulkCreate);
+
+  return {
+    candidates,
+    blockingCandidates,
+    bulkCreatableCandidates,
+    byClientRef,
+    byOperationId,
+    referencedCandidateOpIdsByScene,
+  };
+}
+
+export function applyCandidateDecisionWithSafeguards(
+  changeSet: ChangeSet,
+  currentApproval: ChangeSetApproval,
+  nextAssetDecisions: ChangeSetApproval['assetDecisions'],
+  nextVariantDecisions?: ChangeSetApproval['variantDecisions'],
+): ChangeSetApproval {
+  let next: ChangeSetApproval = {
+    ...currentApproval,
+    assetDecisions: nextAssetDecisions,
+    ...(nextVariantDecisions !== undefined ? { variantDecisions: nextVariantDecisions } : {}),
+  };
+  const decisionsChanged =
+    canonicalStringify([next.assetDecisions, next.variantDecisions ?? {}]) !==
+    canonicalStringify([currentApproval.assetDecisions, currentApproval.variantDecisions ?? {}]);
+
+  if (decisionsChanged) {
+    if (['krakinai.change-set.v5', 'krakinai.change-set.v6'].includes(changeSet.schema)) {
+      next = {
+        ...next,
+        blocking: false,
+        blockingOutputDecisions: {},
+        ...(changeSet.schema === 'krakinai.change-set.v6'
+          ? { keyframes: false, frameImages: false, frameVideo: false, frameOutputDecisions: {} }
+          : {}),
+      };
+    }
+    if (changeSet.operations.some(o => o.type === 'scene.convert_direct_to_recipe')) {
+      next = { ...next, conversionDecisions: {} };
+    }
+  }
+  return next;
+}
+
+export function buildBulkCreateApproval(
+  preview: ChangeSetPreview,
+  snapshot?: Pick<LibrarySnapshot, 'assets' | 'preferences'>,
+  targetOperationIds?: string[],
+): ChangeSetApproval {
+  const analysis = analyzeProposalCandidateBlockers(preview, snapshot);
+  const targets = new Set(targetOperationIds ?? analysis.bulkCreatableCandidates.map(c => c.operationId));
+
+  const nextAssetDecisions = { ...preview.approval.assetDecisions };
+  const nextVariantDecisions = { ...(preview.approval.variantDecisions ?? {}) };
+
+  for (const candidate of analysis.bulkCreatableCandidates) {
+    if (!targets.has(candidate.operationId)) continue;
+    if (candidate.kind === 'asset') {
+      nextAssetDecisions[candidate.operationId] = { action: 'create' };
+    } else if (candidate.kind === 'variant') {
+      nextVariantDecisions[candidate.operationId] = { action: 'create' };
+    }
+  }
+
+  return applyCandidateDecisionWithSafeguards(
+    preview.changeSet,
+    preview.approval,
+    nextAssetDecisions,
+    nextVariantDecisions,
+  );
 }
 export function proposalOperationGroup(type:string):string{
   if(type.startsWith('project.'))return 'Projects';
