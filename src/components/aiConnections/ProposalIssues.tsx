@@ -42,30 +42,36 @@ export function ProposalIssues({
     </article>
   );
 
+  const renderBulkCard = () => {
+    if (!candidateAnalysis || candidateAnalysis.bulkCreatableCandidates.length === 0 || !onBulkCreateCandidates) {
+      return null;
+    }
+    return (
+      <section className="card pr-bulk-card" aria-label="Bulk candidate actions">
+        <h4>Fast-track candidates</h4>
+        <p className="muted-text">
+          {candidateAnalysis.bulkCreatableCandidates.length} candidate proposal(s) have no conflicts and can be created immediately as library items.
+        </p>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          disabled={disabled}
+          onClick={onBulkCreateCandidates}
+        >
+          Create all new candidates ({candidateAnalysis.bulkCreatableCandidates.length})
+        </button>
+      </section>
+    );
+  };
+
   const renderConflicts = () => {
     if (!readiness.conflicts.length) return null;
     return (
       <section className="pr-issue-group" aria-label="Data conflicts">
         <h4>Data conflicts</h4>
-        {candidateAnalysis && candidateAnalysis.bulkCreatableCandidates.length > 0 && onBulkCreateCandidates && (
-          <section className="card pr-bulk-card" aria-label="Bulk candidate actions">
-            <h4>Fast-track candidates</h4>
-            <p className="muted-text">
-              {candidateAnalysis.bulkCreatableCandidates.length} candidate proposal(s) have no conflicts and can be created immediately as library items.
-            </p>
-            <button
-              type="button"
-              className="btn btn-primary btn-sm"
-              disabled={disabled}
-              onClick={onBulkCreateCandidates}
-            >
-              Create all new candidates ({candidateAnalysis.bulkCreatableCandidates.length})
-            </button>
-          </section>
-        )}
         {otherConflicts.map(renderIssue)}
-        {dependencyConflicts.length === 1 && renderIssue(dependencyConflicts[0])}
-        {dependencyConflicts.length > 1 && (
+        {uniqueDependencyConflicts.length === 1 && renderIssue(uniqueDependencyConflicts[0])}
+        {uniqueDependencyConflicts.length > 1 && (
           <article className="pr-issue pr-issue-conflict pr-issue-grouped">
             <code>DEPENDENCY_BLOCKED · {blockedCount} scene{blockedCount === 1 ? '' : 's'} blocked</code>
             <p>
@@ -126,6 +132,7 @@ export function ProposalIssues({
 
   return (
     <div className="pr-issues">
+      {renderBulkCard()}
       {renderConflicts()}
       {group('Connection and review requirements', readiness.lifecycle)}
       {readiness.approvals.length > 0 && (

@@ -70,11 +70,21 @@ export function ChangeSetPreview({
     preferred: changeSet.operations.some((o) => o.type === "shot.select_take"),
     statuses: changeSet.operations.some((o) => o.type === "shot.set_status"),
   };
+  const selectedOp = operationId
+    ? changeSet.operations.find((o) => o.operationId === operationId)
+    : undefined;
   const assetOps = changeSet.operations.filter((o) => {
     if (!o.type.startsWith("asset.")) return false;
     if (!operationId) return true;
     if (o.operationId === operationId) return true;
-    if (operationId.startsWith("scene.")) {
+    if (
+      selectedOp &&
+      (selectedOp.type.startsWith("asset.") ||
+        selectedOp.type.startsWith("variant."))
+    ) {
+      return false;
+    }
+    if (selectedOp && selectedOp.type.startsWith("scene.")) {
       return sceneReferencedOpIds && sceneReferencedOpIds.length > 0
         ? sceneReferencedOpIds.includes(o.operationId)
         : true;
@@ -569,6 +579,7 @@ export function ChangeSetPreview({
                 row={selected}
                 changeSet={changeSet}
                 approval={approval}
+                plan={plan}
                 findings={plan.findings.filter(
                   (f) =>
                     f.operationId === selected.operationId &&

@@ -3,6 +3,7 @@ import type { OutputMode } from "../types/domain";
 import type {
   ChangeSet,
   ChangeSetApproval,
+  ChangeSetPlan,
   ImportFinding,
   ImportOperationPreview,
   RecipeSceneOperation,
@@ -28,6 +29,7 @@ export function RecipeOperationPreview({
   row,
   changeSet,
   approval,
+  plan,
   findings,
   view='all',
   snapshot,
@@ -38,6 +40,7 @@ export function RecipeOperationPreview({
   row: ImportOperationPreview;
   changeSet: ChangeSet;
   approval: ChangeSetApproval;
+  plan?: ChangeSetPlan;
   findings: ImportFinding[];
   view?:'all'|'components'|'outputs';
   snapshot?: LibrarySnapshot;
@@ -54,7 +57,8 @@ export function RecipeOperationPreview({
     label = modes.find((m) => m.value === mode)!.label,
     id = `recipe-output-${row.operationId}`;
 
-  const candidateAnalysis = analyzeProposalCandidateBlockers({ changeSet, approval, plan: { operations: [] } } as any, snapshot);
+  const effectivePreview = { changeSet, approval, plan: plan ?? { operations: [] } } as any;
+  const candidateAnalysis = analyzeProposalCandidateBlockers(effectivePreview, snapshot);
   const sceneCandidateOpIds = candidateAnalysis.referencedCandidateOpIdsByScene[operation.operationId] ?? [];
   const sceneCandidates = sceneCandidateOpIds.map(opId => candidateAnalysis.byOperationId[opId]).filter(Boolean);
   const deferredSceneCandidates = sceneCandidates.filter(c => c.decision.action === 'defer');
@@ -105,7 +109,7 @@ export function RecipeOperationPreview({
               type="button"
               className="btn btn-primary btn-sm"
               disabled={disabled}
-              onClick={() => onApproval(buildBulkCreateApproval({ changeSet, approval, plan: { operations: [] } } as any, snapshot, bulkCreatableForScene.map(c => c.operationId)))}
+              onClick={() => onApproval(buildBulkCreateApproval(effectivePreview, snapshot, bulkCreatableForScene.map(c => c.operationId)))}
             >
               Approve scene candidates ({bulkCreatableForScene.length})
             </button>
@@ -204,9 +208,18 @@ export function RecipeOperationPreview({
                                   type="button"
                                   className="btn btn-secondary btn-sm"
                                   disabled={disabled}
-                                  onClick={() => onApproval(buildBulkCreateApproval({ changeSet, approval, plan: { operations: [] } } as any, snapshot, [producer.operationId]))}
+                                  onClick={() => onApproval(buildBulkCreateApproval(effectivePreview, snapshot, [producer.operationId]))}
                                 >
                                   Approve Create
+                                </button>
+                              )}
+                              {onSelectOperation && (!producer.canBulkCreate || producer.decision.action === 'reuse') && (
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary btn-sm"
+                                  onClick={() => onSelectOperation(producer.operationId)}
+                                >
+                                  Review {producer.operationId}
                                 </button>
                               )}
                               <select
@@ -310,9 +323,18 @@ export function RecipeOperationPreview({
                                   type="button"
                                   className="btn btn-secondary btn-sm"
                                   disabled={disabled}
-                                  onClick={() => onApproval(buildBulkCreateApproval({ changeSet, approval, plan: { operations: [] } } as any, snapshot, [charCand.operationId]))}
+                                  onClick={() => onApproval(buildBulkCreateApproval(effectivePreview, snapshot, [charCand.operationId]))}
                                 >
                                   Approve Create
+                                </button>
+                              )}
+                              {onSelectOperation && (!charCand.canBulkCreate || charCand.decision.action === 'reuse') && (
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary btn-sm"
+                                  onClick={() => onSelectOperation(charCand.operationId)}
+                                >
+                                  Review {charCand.operationId}
                                 </button>
                               )}
                               <select
@@ -349,9 +371,18 @@ export function RecipeOperationPreview({
                                   type="button"
                                   className="btn btn-secondary btn-sm"
                                   disabled={disabled}
-                                  onClick={() => onApproval(buildBulkCreateApproval({ changeSet, approval, plan: { operations: [] } } as any, snapshot, [wardCand.operationId]))}
+                                  onClick={() => onApproval(buildBulkCreateApproval(effectivePreview, snapshot, [wardCand.operationId]))}
                                 >
                                   Approve Create
+                                </button>
+                              )}
+                              {onSelectOperation && (!wardCand.canBulkCreate || wardCand.decision.action === 'reuse') && (
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary btn-sm"
+                                  onClick={() => onSelectOperation(wardCand.operationId)}
+                                >
+                                  Review {wardCand.operationId}
                                 </button>
                               )}
                               <select

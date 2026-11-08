@@ -41,9 +41,9 @@ it('keeps connection, review-window and exact-confirmation reasons distinct',()=
 it('does not turn a cache warning on a new in-memory review into imaginary data conflict',()=>{
  const r=proposalReadiness(preview(),{...context,cacheError:'Not saved for later'});expect(r.conflictCount).toBe(0);expect(r.canApply).toBe(true);expect(r.warnings).toContain('Not saved for later');
 });
-it('routes frame/video/blocking findings to their exact selected operation detail',()=>{
- const r=proposalReadiness(preview([{operationId:'prompt-01',severity:'blocking',code:'KEYFRAME_PREPARATION',message:'Repair frames.'},{operationId:'prompt-02',severity:'blocking',code:'BLOCKING_SOURCE',message:'Repair Blocking.'},{operationId:'prompt-03',severity:'blocking',code:'VIDEO_MANUAL_DECISION',message:'Choose video text.'}]),context);
- expect(r.conflicts.map(x=>x.target.tab)).toEqual(['frames','blocking','video']);expect(r.conflicts[0].target.operationId).toBe('prompt-01');
+it('routes frame/video/blocking/dependency findings to their exact selected operation detail',()=>{
+ const r=proposalReadiness(preview([{operationId:'prompt-01',severity:'blocking',code:'KEYFRAME_PREPARATION',message:'Repair frames.'},{operationId:'prompt-02',severity:'blocking',code:'BLOCKING_SOURCE',message:'Repair Blocking.'},{operationId:'prompt-03',severity:'blocking',code:'VIDEO_MANUAL_DECISION',message:'Choose video text.'},{operationId:'prompt-04',severity:'blocking',code:'DEPENDENCY_BLOCKED',message:'Blocked by candidate.'}]),context);
+ expect(r.conflicts.map(x=>x.target.tab)).toEqual(['frames','blocking','video','recipe']);expect(r.conflicts[0].target.operationId).toBe('prompt-01');
 });
 it('has a safe navigator group for every operation, including unknown ones',()=>{
  for(const type of['project.create','shot.create','scene.create_recipe','frame_image.link','variant.propose','asset.propose','shot.select_take','template.future_kind','unknown.future_kind'])expect(proposalOperationGroup(type)).toBeTruthy();

@@ -305,7 +305,7 @@ function findingTab(code:string):ProposalDetailTab{
   if(/VIDEO/.test(code))return 'video';
   if(/KEYFRAME|FRAME|IMAGE/.test(code))return 'frames';
   if(/BLOCKING/.test(code))return 'blocking';
-  if(/RECIPE|CANDIDATE|ASSET|OUTFIT|VARIANT/.test(code))return 'recipe';
+  if(/RECIPE|CANDIDATE|ASSET|OUTFIT|VARIANT|DEPENDENCY/.test(code))return 'recipe';
   return 'summary';
 }
 function remedy(f:ImportFinding){

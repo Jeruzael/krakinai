@@ -29,16 +29,17 @@ export function OutfitReviewDecisions({
   const [reuseIntent, setReuseIntent] = useState<Record<string, boolean>>({});
   const candidateAnalysis = analyzeProposalCandidateBlockers({ changeSet, approval, plan } as any, snapshot);
   const sceneReferencedOpIds = operationId ? candidateAnalysis.referencedCandidateOpIdsByScene[operationId] : undefined;
+  const selectedOp = operationId ? changeSet.operations.find(o => o.operationId === operationId) : undefined;
   const operations = changeSet.operations.filter(
     (o) =>
       o.type === "variant.propose" || o.type === "variant.review_candidate",
   ).filter(o => {
     if (!operationId) return true;
     if (o.operationId === operationId) return true;
-    if (operationId.startsWith('scene.')) {
-      return sceneReferencedOpIds && sceneReferencedOpIds.length > 0 ? sceneReferencedOpIds.includes(o.operationId) : true;
+    if (selectedOp && selectedOp.type.startsWith('scene.')) {
+      return sceneReferencedOpIds ? sceneReferencedOpIds.includes(o.operationId) : false;
     }
-    return true;
+    return false;
   });
   if (!operations.length) return null;
   const choice = (

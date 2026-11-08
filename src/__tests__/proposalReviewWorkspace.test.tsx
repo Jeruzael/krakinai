@@ -187,6 +187,11 @@ it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps
 
   await user.click(screen.getByRole('button', { name: 'Review op-scene-s01' }));
   expect(screen.getByLabelText('Decision for op-env-sacred-hall')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Decision for op-char-silvester')).not.toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Review op-char-silvester' }));
+  expect(screen.getByLabelText('Decision for op-char-silvester')).toBeInTheDocument();
+  expect(screen.queryByLabelText('Decision for op-env-sacred-hall')).not.toBeInTheDocument();
 });
 
 it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, and retains blocking candidates in Conflicts filter', async () => {
@@ -236,6 +241,10 @@ it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, a
   ];
   const approval = recipeApproval();
   const preview = await previewChangeSet(input, approval);
+  const charPlanOp = preview.plan.operations.find(o => o.operationId === 'op-char-silvester');
+  if (charPlanOp) {
+    charPlanOp.matches = [{ id: 'existing-char', kind: 'character', title: 'Existing Char', revision: 1, reason: 'Exact normalized title match' }];
+  }
   preview.plan.findings.push(
     { operationId: 'op-scene-s01', severity: 'blocking', code: 'DEPENDENCY_BLOCKED', message: 'Scene 1 blocked by deferred candidate' },
   );
@@ -277,8 +286,8 @@ it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, a
   expect(charBtn).toBeInTheDocument();
   expect(within(charBtn).getByText('Blocks 1 scene(s)')).toBeInTheDocument();
 
-  await user.click(within(nav).getByRole('button', { name: 'Review op-scene-s01' }));
-  await user.click(screen.getByRole('tab', { name: 'Recipe' }));
+  await user.click(screen.getByRole('button', { name: 'Go to DEPENDENCY_BLOCKED (op-scene-s01)' }));
+  expect(screen.getByRole('tab', { name: 'Recipe' })).toHaveAttribute('aria-selected', 'true');
 
   expect(screen.getAllByText(/Managed by Ensemble Cast \(1 participant\(s\)\)/i)).toHaveLength(2);
   expect(screen.getAllByText(/Ensemble active/i)).toHaveLength(2);
@@ -286,9 +295,11 @@ it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, a
   const ensembleSection = screen.getByRole('region', { name: 'Ensemble candidate bindings' });
   expect(ensembleSection).toBeInTheDocument();
   expect(within(ensembleSection).getByText('Silvester Character')).toBeInTheDocument();
+  expect(within(ensembleSection).queryByRole('button', { name: 'Approve Create' })).not.toBeInTheDocument();
+  expect(within(ensembleSection).getByRole('button', { name: 'Review op-char-silvester' })).toBeInTheDocument();
 
   const approveCreateBtns = screen.getAllByRole('button', { name: 'Approve Create' });
-  expect(approveCreateBtns.length).toBeGreaterThanOrEqual(1);
+  expect(approveCreateBtns).toHaveLength(1);
   await user.click(approveCreateBtns[0]);
   expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
     assetDecisions: expect.objectContaining({
