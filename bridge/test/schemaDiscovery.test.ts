@@ -15,5 +15,5 @@ it('factors repeated JSON Schema subtrees without removing any contract branch',
 it('lists the factored contracts through the actual SDK without broadening validation',async()=>{
  const server=new McpServer({name:'synthetic-discovery',version:'1'}),errors:string[]=[];registerKrakinaiTools(server,async()=>resultData({synthetic:true}));server.server.onerror=error=>errors.push(String(error));
  const [a,b]=InMemoryTransport.createLinkedPair(),client=new Client({name:'synthetic',version:'1'});
- try{await server.connect(a);await client.connect(b);try{const list=await client.listTools();expect(list.tools).toHaveLength(36);expect(Buffer.byteLength(JSON.stringify(list))).toBeLessThan(1310720);}catch(error){throw Error(String(error)+'; server errors: '+errors.join(' | '));}}finally{await client.close();await server.close();}
+ try{await server.connect(a);await client.connect(b);try{const list=await client.listTools();expect(list.tools).toHaveLength(37);expect(Buffer.byteLength(JSON.stringify(list))).toBeLessThan(1310720);}catch(error){throw Error(String(error)+'; server errors: '+errors.join(' | '));}}finally{await client.close();await server.close();}
 });

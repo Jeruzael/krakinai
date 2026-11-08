@@ -1,4 +1,4 @@
-# Chapter 10: Complete MCP Protocol, Bridge Architecture & 36-Tool Reference
+# Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference
 
 > *Part IV: Detailed Technical Documentation*  
 > Previous: [Chapter 9: Change-Set Contracts (v1–v6) & Security Model](./09-technical-changeset-and-security.md) | Next: [README (Cover & Table of Contents)](./README.md)
@@ -16,7 +16,7 @@ This chapter details:
 2. HMAC pairing challenge-response and session epoch rotation.
 3. Schema discovery factoring and frame budget management.
 4. Error handling and standard error codes.
-5. **The Complete 36-Tool Reference Catalog** (13 core tools + 23 granular inspection & staging tools).
+5. **The Complete 37-Tool Reference Catalog** (13 core tools + 24 granular inspection & staging tools).
 
 ```mermaid
 graph LR
@@ -72,7 +72,7 @@ KRAKINAI divides the MCP transport into three isolated tiers:
 
 ## 3. Schema Discovery Factoring (`MCP_LIMITS.frame`)
 
-The Model Context Protocol requires server adapters to describe all available tools during the `tools/list` handshake. When exposing 36 granular tools—many with deep JSON schemas for shot blocking, dialogue cues, and keyframe plans—the serialized schema payload can easily exceed the client's frame limit.
+The Model Context Protocol requires server adapters to describe all available tools during the `tools/list` handshake. When exposing 37 granular tools—many with deep JSON schemas for shot blocking, dialogue cues, and keyframe plans—the serialized schema payload can easily exceed the client's frame limit.
 
 KRAKINAI's bridge implements **Schema Discovery Factoring** (`bridge/src/schemaDiscovery.ts`):
 - Common subtrees (such as `RECORD_TARGET_SCHEMA`, `settings`, `media`, and `idSchema`) are factored into shared `$defs`.
@@ -101,9 +101,9 @@ When an MCP command cannot be completed, KRAKINAI throws an `McpError` with a st
 
 ---
 
-## 5. The Complete 36-Tool API Catalog
+## 5. The Complete 37-Tool API Catalog
 
-KRAKINAI provides **36 official MCP tools** organized into 5 functional workstreams and core utilities:
+KRAKINAI provides **37 official MCP tools** organized into 5 functional workstreams and core utilities:
 
 ```mermaid
 graph TD
@@ -114,10 +114,10 @@ graph TD
     classDef ws4 fill:#831843,stroke:#f43f5e,stroke-width:1px,color:#ffe4e6;
     classDef ws5 fill:#78350f,stroke:#f59e0b,stroke-width:1px,color:#fef3c7;
 
-    All["KRAKINAI 36-Tool Suite"]
+    All["KRAKINAI 37-Tool Suite"]
 
     All --> Core["Core Utilities & Status (13 Tools)"]
-    All --> WS1["WS1: Inbox & Staging (6 Tools)"]
+    All --> WS1["WS1: Inbox & Staging (7 Tools)"]
     All --> WS2["WS2: Assets & Catalogs (4 Tools)"]
     All --> WS3["WS3: Recipes & Assembly (6 Tools)"]
     All --> WS4["WS4: Blocking & Keyframes (5 Tools)"]
@@ -222,7 +222,7 @@ graph TD
 
 ---
 
-### Group 6: Workstream 1 — Inbox & Project/Shot Staging (6 Tools)
+### Group 6: Workstream 1 — Inbox & Project/Shot Staging (7 Tools)
 
 #### `krakinai_list_proposals`
 - **Purpose**: Lists all proposals currently residing in the Review Inbox.
@@ -234,6 +234,19 @@ graph TD
 - **Purpose**: Discards an unapplied proposal to free up inbox capacity (`limit = 8`).
 - **Arguments**: `proposalId: string` (required).
 - **Returns**: `{ discarded: true, proposalId: string }`.
+
+#### `krakinai_stage_storyboard_batch`
+- **Purpose**: Atomically stages an entire multi-shot storyboard package into a draft proposal in a single tool call, including project container, candidate assets, outfit variants, shots, and composite scene recipes.
+- **Arguments**:
+  - `changeSetId: string` (required): Proposal identifier.
+  - `title?: string`: Proposal title.
+  - `description?: string`: Multi-paragraph proposal description.
+  - `project?: object`: Project creation or update payload (`clientRef`, `name`, `description`, `planningNotes`).
+  - `assets?: Array<object>`: List of candidate assets (`clientRef`, `kind`, `title`, `promptText`, `tags`).
+  - `variants?: Array<object>`: List of outfit variants (`clientRef`, `parentCharacterId`, `title`, `promptText`).
+  - `shots?: Array<object>`: List of shots to create (`clientRef`, `code`, `title`, `plannedShotType`, `plannedDurationSeconds`).
+  - `scenes?: Array<object>`: List of composite scene recipes (`clientRef`, `shot`, `title`, `shotType`, `settings`, `assetRefs`, `ensemble`, `cameraComposition`, `sceneInstructions`, `avoidText`, `blocking`, `keyframes`).
+- **Returns**: `{ proposalId, changeSetId, operationCount, stagedCounts: { assets, variants, projects, shots, scenes }, batchChecks }`.
 
 #### `krakinai_stage_project`
 - **Purpose**: Stages a `project.create` or `project.update` operation into a draft proposal.

@@ -1,7 +1,7 @@
 # Chapter 9: Change-Set Contracts (v1–v6) & Security Model
 
 > *Part IV: Detailed Technical Documentation*  
-> Previous: [Chapter 8: System Architecture, Data Model & Storage](./08-technical-architecture-and-storage.md) | Next: [Chapter 10: Complete MCP Protocol, Bridge Architecture & 36-Tool Reference](./10-technical-mcp-reference.md)
+> Previous: [Chapter 8: System Architecture, Data Model & Storage](./08-technical-architecture-and-storage.md) | Next: [Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference](./10-technical-mcp-reference.md)
 
 ---
 
@@ -184,4 +184,4 @@ KRAKINAI enforces four non-negotiable security rules:
 
 ---
 
-> **Next Up:** Continue to [Chapter 10: Complete MCP Protocol, Bridge Architecture & 36-Tool Reference](./10-technical-mcp-reference.md) for the exhaustive specification of all 36 MCP tools.
+> **Next Up:** Continue to [Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference](./10-technical-mcp-reference.md) for the exhaustive specification of all 37 MCP tools.

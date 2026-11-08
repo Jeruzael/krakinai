@@ -524,7 +524,7 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
     broker.connect('session-v1', scopeV1);
 
     // Initial stage recipe
-    await broker.handle(
+    const r1 = await broker.handle(
       {
         requestId: 'g1',
         tool: 'krakinai_stage_scene_recipe',
@@ -539,6 +539,7 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
       },
       'session-v1',
     );
+    expect(r1.ok).toBe(true);
 
     // Attempt staging blocking on v1 session -> PERMISSION_DENIED / CAPABILITY_REQUIRED
     const blockFail = await broker.handle(
@@ -623,5 +624,369 @@ describe('ProposalBroker end-to-end granular tools routing', () => {
       'session-v3',
     );
     expect(kfOk.ok).toBe(true);
+  });
+
+  describe('Composite & Batch Storyboard Staging (Phase 4 support)', () => {
+    it('auto-converts single dialogue into ensemble.dialogueCues without schema conflict and clamps timing', async () => {
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
+      const broker = new ProposalBroker({
+        readState: async () => mockState,
+        now: () => 1000,
+        inbox,
+      });
+
+      const scope = {
+        ...emptyMcpScope(),
+        allowProposals: true,
+        projectIds: ['proj-1'],
+        sceneIds: ['scene-1'],
+      };
+      broker.connect('session-dialogue', scope, 20000);
+
+      // 1. Stage assets for character and wardrobe
+      await broker.handle(
+        {
+          requestId: 'd1',
+          tool: 'krakinai_stage_asset_candidate',
+          args: {
+            changeSetId: 'cs-dialogue-fix',
+            clientRef: 'char-amber',
+            kind: 'character',
+            title: 'Amber',
+            promptText: 'Young noble initiate',
+          },
+        },
+        'session-dialogue',
+      );
+      await broker.handle(
+        {
+          requestId: 'd2',
+          tool: 'krakinai_stage_asset_candidate',
+          args: {
+            changeSetId: 'cs-dialogue-fix',
+            clientRef: 'ward-amber',
+            kind: 'wardrobe',
+            title: 'Amber Initiate Tunic',
+            promptText: 'Fitted cadet tunic',
+          },
+        },
+        'session-dialogue',
+      );
+
+      // 2. Stage scene recipe with 5s duration
+      await broker.handle(
+        {
+          requestId: 'd3',
+          tool: 'krakinai_stage_scene_recipe',
+          args: {
+            changeSetId: 'cs-dialogue-fix',
+            clientRef: 'scene-d1',
+            project: { id: 'proj-1' },
+            shot: { id: 'shot-1' },
+            title: 'Whisper Scene',
+            settings: { aspectRatio: '16:9', durationSeconds: 5 },
+          },
+        },
+        'session-dialogue',
+      );
+
+      // 3. Stage ensemble
+      await broker.handle(
+        {
+          requestId: 'd4',
+          tool: 'krakinai_stage_scene_ensemble',
+          args: {
+            changeSetId: 'cs-dialogue-fix',
+            sceneClientRef: 'scene-d1',
+            participants: [
+              {
+                id: 'amber',
+                character: { asset: { ref: 'char-amber' } },
+                wardrobe: { asset: { ref: 'ward-amber' } },
+                presence: 'on_camera',
+              },
+            ],
+            primaryParticipantId: 'amber',
+          },
+        },
+        'session-dialogue',
+      );
+
+      // 4. Stage dialogue with single dialogue object AND endSeconds > 5 (should clamp to 5)
+      const res = await broker.handle(
+        {
+          requestId: 'd5',
+          tool: 'krakinai_stage_scene_dialogue',
+          args: {
+            changeSetId: 'cs-dialogue-fix',
+            sceneClientRef: 'scene-d1',
+            dialogue: {
+              speaker: 'Amber',
+              line: 'Feeling ko Dragon Slayer ako.',
+              deliveryNotes: 'Whispering',
+              timing: { startSeconds: 1, endSeconds: 9 }, // exceeds 5s duration!
+            },
+          },
+        },
+        'session-dialogue',
+      );
+
+      expect(res.ok).toBe(true);
+      if (!res.ok) throw new Error('Expected ok');
+
+      const statusRes = await broker.handle(
+        {
+          requestId: 'd6',
+          tool: 'krakinai_get_proposal_status',
+          args: { proposalId: (res.data as any).proposalId },
+        },
+        'session-dialogue',
+      );
+      expect(statusRes.ok).toBe(true);
+      const pkg = repo.records.get((res.data as any).proposalId)?.changeSet;
+      expect(pkg).toBeDefined();
+      const sceneOp = pkg?.operations.find((o) => o.clientRef === 'scene-d1') as any;
+      expect(sceneOp).toBeDefined();
+      expect(sceneOp.dialogue).toBeUndefined(); // top-level removed to prevent conflict
+      expect(sceneOp.ensemble?.dialogueCues).toBeDefined();
+      expect(sceneOp.ensemble.dialogueCues.length).toBe(1);
+      expect(sceneOp.ensemble.dialogueCues[0].line).toBe('Feeling ko Dragon Slayer ako.');
+      expect(sceneOp.ensemble.dialogueCues[0].timing.endSeconds).toBeLessThanOrEqual(5);
+    });
+
+    it('supports non-destructive recipe re-staging and camera technique aliases', async () => {
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
+      const broker = new ProposalBroker({
+        readState: async () => mockState,
+        now: () => 1000,
+        inbox,
+      });
+
+      const scope = {
+        ...emptyMcpScope(),
+        allowProposals: true,
+        projectIds: ['proj-1'],
+        sceneIds: ['scene-1'],
+      };
+      broker.connect('session-recipe', scope, 20000);
+
+      // Stage recipe with inline camera composition using aliases ('EWS', 'high-angle', 'crane', 'deep-focus', 'angle.dirty-single')
+      const r1 = await broker.handle(
+        {
+          requestId: 'rec-1',
+          tool: 'krakinai_stage_scene_recipe',
+          args: {
+            changeSetId: 'cs-composite-recipe',
+            clientRef: 'scene-c1',
+            project: { id: 'proj-1' },
+            shot: { id: 'shot-1' },
+            title: 'Establishing Nave',
+            settings: { aspectRatio: '16:9', durationSeconds: 6 },
+            cameraComposition: {
+              techniqueIds: ['EWS', 'high-angle', 'crane', 'deep-focus', 'angle.dirty-single'],
+            },
+            sceneInstructions: 'Initial instructions',
+            avoidText: 'No cuts, no music',
+          },
+        },
+        'session-recipe',
+      );
+      expect(r1.ok).toBe(true);
+
+      // Stage dialogue cues onto scene-c1
+      const d1 = await broker.handle(
+        {
+          requestId: 'rec-2',
+          tool: 'krakinai_stage_scene_dialogue',
+          args: {
+            changeSetId: 'cs-composite-recipe',
+            sceneClientRef: 'scene-c1',
+            dialogue: {
+              speaker: 'Silvester',
+              line: 'Basta ako...',
+            },
+          },
+        },
+        'session-recipe',
+      );
+      expect(d1.ok).toBe(true);
+
+      // Re-stage scene-c1 to update sceneInstructions ONLY - must preserve cameraComposition and dialogue!
+      const r2 = await broker.handle(
+        {
+          requestId: 'rec-3',
+          tool: 'krakinai_stage_scene_recipe',
+          args: {
+            changeSetId: 'cs-composite-recipe',
+            clientRef: 'scene-c1',
+            project: { id: 'proj-1' },
+            shot: { id: 'shot-1' },
+            title: 'Establishing Nave (Updated)',
+            sceneInstructions: 'Updated instructions with 3-plane crowd staging',
+          },
+        },
+        'session-recipe',
+      );
+      expect(r2.ok).toBe(true);
+      if (!r2.ok) throw new Error('Expected r2 ok');
+
+      const pkg = repo.records.get((r2.data as any).proposalId)?.changeSet;
+      const op = pkg?.operations.find((o) => o.clientRef === 'scene-c1') as any;
+      expect(op.sceneInstructions).toBe('Updated instructions with 3-plane crowd staging');
+      expect(op.title).toBe('Establishing Nave (Updated)');
+      expect(op.avoidText).toBe('No cuts, no music'); // preserved!
+      expect(op.cameraComposition).toBeDefined(); // preserved!
+      expect(op.cameraComposition.techniqueIds).toContain('shot-size.extreme-wide-extreme-long-shot');
+      expect(op.cameraComposition.techniqueIds).toContain('camera-placement.high-angle');
+      expect(op.cameraComposition.techniqueIds).toContain('movement.crane-rise-descent');
+      expect(op.cameraComposition.techniqueIds).toContain('focus.deep-focus');
+      expect(op.cameraComposition.techniqueIds).toContain('framing.dirty-single');
+    });
+
+    it('krakinai_stage_storyboard_batch stages full multi-shot package atomically with zero errors', async () => {
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
+      const broker = new ProposalBroker({
+        readState: async () => mockState,
+        now: () => 1000,
+        inbox,
+      });
+
+      const scope = {
+        ...emptyMcpScope(),
+        allowProposals: true,
+        allowNewProjects: true,
+        projectIds: ['proj-batch', 'proj-1'],
+        sceneIds: ['scene-1'],
+      };
+      broker.connect('session-batch', scope, 20000);
+
+      const batchRes = await broker.handle(
+        {
+          requestId: 'batch-1',
+          tool: 'krakinai_stage_storyboard_batch',
+          args: {
+            changeSetId: 'cs-batch-ep1',
+            title: 'Episode 1 Awakening Storyboard',
+            description: '35 shots staged in batch',
+            project: {
+              clientRef: 'proj-ep1',
+              name: 'The Awakening Episode 1',
+              planningNotes: 'Fixed geography: North Dais, Center Nave, South Doors',
+            },
+            assets: [
+              { clientRef: 'char-silvester', kind: 'character', title: 'Silvester Vale', promptText: '16yo commoner boy' },
+              { clientRef: 'ward-silvester-linen', kind: 'wardrobe', title: 'Silvester Homespun Linen', promptText: 'Patched tunic' },
+              { clientRef: 'char-amber', kind: 'character', title: 'Amber Reed', promptText: '16yo noble girl' },
+              { clientRef: 'env-sacred-hall', kind: 'environment', title: 'Sacred Hall', promptText: 'Towering cathedral' },
+              { clientRef: 'style-fantasy', kind: 'style', title: 'Grounded Fantasy', promptText: 'Cinematic 35mm' },
+            ],
+            shots: [
+              { clientRef: 'shot-s01', code: 'S01', title: 'Opposing Columns', plannedDurationSeconds: 5, plannedShotType: 'character_scene' },
+              { clientRef: 'shot-s02', code: 'S02', title: 'Whispers Across Nave', plannedDurationSeconds: 5, plannedShotType: 'character_scene' },
+            ],
+            scenes: [
+              {
+                clientRef: 'scene-s01',
+                shot: { ref: 'shot-s01' },
+                title: 'Opposing Columns Recipe',
+                settings: { aspectRatio: '16:9', durationSeconds: 5 },
+                slots: { environment: { ref: 'env-sacred-hall' }, style: { ref: 'style-fantasy' } },
+                ensemble: {
+                  participants: [
+                    { id: 'silvester', character: { asset: { ref: 'char-silvester' } }, wardrobe: { asset: { ref: 'ward-silvester-linen' } }, presence: 'on_camera' },
+                  ],
+                  primaryParticipantId: 'silvester',
+                },
+                cameraComposition: { techniqueIds: ['EWS', 'high-angle', 'deep-focus'] },
+                sceneInstructions: '[3-PLANE STAGING — FG / MG / BG]\nFG: Balustrade\nMG: Candidates\nBG: Dais',
+                avoidText: 'No cuts, no music',
+              },
+              {
+                clientRef: 'scene-s02',
+                shot: { ref: 'shot-s02' },
+                title: 'Whispers Across Nave Recipe',
+                settings: { aspectRatio: '16:9', durationSeconds: 5 },
+                slots: { environment: { ref: 'env-sacred-hall' }, style: { ref: 'style-fantasy' } },
+                ensemble: {
+                  participants: [
+                    { id: 'silvester', character: { asset: { ref: 'char-silvester' } }, wardrobe: { asset: { ref: 'ward-silvester-linen' } }, presence: 'on_camera' },
+                    { id: 'amber', character: { asset: { ref: 'char-amber' } }, presence: 'on_camera' },
+                  ],
+                  primaryParticipantId: 'silvester',
+                },
+                dialogueCues: [
+                  { speaker: 'Amber', line: 'Feeling ko Dragon Slayer ako.', timing: { startSeconds: 1, endSeconds: 4 } },
+                ],
+                cameraComposition: { techniqueIds: ['MS', 'eye-level', 'shallow-dof'] },
+                sceneInstructions: '[3-PLANE STAGING — FG / MG / BG]\nFG: Silvester shoulder\nMG: Amber leaning\nBG: Candidates',
+                avoidText: 'No cuts, no music',
+              },
+            ],
+          },
+        },
+        'session-batch',
+      );
+
+      expect(batchRes.ok).toBe(true);
+      if (!batchRes.ok) throw new Error('Expected batch to succeed');
+      const data = batchRes.data as any;
+      expect(data.status).toBe('review_required');
+      expect(data.stagedCounts).toEqual({
+        assets: 5,
+        variants: 0,
+        projects: 1,
+        shots: 2,
+        scenes: 2,
+      });
+
+      const pkg = repo.records.get(data.proposalId)?.changeSet;
+      expect(pkg).toBeDefined();
+      expect(pkg?.operations.length).toBe(10); // 5 assets + 1 project + 2 shots + 2 scenes
+    });
+
+    it('krakinai_stage_storyboard_batch rejects blocking proposals without v5 scope', async () => {
+      const repo = new MemoryReviewInbox();
+      const inbox = new ProposalInbox(repo, 'http://localhost:3000', () => 1000);
+      const broker = new ProposalBroker({
+        readState: async () => mockState,
+        now: () => 1000,
+        inbox,
+      });
+
+      // Scope v1 without blocking capability
+      const scope = {
+        ...emptyMcpScope(),
+        allowProposals: true,
+        projectIds: ['proj-1'],
+        sceneIds: ['scene-1'],
+      };
+      broker.connect('session-v1-noblock', scope, 20000);
+
+      const batchRes = await broker.handle(
+        {
+          requestId: 'batch-fail-blocking',
+          tool: 'krakinai_stage_storyboard_batch',
+          args: {
+            changeSetId: 'cs-batch-blocking',
+            scenes: [
+              {
+                clientRef: 'scene-blk',
+                project: { id: 'proj-1' },
+                shot: { id: 'shot-1' },
+                title: 'Blocking Scene',
+                blocking: { version: 1, landmarks: [{ id: 'lm-1', label: 'Dais' }] },
+              },
+            ],
+          },
+        },
+        'session-v1-noblock',
+      );
+
+      expect(batchRes.ok).toBe(false);
+      expect((batchRes as any).error.code).toBe('CAPABILITY_REQUIRED');
+    });
   });
 });

@@ -13,6 +13,7 @@ export const MCP_TOOL_NAMES = [
   // Workstream 1: Inbox & Project/Shot Staging
   'krakinai_list_proposals', 'krakinai_discard_proposal',
   'krakinai_stage_project', 'krakinai_stage_shot', 'krakinai_stage_shot_order', 'krakinai_stage_shot_status',
+  'krakinai_stage_storyboard_batch',
   // Workstream 2: Assets, Variants & Presets
   'krakinai_get_asset', 'krakinai_list_catalog_presets', 'krakinai_stage_asset_candidate', 'krakinai_stage_outfit_variant',
   // Workstream 3: Scene Recipes & Assembly
@@ -63,6 +64,16 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   // Workstream 1: Inbox & Project/Shot Staging
   krakinai_list_proposals: schema(pageFields),
   krakinai_discard_proposal: schema({ proposalId: idSchema }, ['proposalId']),
+  krakinai_stage_storyboard_batch: schema({
+    changeSetId: idSchema,
+    title: { type: 'string', maxLength: 200 },
+    description: { type: 'string', maxLength: 2000 },
+    project: { type: 'object' },
+    assets: { type: 'array' },
+    variants: { type: 'array' },
+    shots: { type: 'array' },
+    scenes: { type: 'array' },
+  }, ['changeSetId']),
   krakinai_stage_project: schema({
     changeSetId: idSchema,
     title: { type: 'string', maxLength: 200 },
@@ -144,6 +155,15 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
     sceneInstructions: { type: 'string', maxLength: 4000 },
     avoidText: { type: 'string', maxLength: 2000 },
     overrides: { type: 'object' },
+    ensemble: { type: 'object' },
+    participants: { type: 'array' },
+    primaryParticipantId: idSchema,
+    dialogue: { type: 'object' },
+    dialogueCues: { type: 'array' },
+    cameraComposition: { type: 'object' },
+    blocking: { type: 'object' },
+    keyframes: { type: 'object' },
+    keyframePlan: { type: 'object' },
     expectedSourceRecipeDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
     expectedBlockingDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
     expectedSourceRevision: { type: 'integer', minimum: 1 },

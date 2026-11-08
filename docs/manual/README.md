@@ -47,7 +47,7 @@ graph TD
     subgraph P4["Part IV: Technical Architecture & Reference"]
         C8["Ch. 8: Architecture, Data Models & IndexedDB Storage"]
         C9["Ch. 9: Change-Set Contracts v1-v6 & Cryptography"]
-        C10["Ch. 10: 3-Tier Bridge Architecture & 36-Tool MCP Reference"]
+        C10["Ch. 10: 3-Tier Bridge Architecture & 37-Tool MCP Reference"]
     end
 
     P1 --> P2
@@ -62,7 +62,7 @@ graph TD
 
 * **Prompt Authors & Content Creators**: Start with [Chapter 1: Introduction & Mental Model](./01-introduction-and-mental-model.md) to understand the *Recipe over Raw Text* philosophy, then dive into [Chapter 3: Library & Templates](./03-user-guide-library-and-templates.md) and [Chapter 4: Scene Authoring](./04-user-guide-scene-authoring.md).
 * **Directors & Showrunners**: Read [Chapter 2: Glossary](./02-terminologies-and-glossary.md), [Chapter 4: Scene Authoring](./04-user-guide-scene-authoring.md) (specifically Ensemble, Performance Studio, and Shot Blocking), and [Chapter 5: Projects, Storyboards & Continuity](./05-user-guide-projects-and-continuity.md) to master episodic cast management and timeline transitions.
-* **AI Agents & MCP Integrators**: Study [Chapter 6: Collaborating with AI Agents](./06-user-guide-ai-collaboration.md), [Chapter 9: Change-Set Contracts](./09-technical-changeset-and-security.md), and [Chapter 10: Complete 36-Tool MCP Reference](./10-technical-mcp-reference.md).
+* **AI Agents & MCP Integrators**: Study [Chapter 6: Collaborating with AI Agents](./06-user-guide-ai-collaboration.md), [Chapter 9: Change-Set Contracts](./09-technical-changeset-and-security.md), and [Chapter 10: Complete 37-Tool MCP Reference](./10-technical-mcp-reference.md).
 * **Core Developers & Contributors**: Read [Chapter 7: Internal Engines](./07-inside-krakinai-engines.md), [Chapter 8: Architecture & Storage](./08-technical-architecture-and-storage.md), and [Chapter 9: Change-Set Contracts](./09-technical-changeset-and-security.md).
 
 ---
@@ -139,12 +139,12 @@ graph TD
   * Concurrency Proofs and Anti-Overwrite Tokens
   * The Import Ledger & Cryptographic Confirmation Receipts
   * Human-in-the-Loop Security Invariants (`event.isTrusted` & Scope Protection)
-* **[Chapter 10: Complete MCP Protocol, Bridge Architecture & 36-Tool Reference](./10-technical-mcp-reference.md)**
+* **[Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference](./10-technical-mcp-reference.md)**
   * 3-Tier Bridge Architecture: Browser Broker $\leftrightarrow$ Loopback Relay $\leftrightarrow$ Stdio Adapter
   * Pairing Challenge-Response, HMAC Authentication & Epoch Rotation
   * Large Schema Discovery Factoring (`MCP_LIMITS.frame`)
   * Error Codes & Protocol Safeguards
-  * **The Complete 36-Tool MCP API Catalog** (13 Core Tools + 23 Granular Staging & Inspection Tools)
+  * **The Complete 37-Tool MCP API Catalog** (13 Core Tools + 24 Granular Staging & Inspection Tools)
 
 ---
 
