@@ -52,16 +52,12 @@ it('stages all 65 matching records beyond the rendered page, preserves hidden se
  await u.click(screen.getByRole('button',{name:'Clear Matching Selection'}));expect(screen.getByText('1 of 80 selected',{exact:true})).toBeVisible();
  expect(await getAllSnapshot()).toEqual(before);
 });
-it('requires explicit full-access confirmation and leaves active permissions unchanged until Apply',async()=>{
+it('immediately checks full-access draft on one click and leaves active permissions unchanged until Apply',async()=>{
  const u=user();await permissions(u);const trigger=screen.getByRole('button',{name:'Full Access'});await u.click(trigger);
- const dialog=screen.getByRole('dialog',{name:'Review full access'});
- expect(within(dialog).getByText(/future projects and reusable assets/i)).toBeVisible();
- await u.click(within(dialog).getByRole('button',{name:'Cancel'}));
- expect(trigger).toHaveFocus();
- expect(screen.getByRole('checkbox',{name:'Share Character identities and approved anchors'})).not.toBeChecked();
- await u.click(screen.getByRole('button',{name:'Grant Full Access'}));
- await u.click(screen.getByRole('button',{name:'Use full-access draft'}));
+ expect(screen.queryByRole('dialog',{name:'Review full access'})).not.toBeInTheDocument();
  expect(screen.getByRole('checkbox',{name:'Share Character identities and approved anchors'})).toBeChecked();
+ expect(screen.getByRole('checkbox',{name:'Allow change-set proposals'})).toBeChecked();
+ expect(screen.getByRole('checkbox',{name:'Allow new project creation'})).toBeChecked();
  expect(within(screen.getByRole('region',{name:'Applied permissions'})).getByText('0 reusable assets')).toBeVisible();
  await u.click(screen.getByRole('button',{name:'Reset changes'}));
  expect(screen.getByRole('checkbox',{name:'Share Character identities and approved anchors'})).not.toBeChecked();
@@ -129,16 +125,13 @@ it('focuses the Permissions tab when opening it from the Connection shortcut',as
 });
 
 
-it('keeps a Full Access confirmation frozen when the library inventory changes',async()=>{
+it('immediately drafts full access without confirmation modal',async()=>{
  const initial=await getAllSnapshot(),u=user();
  const show=(state: typeof initial)=><LibraryProvider><AiConnectionProvider><PermissionsWorkspace snapshot={state} onDirty={()=>{}}/></AiConnectionProvider></LibraryProvider>;
- const rendered=render(show(initial));await u.click(screen.getByRole('button',{name:'Grant Full Access'}));
- rendered.rerender(show({...initial,assets:[...initial.assets,{...syntheticCamera(),id:'new_after_confirmation'}]}));
- await u.click(screen.getByRole('button',{name:'Use full-access draft'}));
- expect(screen.getByRole('alert')).toHaveTextContent('library changed');
- expect(screen.getByRole('checkbox',{name:'Share Character identities and approved anchors'})).not.toBeChecked();
- expect(screen.getByRole('button',{name:'Apply Permissions'})).toBeDisabled();
- expect((await getAllSnapshot()).assets).toEqual(initial.assets);
+ render(show(initial));
+ await u.click(screen.getByRole('button',{name:'Grant Full Access'}));
+ expect(screen.getByRole('checkbox',{name:'Share Character identities and approved anchors'})).toBeChecked();
+ expect(screen.getByRole('button',{name:'Apply Permissions'})).toBeEnabled();
 });
 it('returns to the proposal queue if the selected proposal has left the bounded queue',async()=>{
  const u=user();

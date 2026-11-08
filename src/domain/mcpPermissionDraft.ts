@@ -95,14 +95,47 @@ export function clearAllRecords(scope: McpScope): McpScope {
   if(next.version===3){next.keyframeSceneIds=[];next.imagePromptFrameGrants=[];}
   return next;
 }
-export function presetPermissionDraft(preset: 'minimal' | 'creative' | 'full', scope: McpScope, state: ChangeSetState): McpScope {
-  let next:McpScope = { ...(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope()), epoch: scope.epoch, projectIds: [...scope.projectIds] };
-  if (preset === 'creative') next = { ...next, assetIds: [...scope.assetIds], variantIds: [...scope.variantIds], templateIds: [...scope.templateIds], allowProposals: true };
+export function presetPermissionDraft(
+  preset: 'minimal' | 'creative' | 'full',
+  scope: McpScope,
+  state: ChangeSetState,
+  options?: { connected?: boolean },
+): McpScope {
+  const targetVersion: 1 | 2 | 3 = preset === 'full' && !options?.connected ? 3 : scope.version;
+  let next: McpScope = {
+    ...(targetVersion === 3 ? emptyMcpScopeV3() : targetVersion === 2 ? emptyMcpScopeV2() : emptyMcpScope()),
+    epoch: scope.epoch,
+    projectIds: [...scope.projectIds],
+  };
+  if (preset === 'creative') {
+    next = {
+      ...next,
+      assetIds: [...scope.assetIds],
+      variantIds: [...scope.variantIds],
+      templateIds: [...scope.templateIds],
+      allowProposals: true,
+    };
+  }
   if (preset === 'full') {
     next = selectAllRecords(next, state);
-    next.fullPromptSceneIds = state.scenes.map(s => s.id);
-    next.receiptGrants = (state.preferences.aiImports?.receipts ?? []).map(r => ({ changeSetId: r.changeSetId, packageDigest: r.packageDigest }));
+    next.fullPromptSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.fullPromptSceneIds);
+    next.receiptGrants = (state.preferences.aiImports?.receipts ?? [])
+      .slice(0, MCP_SCOPE_LIMITS.receiptGrants)
+      .map(r => ({ changeSetId: r.changeSetId, packageDigest: r.packageDigest }));
     for (const { field } of [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS]) next[field] = true;
+    if (next.version !== 1) {
+      next.blockingSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.blockingSceneIds);
+      next.allowBlockingProposals = true;
+    }
+    if (next.version === 3) {
+      next.keyframeSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.keyframeSceneIds);
+      next.imagePromptFrameGrants = state.scenes
+        .flatMap(s => (s.keyframePlan?.frames ?? []).map(f => ({ sceneId: s.id, frameId: f.id })))
+        .slice(0, MCP_SCOPE_LIMITS.imagePromptFrameGrants);
+      next.allowKeyframeProposals = true;
+      next.allowFrameImageProposals = true;
+      next.allowImagePromptDerivation = true;
+    }
   }
   return checked(next);
 }

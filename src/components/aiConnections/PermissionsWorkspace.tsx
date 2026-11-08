@@ -8,7 +8,6 @@ import {
   normalizePermissionDraft, permissionScopeFormat, PERMISSION_FIELDS, permissionFingerprint, permissionIds, permissionInventoryStamp,
   presetPermissionDraft, projectPermissionContext, selectAllRecords, validatePermissionDraft, type PermissionField,
 } from '../../domain/mcpPermissionDraft';
-import { StudioDialog } from '../StudioDialog';
 import { PermissionRecordPicker } from './PermissionRecordPicker';
 import { PermissionReview } from './PermissionReview';
 
@@ -17,7 +16,6 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
   const [draft, setDraft] = useState(() => structuredClone(scope)), [category, setCategory] = useState<PermissionField>('projectIds');
   const [error, setError] = useState(''), [message, setMessage] = useState(''), [dependentRemoved, setDependentRemoved] = useState<string[]>([]);
   const [preset, setPreset] = useState('Custom'), [projectId, setProjectId] = useState('');
-  const [fullAccess, setFullAccess] = useState<{ scope: McpScope; stamp: string }>();
   const appliedStamp = scope.epoch + ':' + permissionFingerprint(scope) + ':' + (phase === 'connected');
   const disabled = phase === 'pairing', dirty = permissionFingerprint(scope) !== permissionFingerprint(draft);
   const inventory = useMemo(() => buildPermissionInventory(snapshot, draft), [snapshot, draft]);
@@ -25,7 +23,7 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
     const old = buildPermissionInventory(snapshot, scope);
     return {...Object.fromEntries((Object.keys(inventory) as PermissionField[]).map(field => [field, [...old[field], ...inventory[field].filter(row => !old[field].some(item => item.id === row.id))]])),blockingSceneIds:[...old.blockingSceneIds,...inventory.blockingSceneIds.filter(row=>!old.blockingSceneIds.some(item=>item.id===row.id))]} as typeof inventory;
   }, [snapshot, scope, inventory]);
-  useEffect(() => { setDraft(structuredClone(scope)); setFullAccess(undefined); setDependentRemoved([]); setError(''); setPreset('Custom'); }, [appliedStamp]);
+  useEffect(() => { setDraft(structuredClone(scope)); setDependentRemoved([]); setError(''); setPreset('Custom'); }, [appliedStamp]);
   useEffect(() => { onDirty(dirty); }, [dirty, onDirty]);
   const edit = (action: (current: McpScope) => McpScope, presetName = 'Custom') => {
     try {
@@ -35,10 +33,9 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
     } catch (e) { setError(e instanceof Error ? e.message : 'The selection could not be changed.'); }
   };
   const select = (field: PermissionField, ids: string[], value: boolean) => edit(current => changeSelection(current, field, ids, value));
-  const reset = () => { setDraft(structuredClone(scope)); setFullAccess(undefined); setDependentRemoved([]); setPreset('Custom'); setError(''); setMessage('Unapplied changes reset. Active permissions are unchanged.'); };
+  const reset = () => { setDraft(structuredClone(scope)); setDependentRemoved([]); setPreset('Custom'); setError(''); setMessage('Unapplied changes reset. Active permissions are unchanged.'); };
   const proposeFullAccess = () => {
-    try { setFullAccess({ scope: presetPermissionDraft('full', draft, snapshot), stamp: permissionInventoryStamp(snapshot) }); setError(''); }
-    catch (e) { setError(e instanceof Error ? e.message : 'Full access exceeds the selected scope limits.'); }
+    edit(s => presetPermissionDraft('full', s, snapshot, { connected: phase === 'connected' }), 'Full Access');
   };
   const apply = () => {
     try {
@@ -84,10 +81,5 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
     <section className="card ai-capability-section" aria-label="Proposal capabilities"><h3>Proposal capabilities</h3><div className="ai-disclosure-grid">{CAPABILITY_FIELDS.map(item => <label className="ai-disclosure" key={item.field}><input type="checkbox" aria-label={item.label} checked={draft[item.field]} disabled={disabled} onChange={e => edit(s => ({ ...s, [item.field]: e.target.checked }))}/><span><strong>{item.label}</strong><small>{item.description}</small></span></label>)}</div><p className="muted-text">Automatic application: <strong>Never</strong>. Changing permissions does not approve incoming proposals.</p></section>
     {dependentRemoved.length > 0 && <div className="banner banner-warning" role="status"><strong>{dependentRemoved.length} dependent full-prompt selection(s) removed from this draft:</strong><ul>{dependentRemoved.map(id => <li key={id}>{snapshot.scenes.find(s => s.id === id)?.title ?? id} <code>{id}</code></li>)}</ul>Active grants change only after Apply.</div>}
     {(dirty || view.approvedReceiptGrants.length > 0) && <div className="card ai-review-card"><PermissionReview applied={scope} draft={draft} inventory={reviewInventory} temporary={view.approvedReceiptGrants}/></div>}
-    {fullAccess && <StudioDialog title="Review full access" onClose={() => setFullAccess(undefined)} footer={<><button className="btn btn-secondary" onClick={() => setFullAccess(undefined)}>Cancel</button><button className="btn btn-primary" onClick={() => { if (fullAccess.stamp !== permissionInventoryStamp(snapshot)) { setFullAccess(undefined); setError('The library changed while full access was being reviewed. Open the review again; no permissions were changed.'); return; } edit(() => fullAccess.scope, 'Full Access'); setFullAccess(undefined); }}>Use full-access draft</button></>}>
-      <p>This proposes all currently eligible records. Future projects and reusable assets are excluded. Existing project grants follow their storyboard take metadata. Review these selections again before Apply Permissions.</p>
-      <dl className="ai-full-access-counts">{PERMISSION_FIELDS.map(({ field, label }) => <React.Fragment key={field}><dt>{label}</dt><dd>{permissionIds(fullAccess.scope, field).length}</dd></React.Fragment>)}{[...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field, label }) => <React.Fragment key={field}><dt>{label}</dt><dd>{fullAccess.scope[field] ? 'On' : 'Off'}</dd></React.Fragment>)}</dl>
-      <p className="banner banner-warning">Full prompts may contain character identity and private production details. Identity, private notes and media filenames are included in this proposed access.</p><p>Original media bytes are never shared. Production change sets still require separate browser approval. This confirmation only stages permission selections.</p>
-    </StudioDialog>}
   </div>;
 }
