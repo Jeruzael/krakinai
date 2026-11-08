@@ -135,7 +135,7 @@ it('analyzeProposalCandidateBlockers maps scene assetRefs and ensemble participa
   ];
   const snapshot = {
     assets: [{ id: 'existing-char-id', category: 'character' as const, revision: 1, title: 'Char' }] as any,
-    preferences: {},
+    preferences: {} as any,
   };
 
   const analysis = analyzeProposalCandidateBlockers(p, snapshot);
@@ -170,6 +170,7 @@ it('applyCandidateDecisionWithSafeguards resets v5/v6 blocking and frames flags 
   const cs: ChangeSet = {
     schema: 'krakinai.change-set.v6',
     changeSetId: 'cs-v6',
+    source: { kind: 'codex', label: 'Synthetic' },
     operations: [
       { operationId: 'op-asset-1', type: 'asset.propose', clientRef: 'a1', kind: 'character', title: 'A', promptText: 'P', tags: [] },
       { operationId: 'op-scene-1', type: 'scene.create_recipe', clientRef: 's1', title: 'S1', project: { ref: 'p' }, shot: { ref: 's' }, shotType: 'character_scene', settings: { aspectRatio: '16:9', durationSeconds: 5 } },
@@ -181,8 +182,8 @@ it('applyCandidateDecisionWithSafeguards resets v5/v6 blocking and frames flags 
     keyframes: true,
     frameImages: true,
     frameVideo: true,
-    blockingOutputDecisions: { 'out-1': { action: 'approve' as const } },
-    frameOutputDecisions: { 'frame-1': { action: 'approve' as const } },
+    blockingOutputDecisions: { 'out-1': { full: 'canonical' as const } },
+    frameOutputDecisions: { 'frame-1': { full: 'canonical' as const } } as any,
   };
 
   const updated = applyCandidateDecisionWithSafeguards(cs, approval, {

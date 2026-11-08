@@ -188,3 +188,111 @@ it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps
   await user.click(screen.getByRole('button', { name: 'Review op-scene-s01' }));
   expect(screen.getByLabelText('Decision for op-env-sacred-hall')).toBeInTheDocument();
 });
+
+it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, and retains blocking candidates in Conflicts filter', async () => {
+  const user = userEvent.setup();
+  const input = recipeChangeSet();
+  input.schema = 'krakinai.change-set.v5';
+  input.operations = [
+    {
+      operationId: 'op-char-silvester',
+      type: 'asset.propose',
+      clientRef: 'char-silvester',
+      kind: 'character',
+      title: 'Silvester Character',
+      promptText: 'Young man in robes',
+      tags: [],
+    },
+    {
+      operationId: 'op-env-sacred-hall',
+      type: 'asset.propose',
+      clientRef: 'env-sacred-hall',
+      kind: 'environment',
+      title: 'Sacred Hall Environment',
+      promptText: 'Grand stone nave',
+      tags: [],
+    },
+    {
+      operationId: 'op-scene-s01',
+      type: 'scene.create_recipe',
+      clientRef: 'scene-01',
+      title: 'Beat 1: Opposing Columns',
+      project: { id: 'project', expectedRevision: 1 },
+      shot: { id: 'shot' },
+      shotType: 'character_scene',
+      settings: { aspectRatio: '16:9', durationSeconds: 5 },
+      assetRefs: [{ slot: 'environment', asset: { ref: 'env-sacred-hall' } }],
+      ensemble: {
+        version: 1,
+        participantUpserts: [
+          {
+            id: 'silvester',
+            character: { asset: { ref: 'char-silvester' } },
+            presence: 'on_camera',
+          },
+        ],
+      },
+    },
+  ];
+  const approval = recipeApproval();
+  const preview = await previewChangeSet(input, approval);
+  preview.plan.findings.push(
+    { operationId: 'op-scene-s01', severity: 'blocking', code: 'DEPENDENCY_BLOCKED', message: 'Scene 1 blocked by deferred candidate' },
+  );
+  const snapshot = await getAllSnapshot();
+  const onApproval = vi.fn();
+  const proposal: McpProposalView = {
+    id: 'proposal-task3',
+    sessionId: 'current',
+    scopeEpoch: 1,
+    changeSetId: input.changeSetId,
+    packageDigest: preview.packageDigest,
+    receivedAt: Date.now(),
+    expiresAt: Date.now() + 86400000,
+    status: 'review_required',
+    preview,
+    needsRevalidation: false,
+  };
+  render(
+    <ProposalReviewWorkspace
+      proposal={proposal}
+      snapshot={snapshot}
+      connected={true}
+      bound={true}
+      reviewed={false}
+      onApproval={onApproval}
+      onConfirmReview={vi.fn()}
+      onApply={vi.fn()}
+      onRevalidate={vi.fn()}
+      onRemove={vi.fn()}
+      onProgress={vi.fn()}
+      onReject={vi.fn()}
+      onBack={() => {}}
+    />
+  );
+
+  const nav = screen.getByRole('navigation', { name: 'Changes navigator' });
+  await user.click(within(nav).getByRole('button', { name: 'Conflicts' }));
+  const charBtn = within(nav).getByRole('button', { name: 'Review op-char-silvester' });
+  expect(charBtn).toBeInTheDocument();
+  expect(within(charBtn).getByText('Blocks 1 scene(s)')).toBeInTheDocument();
+
+  await user.click(within(nav).getByRole('button', { name: 'Review op-scene-s01' }));
+  await user.click(screen.getByRole('tab', { name: 'Recipe' }));
+
+  expect(screen.getAllByText(/Managed by Ensemble Cast \(1 participant\(s\)\)/i)).toHaveLength(2);
+  expect(screen.getAllByText(/Ensemble active/i)).toHaveLength(2);
+
+  const ensembleSection = screen.getByRole('region', { name: 'Ensemble candidate bindings' });
+  expect(ensembleSection).toBeInTheDocument();
+  expect(within(ensembleSection).getByText('Silvester Character')).toBeInTheDocument();
+
+  const approveCreateBtns = screen.getAllByRole('button', { name: 'Approve Create' });
+  expect(approveCreateBtns.length).toBeGreaterThanOrEqual(1);
+  await user.click(approveCreateBtns[0]);
+  expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
+    assetDecisions: expect.objectContaining({
+      'op-env-sacred-hall': { action: 'create' },
+    }),
+  }));
+});
