@@ -173,9 +173,9 @@ it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps
     />
   );
 
-  const bulkBtn = screen.getByRole('button', { name: /Create all new candidates \(2\)/i });
-  expect(bulkBtn).toBeInTheDocument();
-  await user.click(bulkBtn);
+  const bulkBtns = screen.getAllByRole('button', { name: /Create all new candidates \(2\)/i });
+  expect(bulkBtns.length).toBeGreaterThanOrEqual(1);
+  await user.click(bulkBtns[0]);
   expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
     assetDecisions: expect.objectContaining({
       'op-char-silvester': { action: 'create' },
@@ -186,10 +186,14 @@ it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps
   expect(screen.getByText(/DEPENDENCY_BLOCKED · 2 scenes blocked/i)).toBeInTheDocument();
 
   await user.click(screen.getByRole('button', { name: 'Review op-scene-s01' }));
+  const selectedRegion = screen.getByRole('region', { name: 'Selected change' });
+  expect(within(selectedRegion).getByText(/This scene depends on 1 deferred candidate proposal\(s\)/i)).toBeInTheDocument();
   expect(screen.getByLabelText('Decision for op-env-sacred-hall')).toBeInTheDocument();
   expect(screen.queryByLabelText('Decision for op-char-silvester')).not.toBeInTheDocument();
 
   await user.click(screen.getByRole('button', { name: 'Review op-char-silvester' }));
+  expect(within(selectedRegion).getByLabelText('Inline decision for op-char-silvester')).toBeInTheDocument();
+  expect(within(selectedRegion).getByDisplayValue('Young man in robes')).toBeInTheDocument();
   expect(screen.getByLabelText('Decision for op-char-silvester')).toBeInTheDocument();
   expect(screen.queryByLabelText('Decision for op-env-sacred-hall')).not.toBeInTheDocument();
 });
