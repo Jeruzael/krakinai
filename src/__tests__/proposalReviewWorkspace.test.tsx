@@ -194,8 +194,30 @@ it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps
   await user.click(screen.getByRole('button', { name: 'Review op-char-silvester' }));
   expect(within(selectedRegion).getByLabelText('Inline decision for op-char-silvester')).toBeInTheDocument();
   expect(within(selectedRegion).getByDisplayValue('Young man in robes')).toBeInTheDocument();
-  expect(screen.getByLabelText('Decision for op-char-silvester')).toBeInTheDocument();
+  const decisionSelect = screen.getByLabelText('Decision for op-char-silvester');
+  expect(decisionSelect).toBeInTheDocument();
   expect(screen.queryByLabelText('Decision for op-env-sacred-hall')).not.toBeInTheDocument();
+
+  onApproval.mockClear();
+  await user.selectOptions(decisionSelect, 'reuse');
+  expect(onApproval).not.toHaveBeenCalledWith(expect.objectContaining({
+    assetDecisions: expect.objectContaining({
+      'op-char-silvester': { action: 'reuse' },
+    }),
+  }));
+
+  const existingSelect = screen.getByLabelText('Existing asset for op-char-silvester');
+  expect(existingSelect).toBeInTheDocument();
+  const option = within(existingSelect).getAllByRole('option').find(o => o.getAttribute('value') && o.getAttribute('value') !== '');
+  if (option) {
+    const val = option.getAttribute('value')!;
+    await user.selectOptions(existingSelect, val);
+    expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
+      assetDecisions: expect.objectContaining({
+        'op-char-silvester': expect.objectContaining({ action: 'reuse', assetId: val }),
+      }),
+    }));
+  }
 });
 
 it('renders inline candidate resolution in Recipe tab, ensemble cast bindings, and retains blocking candidates in Conflicts filter', async () => {

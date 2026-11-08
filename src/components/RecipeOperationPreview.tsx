@@ -229,13 +229,17 @@ export function RecipeOperationPreview({
                                 value={producer.decision.action}
                                 onChange={e => {
                                   const act = e.target.value as CandidateDecision['action'];
+                                  if (act === 'reuse') {
+                                    if (onSelectOperation) onSelectOperation(producer.operationId);
+                                    return;
+                                  }
                                   const nextAsset = { ...approval.assetDecisions, [producer.operationId]: { action: act } };
                                   onApproval(applyCandidateDecisionWithSafeguards(changeSet, approval, nextAsset, approval.variantDecisions));
                                 }}
                               >
                                 <option value="defer">Keep pending</option>
                                 <option value="create">Create new</option>
-                                <option value="reuse">Reuse existing</option>
+                                <option value="reuse">Reuse existing (in rail)</option>
                               </select>
                             </div>
                           )}
@@ -344,13 +348,17 @@ export function RecipeOperationPreview({
                                 value={charCand.decision.action}
                                 onChange={e => {
                                   const act = e.target.value as CandidateDecision['action'];
+                                  if (act === 'reuse') {
+                                    if (onSelectOperation) onSelectOperation(charCand.operationId);
+                                    return;
+                                  }
                                   const nextAsset = { ...approval.assetDecisions, [charCand.operationId]: { action: act } };
                                   onApproval(applyCandidateDecisionWithSafeguards(changeSet, approval, nextAsset, approval.variantDecisions));
                                 }}
                               >
                                 <option value="defer">Keep pending</option>
                                 <option value="create">Create new</option>
-                                <option value="reuse">Reuse existing</option>
+                                <option value="reuse">Reuse existing (in rail)</option>
                               </select>
                             </div>
                           )}
@@ -392,6 +400,10 @@ export function RecipeOperationPreview({
                                 value={wardCand.decision.action}
                                 onChange={e => {
                                   const act = e.target.value as CandidateDecision['action'];
+                                  if (act === 'reuse') {
+                                    if (onSelectOperation) onSelectOperation(wardCand.operationId);
+                                    return;
+                                  }
                                   if (wardCand.kind === 'variant') {
                                     const nextVar = { ...(approval.variantDecisions ?? {}), [wardCand.operationId]: { action: act } };
                                     onApproval(applyCandidateDecisionWithSafeguards(changeSet, approval, approval.assetDecisions, nextVar));
@@ -403,7 +415,7 @@ export function RecipeOperationPreview({
                               >
                                 <option value="defer">Keep pending</option>
                                 <option value="create">Create new</option>
-                                <option value="reuse">Reuse existing</option>
+                                <option value="reuse">Reuse existing (in rail)</option>
                               </select>
                             </div>
                           )}

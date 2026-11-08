@@ -65,6 +65,10 @@ export function ProposalOperationDetail({row,preview,snapshot,tab,disabled,onApp
               value={candidateItem.decision.action}
               onChange={e=>{
                 const act=e.target.value as CandidateDecision['action'];
+                if(act==='reuse'){
+                  if(onSelectOperation)onSelectOperation(candidateItem.operationId);
+                  return;
+                }
                 if(candidateItem.kind==='variant'){
                   const nextVar={...(preview.approval.variantDecisions??{}),[candidateItem.operationId]:{action:act}};
                   onApproval(applyCandidateDecisionWithSafeguards(preview.changeSet,preview.approval,preview.approval.assetDecisions,nextVar));
@@ -76,7 +80,7 @@ export function ProposalOperationDetail({row,preview,snapshot,tab,disabled,onApp
             >
               <option value="defer">Keep pending</option>
               <option value="create">Create new</option>
-              <option value="reuse">Reuse existing</option>
+              <option value="reuse">Reuse existing (in rail)</option>
             </select>
           </div>
         </div>

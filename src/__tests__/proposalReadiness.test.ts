@@ -202,6 +202,11 @@ it('applyCandidateDecisionWithSafeguards resets v5/v6 blocking and frames flags 
     'op-asset-1': { action: 'create' },
   });
   expect(unchanged).toEqual(updated);
+
+  const incompleteReuse = applyCandidateDecisionWithSafeguards(cs, updated, {
+    'op-asset-1': { action: 'reuse' } as any,
+  });
+  expect(incompleteReuse.assetDecisions['op-asset-1']).toEqual({ action: 'defer' });
 });
 
 it('buildBulkCreateApproval sets create on bulkCreatableCandidates and skips duplicate matches', () => {

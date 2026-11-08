@@ -238,10 +238,30 @@ export function applyCandidateDecisionWithSafeguards(
   nextAssetDecisions: ChangeSetApproval['assetDecisions'],
   nextVariantDecisions?: ChangeSetApproval['variantDecisions'],
 ): ChangeSetApproval {
+  const sanitizedAssetDecisions: ChangeSetApproval['assetDecisions'] = {};
+  for (const [opId, d] of Object.entries(nextAssetDecisions ?? {})) {
+    if (d.action === 'reuse' && (!d.assetId || d.expectedRevision === undefined)) {
+      sanitizedAssetDecisions[opId] = { action: 'defer' };
+    } else {
+      sanitizedAssetDecisions[opId] = d;
+    }
+  }
+
+  const sanitizedVariantDecisions: ChangeSetApproval['variantDecisions'] = nextVariantDecisions ? {} : undefined;
+  if (nextVariantDecisions) {
+    for (const [opId, d] of Object.entries(nextVariantDecisions)) {
+      if (d.action === 'reuse' && (!d.variantId || d.expectedRevision === undefined)) {
+        sanitizedVariantDecisions![opId] = { action: 'defer' };
+      } else {
+        sanitizedVariantDecisions![opId] = d;
+      }
+    }
+  }
+
   let next: ChangeSetApproval = {
     ...currentApproval,
-    assetDecisions: nextAssetDecisions,
-    ...(nextVariantDecisions !== undefined ? { variantDecisions: nextVariantDecisions } : {}),
+    assetDecisions: sanitizedAssetDecisions,
+    ...(sanitizedVariantDecisions !== undefined ? { variantDecisions: sanitizedVariantDecisions } : {}),
   };
   const decisionsChanged =
     canonicalStringify([next.assetDecisions, next.variantDecisions ?? {}]) !==

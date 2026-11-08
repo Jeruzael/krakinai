@@ -41,6 +41,7 @@ export function ChangeSetPreview({
 }) {
   const [detail, setDetail] = useState<string>();
   const [downloadStatus, setDownloadStatus] = useState("");
+  const [reuseIntent, setReuseIntent] = useState<Record<string, boolean>>({});
   const { plan, approval, changeSet } = preview;
   const candidateAnalysis = analyzeProposalCandidateBlockers(preview, snapshot);
   const sceneReferencedOpIds = operationId ? candidateAnalysis.referencedCandidateOpIdsByScene[operationId] : undefined;
@@ -384,13 +385,17 @@ export function ChangeSetPreview({
                       Decision for {op.operationId}
                       <select
                         disabled={disabled}
-                        value={current.action}
-                        onChange={(e) =>
-                          choice(op.operationId, {
-                            action: e.target
-                              .value as CandidateDecision["action"],
-                          })
-                        }
+                        value={reuseIntent[op.operationId] ? "reuse" : current.action}
+                        onChange={(e) => {
+                          const action = e.target.value as CandidateDecision["action"];
+                          setReuseIntent((prev) => ({
+                            ...prev,
+                            [op.operationId]: action === "reuse",
+                          }));
+                          if (action !== "reuse") {
+                            choice(op.operationId, { action });
+                          }
+                        }}
                       >
                         <option value="defer">Keep as pending proposal</option>
                         <option value="create">
@@ -399,21 +404,26 @@ export function ChangeSetPreview({
                         <option value="reuse">Reuse an existing asset</option>
                       </select>
                     </label>
-                    {current.action === "reuse" && (
+                    {(current.action === "reuse" || reuseIntent[op.operationId]) && (
                       <label>
                         Existing asset for {op.operationId}
                         <select
                           disabled={disabled}
-                          value={current.assetId ?? ""}
+                          value={current.action === "reuse" ? (current.assetId ?? "") : ""}
                           onChange={(e) => {
                             const a = available.find(
                               (a) => a.id === e.target.value,
                             );
-                            choice(op.operationId, {
-                              action: "reuse",
-                              assetId: a?.id,
-                              expectedRevision: a?.revision,
-                            });
+                            choice(
+                              op.operationId,
+                              a
+                                ? {
+                                    action: "reuse",
+                                    assetId: a.id,
+                                    expectedRevision: a.revision,
+                                  }
+                                : { action: "defer" },
+                            );
                           }}
                         >
                           <option value="">Choose exact existing record</option>
