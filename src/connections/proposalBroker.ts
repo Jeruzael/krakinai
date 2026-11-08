@@ -106,6 +106,12 @@ export class ProposalBroker {
     for (const p of this.#proposals.values()) if (pendingStates.has(p.status)) { p.status = 'disconnected';p.needsRevalidation=true;p.preview=p.preview?{...p.preview,approval:emptyChangeSetApproval()}:undefined; p.error = 'Session ended. Your draft remains available. Pair and revalidate before approval.'; }
     this.#emit();
   }
+  touchActivity() {
+    if (this.#session) {
+      this.#activity = this.#deps.now();
+      this.#deadline = this.#deps.now() + MCP_LIMITS.sessionMs;
+    }
+  }
   expire() {
     if (this.#session && (this.#deps.now() >= this.#deadline || this.#deps.now() - this.#activity >= MCP_LIMITS.idleMs)) this.disconnect();
     let changed = false;

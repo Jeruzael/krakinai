@@ -98,7 +98,7 @@ describe('loopback relay boundaries', () => {
   it('expires sessions before dispatch and releases every queued request', async () => {
     const env = await setup(); await pair(env);
     const pending = env.relay.dispatch('krakinai_get_project', { projectId: 'p' });
-    env.advance(3600001);
+    env.advance(MCP_LIMITS.sessionMs + 1);
     expect(await env.relay.dispatch('krakinai_get_project', { projectId: 'p' })).toMatchObject({ ok: false });
     expect(await pending).toMatchObject({ ok: false, error: { code: 'SESSION_EXPIRED' } });
   });

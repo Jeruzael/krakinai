@@ -120,6 +120,7 @@ export async function createRelay(options: RelayOptions): Promise<RelayHandle> {
             res.once('close', () => { if (poll?.sessionId === current.id) { poll = undefined; clearTimeout(timer); resolve(null); } });
           });
           if (session !== current) fail(401, 'AUTH_FAILED');
+          current.activity = now();
           if (now() - current.rotated >= MCP_LIMITS.rotateMs) current.rotation ??= { epoch: current.epoch + 1, nonce: randomSecret() };
           body = { command, ...(current.rotation ? { rotation: current.rotation } : {}) };
         } else if (path === '/v1/session/rotate') {

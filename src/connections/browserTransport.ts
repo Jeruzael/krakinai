@@ -8,6 +8,7 @@ interface BrowserTransportOptions {
   relayAddress: string; appOrigin: string; fetcher?: typeof fetch; now?: () => number;
   pairingVersion?:1|2|3;requireBlocking?:boolean;requireKeyframes?:boolean;
   onConnected(sessionId: string, grant: { expiresAt: number;capabilities?:string[] }): void; onDisconnected(reason: string): void;
+  onActivity?(): void;
   onCommand(command: McpCommand, sessionId: string): Promise<McpResult>;
 }
 interface Credentials { id: string; epoch: number; seq: number; master: CryptoKey; keys: EpochKeys; expiresAt: number;capabilities?:string[] }
@@ -111,6 +112,7 @@ export class BrowserTransport {
     try {
       while (this.#auth === auth) {
         const response = await this.#request(auth, '/v1/session/poll', {});
+        this.options.onActivity?.();
         exactKeys(response, ['command', 'rotation'], ['command']);
         if (response.command !== null) {
           record(response.command); exactKeys(response.command, ['requestId', 'tool', 'args'], ['requestId', 'tool', 'args']);

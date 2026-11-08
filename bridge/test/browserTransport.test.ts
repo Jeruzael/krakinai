@@ -1,7 +1,7 @@
 import { afterEach, expect, it } from 'vitest';
 import { createRelay, type RelayHandle, type VerificationRequest } from '../src/relay';
 import { BrowserTransport } from '../../src/connections/browserTransport';
-import { resultData } from '../../src/domain/mcpProtocol';
+import { resultData, MCP_LIMITS } from '../../src/domain/mcpProtocol';
 const origin = 'http://127.0.0.1:4173';
 const relays: RelayHandle[] = [], clients: BrowserTransport[] = [];
 afterEach(async () => { await Promise.all(clients.splice(0).map(c => c.disconnect())); await Promise.all(relays.splice(0).map(c => c.close())); });
@@ -34,5 +34,5 @@ it('verifies a response before dispatching any command to application code', asy
 it('expires browser authority locally without waiting for the next network poll', async () => {
   const env = await setup(); await env.transport.startPairing(); const sessionId = await env.transport.finishPairing(env.secret());
   expect(env.transport.isSessionLive(sessionId)).toBe(true);
-  env.advance(3600001); expect(env.transport.isSessionLive(sessionId)).toBe(false);
+  env.advance(MCP_LIMITS.sessionMs + 1); expect(env.transport.isSessionLive(sessionId)).toBe(false);
 });

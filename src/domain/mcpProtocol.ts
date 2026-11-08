@@ -3,7 +3,7 @@ import { SUPPORTED_CHANGE_SET_SCHEMA } from './changeSetSchema';
 
 export const MCP_API_VERSION = 'krakinai.mcp.v1' as const;
 export const BRIDGE_VERSION = 'krakinai.bridge.v1' as const;
-export const MCP_LIMITS = Object.freeze({ package: 1048576, frame: 1310720, result: 524288, proposals: 8, requests: 16, page: 50, proposalMs: 86400000, approvalMs: 60000, challengeMs: 120000, sessionMs: 3600000, idleMs: 900000, rotateMs: 300000, staleMs: 45000, toolMs: 15000, pollMs: 20000 });
+export const MCP_LIMITS = Object.freeze({ package: 1048576, frame: 1310720, result: 524288, proposals: 8, requests: 16, page: 50, proposalMs: 86400000, approvalMs: 60000, challengeMs: 120000, sessionMs: 43200000, idleMs: 10800000, rotateMs: 300000, staleMs: 45000, toolMs: 15000, pollMs: 20000 });
 export const MCP_TOOL_NAMES = [
   'krakinai_connection_status', 'krakinai_list_projects', 'krakinai_get_project',
   'krakinai_get_storyboard', 'krakinai_get_scene', 'krakinai_get_scene_history',
