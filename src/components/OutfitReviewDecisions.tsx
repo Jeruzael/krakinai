@@ -5,6 +5,10 @@ import type {
   ChangeSetPlan,
 } from "../types/changeSet";
 import type { LibrarySnapshot } from "../storage/db";
+import {
+  analyzeProposalCandidateBlockers,
+  applyCandidateDecisionWithSafeguards,
+} from "../domain/proposalReadiness";
 export function OutfitReviewDecisions({
   changeSet,
   approval,
@@ -23,21 +27,34 @@ export function OutfitReviewDecisions({
   operationId?:string;
 }) {
   const [reuseIntent, setReuseIntent] = useState<Record<string, boolean>>({});
+  const candidateAnalysis = analyzeProposalCandidateBlockers({ changeSet, approval, plan } as any, snapshot);
+  const sceneReferencedOpIds = operationId ? candidateAnalysis.referencedCandidateOpIdsByScene[operationId] : undefined;
   const operations = changeSet.operations.filter(
     (o) =>
       o.type === "variant.propose" || o.type === "variant.review_candidate",
-  ).filter(o=>!operationId||o.operationId===operationId);
+  ).filter(o => {
+    if (!operationId) return true;
+    if (o.operationId === operationId) return true;
+    if (operationId.startsWith('scene.')) {
+      return sceneReferencedOpIds && sceneReferencedOpIds.length > 0 ? sceneReferencedOpIds.includes(o.operationId) : true;
+    }
+    return true;
+  });
   if (!operations.length) return null;
   const choice = (
     id: string,
     value: NonNullable<ChangeSetApproval["variantDecisions"]>[string],
   ) =>
-    onApproval({
-      ...approval,
-      variantDecisions: { ...approval.variantDecisions, [id]: value },
-    });
+    onApproval(
+      applyCandidateDecisionWithSafeguards(
+        changeSet,
+        approval,
+        approval.assetDecisions,
+        { ...approval.variantDecisions, [id]: value },
+      ),
+    );
   return (
-    <details className="import-group">
+    <details className="import-group" open={operations.some(op => (approval.variantDecisions?.[op.operationId]?.action ?? 'defer') === 'defer') ? true : undefined}>
       <summary>Outfit variant decisions ({operations.length})</summary>
       <p className="muted-text">
         Deferred Outfits stay candidates. Creating or reusing an Outfit requires

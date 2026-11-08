@@ -3,7 +3,7 @@ import type {McpProposalView} from '../../types/mcp';
 import type {ChangeSetApproval,ImportOperationPreview} from '../../types/changeSet';
 import type {ReviewProgress} from '../../types/proposalReview';
 import type {LibrarySnapshot} from '../../storage/db';
-import {proposalReadiness,proposalOperationGroup,type ProposalDetailTab,type ProposalReviewIssue} from '../../domain/proposalReadiness';
+import {proposalReadiness,proposalOperationGroup,analyzeProposalCandidateBlockers,buildBulkCreateApproval,type ProposalDetailTab,type ProposalReviewIssue} from '../../domain/proposalReadiness';
 import {changeSetDigest} from '../../domain/changeSetCanonical';
 import {REVIEW_BATCH_ID} from '../../domain/proposalReview';
 import {downloadBlobAsFile} from '../../hooks/useObjectUrl';
@@ -30,6 +30,7 @@ export function ProposalReviewWorkspace(props:Props){
   const heading=useRef<HTMLHeadingElement>(null),issuesButton=useRef<HTMLButtonElement>(null),dialogReturn=useRef<HTMLElement|null>(null),id=useId();
   const focusAfterChange=useRef(false);
   const readiness=proposalReadiness(preview,{status:p.status,connected,currentBinding:bound,reviewed,needsRevalidation:p.needsRevalidation,expiresAt:p.expiresAt,now,cacheError:p.cacheError});
+  const candidateAnalysis = analyzeProposalCandidateBlockers(preview, snapshot);
   const disabled=readiness.busy||!bound||!!p.needsRevalidation||['applied','rejected','expired','disconnected'].includes(p.status),selectedRow=rows.find(row=>row.operationId===selected),isBatch=!selectedRow;
   const activeTab=isBatch&&!['summary','data'].includes(tab)?'summary':tab;
   useLayoutEffect(()=>{if(focusAfterChange.current&&!drawer){focusAfterChange.current=false;heading.current?.focus();}},[selected,activeTab,drawer]);
@@ -47,7 +48,7 @@ export function ProposalReviewWorkspace(props:Props){
   const visibleTabs=isBatch?tabs.filter(t=>['summary','data'].includes(t.id)):tabs;
   const moveTab=(event:React.KeyboardEvent,index:number)=>{if(!['ArrowRight','ArrowLeft','Home','End'].includes(event.key))return;event.preventDefault();const next=event.key==='Home'?0:event.key==='End'?visibleTabs.length-1:(index+(event.key==='ArrowRight'?1:visibleTabs.length-1))%visibleTabs.length;const value=visibleTabs[next].id;setTab(value);progress({selectedTab:value});document.getElementById(`${id}-tab-${value}`)?.focus();};
   const download=()=>{if(!pkg)return;try{downloadBlobAsFile(new Blob([JSON.stringify(pkg,null,2)+'\n'],{type:'application/json'}),`krakinai-recipe-${pkg.changeSetId.replace(/[^a-zA-Z0-9._-]/g,'_')}.json`);setStatus('Complete original package download requested. It does not approve or import anything.');}catch{setStatus('Download could not start. The complete original package remains accessible in Batch → Exact data.');}};
-  const approvals=<><ImportCapacity capacity={preview?.capacity}/><ProposalIssues readiness={readiness} onGoTo={jump}/>{preview&&<ChangeSetPreview preview={preview} snapshot={snapshot} approvalsOnly operationId={selectedRow?.operationId} disabled={disabled} onApproval={props.onApproval}/>}<label className="import-check pr-exact-check"><input type="checkbox" aria-label="I reviewed this exact proposal" checked={reviewed} disabled={disabled||p.status!=='review_required'} onChange={event=>props.onConfirmReview(event.target.checked,event.nativeEvent)}/><span>I reviewed this exact proposal</span></label><p className="muted-text">Viewed marks never replace this final confirmation.</p></>;
+  const approvals=<><ImportCapacity capacity={preview?.capacity}/><ProposalIssues readiness={readiness} onGoTo={jump} candidateAnalysis={candidateAnalysis} disabled={disabled} onBulkCreateCandidates={preview ? () => props.onApproval(buildBulkCreateApproval(preview, snapshot)) : undefined}/>{preview&&<ChangeSetPreview preview={preview} snapshot={snapshot} approvalsOnly operationId={selectedRow?.operationId} disabled={disabled} onApproval={props.onApproval}/>}<label className="import-check pr-exact-check"><input type="checkbox" aria-label="I reviewed this exact proposal" checked={reviewed} disabled={disabled||p.status!=='review_required'} onChange={event=>props.onConfirmReview(event.target.checked,event.nativeEvent)}/><span>I reviewed this exact proposal</span></label><p className="muted-text">Viewed marks never replace this final confirmation.</p></>;
   const remaining=Math.max(0,p.expiresAt-now),deadline=new Date(p.expiresAt).toLocaleString(),time=remaining?`${Math.floor(remaining/3600000)}h ${Math.ceil(remaining%3600000/60000)}m left`:'Review window expired';
   return <div className="pr-workspace" aria-label="Compact proposal review">
     <header className="pr-heading"><div><h2 tabIndex={-1}>Review incoming changes</h2><p>{pkg?.title??p.changeSetId}</p><small>{p.changeSetId} · {p.packageDigest.slice(0,12)} · {p.status.replaceAll('_',' ')}</small></div><button type="button" className="btn btn-secondary btn-sm" onClick={props.onBack}>Back to proposals</button></header>

@@ -15,6 +15,10 @@ import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 import {RecipeConversionReview}from'./RecipeConversionReview';
 import {canonicalStringify}from'../domain/changeSetCanonical';
+import {
+  analyzeProposalCandidateBlockers,
+  applyCandidateDecisionWithSafeguards,
+} from '../domain/proposalReadiness';
 import {KeyframeProposalReview} from './keyframes/KeyframeProposalReview';
 import {BlockingProposalReview} from './blocking/BlockingProposalReview';
 import {KeyframeProposalApprovals} from './keyframes/KeyframeProposalApprovals';
@@ -38,10 +42,23 @@ export function ChangeSetPreview({
   const [detail, setDetail] = useState<string>();
   const [downloadStatus, setDownloadStatus] = useState("");
   const { plan, approval, changeSet } = preview;
-  const onApproval=(next:ChangeSetApproval)=>{
-    if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(changeSet.schema)&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,blocking:false,blockingOutputDecisions:{},...(changeSet.schema==='krakinai.change-set.v6'?{keyframes:false,frameImages:false,frameVideo:false,frameOutputDecisions:{}}:{})};
-    if(changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,conversionDecisions:{}};
-    supplyApproval(next);
+  const candidateAnalysis = analyzeProposalCandidateBlockers(preview, snapshot);
+  const sceneReferencedOpIds = operationId ? candidateAnalysis.referencedCandidateOpIdsByScene[operationId] : undefined;
+  const onApproval = (next: ChangeSetApproval) => {
+    const candidateChanged =
+      canonicalStringify([next.assetDecisions, next.variantDecisions ?? {}]) !==
+      canonicalStringify([approval.assetDecisions, approval.variantDecisions ?? {}]);
+    if (candidateChanged) {
+      const guarded = applyCandidateDecisionWithSafeguards(
+        changeSet,
+        approval,
+        next.assetDecisions,
+        next.variantDecisions,
+      );
+      supplyApproval({ ...next, ...guarded });
+    } else {
+      supplyApproval(next);
+    }
   };
   const conflicts = plan.findings.filter(
     (f) => f.severity === "blocking" && !f.code.startsWith("APPROVAL_"),
@@ -53,9 +70,17 @@ export function ChangeSetPreview({
     preferred: changeSet.operations.some((o) => o.type === "shot.select_take"),
     statuses: changeSet.operations.some((o) => o.type === "shot.set_status"),
   };
-  const assetOps = changeSet.operations.filter((o) =>
-    o.type.startsWith("asset.")&&(!operationId||o.operationId===operationId),
-  );
+  const assetOps = changeSet.operations.filter((o) => {
+    if (!o.type.startsWith("asset.")) return false;
+    if (!operationId) return true;
+    if (o.operationId === operationId) return true;
+    if (operationId.startsWith("scene.")) {
+      return sceneReferencedOpIds && sceneReferencedOpIds.length > 0
+        ? sceneReferencedOpIds.includes(o.operationId)
+        : true;
+    }
+    return true;
+  });
   const choice = (id: string, value: CandidateDecision) =>
     onApproval({
       ...approval,
@@ -302,7 +327,7 @@ export function ChangeSetPreview({
           )}
           <OutfitReviewDecisions changeSet={changeSet} approval={approval} plan={plan} snapshot={snapshot} disabled={disabled} onApproval={onApproval} operationId={operationId}/>
           {assetOps.length > 0 && (
-            <details className="import-group">
+            <details className="import-group" open={(approvalsOnly && assetOps.some(op => (approval.assetDecisions[op.operationId]?.action ?? 'defer') === 'defer')) ? true : undefined}>
               <summary>Reusable asset decisions ({assetOps.length})</summary>
               <p className="muted-text">
                 Deferred proposals never install a library asset.

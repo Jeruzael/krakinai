@@ -89,3 +89,102 @@ it('keeps Batch navigation distinct from a valid operation named batch',async()=
  await user.click(screen.getByRole('button',{name:'Go to PROJECT_VALIDATION (Batch)'}));expect(screen.getByRole('heading',{name:'Batch & project checks'})).toHaveFocus();
  await user.click(screen.getByRole('button',{name:'Review batch'}));expect(screen.getByRole('region',{name:'Selected change'})).toHaveAttribute('data-operation-id','batch');
 });
+
+it('groups DEPENDENCY_BLOCKED conflicts, provides 1-click bulk create, and keeps candidate decisions visible when a scene is selected', async () => {
+  const user = userEvent.setup();
+  const input = recipeChangeSet();
+  input.operations = [
+    {
+      operationId: 'op-char-silvester',
+      type: 'asset.propose',
+      clientRef: 'char-silvester',
+      kind: 'character',
+      title: 'Silvester Character',
+      promptText: 'Young man in robes',
+      tags: [],
+    },
+    {
+      operationId: 'op-env-sacred-hall',
+      type: 'asset.propose',
+      clientRef: 'env-sacred-hall',
+      kind: 'environment',
+      title: 'Sacred Hall Environment',
+      promptText: 'Grand stone nave',
+      tags: [],
+    },
+    {
+      operationId: 'op-scene-s01',
+      type: 'scene.create_recipe',
+      clientRef: 'scene-01',
+      title: 'Beat 1: Opposing Columns',
+      project: { id: 'project', expectedRevision: 1 },
+      shot: { id: 'shot' },
+      shotType: 'character_scene',
+      settings: { aspectRatio: '16:9', durationSeconds: 5 },
+      assetRefs: [{ slot: 'environment', asset: { ref: 'env-sacred-hall' } }],
+    },
+    {
+      operationId: 'op-scene-s02',
+      type: 'scene.create_recipe',
+      clientRef: 'scene-02',
+      title: 'Beat 2: Nave',
+      project: { id: 'project', expectedRevision: 1 },
+      shot: { id: 'shot' },
+      shotType: 'property_environment',
+      settings: { aspectRatio: '16:9', durationSeconds: 5 },
+      assetRefs: [{ slot: 'environment', asset: { ref: 'env-sacred-hall' } }],
+    },
+  ];
+  const approval = recipeApproval();
+  const preview = await previewChangeSet(input, approval);
+  preview.plan.findings.push(
+    { operationId: 'op-scene-s01', severity: 'blocking', code: 'DEPENDENCY_BLOCKED', message: 'Scene 1 blocked by deferred candidate' },
+    { operationId: 'op-scene-s02', severity: 'blocking', code: 'DEPENDENCY_BLOCKED', message: 'Scene 2 blocked by deferred candidate' },
+  );
+  const snapshot = await getAllSnapshot();
+  const onApproval = vi.fn();
+  const proposal: McpProposalView = {
+    id: 'proposal-deps',
+    sessionId: 'current',
+    scopeEpoch: 1,
+    changeSetId: input.changeSetId,
+    packageDigest: preview.packageDigest,
+    receivedAt: Date.now(),
+    expiresAt: Date.now() + 86400000,
+    status: 'review_required',
+    preview,
+    needsRevalidation: false,
+  };
+  render(
+    <ProposalReviewWorkspace
+      proposal={proposal}
+      snapshot={snapshot}
+      connected={true}
+      bound={true}
+      reviewed={false}
+      onApproval={onApproval}
+      onConfirmReview={vi.fn()}
+      onApply={vi.fn()}
+      onRevalidate={vi.fn()}
+      onRemove={vi.fn()}
+      onProgress={vi.fn()}
+      onReject={vi.fn()}
+      onBack={() => {}}
+    />
+  );
+
+  const bulkBtn = screen.getByRole('button', { name: /Create all new candidates \(2\)/i });
+  expect(bulkBtn).toBeInTheDocument();
+  await user.click(bulkBtn);
+  expect(onApproval).toHaveBeenCalledWith(expect.objectContaining({
+    assetDecisions: expect.objectContaining({
+      'op-char-silvester': { action: 'create' },
+      'op-env-sacred-hall': { action: 'create' },
+    }),
+  }));
+
+  expect(screen.getByText(/DEPENDENCY_BLOCKED · 2 scenes blocked/i)).toBeInTheDocument();
+
+  await user.click(screen.getByRole('button', { name: 'Review op-scene-s01' }));
+  expect(screen.getByLabelText('Decision for op-env-sacred-hall')).toBeInTheDocument();
+});
