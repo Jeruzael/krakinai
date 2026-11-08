@@ -325,7 +325,7 @@ function findingTab(code:string):ProposalDetailTab{
   if(/VIDEO/.test(code))return 'video';
   if(/KEYFRAME|FRAME|IMAGE/.test(code))return 'frames';
   if(/BLOCKING/.test(code))return 'blocking';
-  if(/RECIPE|CANDIDATE|ASSET|OUTFIT|VARIANT|DEPENDENCY/.test(code))return 'recipe';
+  if(/RECIPE|CANDIDATE|ASSET|OUTFIT|VARIANT|DEPENDENCY|DOMAIN_RULE/.test(code))return 'recipe';
   return 'summary';
 }
 function remedy(f:ImportFinding){
@@ -333,6 +333,7 @@ function remedy(f:ImportFinding){
   if(f.code.startsWith('APPROVAL_'))return 'Review and confirm the corresponding approval below. Confirmation does not resolve data conflicts.';
   if(f.code==='PROJECT_VALIDATION')return 'Inspect the Batch project details. A revised package may be needed; no shot is assumed to own this error.';
   if(/MANUAL|DECISION/.test(f.code))return 'Open the affected item and review the exact output or candidate decision.';
+  if(/select an existing linked participant or explicitly leave narration unlinked/.test(f.message))return 'The staged script assigned a dialogue cue to a participant not cast in this scene. Download the package JSON, correct the cue’s participantId (or add that character to the scene’s participants), and re-import.';
   return 'Inspect the complete finding and target. Revalidate or request a revised package if it cannot be resolved here.';
 }
 /** Display projection only. Validation and the atomic writer remain the authority. */

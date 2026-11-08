@@ -127,6 +127,55 @@ export function RecipeOperationPreview({
       </p>
       {resolved?.previousEnsemble&&<details><summary>Previous frozen participants and cues (unchanged)</summary><EnsembleSummary ensemble={resolved.previousEnsemble} label="Previous ensemble"/></details>}
       {resolved?.ensemble&&<EnsembleSummary ensemble={resolved.ensemble}/>}
+      {!resolved?.ensemble && operation.ensemble?.dialogueCues && operation.ensemble.dialogueCues.length > 0 && (
+        <section className="card pr-unresolved-cues" aria-label="Authored dialogue cues">
+          <h4>Authored dialogue cues ({operation.ensemble.dialogueCues.length})</h4>
+          <p className="muted-text">
+            Every dialogue cue must link to a participant defined in this scene or explicitly leave narration unlinked.
+          </p>
+          <table className="table" aria-label="Dialogue cue participant bindings">
+            <thead>
+              <tr>
+                <th scope="col">Cue</th>
+                <th scope="col">Speaker / Line</th>
+                <th scope="col">Participant link</th>
+              </tr>
+            </thead>
+            <tbody>
+              {operation.ensemble.dialogueCues.map((cue) => {
+                const participantIds = (operation.ensemble?.participantUpserts ?? []).map((p) => p.id);
+                const isLinked = cue.participantId !== undefined;
+                const isValid = !isLinked || participantIds.includes(cue.participantId!);
+                return (
+                  <tr key={cue.id}>
+                    <td>
+                      <code>{cue.id}</code>
+                      {cue.mode && <small>{cue.mode}</small>}
+                    </td>
+                    <td>
+                      <strong>{cue.speaker}</strong>
+                      <p>{cue.line}</p>
+                    </td>
+                    <td>
+                      {isLinked ? (
+                        isValid ? (
+                          <span className="badge badge-success">Linked to {cue.participantId}</span>
+                        ) : (
+                          <span className="badge badge-warning" role="alert">
+                            ⚠️ &quot;{cue.participantId}&quot; not found in participants ({participantIds.join(', ') || 'none'})
+                          </span>
+                        )
+                      ) : (
+                        <span className="badge badge-secondary">Unlinked narration</span>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
+      )}
       {!resolved?.ensemble&&operation.ensemble&&<details><summary>Unresolved participant and cue requests</summary><pre>{JSON.stringify(operation.ensemble,null,2)}</pre></details>}
       {view!=='outputs'&&<><div className="import-recipe-components">
         <table aria-label="Resolved recipe components">
