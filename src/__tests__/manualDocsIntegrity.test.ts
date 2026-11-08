@@ -41,7 +41,7 @@ describe('KRAKINAI Manual Integrity', () => {
     }
   });
 
-  it('documents all 37 MCP tools in Chapter 10, all Preflight rules P000-P008 and Shot Types in Chapter 7, and ChangeSet v1-v6 in Chapter 9', () => {
+  it('documents all 38 MCP tools in Chapter 10, all Preflight rules P000-P008 and Shot Types in Chapter 7, and ChangeSet v1-v6 in Chapter 9', () => {
     const ch7 = fs.readFileSync(path.join(MANUAL_DIR, '07-inside-krakinai-engines.md'), 'utf8');
     for (const rule of ['P000', 'P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008']) {
       expect(ch7).toContain(rule);
@@ -56,7 +56,7 @@ describe('KRAKINAI Manual Integrity', () => {
     }
 
     const ch10 = fs.readFileSync(path.join(MANUAL_DIR, '10-technical-mcp-reference.md'), 'utf8');
-    expect(MCP_TOOL_NAMES).toHaveLength(37);
+    expect(MCP_TOOL_NAMES).toHaveLength(38);
     for (const toolName of MCP_TOOL_NAMES) {
       expect(ch10, `Missing MCP tool ${toolName} in Chapter 10`).toContain(toolName);
     }

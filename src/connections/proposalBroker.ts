@@ -14,7 +14,7 @@ import {requireBlockingCapabilities,requireKeyframeCapabilities} from '../domain
 import {keyframeMcpPreview,type FrameMcpProjection} from '../domain/keyframeMcp';
 import {blockingMcpPreview} from '../domain/blockingMcp';
 import {ProposalInbox} from './proposalInbox';
-import {REVIEW_WINDOW_MS,reviewWindowExpired,validateReviewFeedback} from '../domain/proposalReview';
+import {REVIEW_WINDOW_MS,reviewWindowExpired,validateReviewFeedback,buildSmartInitialApproval} from '../domain/proposalReview';
 import {feedbackForCurrentContext,type ReviewFeedbackShare} from '../domain/proposalFeedback';
 import type {ReviewInbox,ReviewProgress,InvalidReviewDraft} from '../types/proposalReview';
 import {withProposalReviewLock} from './proposalReviewLock';
@@ -38,6 +38,7 @@ import {
 } from '../domain/mcpGranularStaging';
 import {
   readAssetDetail,
+  resolveLibraryAssets,
   readCatalogPresets,
   readProjectContinuity,
   readSpatialContinuity,
@@ -216,13 +217,19 @@ export class ProposalBroker {
         if (this.#proposals.size >= MCP_LIMITS.proposals) {
           throw new McpError('QUEUE_FULL', 'Download or remove an existing saved review before submitting another proposal.');
         }
-        const preview = await this.#deps.preview(pkg); this.#assert(context);
+        const initialApproval = buildSmartInitialApproval(pkg, state, this.#scope);
+        const preview = await this.#deps.preview(pkg, initialApproval); this.#assert(context);
         if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(pkg.schema)){const current=await this.#deps.readState();this.#assert(context);assertProposalScope(pkg,this.#scope,current,new Set(),readOnlyDerivation);}
         const record=await this.#inbox.admit(pkg);
         const p: McpProposalView = { id: record.id, changeSetId: pkg.changeSetId, packageDigest: digest, sessionId, scopeEpoch: context.epoch, receivedAt:record.firstReceivedAt, expiresAt:record.expiresAt, status:'review_required', preview:structuredClone(preview),needsRevalidation:false };
         try{this.#assert(context);}catch(error){p.sessionId='';p.scopeEpoch=-1;p.status='disconnected';p.needsRevalidation=true;this.#proposals.set(p.id,p);this.#emit();throw error;}
         if (preview.replay && canReadReceipt(preview.replay, this.#effectiveScope(), state)) { p.status = 'applied'; p.receipt = structuredClone(preview.replay); }
         this.#proposals.set(p.id, p); this.#emit(); return resultData(p.receipt ? { ...this.#status(p), receipt: receiptProjection(p.receipt, state) } : this.#status(p));
+      }
+      if (command.tool === 'krakinai_resolve_library_assets') {
+        const result = resolveLibraryAssets(state, this.#effectiveScope(), args as any);
+        this.#assert(context);
+        return resultData(result);
       }
       if (command.tool === 'krakinai_get_asset') {
         const result = readAssetDetail(state, this.#effectiveScope(), args as { id: string });
@@ -401,7 +408,8 @@ export class ProposalBroker {
       throw new McpError('QUEUE_FULL', 'Download or remove an existing saved review before submitting another proposal.');
     }
 
-    const preview = await this.#deps.preview(staged.changeSet);
+    const initialApproval = existing?.preview?.approval ?? buildSmartInitialApproval(staged.changeSet, state, this.#scope);
+    const preview = await this.#deps.preview(staged.changeSet, initialApproval);
     this.#assert(context);
 
     const record = await this.#inbox.upsertDraftChangeSet(staged.changeSet);
@@ -450,7 +458,13 @@ export class ProposalBroker {
     if(p.status==='applying')throw new McpError('REVIEW_REQUIRED','This proposal is applying. Wait for its actual result.');
     const state=await this.#deps.readState();this.#assert(context);
     // Cached decisions are review hints, never fresh grants or accepted manual-output decisions.
-    const approval=emptyChangeSetApproval(),reuse=new Set<string>();
+    const savedDecisions = record.progress?.draftDecisions;
+    const approval: ChangeSetApproval = savedDecisions ? {
+      ...buildSmartInitialApproval(record.changeSet, state, this.#scope),
+      ...(savedDecisions.assetDecisions ? { assetDecisions: savedDecisions.assetDecisions as any } : {}),
+      ...(savedDecisions.variantDecisions ? { variantDecisions: savedDecisions.variantDecisions as any } : {}),
+    } : buildSmartInitialApproval(record.changeSet, state, this.#scope);
+    const reuse = new Set(Object.values(approval.assetDecisions).filter(d => d.action === 'reuse' && d.assetId).map(d => d.assetId!));
     const historical=readImportLedger(state.preferences).receipts.find(r=>r.changeSetId===record.changeSetId);
     if(historical){
       if(historical.packageDigest!==record.packageDigest)throw new McpError('CONFLICT','The committed change-set ID identifies different content.');

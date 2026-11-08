@@ -14,7 +14,7 @@ describe('compiled persistent adapter SDK process', () => {
     let diagnostic = ''; transport.stderr?.on('data', bytes => diagnostic += String(bytes));
     const client = new Client({ name: 'synthetic-launcher-sdk', version: '1.0.0' });
     try {
-      await client.connect(transport); const tools = await client.listTools(); expect(tools.tools).toHaveLength(37);
+      await client.connect(transport); const tools = await client.listTools(); expect(tools.tools).toHaveLength(38);
       const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
       expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
       expect(authoring.description).toContain('explicit user request');

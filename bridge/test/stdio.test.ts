@@ -13,7 +13,7 @@ describe('actual compiled SDK stdio process', () => {
     const client = new Client({ name: 'krakinai-synthetic-sdk-client', version: '1.0.0' },mode==='legacy'?{versionNegotiation:{mode:'legacy'}}:{});
     try {
       await client.connect(transport);
-      const tools = await client.listTools(); expect(tools.tools).toHaveLength(37);
+      const tools = await client.listTools(); expect(tools.tools).toHaveLength(38);
       const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
       expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
       expect(authoring.description).toContain('explicit user request');

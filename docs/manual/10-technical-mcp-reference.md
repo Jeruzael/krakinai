@@ -270,13 +270,19 @@ graph TD
 
 ---
 
-### Group 7: Workstream 2 — Assets, Variants & Presets (4 Tools)
+### Group 7: Workstream 2 — Assets, Variants & Presets (5 Tools)
 
 #### `krakinai_get_asset`
 - **Purpose**: Returns complete authorized details for an individual asset, including linked Outfit variants.
 - **Arguments**: `id: string` (required).
 - **Scope**: Redacts prompt text unless `includeAssetText` is true; redacts Identity Anchor unless `includeCharacterIdentity` is true.
 - **Returns**: Asset metadata, prompt text, identity anchor, and `outfitVariants` array.
+
+#### `krakinai_resolve_library_assets`
+- **Purpose**: Batch checks proposed character, outfit, and element candidate titles against authorized library records in a single round-trip, returning recommended actions (`reuse` vs `create`) and exact IDs/revisions.
+- **Arguments**: `items: Array<{ clientRef: string, kind: string, title: string, promptText?: string, tags?: string[], parentAssetId?: string }>` (required).
+- **Scope**: Matches only against authorized assets and variants granted in the active MCP session.
+- **Returns**: `items` array with `matchStatus` (`exact_match`, `title_match`, `similar_match`, `no_match`), `recommendedAction` (`reuse` or `create`), and `matchedRecord` with `{ id, title, revision }`.
 
 #### `krakinai_list_catalog_presets`
 - **Purpose**: Read-only lookup of KRAKINAI's built-in catalogs.

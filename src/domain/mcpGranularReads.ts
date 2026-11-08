@@ -25,6 +25,8 @@ import {
 } from './performanceCatalog';
 import { DELIVERY_STYLES, SPEAKING_PACES, BODY_LANGUAGE } from './dialoguePerformance';
 
+import { findCandidateMatches, normalize, normalizeBaseTitle } from './changeSetCandidates';
+
 export type GranularSnapshot = ChangeSetState | {
   projects?: Collection[];
   collections?: Collection[];
@@ -505,4 +507,128 @@ export function readExportedScenePrompts(
     text,
     sceneCount: scenes.length,
   };
+}
+
+export interface ResolveLibraryAssetInput {
+  items: Array<{
+    clientRef: string;
+    kind: string;
+    title: string;
+    promptText?: string;
+    tags?: string[];
+    parentAssetId?: string;
+  }>;
+}
+
+export interface ResolveLibraryAssetResultItem {
+  clientRef: string;
+  kind: string;
+  title: string;
+  matchStatus: 'exact_match' | 'title_match' | 'similar_match' | 'no_match';
+  recommendedAction: 'reuse' | 'create';
+  matchedRecord?: {
+    id: string;
+    title: string;
+    revision: number;
+    parentAssetId?: string;
+    matchReason?: string;
+  };
+}
+
+export function resolveLibraryAssets(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: ResolveLibraryAssetInput,
+): { items: ResolveLibraryAssetResultItem[] } {
+  if (!Array.isArray(args?.items)) {
+    throw new McpError('INVALID_REQUEST', 'Items array is required for library resolution.');
+  }
+
+  const authorizedAssets = (snapshot.assets ?? []).filter((a) => scope.assetIds.includes(a.id));
+  const authorizedVariants = (snapshot.variants ?? []).filter((v) => scope.variantIds.includes(v.id));
+  const authorizedTemplates = (snapshot.templates ?? []).filter((t) => (scope.templateIds ?? []).includes(t.id));
+
+  const items: ResolveLibraryAssetResultItem[] = args.items.map((item) => {
+    // 1. Variant matching for wardrobe
+    if (item.kind === 'wardrobe' && item.parentAssetId) {
+      const parentVariants = authorizedVariants.filter((v) => v.parentCharacterId === item.parentAssetId);
+      const itemTitleNorm = normalize(item.title);
+      const itemBaseTitleNorm = normalizeBaseTitle(item.title);
+
+      const matchedVariant = parentVariants.find(
+        (v) => normalize(v.name) === itemTitleNorm || normalizeBaseTitle(v.name) === itemBaseTitleNorm,
+      );
+
+      if (matchedVariant) {
+        const isExact = normalize(matchedVariant.name) === itemTitleNorm;
+        return {
+          clientRef: item.clientRef,
+          kind: item.kind,
+          title: item.title,
+          matchStatus: isExact ? 'exact_match' : 'title_match',
+          recommendedAction: 'reuse',
+          matchedRecord: {
+            id: matchedVariant.id,
+            title: matchedVariant.name,
+            revision: matchedVariant.revision,
+            parentAssetId: matchedVariant.parentCharacterId,
+            matchReason: isExact ? 'Matching variant title' : 'Matching base title',
+          },
+        };
+      }
+    }
+
+    // 2. Candidate matching for assets & templates
+    const candidate = {
+      kind: item.kind as any,
+      title: item.title,
+      promptText: item.promptText ?? '',
+      tags: item.tags ?? [],
+    };
+
+    const matches = findCandidateMatches(candidate, {
+      assets: authorizedAssets,
+      templates: authorizedTemplates,
+    });
+
+    if (matches.length > 0) {
+      const top = matches[0];
+      const normTitle = normalize(top.title);
+      const itemNormTitle = normalize(item.title);
+      let matchStatus: 'exact_match' | 'title_match' | 'similar_match' = 'similar_match';
+      if (normTitle === itemNormTitle) {
+        matchStatus = 'exact_match';
+      } else if (
+        top.reason?.toLowerCase().includes('base title') ||
+        top.reason?.toLowerCase().includes('normalized title')
+      ) {
+        matchStatus = 'title_match';
+      }
+
+      return {
+        clientRef: item.clientRef,
+        kind: item.kind,
+        title: item.title,
+        matchStatus,
+        recommendedAction: 'reuse',
+        matchedRecord: {
+          id: top.id,
+          title: top.title,
+          revision: top.revision,
+          matchReason: top.reason,
+        },
+      };
+    }
+
+    // 3. No match
+    return {
+      clientRef: item.clientRef,
+      kind: item.kind,
+      title: item.title,
+      matchStatus: 'no_match',
+      recommendedAction: 'create',
+    };
+  });
+
+  return { items };
 }

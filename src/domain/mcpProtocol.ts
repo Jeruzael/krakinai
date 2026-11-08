@@ -15,7 +15,7 @@ export const MCP_TOOL_NAMES = [
   'krakinai_stage_project', 'krakinai_stage_shot', 'krakinai_stage_shot_order', 'krakinai_stage_shot_status',
   'krakinai_stage_storyboard_batch',
   // Workstream 2: Assets, Variants & Presets
-  'krakinai_get_asset', 'krakinai_list_catalog_presets', 'krakinai_stage_asset_candidate', 'krakinai_stage_outfit_variant',
+  'krakinai_get_asset', 'krakinai_resolve_library_assets', 'krakinai_list_catalog_presets', 'krakinai_stage_asset_candidate', 'krakinai_stage_outfit_variant',
   // Workstream 3: Scene Recipes & Assembly
   'krakinai_stage_scene_recipe', 'krakinai_stage_scene_ensemble', 'krakinai_stage_scene_dialogue',
   'krakinai_stage_camera_composition', 'krakinai_stage_direct_to_recipe', 'krakinai_preview_scene_assembly',
@@ -114,6 +114,7 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
 
   // Workstream 2: Assets, Variants & Presets
   krakinai_get_asset: schema({ id: idSchema }, ['id']),
+  krakinai_resolve_library_assets: schema({ items: { type: 'array' } }, ['items']),
   krakinai_list_catalog_presets: schema({
     catalog: { type: 'string', enum: ['cinematography', 'performance', 'shot_types'] },
   }, ['catalog']),

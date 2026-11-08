@@ -786,18 +786,32 @@ export function stageSceneRecipeOperation(
   };
 
   if (rawDialogueCues) {
-    const cues = rawDialogueCues.map((c, i) => ({
-      id: String(c.id || `cue-${i + 1}`),
-      speaker: String(c.speaker || c.speakerParticipantId || 'Speaker'),
-      line: String(c.line || c.lineText || ''),
-      timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
-      ...(c.speakerParticipantId || c.participantId ? { participantId: String(c.speakerParticipantId || c.participantId) } : {}),
-      ...(c.mode ? { mode: c.mode } : {}),
-      ...(c.deliveryNotes ? { deliveryNotes: c.deliveryNotes } : {}),
-      ...(c.language ? { language: c.language } : {}),
-      ...(c.captionPreference ? { captionPreference: c.captionPreference } : {}),
-      ...(c.performanceDirection ? { performanceDirection: c.performanceDirection } : {}),
-    }));
+    const cast = op.ensemble?.participantUpserts ?? [];
+    const castIds = new Set(cast.map((p: any) => String(p.id)));
+    const cues = rawDialogueCues.map((c, i) => {
+      let participantId = c.speakerParticipantId || c.participantId ? String(c.speakerParticipantId || c.participantId) : undefined;
+      if (participantId && !castIds.has(participantId)) {
+        const matched = cast.find((p: any) => {
+          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+          return false;
+        });
+        participantId = matched ? String(matched.id) : undefined;
+      }
+      return {
+        id: String(c.id || `cue-${i + 1}`),
+        speaker: String(c.speaker || c.speakerParticipantId || 'Speaker'),
+        line: String(c.line || c.lineText || ''),
+        timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
+        ...(participantId ? { participantId } : {}),
+        ...(c.mode ? { mode: c.mode } : {}),
+        ...(c.deliveryNotes ? { deliveryNotes: c.deliveryNotes } : {}),
+        ...(c.language ? { language: c.language } : {}),
+        ...(c.captionPreference ? { captionPreference: c.captionPreference } : {}),
+        ...(c.performanceDirection ? { performanceDirection: c.performanceDirection } : {}),
+      };
+    });
 
     op.ensemble = {
       version: 1,
@@ -810,12 +824,24 @@ export function stageSceneRecipeOperation(
   } else if (args.dialogue !== undefined && args.dialogue !== null) {
     if (op.ensemble) {
       const d = args.dialogue as Record<string, unknown>;
+      const cast = op.ensemble?.participantUpserts ?? [];
+      const castIds = new Set(cast.map((p: any) => String(p.id)));
+      let participantId = d.speakerParticipantId || d.participantId ? String(d.speakerParticipantId || d.participantId) : undefined;
+      if (participantId && !castIds.has(participantId)) {
+        const matched = cast.find((p: any) => {
+          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+          return false;
+        });
+        participantId = matched ? String(matched.id) : undefined;
+      }
       const cue = {
         id: String(d.id || 'cue-1'),
         speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
         line: String(d.line || d.lineText || ''),
         timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
-        ...(d.speakerParticipantId || d.participantId ? { participantId: String(d.speakerParticipantId || d.participantId) } : {}),
+        ...(participantId ? { participantId } : {}),
         ...(d.mode ? { mode: d.mode } : {}),
         ...(d.deliveryNotes ? { deliveryNotes: d.deliveryNotes } : {}),
         ...(d.language ? { language: d.language } : {}),
@@ -955,6 +981,8 @@ export function stageSceneDialogueOperation(
   };
 
   if (Array.isArray(args.dialogueCues)) {
+    const cast = updatedOp.ensemble?.participantUpserts ?? [];
+    const castIds = new Set(cast.map((p: any) => String(p.id)));
     const dialogueCues = (args.dialogueCues as Array<Record<string, unknown>>).map((c, i) => {
       const line = String(c.lineText || c.line || '');
       const speaker = String(c.speaker || c.speakerParticipantId || 'Speaker');
@@ -964,8 +992,20 @@ export function stageSceneDialogueOperation(
         line,
         timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
       };
-      if (typeof c.speakerParticipantId === 'string' || typeof c.participantId === 'string') {
-        cueObj.participantId = c.speakerParticipantId || c.participantId;
+      let participantId = typeof c.speakerParticipantId === 'string' || typeof c.participantId === 'string'
+        ? String(c.speakerParticipantId || c.participantId)
+        : undefined;
+      if (participantId && !castIds.has(participantId)) {
+        const matched = cast.find((p: any) => {
+          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+          return false;
+        });
+        participantId = matched ? String(matched.id) : undefined;
+      }
+      if (participantId) {
+        cueObj.participantId = participantId;
       }
       if (typeof c.mode === 'string') {
         cueObj.mode = c.mode;
@@ -999,14 +1039,28 @@ export function stageSceneDialogueOperation(
   } else if (args.dialogue !== undefined && args.dialogue !== null) {
     if (updatedOp.ensemble) {
       const d = args.dialogue as Record<string, unknown>;
+      const cast = updatedOp.ensemble?.participantUpserts ?? [];
+      const castIds = new Set(cast.map((p: any) => String(p.id)));
       const cueObj: Record<string, unknown> = {
         id: String(d.id || 'cue-1'),
         speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
         line: String(d.line || d.lineText || ''),
         timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
       };
-      if (typeof d.speakerParticipantId === 'string' || typeof d.participantId === 'string') {
-        cueObj.participantId = d.speakerParticipantId || d.participantId;
+      let participantId = typeof d.speakerParticipantId === 'string' || typeof d.participantId === 'string'
+        ? String(d.speakerParticipantId || d.participantId)
+        : undefined;
+      if (participantId && !castIds.has(participantId)) {
+        const matched = cast.find((p: any) => {
+          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+          return false;
+        });
+        participantId = matched ? String(matched.id) : undefined;
+      }
+      if (participantId) {
+        cueObj.participantId = participantId;
       }
       if (typeof d.mode === 'string') {
         cueObj.mode = d.mode;

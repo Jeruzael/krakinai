@@ -12,7 +12,7 @@ it('preserves exact v1 scope and creates independently disabled v2 grants',()=>{
 it('uses a bounded exact authenticated capability intersection without extra tools or larger limits',()=>{
  expect(intersectMcpCapabilities([...MCP_BLOCKING_CAPABILITIES,'future.example'],MCP_BLOCKING_CAPABILITIES)).toEqual(MCP_BLOCKING_CAPABILITIES);
  expect(intersectMcpCapabilities(MCP_BLOCKING_CAPABILITIES,[])).toEqual([]);expect(()=>requireBlockingCapabilities([])).toThrow(/update|support/i);
- expect(MCP_TOOL_NAMES).toHaveLength(37);expect(MCP_LIMITS.package).toBe(1048576);expect(MCP_LIMITS.result).toBe(524288);
+ expect(MCP_TOOL_NAMES).toHaveLength(38);expect(MCP_LIMITS.package).toBe(1048576);expect(MCP_LIMITS.result).toBe(524288);
  expect(()=>intersectMcpCapabilities(['blocking.v1','blocking.v1'],MCP_BLOCKING_CAPABILITIES)).toThrow();
 });
 it('rejects changed, missing and downgraded transcript capability fields',()=>{

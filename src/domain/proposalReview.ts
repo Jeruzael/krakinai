@@ -1,7 +1,9 @@
 import {parseChangeSet} from './changeSetValidation';
 import {changeSetDigest} from './changeSetCanonical';
 import {MCP_LIMITS} from './mcpProtocol';
-import type {ChangeSet} from '../types/changeSet';
+import {findCandidateMatches, normalize, normalizeBaseTitle} from './changeSetCandidates';
+import type {ChangeSet, ChangeSetApproval, ChangeSetState} from '../types/changeSet';
+import type {McpScope} from '../types/mcp';
 import type {ReviewDraftRecord,ReviewProgress} from '../types/proposalReview';
 
 export const REVIEW_WINDOW_MS=MCP_LIMITS.proposalMs;
@@ -63,4 +65,74 @@ export async function createReviewDraft(changeSet:ChangeSet,now:number,origin='h
   if(reviewBytes(changeSet)>MCP_LIMITS.package)fail('Review package exceeds the existing 1 MiB MCP package limit.');
   const parsed=parseChangeSet(changeSet);
   return validateReviewDraft({version:1,id:crypto.randomUUID(),revision:0,origin,changeSetId:parsed.changeSetId,packageDigest:await changeSetDigest(parsed),changeSet:parsed,firstReceivedAt:now,windowStartedAt:now,expiresAt:now+REVIEW_WINDOW_MS,updatedAt:now,disposition:'review',progress:{viewedOperations:{}}});
+}
+
+export function buildSmartInitialApproval(
+  changeSet: ChangeSet,
+  state: Pick<ChangeSetState, 'assets' | 'templates'> & { variants?: ChangeSetState['variants'] },
+  scope?: McpScope,
+): ChangeSetApproval {
+  const approval: ChangeSetApproval = {
+    storyboard: true,
+    scenes: true,
+    preferred: true,
+    statuses: true,
+    assetDecisions: {},
+    variantDecisions: {},
+    allowDuplicateSceneOperations: [],
+    ...(changeSet.schema === 'krakinai.change-set.v5' || changeSet.schema === 'krakinai.change-set.v6' ? { blocking: true } : {}),
+    ...(changeSet.schema === 'krakinai.change-set.v6' ? { keyframes: true, frameImages: true, frameVideo: true } : {}),
+  };
+
+  const scopedAssets = scope ? (state.assets ?? []).filter((a) => scope.assetIds.includes(a.id)) : (state.assets ?? []);
+  const scopedTemplates = scope ? (state.templates ?? []).filter((t) => (scope.templateIds ?? []).includes(t.id)) : (state.templates ?? []);
+
+  for (const op of changeSet.operations) {
+    if (op.type === 'asset.propose') {
+      const candidate = {
+        kind: op.kind,
+        title: op.title,
+        promptText: op.promptText ?? '',
+        tags: op.tags ?? [],
+      };
+      const matches = findCandidateMatches(candidate, { assets: scopedAssets, templates: scopedTemplates });
+      if (matches.length > 0) {
+        const top = matches[0];
+        approval.assetDecisions[op.operationId] = {
+          action: 'reuse',
+          assetId: top.id,
+          expectedRevision: top.revision,
+        };
+      } else {
+        approval.assetDecisions[op.operationId] = {
+          action: 'create',
+          acknowledgeDuplicate: false,
+        };
+      }
+    } else if (op.type === 'variant.propose') {
+      const parentId = (op as any).parentCharacterId;
+      const scopedVariants = (state.variants ?? []).filter((v) =>
+        (!scope || scope.variantIds.includes(v.id)) &&
+        (!parentId || v.parentCharacterId === parentId)
+      );
+      const matched = scopedVariants.find((v) =>
+        normalize(v.name) === normalize((op as any).label) ||
+        normalizeBaseTitle(v.name) === normalizeBaseTitle((op as any).label)
+      );
+      if (matched) {
+        approval.variantDecisions![op.operationId] = {
+          action: 'reuse',
+          variantId: matched.id,
+          expectedRevision: matched.revision,
+        };
+      } else {
+        approval.variantDecisions![op.operationId] = {
+          action: 'create',
+          acknowledgeDuplicate: false,
+        };
+      }
+    }
+  }
+
+  return approval;
 }
