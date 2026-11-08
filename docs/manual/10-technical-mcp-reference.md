@@ -287,7 +287,7 @@ graph TD
 #### `krakinai_list_catalog_presets`
 - **Purpose**: Read-only lookup of KRAKINAI's built-in catalogs.
 - **Arguments**: `catalog: 'cinematography' | 'performance' | 'shot_types'` (required).
-- **Returns**: Structured lists of shot sizes, angles, movements, emotions, vocal fields, or shot type rules.
+- **Returns**: Structured lists of shot sizes, angles, movements, emotions, vocal fields (`voiceOptions`, `speechOptions`, `techniqueOptions`, `gestureOptions`, `emotionGroups`), or shot type rules.
 
 #### `krakinai_stage_asset_candidate`
 - **Purpose**: Stages an `asset.propose` operation for a new reusable asset candidate.

@@ -10,6 +10,8 @@ import {
 } from '../domain/mcpGranularReads';
 import { emptyMcpScope } from '../domain/mcpScope';
 import type { ChangeSetState } from '../types/changeSet';
+import { validatePerformanceDirection } from '../domain/dialoguePerformance';
+import { VOICE_FIELDS } from '../domain/performanceCatalog';
 
 const mockState: ChangeSetState = {
   collections: [
@@ -166,6 +168,17 @@ describe('mcpGranularReads', () => {
     const shotTypes = readCatalogPresets({ catalog: 'shot_types' });
     expect(shotTypes.catalog).toBe('shot_types');
     expect(Array.isArray(shotTypes.items)).toBe(true);
+  });
+
+  it('exposes every Performance Studio option ID for agents', () => {
+    const r = readCatalogPresets({ catalog: 'performance' }) as any;
+    expect(r.voiceOptions.texture.breathy).toBe('Breathy');
+    expect(r.speechOptions.pauses.dramatic).toBe('Dramatic');
+    expect(r.emotionGroups['Sad / Vulnerable'].heartbroken).toBe('Heartbroken');
+    expect(r.techniqueOptions.laughing_while_speaking).toBe('Laughing while speaking');
+    expect(r.gestureOptions.open_palm).toBe('Open-palm gestures');
+    expect(validatePerformanceDirection(r.performanceDirectionExample)).toBeUndefined();
+    expect(r.voiceFields).toEqual(Object.keys(VOICE_FIELDS)); // unchanged
   });
 
   it('filters saved scenes by archiveFilter and enforces fullPromptSceneIds on export', () => {

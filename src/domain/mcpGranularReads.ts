@@ -17,6 +17,7 @@ import { SHOT_TYPES, SHOT_TYPE_DESCRIPTIONS, SHOT_TYPE_LABELS, getShotTypeRules 
 import { CATALOG_FAMILIES, CATALOG_TECHNIQUES } from './cinematographyCatalog';
 import {
   EMOTIONS,
+  EMOTION_GROUPS,
   EMOTIONAL_INTENSITIES,
   TECHNIQUES,
   VOICE_FIELDS,
@@ -151,6 +152,12 @@ export function readCatalogPresets(args: {
   }
 
   if (args.catalog === 'performance') {
+    const voiceOptions = Object.fromEntries(
+      Object.entries(VOICE_FIELDS).map(([k, v]) => [k, v.options])
+    );
+    const speechOptions = Object.fromEntries(
+      Object.entries(SPEECH_FIELDS).map(([k, v]) => [k, v.options])
+    );
     return {
       catalog: 'performance',
       emotions: Object.keys(EMOTIONS),
@@ -162,6 +169,19 @@ export function readCatalogPresets(args: {
       voiceFields: Object.keys(VOICE_FIELDS),
       speechFields: Object.keys(SPEECH_FIELDS),
       gestures: Object.keys(GESTURES),
+      emotionGroups: EMOTION_GROUPS,
+      techniqueOptions: TECHNIQUES,
+      voiceOptions,
+      speechOptions,
+      gestureOptions: GESTURES,
+      performanceDirectionExample: {
+        version: 2,
+        emotion: { primary: 'excited', intensity: 'strong' },
+        techniques: ['conversational'],
+        voice: { tone: 'warm' },
+        speech: { pace: 'fast' },
+        gestures: ['expressive'],
+      },
     };
   }
 
