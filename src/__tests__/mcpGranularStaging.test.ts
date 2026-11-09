@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   createEmptyDraftChangeSet,
+  normalizePerformanceDirection,
   stageAssetCandidateOperation,
   stageCameraCompositionOperation,
   stageDirectToRecipeOperation,
@@ -214,5 +215,79 @@ describe('mcpGranularStaging', () => {
 
     const parsed = parseChangeSet(draft);
     expect(parsed.schema).toBe('krakinai.change-set.v6');
+  });
+
+  describe('normalizePerformanceDirection', () => {
+    it('maps labels and casing to catalog IDs and defaults version 2', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'Joyful', intensity: 'STRONG' },
+        techniques: ['Laughing while speaking'],
+        voice: { texture: 'Breathy' },
+        speech: { pauses: 'dramatic' },
+        gestures: ['Open-palm gestures'],
+      });
+      expect(res.value).toEqual({
+        version: 2,
+        emotion: { primary: 'joyful', intensity: 'strong' },
+        techniques: ['laughing_while_speaking'],
+        voice: { texture: 'breathy' },
+        speech: { pauses: 'dramatic' },
+        gestures: ['open_palm'],
+      });
+      expect(res.warnings).toEqual([]);
+    });
+
+    it('drops duplicate secondary emotion and conflicting loud technique with warnings', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'sad', secondary: 'Sad' },
+        techniques: ['whispered', 'shouted'],
+      });
+      expect(res.value?.emotion).toEqual({ primary: 'sad' });
+      expect(res.value?.techniques).toEqual(['whispered']);
+      expect(res.warnings.length).toBe(2);
+    });
+
+    it('drops unknown values and returns undefined when nothing valid remains', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'ecstatic-ish' },
+      });
+      expect(res.value).toBeUndefined();
+      expect(res.warnings.length).toBe(1);
+    });
+  });
+
+  it('stages dialogue cues with normalized performanceDirection that passes change-set validation', () => {
+    let draft = createEmptyDraftChangeSet('cs-perf');
+    const res = stageSceneRecipeOperation(draft, {
+      clientRef: 'scene-amber-cue',
+      project: { id: 'proj-1', expectedRevision: 1 },
+      shot: { id: 'shot-1' },
+      title: 'Beat 1',
+      shotType: 'character_scene',
+      ensemble: {
+        version: 1,
+        participantUpserts: [
+          { id: 'amber', presence: 'on_camera' },
+        ],
+        dialogueCues: [
+          {
+            speaker: 'Amber',
+            participantId: 'amber',
+            line: 'Dragon Slayer ako!',
+            performanceDirection: {
+              emotion: { primary: 'Proud' },
+              techniques: ['Shouted'],
+            },
+          },
+        ],
+      },
+    });
+    const cues = (res.changeSet.operations[0] as any).ensemble?.dialogueCues;
+    expect(cues[0].performanceDirection).toEqual({
+      version: 2,
+      emotion: { primary: 'proud' },
+      techniques: ['shouted'],
+    });
+    expect(() => parseChangeSet(res.changeSet)).not.toThrow();
   });
 });

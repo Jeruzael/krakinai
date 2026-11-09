@@ -7,7 +7,7 @@ import type {
   RecordTarget,
   RecipeSceneOperation,
 } from '../types/changeSet';
-import type { BuilderSlot, ProductionStatus, SceneSettings, ShotType } from '../types/domain';
+import type { BuilderSlot, ProductionStatus, SceneSettings, ShotType, DialoguePerformanceDirectionV2 } from '../types/domain';
 import type { CameraCompositionChoice } from '../types/cinematography';
 import type { DialogueCue } from '../types/ensemble';
 import type { SceneBlockingV1 } from '../types/blocking';
@@ -16,6 +16,294 @@ import type { KeyframePlanV1, KeyframePatchV1 } from '../types/keyframes';
 import { NULL_BLOCKING_DIGEST } from './blockingPatch';
 import { McpError } from './mcpProtocol';
 import { CINEMATOGRAPHY_TECHNIQUES, getCinematographyTechnique } from './cinematographyRegistry';
+import {
+  EMOTIONS,
+  EMOTIONAL_INTENSITIES,
+  TECHNIQUES,
+  VOICE_FIELDS,
+  SPEECH_FIELDS,
+  GESTURES,
+  conflictingTechnique,
+  type TechniqueId,
+} from './performanceCatalog';
+import { validatePerformanceDirection } from './dialoguePerformance';
+
+export interface StagingWarning {
+  code: 'SLOT_REQUIRED_MISSING' | 'SLOT_OPTIONAL_UNASSIGNED' | 'PERFORMANCE_NORMALIZED' | 'CUE_PARTICIPANT_UNLINKED';
+  operationId: string;
+  slot?: BuilderSlot;
+  message: string;
+}
+
+function findCatalogKey<T extends string>(
+  input: unknown,
+  catalog: Record<T, string>,
+): T | undefined {
+  if (input === undefined || input === null) return undefined;
+  const str = String(input).trim();
+  if (!str) return undefined;
+  if (Object.hasOwn(catalog, str)) return str as T;
+  const candidateKey = str.toLowerCase().replace(/[\s-]+/g, '_');
+  if (Object.hasOwn(catalog, candidateKey)) return candidateKey as T;
+  const lower = str.toLowerCase();
+  for (const [key, label] of Object.entries<string>(catalog)) {
+    if (label.toLowerCase() === lower || key.toLowerCase() === lower) {
+      return key as T;
+    }
+  }
+  return undefined;
+}
+
+export function normalizePerformanceDirection(raw: unknown): {
+  value?: DialoguePerformanceDirectionV2;
+  warnings: string[];
+} {
+  const warnings: string[] = [];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { value: undefined, warnings };
+  }
+  const p = raw as Record<string, unknown>;
+  if (p.version === 1) {
+    if (validatePerformanceDirection(p) === undefined) {
+      return { value: p as any, warnings };
+    }
+  }
+
+  const result: DialoguePerformanceDirectionV2 = { version: 2 };
+
+  if (p.emotion && typeof p.emotion === 'object' && !Array.isArray(p.emotion)) {
+    const e = p.emotion as Record<string, unknown>;
+    const emotionObj: Record<string, unknown> = {};
+    if (e.primary !== undefined) {
+      const primary = findCatalogKey(e.primary, EMOTIONS);
+      if (primary) {
+        emotionObj.primary = primary;
+      } else {
+        warnings.push(`performanceDirection.emotion.primary: "${e.primary}" is not a catalog option.`);
+      }
+    }
+    if (e.secondary !== undefined) {
+      const secondary = findCatalogKey(e.secondary, EMOTIONS);
+      if (secondary) {
+        if (secondary === emotionObj.primary) {
+          warnings.push('Dialogue performance emotions must be distinct; dropped duplicate secondary emotion.');
+        } else {
+          emotionObj.secondary = secondary;
+        }
+      } else {
+        warnings.push(`performanceDirection.emotion.secondary: "${e.secondary}" is not a catalog option.`);
+      }
+    }
+    if (e.intensity !== undefined) {
+      const intensity = findCatalogKey(e.intensity, EMOTIONAL_INTENSITIES);
+      if (intensity) {
+        emotionObj.intensity = intensity;
+      } else {
+        warnings.push(`performanceDirection.emotion.intensity: "${e.intensity}" is not a catalog option.`);
+      }
+    }
+    if (typeof e.custom === 'string') {
+      if (e.custom.length > 1000) {
+        warnings.push('performanceDirection.emotion.custom truncated to 1000 characters.');
+        emotionObj.custom = e.custom.slice(0, 1000);
+      } else {
+        emotionObj.custom = e.custom;
+      }
+    }
+    if (Object.keys(emotionObj).length > 0) {
+      result.emotion = emotionObj as any;
+    }
+  }
+
+  if (Array.isArray(p.techniques)) {
+    const validTechs: TechniqueId[] = [];
+    for (const item of p.techniques) {
+      const match = findCatalogKey(item, TECHNIQUES);
+      if (!match) {
+        warnings.push(`performanceDirection.techniques: "${item}" is not a catalog option.`);
+      } else if (validTechs.includes(match)) {
+        // duplicate, skip
+      } else if (conflictingTechnique(match, validTechs)) {
+        warnings.push(`performanceDirection.techniques: "${match}" conflicts with already selected technique; dropped.`);
+      } else {
+        validTechs.push(match);
+      }
+    }
+    if (validTechs.length > 0) {
+      result.techniques = validTechs;
+    }
+  }
+
+  if (typeof p.customTechnique === 'string') {
+    if (p.customTechnique.length > 1000) {
+      warnings.push('performanceDirection.customTechnique truncated to 1000 characters.');
+      result.customTechnique = p.customTechnique.slice(0, 1000);
+    } else {
+      result.customTechnique = p.customTechnique;
+    }
+  }
+
+  if (p.voice && typeof p.voice === 'object' && !Array.isArray(p.voice)) {
+    const v = p.voice as Record<string, unknown>;
+    const voiceObj: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(VOICE_FIELDS)) {
+      if (v[key] !== undefined) {
+        const match = findCatalogKey(v[key], field.options as Record<string, string>);
+        if (match) {
+          voiceObj[key] = match;
+        } else {
+          warnings.push(`performanceDirection.voice.${key}: "${v[key]}" is not a catalog option.`);
+        }
+      }
+    }
+    if (Object.keys(voiceObj).length > 0) {
+      result.voice = voiceObj as any;
+    }
+  }
+
+  if (p.speech && typeof p.speech === 'object' && !Array.isArray(p.speech)) {
+    const s = p.speech as Record<string, unknown>;
+    const speechObj: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(SPEECH_FIELDS)) {
+      if (s[key] !== undefined) {
+        const match = findCatalogKey(s[key], field.options as Record<string, string>);
+        if (match) {
+          speechObj[key] = match;
+        } else {
+          warnings.push(`performanceDirection.speech.${key}: "${s[key]}" is not a catalog option.`);
+        }
+      }
+    }
+    if (typeof s.emphasis === 'string') {
+      if (s.emphasis.length > 1000) {
+        warnings.push('performanceDirection.speech.emphasis truncated to 1000 characters.');
+        speechObj.emphasis = s.emphasis.slice(0, 1000);
+      } else {
+        speechObj.emphasis = s.emphasis;
+      }
+    }
+    if (Object.keys(speechObj).length > 0) {
+      result.speech = speechObj as any;
+    }
+  }
+
+  if (Array.isArray(p.gestures)) {
+    const validGestures: string[] = [];
+    for (const g of p.gestures) {
+      const match = findCatalogKey(g, GESTURES);
+      if (match) {
+        if (!validGestures.includes(match)) validGestures.push(match);
+      } else {
+        warnings.push(`performanceDirection.gestures: "${g}" is not a catalog option.`);
+      }
+    }
+    if (validGestures.length > 0) {
+      result.gestures = validGestures as any;
+    }
+  }
+
+  const hasData = Boolean(
+    result.emotion ||
+    result.techniques?.length ||
+    result.customTechnique ||
+    (result.voice && Object.keys(result.voice).length) ||
+    (result.speech && Object.keys(result.speech).length) ||
+    result.gestures?.length
+  );
+
+  if (!hasData) {
+    return { value: undefined, warnings };
+  }
+
+  const valErr = validatePerformanceDirection(result);
+  if (valErr) {
+    warnings.push(valErr);
+    return { value: undefined, warnings };
+  }
+
+  return { value: result, warnings };
+}
+
+function clampTiming(t: any, maxDuration: number) {
+  if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, maxDuration) };
+  let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
+  let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
+  if (start >= maxDuration) start = Math.max(0, maxDuration - 1);
+  if (end > maxDuration) end = maxDuration;
+  if (end <= start) end = Math.min(maxDuration, start + 0.5);
+  return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
+}
+
+export function normalizeDialogueCue(
+  raw: Record<string, unknown>,
+  index: number,
+  ctx: {
+    castIds: Set<string>;
+    cast: any[];
+    maxDuration: number;
+    defaultId?: string;
+    operationId?: string;
+  },
+): { cue: DialogueCue; warnings: StagingWarning[] } {
+  const warnings: StagingWarning[] = [];
+  const cueId = String(raw.id || ctx.defaultId || `cue-${index + 1}`);
+  const speaker = String(raw.speaker || raw.speakerParticipantId || 'Speaker');
+  const line = String(raw.line || raw.lineText || '');
+  const timing = clampTiming(
+    raw.timing ?? (typeof raw.startSeconds === 'number' && typeof raw.endSeconds === 'number' ? { startSeconds: raw.startSeconds, endSeconds: raw.endSeconds } : undefined),
+    ctx.maxDuration,
+  );
+
+  let participantId = typeof raw.speakerParticipantId === 'string' || typeof raw.participantId === 'string'
+    ? String(raw.speakerParticipantId || raw.participantId)
+    : undefined;
+  if (participantId && !ctx.castIds.has(participantId)) {
+    const matched = ctx.cast.find((p: any) => {
+      if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+      const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+      if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+      return false;
+    });
+    if (matched) {
+      participantId = String(matched.id);
+    } else {
+      warnings.push({
+        code: 'CUE_PARTICIPANT_UNLINKED',
+        operationId: ctx.operationId || '',
+        message: `Cue "${cueId}": participant "${participantId}" is not in the scene cast; unlinked cue.`,
+      });
+      participantId = undefined;
+    }
+  }
+
+  const cue: Record<string, unknown> = {
+    id: cueId,
+    speaker,
+    line,
+    timing,
+  };
+  if (participantId) cue.participantId = participantId;
+  if (typeof raw.mode === 'string') cue.mode = raw.mode;
+  if (typeof raw.deliveryNotes === 'string') cue.deliveryNotes = raw.deliveryNotes;
+  if (typeof raw.language === 'string') cue.language = raw.language;
+  if (typeof raw.captionPreference === 'string') cue.captionPreference = raw.captionPreference;
+
+  if (raw.performanceDirection !== undefined && raw.performanceDirection !== null) {
+    const { value, warnings: perfWarnings } = normalizePerformanceDirection(raw.performanceDirection);
+    for (const msg of perfWarnings) {
+      warnings.push({
+        code: 'PERFORMANCE_NORMALIZED',
+        operationId: ctx.operationId || '',
+        message: `Cue "${cueId}": ${msg}`,
+      });
+    }
+    if (value) {
+      cue.performanceDirection = value;
+    }
+  }
+
+  return { cue: cue as unknown as DialogueCue, warnings };
+}
 
 const DEFAULT_DIGEST = '0'.repeat(64);
 
@@ -670,10 +958,11 @@ function normalizeRecordTarget(target?: unknown, defaultRef = 'ref-1'): RecordTa
 export function stageSceneRecipeOperation(
   draft: ChangeSet,
   args: Record<string, unknown>,
-): { changeSet: ChangeSet; operationId: string } {
+): { changeSet: ChangeSet; operationId: string; warnings: StagingWarning[] } {
   const clientRef = String(args.clientRef || `scene-${args.shot?.toString() || Date.now()}`);
   const operationId = String(args.operationId || `op-${clientRef}`);
   const mode = String(args.mode || 'create');
+  const warnings: StagingWarning[] = [];
 
   const existingOp = draft.operations.find(
     (o) =>
@@ -774,43 +1063,19 @@ export function stageSceneRecipeOperation(
     ? args.dialogueCues
     : (Array.isArray(rawEnsemble.dialogueCues) ? rawEnsemble.dialogueCues : undefined);
 
-  const clampTiming = (t?: any) => {
-    const maxDuration = settings.durationSeconds ?? 60;
-    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, maxDuration) };
-    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
-    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
-    if (start >= maxDuration) start = Math.max(0, maxDuration - 1);
-    if (end > maxDuration) end = maxDuration;
-    if (end <= start) end = Math.min(maxDuration, start + 0.5);
-    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
-  };
-
   if (rawDialogueCues) {
     const cast = op.ensemble?.participantUpserts ?? [];
     const castIds = new Set(cast.map((p: any) => String(p.id)));
+    const maxDuration = settings.durationSeconds ?? 60;
     const cues = rawDialogueCues.map((c, i) => {
-      let participantId = c.speakerParticipantId || c.participantId ? String(c.speakerParticipantId || c.participantId) : undefined;
-      if (participantId && !castIds.has(participantId)) {
-        const matched = cast.find((p: any) => {
-          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
-          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
-          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
-          return false;
-        });
-        participantId = matched ? String(matched.id) : undefined;
-      }
-      return {
-        id: String(c.id || `cue-${i + 1}`),
-        speaker: String(c.speaker || c.speakerParticipantId || 'Speaker'),
-        line: String(c.line || c.lineText || ''),
-        timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
-        ...(participantId ? { participantId } : {}),
-        ...(c.mode ? { mode: c.mode } : {}),
-        ...(c.deliveryNotes ? { deliveryNotes: c.deliveryNotes } : {}),
-        ...(c.language ? { language: c.language } : {}),
-        ...(c.captionPreference ? { captionPreference: c.captionPreference } : {}),
-        ...(c.performanceDirection ? { performanceDirection: c.performanceDirection } : {}),
-      };
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(c as Record<string, unknown>, i, {
+        castIds,
+        cast,
+        maxDuration,
+        operationId,
+      });
+      warnings.push(...cueWarnings);
+      return cue;
     });
 
     op.ensemble = {
@@ -826,28 +1091,15 @@ export function stageSceneRecipeOperation(
       const d = args.dialogue as Record<string, unknown>;
       const cast = op.ensemble?.participantUpserts ?? [];
       const castIds = new Set(cast.map((p: any) => String(p.id)));
-      let participantId = d.speakerParticipantId || d.participantId ? String(d.speakerParticipantId || d.participantId) : undefined;
-      if (participantId && !castIds.has(participantId)) {
-        const matched = cast.find((p: any) => {
-          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
-          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
-          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
-          return false;
-        });
-        participantId = matched ? String(matched.id) : undefined;
-      }
-      const cue = {
-        id: String(d.id || 'cue-1'),
-        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
-        line: String(d.line || d.lineText || ''),
-        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
-        ...(participantId ? { participantId } : {}),
-        ...(d.mode ? { mode: d.mode } : {}),
-        ...(d.deliveryNotes ? { deliveryNotes: d.deliveryNotes } : {}),
-        ...(d.language ? { language: d.language } : {}),
-        ...(d.captionPreference ? { captionPreference: d.captionPreference } : {}),
-        ...(d.performanceDirection ? { performanceDirection: d.performanceDirection } : {}),
-      };
+      const maxDuration = settings.durationSeconds ?? 60;
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(d, 0, {
+        castIds,
+        cast,
+        maxDuration,
+        defaultId: 'cue-1',
+        operationId,
+      });
+      warnings.push(...cueWarnings);
       op.ensemble = {
         ...op.ensemble,
         version: 1,
@@ -868,7 +1120,10 @@ export function stageSceneRecipeOperation(
     delete (op as any).identitySource;
   }
 
-  return upsertOperation(draft, op as unknown as ChangeOperation);
+  return {
+    ...upsertOperation(draft, op as unknown as ChangeOperation),
+    warnings,
+  };
 }
 
 function findStagedRecipeOperation(
@@ -963,66 +1218,27 @@ export function stageSceneEnsembleOperation(
 export function stageSceneDialogueOperation(
   draft: ChangeSet,
   args: Record<string, unknown>,
-): { changeSet: ChangeSet; operationId: string } {
+): { changeSet: ChangeSet; operationId: string; warnings: StagingWarning[] } {
   const sceneClientRef = String(args.sceneClientRef || '');
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
   let updatedOp: RecipeSceneOperation = { ...op };
   const durationSeconds = op.settings?.durationSeconds ?? 8;
-
-  const clampTiming = (t?: any) => {
-    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, durationSeconds) };
-    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
-    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
-    if (start >= durationSeconds) start = Math.max(0, durationSeconds - 1);
-    if (end > durationSeconds) end = durationSeconds;
-    if (end <= start) end = Math.min(durationSeconds, start + 0.5);
-    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
-  };
+  const operationId = op.operationId;
+  const warnings: StagingWarning[] = [];
 
   if (Array.isArray(args.dialogueCues)) {
     const cast = updatedOp.ensemble?.participantUpserts ?? [];
     const castIds = new Set(cast.map((p: any) => String(p.id)));
     const dialogueCues = (args.dialogueCues as Array<Record<string, unknown>>).map((c, i) => {
-      const line = String(c.lineText || c.line || '');
-      const speaker = String(c.speaker || c.speakerParticipantId || 'Speaker');
-      const cueObj: Record<string, unknown> = {
-        id: String(c.id || `cue-${i + 1}`),
-        speaker,
-        line,
-        timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
-      };
-      let participantId = typeof c.speakerParticipantId === 'string' || typeof c.participantId === 'string'
-        ? String(c.speakerParticipantId || c.participantId)
-        : undefined;
-      if (participantId && !castIds.has(participantId)) {
-        const matched = cast.find((p: any) => {
-          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
-          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
-          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
-          return false;
-        });
-        participantId = matched ? String(matched.id) : undefined;
-      }
-      if (participantId) {
-        cueObj.participantId = participantId;
-      }
-      if (typeof c.mode === 'string') {
-        cueObj.mode = c.mode;
-      }
-      if (typeof c.deliveryNotes === 'string') {
-        cueObj.deliveryNotes = c.deliveryNotes;
-      }
-      if (typeof c.language === 'string') {
-        cueObj.language = c.language;
-      }
-      if (typeof c.captionPreference === 'string') {
-        cueObj.captionPreference = c.captionPreference;
-      }
-      if (c.performanceDirection) {
-        cueObj.performanceDirection = c.performanceDirection;
-      }
-      return cueObj;
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(c, i, {
+        castIds,
+        cast,
+        maxDuration: durationSeconds,
+        operationId,
+      });
+      warnings.push(...cueWarnings);
+      return cue;
     });
 
     updatedOp = {
@@ -1041,50 +1257,20 @@ export function stageSceneDialogueOperation(
       const d = args.dialogue as Record<string, unknown>;
       const cast = updatedOp.ensemble?.participantUpserts ?? [];
       const castIds = new Set(cast.map((p: any) => String(p.id)));
-      const cueObj: Record<string, unknown> = {
-        id: String(d.id || 'cue-1'),
-        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
-        line: String(d.line || d.lineText || ''),
-        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
-      };
-      let participantId = typeof d.speakerParticipantId === 'string' || typeof d.participantId === 'string'
-        ? String(d.speakerParticipantId || d.participantId)
-        : undefined;
-      if (participantId && !castIds.has(participantId)) {
-        const matched = cast.find((p: any) => {
-          if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
-          const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
-          if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
-          return false;
-        });
-        participantId = matched ? String(matched.id) : undefined;
-      }
-      if (participantId) {
-        cueObj.participantId = participantId;
-      }
-      if (typeof d.mode === 'string') {
-        cueObj.mode = d.mode;
-      }
-      if (typeof d.deliveryNotes === 'string') {
-        cueObj.deliveryNotes = d.deliveryNotes;
-      }
-      if (typeof d.language === 'string') {
-        cueObj.language = d.language;
-      }
-      if (typeof d.captionPreference === 'string') {
-        cueObj.captionPreference = d.captionPreference;
-      }
-      if (d.performanceDirection) {
-        cueObj.performanceDirection = d.performanceDirection;
-      }
-
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(d, 0, {
+        castIds,
+        cast,
+        maxDuration: durationSeconds,
+        defaultId: 'cue-1',
+        operationId,
+      });
+      warnings.push(...cueWarnings);
       updatedOp = {
         ...updatedOp,
         ensemble: {
+          ...updatedOp.ensemble,
           version: 1,
-          ...(updatedOp.ensemble?.participantUpserts ? { participantUpserts: updatedOp.ensemble.participantUpserts } : {}),
-          ...(updatedOp.ensemble?.primaryParticipantId ? { primaryParticipantId: updatedOp.ensemble.primaryParticipantId } : {}),
-          dialogueCues: [cueObj as any],
+          dialogueCues: [cue as any],
         },
       };
       delete (updatedOp as any).dialogue;
@@ -1106,6 +1292,7 @@ export function stageSceneDialogueOperation(
       operations,
     },
     operationId: updatedOp.operationId,
+    warnings,
   };
 }
 
