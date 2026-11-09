@@ -974,6 +974,9 @@ function normalizeKeyframes(rawInput?: unknown): Record<string, unknown> {
     label: typeof f.label === 'string' ? f.label : null,
     role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
     visualInstructions: f.beatDescription || f.visualInstructions || null,
+    participantRefs: Array.isArray(f.participantRefs) ? f.participantRefs : [],
+    referenceAssociationIds: Array.isArray(f.referenceAssociationIds) ? f.referenceAssociationIds : [],
+    instant: f.instant ?? { kind: 'custom', participantUpserts: [] },
   }));
   const frameOrder = Array.isArray(raw.frameOrder)
     ? (raw.frameOrder as string[]).map(String)

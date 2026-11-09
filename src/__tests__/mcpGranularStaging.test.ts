@@ -415,6 +415,7 @@ describe('mcpGranularStaging', () => {
       const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
       expect(patched).toBeDefined();
       expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
+      expect(patched!.frames[0].instant).toEqual({ kind: 'custom', participants: [] });
     });
 
     it('populates frameOrder when using stageKeyframePlanOperation', () => {
@@ -446,6 +447,7 @@ describe('mcpGranularStaging', () => {
       const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
       expect(patched).toBeDefined();
       expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
+      expect(patched!.frames[0].instant).toEqual({ kind: 'custom', participants: [] });
     });
   });
 });
