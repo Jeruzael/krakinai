@@ -35,7 +35,7 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
   const select = (field: PermissionField, ids: string[], value: boolean) => edit(current => changeSelection(current, field, ids, value));
   const reset = () => { setDraft(structuredClone(scope)); setDependentRemoved([]); setPreset('Custom'); setError(''); setMessage('Unapplied changes reset. Active permissions are unchanged.'); };
   const proposeFullAccess = () => {
-    edit(s => presetPermissionDraft('full', s, snapshot, { connected: phase === 'connected' }), 'Full Access');
+    edit(s => presetPermissionDraft('full', s, snapshot, { grantAll: true, connected: phase === 'connected' }), 'Full Access');
   };
   const apply = () => {
     try {

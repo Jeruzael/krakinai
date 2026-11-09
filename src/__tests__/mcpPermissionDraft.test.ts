@@ -100,9 +100,20 @@ describe('complete-set permission edits', () => {
   it('full access selects only known records and minimal/creative remain explicit draft transforms', () => {
     const state = fixture(), before = { ...emptyMcpScope(), projectIds: ['project_a'], assetIds: ['asset_79'], includeNotes: true };
     const full = presetPermissionDraft('full', before, state);
-    expect(full.version).toBe(3);
+    expect(full.version).toBe(1);
     expect(full.assetIds).toHaveLength(80); expect(full.fullPromptSceneIds).toEqual(['scene_a', 'scene_b']);
     expect(full.includeCharacterIdentity).toBe(true); expect(full.allowNewProjects).toBe(true); expect(before.includeNotes).toBe(true);
+    const creative = presetPermissionDraft('creative', before, state);
+    expect(creative.projectIds).toEqual(['project_a']); expect(creative.assetIds).toEqual(['asset_79']);
+    expect(creative.allowProposals).toBe(true); expect(creative.includeNotes).toBe(false); expect(creative.allowNewProjects).toBe(false);
+    const minimal = presetPermissionDraft('minimal', before, state);
+    expect(minimal.projectIds).toEqual(['project_a']); expect(minimal.assetIds).toEqual([]); expect(minimal.allowProposals).toBe(false);
+  });
+  it('full access with grantAll options grants blocking and keyframe permissions', () => {
+    const state = fixture(), before = emptyMcpScope();
+    const full = presetPermissionDraft('full', before, state, { grantAll: true });
+    expect(full.version).toBe(3);
+    expect(full.assetIds).toHaveLength(80);
     if (full.version === 3) {
       expect(full.blockingSceneIds).toEqual(['scene_a', 'scene_b']);
       expect(full.allowBlockingProposals).toBe(true);
@@ -111,15 +122,10 @@ describe('complete-set permission edits', () => {
       expect(full.allowFrameImageProposals).toBe(true);
       expect(full.allowImagePromptDerivation).toBe(true);
     }
-    const creative = presetPermissionDraft('creative', before, state);
-    expect(creative.projectIds).toEqual(['project_a']); expect(creative.assetIds).toEqual(['asset_79']);
-    expect(creative.allowProposals).toBe(true); expect(creative.includeNotes).toBe(false); expect(creative.allowNewProjects).toBe(false);
-    const minimal = presetPermissionDraft('minimal', before, state);
-    expect(minimal.projectIds).toEqual(['project_a']); expect(minimal.assetIds).toEqual([]); expect(minimal.allowProposals).toBe(false);
   });
   it('full access when connected preserves the connected pairing version without error', () => {
     const state = fixture(), v1Scope = emptyMcpScope();
-    const fullV1 = presetPermissionDraft('full', v1Scope, state, { connected: true });
+    const fullV1 = presetPermissionDraft('full', v1Scope, state, { connected: true, grantAll: true });
     expect(fullV1.version).toBe(1);
     expect(fullV1.allowProposals).toBe(true);
     expect(fullV1.includeCharacterIdentity).toBe(true);

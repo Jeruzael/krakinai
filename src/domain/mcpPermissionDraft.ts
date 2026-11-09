@@ -99,9 +99,9 @@ export function presetPermissionDraft(
   preset: 'minimal' | 'creative' | 'full',
   scope: McpScope,
   state: ChangeSetState,
-  options?: { connected?: boolean },
+  options?: { connected?: boolean; grantAll?: boolean },
 ): McpScope {
-  const targetVersion: 1 | 2 | 3 = preset === 'full' && !options?.connected ? 3 : scope.version;
+  const targetVersion: 1 | 2 | 3 = preset === 'full' && options?.grantAll && !options?.connected ? 3 : scope.version;
   let next: McpScope = {
     ...(targetVersion === 3 ? emptyMcpScopeV3() : targetVersion === 2 ? emptyMcpScopeV2() : emptyMcpScope()),
     epoch: scope.epoch,
@@ -123,18 +123,20 @@ export function presetPermissionDraft(
       .slice(0, MCP_SCOPE_LIMITS.receiptGrants)
       .map(r => ({ changeSetId: r.changeSetId, packageDigest: r.packageDigest }));
     for (const { field } of [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS]) next[field] = true;
-    if (next.version !== 1) {
-      next.blockingSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.blockingSceneIds);
-      next.allowBlockingProposals = true;
-    }
-    if (next.version === 3) {
-      next.keyframeSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.keyframeSceneIds);
-      next.imagePromptFrameGrants = state.scenes
-        .flatMap(s => (s.keyframePlan?.frames ?? []).map(f => ({ sceneId: s.id, frameId: f.id })))
-        .slice(0, MCP_SCOPE_LIMITS.imagePromptFrameGrants);
-      next.allowKeyframeProposals = true;
-      next.allowFrameImageProposals = true;
-      next.allowImagePromptDerivation = true;
+    if (options?.grantAll) {
+      if (next.version !== 1) {
+        next.blockingSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.blockingSceneIds);
+        next.allowBlockingProposals = true;
+      }
+      if (next.version === 3) {
+        next.keyframeSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.keyframeSceneIds);
+        next.imagePromptFrameGrants = state.scenes
+          .flatMap(s => (s.keyframePlan?.frames ?? []).map(f => ({ sceneId: s.id, frameId: f.id })))
+          .slice(0, MCP_SCOPE_LIMITS.imagePromptFrameGrants);
+        next.allowKeyframeProposals = true;
+        next.allowFrameImageProposals = true;
+        next.allowImagePromptDerivation = true;
+      }
     }
   }
   return checked(next);
