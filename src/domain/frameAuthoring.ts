@@ -54,11 +54,13 @@ export async function prepareFrameAuthoring(draft:SceneDraft,parent:SavedScene|u
  const ids=new Set([...Object.values(basis.frames),...Object.values(before.frames)].flatMap(frame=>frame.referenceProvenance.map(p=>p.association.mediaId)));
  for(const source of [draft,...(parent?[parent]:[])])for(const link of getActiveSourceMediaLinks(source))ids.add(link.mediaId);
  const mediaSignatures:[string,string|null][]=[...ids].map(id=>[id,media.has(id)?frameMediaSignature(media.get(id)!):null]);
- return{draftSignature:canonicalStringify(draft),choicesSignature:frameChoicesSignature(choices),sourceSignature:canonicalStringify(parent??null),mediaSignatures,basis,differences,images,video,findings,beforeBlocking:structuredClone(parent?.blocking),afterBlocking:structuredClone(draft.blocking),beforePlan:structuredClone(parent?.keyframePlan),afterPlan:structuredClone(draft.keyframePlan),frames:await prepareFramePromptProofs(images,basis)};
+ const {authoredProjectTarget:_,...sigDraft}=draft;
+ return{draftSignature:canonicalStringify(sigDraft),choicesSignature:frameChoicesSignature(choices),sourceSignature:canonicalStringify(parent??null),mediaSignatures,basis,differences,images,video,findings,beforeBlocking:structuredClone(parent?.blocking),afterBlocking:structuredClone(draft.blocking),beforePlan:structuredClone(parent?.keyframePlan),afterPlan:structuredClone(draft.keyframePlan),frames:await prepareFramePromptProofs(images,basis)};
 }
 
 /** No WebCrypto or decoding inside the atomic write boundary. */
 export function assertPreparedFrameAuthoring(prepared:PreparedFrameAuthoring,draft:SceneDraft,parent:SavedScene|undefined,media:ReadonlyMap<string,MediaAsset>,choices:FrameAuthoringChoices):void{
- if(prepared.draftSignature!==canonicalStringify(draft)||prepared.choicesSignature!==frameChoicesSignature(choices)||prepared.sourceSignature!==canonicalStringify(parent??null)||prepared.mediaSignatures.some(([id,signature])=>signature!==(media.has(id)?frameMediaSignature(media.get(id)!):null)))throw Error('Frame source, current media, draft or reviewed choices changed during preparation. Preview again; no scene was saved.');
+ const {authoredProjectTarget:_,...sigDraft}=draft;
+ if(prepared.draftSignature!==canonicalStringify(sigDraft)||prepared.choicesSignature!==frameChoicesSignature(choices)||prepared.sourceSignature!==canonicalStringify(parent??null)||prepared.mediaSignatures.some(([id,signature])=>signature!==(media.has(id)?frameMediaSignature(media.get(id)!):null)))throw Error('Frame source, current media, draft or reviewed choices changed during preparation. Preview again; no scene was saved.');
  const errors=prepared.findings.filter(f=>f.severity==='blocking');if(errors.length)throw Error(errors.map(f=>f.message).join(' '));
 }

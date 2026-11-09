@@ -23,7 +23,10 @@ export interface KeyframePlanningContext {
  mediaValidationErrors:Map<string,string>;
  collect?:(op:RecipeSceneOperation,draft:SceneDraft,parent:SavedScene|undefined)=>void;
 }
-export const keyframeDraftSignature=(draft:SceneDraft,op:RecipeSceneOperation,approval:ChangeSetApproval)=>canonicalStringify({draft,op,frameOutputDecisions:approval.frameOutputDecisions?.[op.operationId],blockingOutputDecisions:approval.blockingOutputDecisions?.[op.operationId]});
+export const keyframeDraftSignature=(draft:SceneDraft,op:RecipeSceneOperation,approval:ChangeSetApproval)=>{
+ const {authoredProjectTarget,...signatureDraft}=draft;
+ return canonicalStringify({draft:signatureDraft,op,frameOutputDecisions:approval.frameOutputDecisions?.[op.operationId],blockingOutputDecisions:approval.blockingOutputDecisions?.[op.operationId]});
+};
 
 /** Hashing is bounded and happens before opening the Stage B write transaction. */
 export async function prepareKeyframeSources(scenes:SavedScene[],media:ReadonlyMap<string,MediaAsset>):Promise<KeyframeSourceProofs>{
