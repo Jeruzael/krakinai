@@ -1090,6 +1090,9 @@ export function stageSceneRecipeOperation(
   const rawKeyframes = args.keyframes ?? args.keyframePlan;
   if (rawKeyframes !== undefined) {
     op.keyframes = normalizeKeyframes(rawKeyframes) as any;
+    (op as any).videoDecision = (args.videoDecision as any) ?? (existingOp as any)?.videoDecision ?? 'reassemble';
+  } else if (existingOp && (existingOp as any).keyframes !== undefined) {
+    (op as any).videoDecision = (args.videoDecision as any) ?? (existingOp as any).videoDecision ?? 'reassemble';
   }
 
   // Inline ensemble or participants
@@ -1574,6 +1577,7 @@ export function stageKeyframePlanOperation(
   const updatedOp: RecipeSceneOperation = {
     ...op,
     keyframes: keyframes as any,
+    videoDecision: (args.videoDecision as any) ?? (op as any).videoDecision ?? 'reassemble',
   };
 
   const operations = [...draft.operations];
