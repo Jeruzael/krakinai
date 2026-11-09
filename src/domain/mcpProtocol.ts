@@ -153,6 +153,7 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
     shotType: { type: 'string', maxLength: 100 },
     settings: { type: 'object' },
     slots: { type: 'object' },
+    assetRefs: { type: 'array' },
     sceneInstructions: { type: 'string', maxLength: 4000 },
     avoidText: { type: 'string', maxLength: 2000 },
     overrides: { type: 'object' },

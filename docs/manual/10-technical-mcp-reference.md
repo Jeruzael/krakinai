@@ -246,7 +246,7 @@ graph TD
   - `variants?: Array<object>`: List of outfit variants (`clientRef`, `parentCharacterId`, `title`, `promptText`).
   - `shots?: Array<object>`: List of shots to create (`clientRef`, `code`, `title`, `plannedShotType`, `plannedDurationSeconds`).
   - `scenes?: Array<object>`: List of composite scene recipes (`clientRef`, `shot`, `title`, `shotType`, `settings`, `assetRefs`, `ensemble`, `cameraComposition`, `sceneInstructions`, `avoidText`, `blocking`, `keyframes`).
-- **Returns**: `{ proposalId, changeSetId, operationCount, stagedCounts: { assets, variants, projects, shots, scenes }, batchChecks }`.
+- **Returns**: `{ proposalId, changeSetId, operationCount, stagedCounts: { assets, variants, projects, shots, scenes }, warnings: Array<StagingWarning>, batchChecks }`.
 
 #### `krakinai_stage_project`
 - **Purpose**: Stages a `project.create` or `project.update` operation into a draft proposal.
@@ -305,8 +305,8 @@ graph TD
 
 #### `krakinai_stage_scene_recipe`
 - **Purpose**: Stages a modular `scene.create_recipe`, `scene.revise_recipe`, or `scene.create_recipe_take` operation.
-- **Arguments**: `changeSetId: string`, `clientRef: string`, `project`, `shot`, `title: string`, `shotType?: string`, `settings?: object`, `slots?: object`, `sceneInstructions?: string`, `avoidText?: string`, `mode?: 'create' | 'revise' | 'take'`.
-- **Returns**: Proposal status and staged operation ID.
+- **Arguments**: `changeSetId: string`, `clientRef: string`, `project`, `shot`, `title: string`, `shotType?: string`, `settings?: object`, `slots?: object`, `assetRefs?: Array<object>`, `sceneInstructions?: string`, `avoidText?: string`, `mode?: 'create' | 'revise' | 'take'`.
+- **Returns**: Proposal status, staged operation ID, and `warnings: Array<StagingWarning>`.
 
 #### `krakinai_stage_scene_ensemble`
 - **Purpose**: Sets or patches the multi-actor `ensemble` block on an already-staged scene recipe.
@@ -316,7 +316,7 @@ graph TD
 #### `krakinai_stage_scene_dialogue`
 - **Purpose**: Sets single-speaker `dialogue` or multi-speaker `dialogueCues` with timing and performance direction.
 - **Arguments**: `changeSetId: string`, `sceneClientRef: string`, `dialogue?: object`, `dialogueCues?: Array<object>`.
-- **Returns**: Proposal status and staged operation ID.
+- **Returns**: Proposal status, staged operation ID, and `warnings: Array<StagingWarning>`.
 
 #### `krakinai_stage_camera_composition`
 - **Purpose**: Sets structured camera framing, angles, lenses, and movement on a staged recipe.
@@ -332,6 +332,13 @@ graph TD
 - **Purpose**: Compiles a prompt assembly preview and runs preflight rules on a saved or staged scene.
 - **Arguments**: `sceneId?: string`, `changeSetId?: string`, `sceneClientRef?: string`.
 - **Returns**: Assembled prompt text (if disclosed), preflight findings, and validation status.
+
+##### Staging Warnings Contract
+Staging operations (`krakinai_stage_scene_recipe`, `krakinai_stage_scene_dialogue`, `krakinai_stage_storyboard_batch`) return a `warnings: Array<{ code, operationId, slot?, message }>` array reporting slot-coverage and cue normalization findings:
+- `SLOT_REQUIRED_MISSING`: A slot required by shot type rules (e.g. `action` on a `character_scene`) is missing from `assetRefs`/`slots`.
+- `SLOT_OPTIONAL_UNASSIGNED`: An optional slot recommended for coverage (e.g. `lighting` on a `character_scene`) is unassigned.
+- `PERFORMANCE_NORMALIZED`: A Performance Studio direction field or value was mapped, defaulted, or de-duplicated.
+- `CUE_PARTICIPANT_UNLINKED`: A dialogue cue participant is not present in the scene ensemble cast.
 
 ---
 

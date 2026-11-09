@@ -124,3 +124,47 @@ it('shows the actual review-cache failure and clears authority instead of a gene
  vi.spyOn(inbox,'update').mockRejectedValueOnce(new DOMException('Saved review metadata exceeds 64 KiB. Request a smaller batch.','QuotaExceededError'));
  await broker.review(id);expect(broker.getState().proposals[0].status).toBe('conflict');expect(broker.getState().proposals[0].error).toContain('metadata exceeds 64 KiB');expect(broker.isReviewed(id)).toBe(false);
 });
+it('returns staging warnings in the stage tool result', async () => {
+  const broker = make();
+  broker.connect('first', { ...allowed(), allowProposals: true, allowNewProjects: true });
+  await broker.handle({
+    requestId: 'r-proj',
+    tool: 'krakinai_stage_project',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'proj-1', name: 'Warn Project' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-shot',
+    tool: 'krakinai_stage_shot',
+    args: { changeSetId: 'cs-broker-warn', project: { ref: 'proj-1' }, clientRef: 'shot-s01', code: 'S01', title: 'Shot 1' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-env',
+    tool: 'krakinai_stage_asset_candidate',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'env-1', kind: 'environment', title: 'Env 1', promptText: 'An environment' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-style',
+    tool: 'krakinai_stage_asset_candidate',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'style-1', kind: 'style', title: 'Style 1', promptText: 'A style' },
+  }, 'first');
+  const res = await broker.handle({
+    requestId: 'r-stage-warn',
+    tool: 'krakinai_stage_scene_recipe',
+    args: {
+      changeSetId: 'cs-broker-warn',
+      clientRef: 'scene-s01',
+      project: { ref: 'proj-1' },
+      shot: { ref: 'shot-s01' },
+      title: 'Opening Recipe',
+      shotType: 'character_scene',
+      assetRefs: [
+        { slot: 'environment', asset: { ref: 'env-1' } },
+        { slot: 'style', asset: { ref: 'style-1' } },
+      ],
+    },
+  }, 'first');
+  expect(res.ok).toBe(true);
+  const data = (res as any).data;
+  expect(data.warnings).toBeDefined();
+  expect(data.warnings[0].code).toBe('SLOT_REQUIRED_MISSING');
+});

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   createEmptyDraftChangeSet,
   normalizePerformanceDirection,
+  sceneSlotCoverageWarnings,
   stageAssetCandidateOperation,
   stageCameraCompositionOperation,
   stageDirectToRecipeOperation,
@@ -16,6 +17,7 @@ import {
   stageShotOperation,
   stageShotOrderOperation,
   stageShotStatusOperation,
+  stageStoryboardBatchOperation,
 } from '../domain/mcpGranularStaging';
 import { parseChangeSet } from '../domain/changeSetValidation';
 
@@ -289,5 +291,95 @@ describe('mcpGranularStaging', () => {
       techniques: ['shouted'],
     });
     expect(() => parseChangeSet(res.changeSet)).not.toThrow();
+  });
+
+  describe('sceneSlotCoverageWarnings', () => {
+    it('warns when a character_scene lacks action and lighting', () => {
+      const draft = createEmptyDraftChangeSet('cs-warn');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-s01',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-s01' },
+        title: 'Opening Recipe',
+        shotType: 'character_scene',
+        assetRefs: [
+          { slot: 'environment', asset: { ref: 'env-1' } },
+          { slot: 'style', asset: { ref: 'style-1' } },
+        ],
+      });
+      expect(res.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: 'SLOT_REQUIRED_MISSING', slot: 'action' }),
+          expect.objectContaining({ code: 'SLOT_OPTIONAL_UNASSIGNED', slot: 'lighting' }),
+        ]),
+      );
+      const op = res.changeSet.operations[0] as any;
+      expect(op.assetRefs).toHaveLength(2);
+    });
+
+    it('does not warn for property_environment without action', () => {
+      const draft = createEmptyDraftChangeSet('cs-prop');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-prop',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-prop' },
+        title: 'Property Scene',
+        shotType: 'property_environment',
+        assetRefs: [
+          { slot: 'environment', asset: { ref: 'env-1' } },
+        ],
+      });
+      const missing = res.warnings.filter((w) => w.code === 'SLOT_REQUIRED_MISSING');
+      expect(missing).toHaveLength(0);
+    });
+
+    it('treats an id-bound existing action asset as covered', () => {
+      const draft = createEmptyDraftChangeSet('cs-covered');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-covered',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-cov' },
+        title: 'Covered Scene',
+        shotType: 'character_scene',
+        assetRefs: [
+          { slot: 'environment', asset: { id: 'env-1' }, expectedRevision: 1 },
+          { slot: 'action', asset: { id: 'act-1' }, expectedRevision: 2 },
+          { slot: 'lighting', asset: { id: 'light-1' }, expectedRevision: 1 },
+        ],
+      });
+      const actionWarn = res.warnings.find((w) => w.slot === 'action');
+      expect(actionWarn).toBeUndefined();
+    });
+
+    it('aggregates warnings across a storyboard batch', () => {
+      const draft = createEmptyDraftChangeSet('cs-batch-warn');
+      const res = stageStoryboardBatchOperation(draft, {
+        changeSetId: 'cs-batch-warn',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shots: [
+          { clientRef: 'shot-1', code: 'S01', title: 'Shot 1' },
+          { clientRef: 'shot-2', code: 'S02', title: 'Shot 2' },
+        ],
+        scenes: [
+          {
+            clientRef: 'scene-1',
+            shot: { ref: 'shot-1' },
+            title: 'Scene 1',
+            shotType: 'character_scene',
+            assetRefs: [{ slot: 'environment', asset: { ref: 'env-1' } }],
+          },
+          {
+            clientRef: 'scene-2',
+            shot: { ref: 'shot-2' },
+            title: 'Scene 2',
+            shotType: 'character_scene',
+            assetRefs: [{ slot: 'environment', asset: { ref: 'env-2' } }],
+          },
+        ],
+      });
+      const missingAction = res.warnings.filter((w) => w.code === 'SLOT_REQUIRED_MISSING' && w.slot === 'action');
+      expect(missingAction).toHaveLength(2);
+      expect(missingAction[0].operationId).not.toEqual(missingAction[1].operationId);
+    });
   });
 });

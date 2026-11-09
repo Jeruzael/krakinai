@@ -442,6 +442,7 @@ export class ProposalBroker {
       operationCount: record.changeSet.operations.length,
       stagedOperationId: staged.operationId,
       ...('stagedCounts' in staged ? { stagedCounts: (staged as any).stagedCounts } : {}),
+      warnings: (staged as any).warnings ?? [],
       status: 'review_required',
       expiresAt: record.expiresAt,
       summary: preview.plan?.summary,

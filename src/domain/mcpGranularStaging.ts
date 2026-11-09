@@ -28,11 +28,58 @@ import {
 } from './performanceCatalog';
 import { validatePerformanceDirection } from './dialoguePerformance';
 
+import { getShotTypeRules } from './shotTypeRules';
+import { SLOT_LABELS } from './validation';
+
 export interface StagingWarning {
   code: 'SLOT_REQUIRED_MISSING' | 'SLOT_OPTIONAL_UNASSIGNED' | 'PERFORMANCE_NORMALIZED' | 'CUE_PARTICIPANT_UNLINKED';
   operationId: string;
   slot?: BuilderSlot;
   message: string;
+}
+
+export function sceneSlotCoverageWarnings(op: RecipeSceneOperation): StagingWarning[] {
+  const warnings: StagingWarning[] = [];
+  const rules = getShotTypeRules({ shotType: op.shotType, extraRequiredSlots: [] });
+  const assignedSlots = new Set<BuilderSlot>();
+  if (op.assetRefs) {
+    for (const ref of op.assetRefs) {
+      if (ref.slot && ref.asset && ('id' in ref.asset || 'ref' in ref.asset)) {
+        assignedSlots.add(ref.slot);
+      }
+    }
+  }
+  if (op.variantRefs) {
+    for (const ref of op.variantRefs) {
+      if (ref.slot && ref.variantId) {
+        assignedSlots.add(ref.slot);
+      }
+    }
+  }
+
+  for (const req of rules.requiredSlots) {
+    if (!assignedSlots.has(req)) {
+      const label = SLOT_LABELS[req] || req;
+      warnings.push({
+        code: 'SLOT_REQUIRED_MISSING',
+        operationId: op.operationId,
+        slot: req,
+        message: `Scene "${op.operationId}": required slot "${req}" (${label}) is missing. Bind an existing ${label} record or propose a ${req} candidate via assetRefs.`,
+      });
+    }
+  }
+
+  if (op.shotType === 'character_scene' && !assignedSlots.has('lighting')) {
+    const label = SLOT_LABELS.lighting;
+    warnings.push({
+      code: 'SLOT_OPTIONAL_UNASSIGNED',
+      operationId: op.operationId,
+      slot: 'lighting',
+      message: `Scene "${op.operationId}": optional slot "lighting" (${label}) is unassigned. Consider binding a ${label} record or candidate.`,
+    });
+  }
+
+  return warnings;
 }
 
 function findCatalogKey<T extends string>(
@@ -1120,6 +1167,8 @@ export function stageSceneRecipeOperation(
     delete (op as any).identitySource;
   }
 
+  warnings.push(...sceneSlotCoverageWarnings(op));
+
   return {
     ...upsertOperation(draft, op as unknown as ChangeOperation),
     warnings,
@@ -1583,12 +1632,14 @@ export function stageStoryboardBatchOperation(
   changeSet: ChangeSet;
   operationId: string;
   stagedCounts: { assets: number; variants: number; projects: number; shots: number; scenes: number };
+  warnings: StagingWarning[];
 } {
   let currentDraft = structuredClone(draft);
   const changeSetId = String(args.changeSetId);
   if (typeof args.title === 'string') currentDraft.title = args.title;
   if (typeof args.description === 'string') currentDraft.description = args.description;
 
+  const warnings: StagingWarning[] = [];
   let assets = 0;
   let variants = 0;
   let projects = 0;
@@ -1633,6 +1684,7 @@ export function stageStoryboardBatchOperation(
     }
     const res = stageSceneRecipeOperation(currentDraft, sceneObj);
     currentDraft = res.changeSet;
+    warnings.push(...res.warnings);
     scenes++;
   }
 
@@ -1640,5 +1692,6 @@ export function stageStoryboardBatchOperation(
     changeSet: currentDraft,
     operationId: `op-batch-${changeSetId}`,
     stagedCounts: { assets, variants, projects, shots, scenes },
+    warnings,
   };
 }
