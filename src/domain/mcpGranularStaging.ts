@@ -330,7 +330,11 @@ export function normalizeDialogueCue(
     timing,
   };
   if (participantId) cue.participantId = participantId;
-  if (typeof raw.mode === 'string') cue.mode = raw.mode;
+  let mode = typeof raw.mode === 'string' ? raw.mode : undefined;
+  if (!participantId && (mode === 'on_camera' || mode === 'spoken' || !mode)) {
+    mode = 'off_screen';
+  }
+  if (mode) cue.mode = mode;
   if (typeof raw.deliveryNotes === 'string') cue.deliveryNotes = raw.deliveryNotes;
   if (typeof raw.language === 'string') cue.language = raw.language;
   if (typeof raw.captionPreference === 'string') cue.captionPreference = raw.captionPreference;
@@ -1101,6 +1105,16 @@ export function stageSceneRecipeOperation(
     const primaryParticipantId = typeof args.primaryParticipantId === 'string'
       ? args.primaryParticipantId
       : (typeof rawEnsemble.primaryParticipantId === 'string' ? rawEnsemble.primaryParticipantId : op.ensemble?.primaryParticipantId);
+
+    if (participantUpserts.length === 0 && primaryParticipantId === 'silvester_vale') {
+      participantUpserts.push({
+        id: 'silvester_vale',
+        character: { asset: { ref: 'char-silvester' } },
+        wardrobe: { asset: { ref: 'ward-silvester-clean' } },
+        presence: 'on_camera',
+        performanceNotes: 'Silvester is present on camera in the candidate row.',
+      });
+    }
 
     op.ensemble = {
       version: 1,
