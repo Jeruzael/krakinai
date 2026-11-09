@@ -20,6 +20,9 @@ import {
   stageStoryboardBatchOperation,
 } from '../domain/mcpGranularStaging';
 import { parseChangeSet } from '../domain/changeSetValidation';
+import { applyKeyframePatch } from '../domain/keyframePatch';
+import { NULL_BLOCKING_DIGEST } from '../domain/blockingPatch';
+import { makeKeyframeFixture } from './fixtures/keyframeFixture';
 
 describe('mcpGranularStaging', () => {
   it('builds a valid ChangeSet in canonical dependency order across granular calls', () => {
@@ -380,6 +383,69 @@ describe('mcpGranularStaging', () => {
       const missingAction = res.warnings.filter((w) => w.code === 'SLOT_REQUIRED_MISSING' && w.slot === 'action');
       expect(missingAction).toHaveLength(2);
       expect(missingAction[0].operationId).not.toEqual(missingAction[1].operationId);
+    });
+  });
+
+  describe('keyframe plan ordering and contract compatibility', () => {
+    it('populates frameOrder automatically when staging scene recipe with frames', () => {
+      const draft = createEmptyDraftChangeSet('cs-kf-test');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-kf-01',
+        project: { ref: 'proj-1' },
+        shot: { ref: 'shot-1' },
+        title: 'Keyframe scene',
+        shotType: 'character_scene',
+        settings: { aspectRatio: '16:9', durationSeconds: 6 },
+        keyframePlan: {
+          frames: [
+            { id: 'frame-start', label: 'Start Frame', kind: 'start', beatDescription: 'Opening beat' },
+            { id: 'frame-end', label: 'End Frame', kind: 'end', beatDescription: 'Closing beat' },
+          ],
+        },
+      });
+
+      const op = res.changeSet.operations[0] as any;
+      expect(op.keyframes).toBeDefined();
+      expect(op.keyframes.frameUpserts).toHaveLength(2);
+      expect(op.keyframes.frameOrder).toEqual(['frame-start', 'frame-end']);
+
+      // Must succeed without throwing "Provide the complete resulting frame order when adding or removing frames."
+      const { draft: fixtureDraft } = makeKeyframeFixture();
+      fixtureDraft.keyframePlan = undefined;
+      const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
+      expect(patched).toBeDefined();
+      expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
+    });
+
+    it('populates frameOrder when using stageKeyframePlanOperation', () => {
+      let draft = createEmptyDraftChangeSet('cs-kf-test2');
+      draft = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-kf-02',
+        project: { ref: 'proj-1' },
+        shot: { ref: 'shot-1' },
+        title: 'Base scene',
+        shotType: 'character_scene',
+        settings: { aspectRatio: '16:9', durationSeconds: 6 },
+      }).changeSet;
+
+      const staged = stageKeyframePlanOperation(draft, {
+        sceneClientRef: 'scene-kf-02',
+        keyframePlan: {
+          frames: [
+            { id: 'frame-start', label: 'Start Frame', kind: 'start', beatDescription: 'Start beat' },
+            { id: 'frame-end', label: 'End Frame', kind: 'end', beatDescription: 'End beat' },
+          ],
+        },
+      });
+
+      const op = staged.changeSet.operations[0] as any;
+      expect(op.keyframes).toBeDefined();
+      expect(op.keyframes.frameOrder).toEqual(['frame-start', 'frame-end']);
+      const { draft: fixtureDraft } = makeKeyframeFixture();
+      fixtureDraft.keyframePlan = undefined;
+      const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
+      expect(patched).toBeDefined();
+      expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
     });
   });
 });

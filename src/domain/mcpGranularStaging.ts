@@ -971,13 +971,18 @@ function normalizeKeyframes(rawInput?: unknown): Record<string, unknown> {
     role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
     visualInstructions: f.beatDescription || f.visualInstructions || null,
   }));
+  const frameOrder = Array.isArray(raw.frameOrder)
+    ? (raw.frameOrder as string[]).map(String)
+    : frameUpserts.map((f: any) => f.id);
 
   return {
     version: 1,
+    id: typeof raw.id === 'string' ? raw.id : 'plan-1',
     expectedBaseDigest: typeof raw.expectedBaseDigest === 'string' && /^[a-f0-9]{64}$/.test(raw.expectedBaseDigest)
       ? raw.expectedBaseDigest
       : NULL_BLOCKING_DIGEST,
-    ...(frameUpserts.length > 0 ? { frameUpserts } : {}),
+    ...(frameUpserts.length > 0 ? { frameUpserts, frameOrder } : {}),
+    ...(Array.isArray(raw.removeFrameIds) && raw.removeFrameIds.length > 0 ? { removeFrameIds: raw.removeFrameIds, frameOrder } : {}),
   };
 }
 
@@ -1550,22 +1555,7 @@ export function stageKeyframePlanOperation(
   const sceneClientRef = String(args.sceneClientRef || '');
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
-  const raw = (args.keyframePlan ?? args.keyframes ?? {}) as Record<string, unknown>;
-  const rawFrames = Array.isArray(raw.frames) ? raw.frames : (Array.isArray(raw.frameUpserts) ? raw.frameUpserts : []);
-  const frameUpserts = rawFrames.map((f: any, i: number) => ({
-    id: String(f.id || `frame-${i + 1}`),
-    label: typeof f.label === 'string' ? f.label : null,
-    role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
-    visualInstructions: f.beatDescription || f.visualInstructions || null,
-  }));
-
-  const keyframes: Record<string, unknown> = {
-    version: 1,
-    expectedBaseDigest: typeof raw.expectedBaseDigest === 'string' && /^[a-f0-9]{64}$/.test(raw.expectedBaseDigest)
-      ? raw.expectedBaseDigest
-      : NULL_BLOCKING_DIGEST,
-    ...(frameUpserts.length > 0 ? { frameUpserts } : {}),
-  };
+  const keyframes = normalizeKeyframes(args.keyframePlan ?? args.keyframes);
 
   const updatedOp: RecipeSceneOperation = {
     ...op,
