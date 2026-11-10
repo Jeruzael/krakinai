@@ -34,10 +34,12 @@ import {
   type SavedScene,
   type SceneDraft,
   type SceneSettings,
+  type Story,
   type Template,
   type Variant,
   type VariantType,
 } from '../types/domain';
+import { listStories, clearStoriesStoreForTesting } from './stories';
 import {
   assembleScenePrompt,
   createSnapshotFromAsset,
@@ -102,6 +104,7 @@ export interface LibrarySnapshot {
   collections: Collection[];
   templates: Template[];
   preferences: Preferences;
+  stories?: Story[];
 }
 
 export async function clearAllStoresForTesting(): Promise<void> {
@@ -111,6 +114,7 @@ export async function clearAllStoresForTesting(): Promise<void> {
     tx.objectStore(name).clear();
   }
   await txDone(tx);
+  await clearStoriesStoreForTesting();
 }
 
 export async function initializeDatabase(): Promise<LibrarySnapshot> {
@@ -172,6 +176,8 @@ export async function getAllSnapshot(): Promise<LibrarySnapshot> {
     updatedAt: new Date().toISOString(),
   };
 
+  const stories = await listStories({ archiveFilter: 'all' });
+
   return {
     assets,
     variants,
@@ -181,6 +187,7 @@ export async function getAllSnapshot(): Promise<LibrarySnapshot> {
     collections,
     templates,
     preferences,
+    stories,
   };
 }
 

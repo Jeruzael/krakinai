@@ -13,6 +13,7 @@ import {
   type PromptAsset,
   type SavedScene,
   type SceneDraft,
+  type Story,
   type Template,
   type Variant,
 } from '../types/domain';
@@ -70,6 +71,7 @@ interface BackupManifestBase {
   templates: Template[];
   preferences: Preferences;
   media: SerializedMediaManifestEntry[];
+  stories?: Story[];
 }
 export type BackupManifest=BackupManifestBase&({schemaVersion:1;requiredFeatures?:never}|{schemaVersion:2;requiredFeatures:BackupFeature[]});
 
@@ -126,7 +128,7 @@ function backupMediaMetadata(m:MediaAsset,byteSize=m.blob.size,posterByteSize=m.
 
 /** Metadata only: never reads media bytes or compresses an archive. Shared with import capacity checks. */
 export function buildBackupManifest(snap:LibrarySnapshot,exportedAt=new Date().toISOString(),mediaEntries=snap.media.map(m=>backupMediaMetadata(m))):BackupManifest {
-  const requiredFeatures=detectBackupFeatures(snap),base={appVersion:'1.0.0',appName:'KRAKINAI',exportedAt,assets:snap.assets,variants:snap.variants,drafts:snap.drafts,scenes:snap.scenes,collections:snap.collections,templates:snap.templates,preferences:snap.preferences,media:mediaEntries};
+  const requiredFeatures=detectBackupFeatures(snap),base={appVersion:'1.0.0',appName:'KRAKINAI',exportedAt,assets:snap.assets,variants:snap.variants,drafts:snap.drafts,scenes:snap.scenes,collections:snap.collections,templates:snap.templates,preferences:snap.preferences,media:mediaEntries,...(snap.stories?{stories:snap.stories}:{})};
   return requiredFeatures.length?{schemaVersion:2,...base,requiredFeatures}:{schemaVersion:SCHEMA_VERSION,...base};
 }
 
@@ -497,6 +499,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     scenes: manifest.scenes,
     collections: manifest.collections,
     templates: manifest.templates,
+    stories: manifest.stories,
     preferences: {
       ...manifest.preferences,
       id: 'app_preferences',
