@@ -731,7 +731,7 @@ export function readStoryDetail(
   scope: McpScope,
   args: {
     storyId: string;
-    projection?: 'overview' | 'book' | 'creator_hierarchy' | 'full';
+    projection?: 'overview' | 'book' | 'creator_hierarchy' | 'director_briefing' | 'full';
   },
 ): Record<string, unknown> {
   if (!scope.storyIds?.includes(args.storyId)) {
@@ -818,6 +818,17 @@ export function readStoryDetail(
     });
   }
 
+  if (projection === 'director_briefing') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      revisionNumber: story.revisionNumber,
+      directorBriefing: includeText ? story.directorBriefing : undefined,
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
   // projection === 'full'
   return cleanObject({
     ...story,
@@ -826,6 +837,7 @@ export function readStoryDetail(
     synopsis: includeText ? story.synopsis : undefined,
     treatment: includeText ? story.treatment : undefined,
     fullBookText: includeText ? story.fullBookText : undefined,
+    directorBriefing: includeText ? story.directorBriefing : undefined,
     textRedacted: includeText ? undefined : true,
     digest,
   });

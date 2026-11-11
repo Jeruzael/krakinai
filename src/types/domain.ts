@@ -479,6 +479,48 @@ export interface StoryReferencePack {
   mediaIds: string[];
 }
 
+export type StoryBriefingAssetKind = 'character' | 'wardrobe' | 'environment' | 'style' | 'camera';
+
+export interface StoryContinuityLockEntry {
+  id: string;
+  assetType: StoryBriefingAssetKind;
+  candidateRefOrId: string;
+  description: string;
+}
+
+export interface StoryLightingProgressionEntry {
+  id: string;
+  beatRange: string;
+  candidateRefOrId: string;
+  setupAndMood: string;
+}
+
+export interface StoryActionArchetypeEntry {
+  id: string;
+  beatRange: string;
+  candidateRefOrId: string;
+  kinematicsAndIntensity: string;
+}
+
+export interface StoryVocalPerformanceEntry {
+  id: string;
+  character: string;
+  beatId: string;
+  emotion: string;
+  deliveryTechnique: string;
+  voiceCharacteristics: string;
+  speechIntonation: string;
+  bodyLanguage: string;
+}
+
+export interface StoryDirectorBriefing {
+  pacingAuditSummary?: string;
+  continuityLocks: StoryContinuityLockEntry[];
+  lightingProgression: StoryLightingProgressionEntry[];
+  actionArchetypes: StoryActionArchetypeEntry[];
+  vocalRegister: StoryVocalPerformanceEntry[];
+}
+
 export interface Story {
   id: string;
   title: string;
@@ -500,5 +542,6 @@ export interface Story {
   linkedCollectionId?: string | null;
   colorScript: StoryColorScriptEntry[];
   acts: StoryAct[];
+  directorBriefing?: StoryDirectorBriefing;
 }
 

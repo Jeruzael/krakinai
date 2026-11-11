@@ -152,6 +152,13 @@ export function storyDigestProjection(story: Story): unknown {
     linkedCollectionId: story.linkedCollectionId ?? null,
     colorScript: story.colorScript,
     acts: story.acts,
+    directorBriefing: story.directorBriefing ? {
+      pacingAuditSummary: story.directorBriefing.pacingAuditSummary ?? null,
+      continuityLocks: story.directorBriefing.continuityLocks ?? [],
+      lightingProgression: story.directorBriefing.lightingProgression ?? [],
+      actionArchetypes: story.directorBriefing.actionArchetypes ?? [],
+      vocalRegister: story.directorBriefing.vocalRegister ?? [],
+    } : null,
   };
 }
 
@@ -220,6 +227,25 @@ export function validateStoryInput(story: Story): void {
       if (!cs.label || !cs.label.trim()) {
         throw new Error('Color script label is required.');
       }
+    }
+  }
+
+  if (story.directorBriefing) {
+    if (typeof story.directorBriefing !== 'object') {
+      throw new Error('Director briefing must be an object.');
+    }
+    const { continuityLocks, lightingProgression, actionArchetypes, vocalRegister } = story.directorBriefing;
+    if (continuityLocks && !Array.isArray(continuityLocks)) {
+      throw new Error('Director briefing continuityLocks must be an array.');
+    }
+    if (lightingProgression && !Array.isArray(lightingProgression)) {
+      throw new Error('Director briefing lightingProgression must be an array.');
+    }
+    if (actionArchetypes && !Array.isArray(actionArchetypes)) {
+      throw new Error('Director briefing actionArchetypes must be an array.');
+    }
+    if (vocalRegister && !Array.isArray(vocalRegister)) {
+      throw new Error('Director briefing vocalRegister must be an array.');
     }
   }
 }

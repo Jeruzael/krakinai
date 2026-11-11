@@ -106,6 +106,41 @@ describe('Story Validator & Digest', () => {
     expect(computeStoryDigest(modifiedMeta)).not.toBe(digest1);
   });
 
+  it('validates and computes digest including directorBriefing when present', () => {
+    const digestWithout = computeStoryDigest(sampleStory);
+    const withBriefing: Story = {
+      ...sampleStory,
+      directorBriefing: {
+        pacingAuditSummary: 'All beats verified <= 10s',
+        continuityLocks: [
+          { id: 'cl-1', assetType: 'character', candidateRefOrId: 'char-kael', description: 'Silver wolf raider' },
+        ],
+        lightingProgression: [
+          { id: 'lp-1', beatRange: 'BEAT-01-03', candidateRefOrId: 'light-dawn', setupAndMood: 'Cold slate mist' },
+        ],
+        actionArchetypes: [
+          { id: 'aa-1', beatRange: 'BEAT-01', candidateRefOrId: 'act-prowl', kinematicsAndIntensity: 'Low crouch' },
+        ],
+        vocalRegister: [
+          {
+            id: 'vr-1',
+            character: 'Kael',
+            beatId: 'BEAT-01',
+            emotion: 'Torn',
+            deliveryTechnique: 'Raspy whisper',
+            voiceCharacteristics: 'Low baritone',
+            speechIntonation: 'Falling cadence',
+            bodyLanguage: 'Claws dug into loam',
+          },
+        ],
+      },
+    };
+    validateStoryInput(withBriefing);
+    const digestWith = computeStoryDigest(withBriefing);
+    expect(digestWith).toMatch(/^[a-f0-9]{64}$/);
+    expect(digestWith).not.toBe(digestWithout);
+  });
+
   it('validates story structure, titles, and ordering', () => {
     expect(() => validateStoryInput(sampleStory)).not.toThrow();
 

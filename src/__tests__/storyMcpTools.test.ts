@@ -282,6 +282,77 @@ describe('Story MCP Granular Reads', () => {
     expect(full.acts).toHaveLength(1);
     expect(full.colorScript).toHaveLength(1);
     expect(full.referencePack.assetIds).toEqual(['asset-char-1']);
+
+    // Director briefing projection
+    const briefingRes = await broker.handle({
+      requestId: 'req-briefing',
+      tool: 'krakinai_get_story' as any,
+      args: { storyId: 'story-1', projection: 'director_briefing' },
+    }, 'session-4');
+    expect(briefingRes.ok).toBe(true);
+    if (!briefingRes.ok) return;
+    const briefing = briefingRes.data as any;
+    expect(briefing.id).toBe('story-1');
+    expect(briefing.digest).toBe(computeStoryDigest(story1));
+  });
+
+  it('krakinai_stage_story stages directorBriefing in create and update modes', async () => {
+    const { state } = fixture();
+    const broker = new ProposalBroker({ readState: async () => state });
+    const scope = {
+      ...emptyMcpScope(),
+      allowProposals: true,
+      allowStoryProposals: true,
+      allowNewProjects: true,
+      storyIds: ['story-1'],
+    };
+    broker.connect('session-briefing-stage', scope);
+
+    const testBriefing = {
+      pacingAuditSummary: 'All beats verified <= 10s',
+      continuityLocks: [
+        { id: 'cl-1', assetType: 'character' as const, candidateRefOrId: 'char-kael', description: 'Silver wolf raider' },
+      ],
+      lightingProgression: [
+        { id: 'lp-1', beatRange: 'BEAT-01-03', candidateRefOrId: 'light-dawn', setupAndMood: 'Cold slate mist' },
+      ],
+      actionArchetypes: [
+        { id: 'aa-1', beatRange: 'BEAT-01', candidateRefOrId: 'act-prowl', kinematicsAndIntensity: 'Low crouch' },
+      ],
+      vocalRegister: [
+        {
+          id: 'vr-1',
+          character: 'Kael',
+          beatId: 'BEAT-01',
+          emotion: 'Torn',
+          deliveryTechnique: 'Raspy whisper',
+          voiceCharacteristics: 'Low baritone',
+          speechIntonation: 'Falling cadence',
+          bodyLanguage: 'Claws dug into loam',
+        },
+      ],
+    };
+
+    const stageRes = await broker.handle({
+      requestId: 'stage-briefing-create',
+      tool: 'krakinai_stage_story' as any,
+      args: {
+        changeSetId: 'cs-story-briefing-create',
+        clientRef: 'story-with-briefing',
+        mode: 'create',
+        title: 'Story With Briefing',
+        directorBriefing: testBriefing,
+      },
+    }, 'session-briefing-stage');
+
+    expect(stageRes.ok).toBe(true);
+    if (!stageRes.ok) return;
+    const brokerState = broker.getState();
+    const proposal = brokerState.proposals.find((p) => p.changeSetId === 'cs-story-briefing-create');
+    expect(proposal).toBeDefined();
+    const op = proposal?.preview?.changeSet.operations[0] as any;
+    expect(op.type).toBe('story.create');
+    expect(op.directorBriefing).toEqual(testBriefing);
   });
 });
 

@@ -270,7 +270,7 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   }),
   krakinai_get_story: schema({
     storyId: idSchema,
-    projection: { type: 'string', enum: ['overview', 'book', 'creator_hierarchy', 'full'] },
+    projection: { type: 'string', enum: ['overview', 'book', 'creator_hierarchy', 'director_briefing', 'full'] },
   }, ['storyId']),
   krakinai_stage_story: schema({
     changeSetId: idSchema,
@@ -287,6 +287,7 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
     synopsis: { type: 'string', maxLength: 4000 },
     treatment: { type: 'string', maxLength: 20000 },
     fullBookText: { type: 'string', maxLength: 200000 },
+    directorBriefing: { type: 'object' },
     expectedRevision: { type: 'integer', minimum: 0 },
     expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
   }, ['changeSetId']),

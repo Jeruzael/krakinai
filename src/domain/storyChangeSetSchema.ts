@@ -132,6 +132,58 @@ const referencePackRule: JsonRule = obj({
   mediaIds: arr(localId, 2000),
 });
 
+const continuityLockRule: JsonRule = obj(
+  {
+    id: localId,
+    assetType: { type: 'string', enum: ['character', 'wardrobe', 'environment', 'style', 'camera'] },
+    candidateRefOrId: text(200, 1),
+    description: text(2000, 1),
+  },
+  ['id', 'assetType', 'candidateRefOrId', 'description']
+);
+
+const lightingProgressionRule: JsonRule = obj(
+  {
+    id: localId,
+    beatRange: text(100, 1),
+    candidateRefOrId: text(200, 1),
+    setupAndMood: text(4000, 1),
+  },
+  ['id', 'beatRange', 'candidateRefOrId', 'setupAndMood']
+);
+
+const actionArchetypeRule: JsonRule = obj(
+  {
+    id: localId,
+    beatRange: text(100, 1),
+    candidateRefOrId: text(200, 1),
+    kinematicsAndIntensity: text(4000, 1),
+  },
+  ['id', 'beatRange', 'candidateRefOrId', 'kinematicsAndIntensity']
+);
+
+const vocalPerformanceRule: JsonRule = obj(
+  {
+    id: localId,
+    character: text(100, 1),
+    beatId: text(100, 1),
+    emotion: text(200, 1),
+    deliveryTechnique: text(200),
+    voiceCharacteristics: text(500),
+    speechIntonation: text(500),
+    bodyLanguage: text(1000),
+  },
+  ['id', 'character', 'beatId', 'emotion']
+);
+
+const directorBriefingRule: JsonRule = obj({
+  pacingAuditSummary: text(20000),
+  continuityLocks: arr(continuityLockRule, 100),
+  lightingProgression: arr(lightingProgressionRule, 100),
+  actionArchetypes: arr(actionArchetypeRule, 100),
+  vocalRegister: arr(vocalPerformanceRule, 200),
+});
+
 export function createStoryChangeSetSchema(
   v6: JsonRule,
   nativeId: JsonRule
@@ -171,6 +223,7 @@ export function createStoryChangeSetSchema(
         referencePack: referencePackRule,
         colorScript: arr(colorScriptEntryRule, 100),
         acts: arr(actRule, 50),
+        directorBriefing: directorBriefingRule,
       },
       ['operationId', 'type', 'title']
     )
@@ -196,6 +249,7 @@ export function createStoryChangeSetSchema(
         synopsis: text(50000),
         treatment: text(200000),
         fullBookText: text(1000000),
+        directorBriefing: directorBriefingRule,
       },
       ['operationId', 'type']
     )

@@ -14,6 +14,7 @@ import type {
   Story,
   StoryAct,
   StoryColorScriptEntry,
+  StoryDirectorBriefing,
   StoryDramaticMeta,
   StoryReferencePack,
   Template,
@@ -254,6 +255,7 @@ export interface StoryCreateOperation {
   referencePack?: StoryReferencePack;
   colorScript?: StoryColorScriptEntry[];
   acts?: StoryAct[];
+  directorBriefing?: StoryDirectorBriefing;
 }
 
 export interface StoryUpdateOperation {
@@ -274,6 +276,7 @@ export interface StoryUpdateOperation {
   synopsis?: string;
   treatment?: string;
   fullBookText?: string;
+  directorBriefing?: StoryDirectorBriefing;
 }
 
 export interface StoryStatusOperation {

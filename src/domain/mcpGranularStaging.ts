@@ -20,6 +20,7 @@ import type {
   ShotType,
   DialoguePerformanceDirectionV2,
   StoryAct,
+  StoryDirectorBriefing,
   StoryReferencePack,
   StoryColorScriptEntry,
   StoryDramaticMeta,
@@ -1768,6 +1769,7 @@ export function stageStoryOperation(
       referencePack: args.referencePack && typeof args.referencePack === 'object' ? (args.referencePack as StoryReferencePack) : undefined,
       linkedCollectionId: typeof args.linkedCollectionId === 'string' ? args.linkedCollectionId : undefined,
       colorScript: Array.isArray(args.colorScript) ? (args.colorScript as StoryColorScriptEntry[]) : undefined,
+      directorBriefing: args.directorBriefing && typeof args.directorBriefing === 'object' ? (args.directorBriefing as StoryDirectorBriefing) : undefined,
     };
     return upsertOperation(draft, op as unknown as ChangeOperation);
   } else {
@@ -1789,6 +1791,7 @@ export function stageStoryOperation(
       synopsis: typeof args.synopsis === 'string' ? args.synopsis : undefined,
       treatment: typeof args.treatment === 'string' ? args.treatment : undefined,
       fullBookText: typeof args.fullBookText === 'string' ? args.fullBookText : undefined,
+      directorBriefing: args.directorBriefing && typeof args.directorBriefing === 'object' ? (args.directorBriefing as StoryDirectorBriefing) : undefined,
       expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
       expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
     };

@@ -4,6 +4,7 @@ import { useLibrary } from '../context/LibraryContext';
 import { getStory, saveStory, toggleStoryFavorite } from '../storage/stories';
 import { generateId } from '../storage/db';
 import { StoryCreatorMode } from '../components/stories/StoryCreatorMode';
+import { StoryDirectorBriefing } from '../components/stories/StoryDirectorBriefing';
 import { StoryEditModal } from '../components/stories/StoryEditModal';
 import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
 import { MediaThumbnail } from '../components/MediaThumbnail';
@@ -15,6 +16,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Clapperboard,
   Clock,
   Edit3,
   ExternalLink,
@@ -141,7 +143,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const [story, setStory] = useState<Story | null>(() => {
     return snapshot?.stories?.find((s) => s.id === storyId) || null;
   });
-  const [activeTab, setActiveTab] = useState<'book' | 'creator'>('book');
+  const [activeTab, setActiveTab] = useState<'book' | 'creator' | 'briefing'>('book');
   const [treatmentExpanded, setTreatmentExpanded] = useState(true);
   const [loading, setLoading] = useState(!story);
   const [editingProse, setEditingProse] = useState(false);
@@ -792,7 +794,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         )}
       </div>
 
-      {/* Dual Mode Switcher: Book Mode vs Creator Mode */}
+      {/* 3-Mode Switcher: Book Mode vs Creator Mode vs Director's Briefing */}
       <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: 8, marginTop: 8 }} role="tablist">
         <button
           type="button"
@@ -815,6 +817,17 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         >
           <Sparkles size={16} />
           <span>Creator Mode</span>
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'briefing'}
+          className={`btn ${activeTab === 'briefing' ? 'btn-primary' : 'btn-outline'}`}
+          onClick={() => setActiveTab('briefing')}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: '6px 6px 0 0' }}
+        >
+          <Clapperboard size={16} />
+          <span>Director's Briefing</span>
         </button>
       </div>
 
@@ -906,7 +919,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
             </div>
           )}
         </div>
-      ) : (
+      ) : activeTab === 'creator' ? (
         <StoryCreatorMode
           acts={story.acts}
           onUpdateActs={async (updatedActs) => {
@@ -914,6 +927,17 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
             setStory(next);
             await saveStory(next);
             await refreshSnapshot();
+          }}
+        />
+      ) : (
+        <StoryDirectorBriefing
+          story={story}
+          assets={snapshot?.assets ?? []}
+          onUpdateStory={async (updatedStory) => {
+            setStory(updatedStory);
+            await saveStory(updatedStory);
+            await refreshSnapshot();
+            showToast('Director briefing updated', 'info');
           }}
         />
       )}

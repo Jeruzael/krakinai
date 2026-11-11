@@ -264,6 +264,7 @@ export function planChangeSet(
             linkedCollectionId: op.linkedCollectionId ?? null,
             colorScript: op.colorScript ?? [],
             acts: op.acts ?? [],
+            directorBriefing: op.directorBriefing,
           };
           state.stories!.push(created);
           plan.stories!.push(created);
@@ -308,6 +309,7 @@ export function planChangeSet(
             if (op.synopsis !== undefined) target.synopsis = op.synopsis;
             if (op.treatment !== undefined) target.treatment = op.treatment;
             if (op.fullBookText !== undefined) target.fullBookText = op.fullBookText;
+            if (op.directorBriefing !== undefined) target.directorBriefing = op.directorBriefing;
             row.summary = `Update story: ${target.title}`;
           } else if (op.type === "story.set_status") {
             if (op.archived !== undefined) target.archivedAt = op.archived ? allocation.preparedAt : null;

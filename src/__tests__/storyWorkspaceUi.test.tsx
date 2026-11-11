@@ -501,6 +501,19 @@ describe('Story Workspace Editing & Color Picker Enhancements', () => {
     expect(screen.getByLabelText(/Pick New Color/i)).toBeInTheDocument();
     expect(screen.getByText(/Preset Palettes/i)).toBeInTheDocument();
   });
+
+  it('renders Director\'s Briefing tab beside Creator Mode and switches to briefing tables', async () => {
+    render(<StoryWorkspaceScreen storyId={sampleStory.id} />);
+
+    const briefingTab = await screen.findByRole('tab', { name: /Director's Briefing/i });
+    expect(briefingTab).toBeInTheDocument();
+    fireEvent.click(briefingTab);
+
+    expect(await screen.findByText(/Character, Wardrobe & Environment Continuity/i)).toBeInTheDocument();
+    expect(screen.getByText(/Lighting & Mood Progression/i)).toBeInTheDocument();
+    expect(screen.getByText(/Action & Emotion Archetypes/i)).toBeInTheDocument();
+    expect(screen.getByText(/Vocal & Performance Register/i)).toBeInTheDocument();
+  });
 });
 
 describe('AppShell Sidebar Navigation', () => {
