@@ -430,6 +430,77 @@ describe('StoryCreatorMode Component', () => {
 
     expect(onUpdate).toHaveBeenCalledWith([]);
   });
+
+  it('supports Move Up and Move Down reordering of acts in Creator Mode', () => {
+    const onUpdate = vi.fn();
+    const multiActs: StoryAct[] = [
+      { id: 'act-1', orderIndex: 0, title: 'Act I', sequences: [] },
+      { id: 'act-2', orderIndex: 1, title: 'Act II', sequences: [] },
+    ];
+    render(<StoryCreatorMode acts={multiActs} onUpdateActs={onUpdate} />);
+
+    // Move Act II up
+    const moveUpBtns = screen.getAllByRole('button', { name: /Move Up/i });
+    expect(moveUpBtns.length).toBeGreaterThan(0);
+    fireEvent.click(moveUpBtns[1]);
+
+    expect(onUpdate).toHaveBeenCalledWith([
+      expect.objectContaining({ id: 'act-2', orderIndex: 0 }),
+      expect.objectContaining({ id: 'act-1', orderIndex: 1 }),
+    ]);
+  });
+
+  it('supports seeding 3-Act Structure from empty Creator Mode state', () => {
+    const onUpdate = vi.fn();
+    render(<StoryCreatorMode acts={[]} onUpdateActs={onUpdate} />);
+
+    const seedBtn = screen.getByRole('button', { name: /Seed 3-Act Structure/i });
+    expect(seedBtn).toBeInTheDocument();
+    fireEvent.click(seedBtn);
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ title: expect.stringMatching(/Act I/i) }),
+        expect.objectContaining({ title: expect.stringMatching(/Act II/i) }),
+        expect.objectContaining({ title: expect.stringMatching(/Act III/i) }),
+      ])
+    );
+  });
+
+  it('toggles Expand All and Collapse All in Creator Mode', () => {
+    render(<StoryCreatorMode acts={sampleStory.acts} />);
+
+    const toggleBtn = screen.getByRole('button', { name: /Collapse All|Expand All/i });
+    expect(toggleBtn).toBeInTheDocument();
+    fireEvent.click(toggleBtn);
+  });
+});
+
+describe('Story Workspace Editing & Color Picker Enhancements', () => {
+  it('renders Edit Story button and opens StoryEditModal', async () => {
+    render(<StoryWorkspaceScreen storyId={sampleStory.id} />);
+
+    const editBtn = await screen.findByRole('button', { name: /Edit Story/i });
+    expect(editBtn).toBeInTheDocument();
+    fireEvent.click(editBtn);
+
+    expect(screen.getByRole('dialog', { name: /Edit Story Details/i })).toBeInTheDocument();
+  });
+
+  it('renders interactive Color Picker and preset palettes in Color Beat Dialog', async () => {
+    render(<StoryWorkspaceScreen storyId={sampleStory.id} />);
+
+    // Click Add Color Beat
+    const addBeatBtn = await screen.findByRole('button', { name: /Add Color Beat/i });
+    fireEvent.click(addBeatBtn);
+
+    // Color Beat modal opens
+    expect(screen.getByRole('dialog', { name: /Add Color Beat|Edit Color Beat/i })).toBeInTheDocument();
+
+    // Check color picker element and palette presets exist
+    expect(screen.getByLabelText(/Pick New Color/i)).toBeInTheDocument();
+    expect(screen.getByText(/Preset Palettes/i)).toBeInTheDocument();
+  });
 });
 
 describe('AppShell Sidebar Navigation', () => {

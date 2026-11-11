@@ -4,6 +4,7 @@ import { generateId } from '../../storage/db';
 import {
   ChevronDown,
   ChevronRight,
+  ChevronUp,
   Plus,
   Trash2,
   Edit3,
@@ -194,6 +195,283 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
       setupForeshadowing: (beat.dramaticMeta?.setupForeshadowing || []).join(', '),
       payoff: (beat.dramaticMeta?.payoff || []).join(', '),
     });
+  };
+
+  // Node Reordering helpers
+  const handleMoveAct = (actId: string, direction: 'up' | 'down') => {
+    if (!onUpdateActs) return;
+    const index = acts.findIndex((a) => a.id === actId);
+    if (index < 0) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= acts.length) return;
+    const nextActs = [...acts];
+    const [moved] = nextActs.splice(index, 1);
+    nextActs.splice(targetIndex, 0, moved);
+    onUpdateActs(nextActs.map((a, idx) => ({ ...a, orderIndex: idx })));
+  };
+
+  const handleMoveSequence = (actId: string, seqId: string, direction: 'up' | 'down') => {
+    if (!onUpdateActs) return;
+    const nextActs = acts.map((act) => {
+      if (act.id !== actId) return act;
+      const index = act.sequences.findIndex((s) => s.id === seqId);
+      if (index < 0) return act;
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= act.sequences.length) return act;
+      const nextSeqs = [...act.sequences];
+      const [moved] = nextSeqs.splice(index, 1);
+      nextSeqs.splice(targetIndex, 0, moved);
+      return { ...act, sequences: nextSeqs.map((s, idx) => ({ ...s, orderIndex: idx })) };
+    });
+    onUpdateActs(nextActs);
+  };
+
+  const handleMoveScene = (actId: string, seqId: string, sceneId: string, direction: 'up' | 'down') => {
+    if (!onUpdateActs) return;
+    const nextActs = acts.map((act) => {
+      if (act.id !== actId) return act;
+      const nextSeqs = act.sequences.map((seq) => {
+        if (seq.id !== seqId) return seq;
+        const index = seq.scenes.findIndex((sc) => sc.id === sceneId);
+        if (index < 0) return seq;
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        if (targetIndex < 0 || targetIndex >= seq.scenes.length) return seq;
+        const nextScenes = [...seq.scenes];
+        const [moved] = nextScenes.splice(index, 1);
+        nextScenes.splice(targetIndex, 0, moved);
+        return { ...seq, scenes: nextScenes.map((sc, idx) => ({ ...sc, orderIndex: idx })) };
+      });
+      return { ...act, sequences: nextSeqs };
+    });
+    onUpdateActs(nextActs);
+  };
+
+  const handleMoveBeat = (actId: string, seqId: string, sceneId: string, beatId: string, direction: 'up' | 'down') => {
+    if (!onUpdateActs) return;
+    const nextActs = acts.map((act) => {
+      if (act.id !== actId) return act;
+      const nextSeqs = act.sequences.map((seq) => {
+        if (seq.id !== seqId) return seq;
+        const nextScenes = seq.scenes.map((sc) => {
+          if (sc.id !== sceneId) return sc;
+          const index = sc.beats.findIndex((b) => b.id === beatId);
+          if (index < 0) return sc;
+          const targetIndex = direction === 'up' ? index - 1 : index + 1;
+          if (targetIndex < 0 || targetIndex >= sc.beats.length) return sc;
+          const nextBeats = [...sc.beats];
+          const [moved] = nextBeats.splice(index, 1);
+          nextBeats.splice(targetIndex, 0, moved);
+          return { ...sc, beats: nextBeats.map((b, idx) => ({ ...b, orderIndex: idx })) };
+        });
+        return { ...seq, scenes: nextScenes };
+      });
+      return { ...act, sequences: nextSeqs };
+    });
+    onUpdateActs(nextActs);
+  };
+
+  // Seed 3-Act Structure
+  const handleSeed3ActStructure = () => {
+    if (!onUpdateActs) return;
+    const seeded: StoryAct[] = [
+      {
+        id: generateId('act'),
+        orderIndex: 0,
+        title: 'Act I: The Setup & Inciting Spark',
+        summary: 'Establish the normal world, introduce the protagonist and core stakes, leading to the inciting incident.',
+        dramaticMeta: {
+          incitingIncident: 'A disruptive event forces the protagonist out of comfort',
+          subtext: 'Internal tension between routine duty and unmet desire',
+        },
+        sequences: [
+          {
+            id: generateId('seq'),
+            orderIndex: 0,
+            title: 'Sequence 1: Ordinary World',
+            summary: 'Daily life, core relationships, and flawed status quo.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 1: Introduction to Environment',
+                summary: 'Protagonist navigates their standard environment under looming pressure.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: The Inciting Spark',
+                    content: 'An unexpected encounter disrupts the routine.',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: generateId('seq'),
+            orderIndex: 1,
+            title: 'Sequence 2: The First Threshold',
+            summary: 'Consequences of the spark escalate until turning back is impossible.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 2: Crossing the Threshold',
+                summary: 'Commitment to the journey; the rules of the new world apply.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: No Turning Back',
+                    content: 'A definitive choice is made.',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: generateId('act'),
+        orderIndex: 1,
+        title: 'Act II: The Confrontation & Midpoint Reversal',
+        summary: 'Rising stakes, trials, temporary triumphs, and a devastating midpoint reversal.',
+        dramaticMeta: {
+          subtext: 'Allies tested under duress; secrets surfaced',
+          climax: 'Midpoint crisis forces a change in tactics',
+        },
+        sequences: [
+          {
+            id: generateId('seq'),
+            orderIndex: 0,
+            title: 'Sequence 3: Rising Pressure & Antagonism',
+            summary: 'New obstacles appear; opposition demonstrates superiority.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 3: Direct Confrontation',
+                summary: 'First clash between competing interests.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: Escalating Stakes',
+                    content: 'The adversary retaliates unexpectedly.',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: generateId('seq'),
+            orderIndex: 1,
+            title: 'Sequence 4: Midpoint Reversal',
+            summary: 'A critical discovery changes the nature of the quest entirely.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 4: The Revelation',
+                summary: 'The true stakes are revealed, rendering old strategies useless.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: False Victory or Catastrophe',
+                    content: 'The ground shifts under everyone.',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+      {
+        id: generateId('act'),
+        orderIndex: 2,
+        title: 'Act III: Climax & Resolution',
+        summary: 'The darkest hour leads into the decisive showdown and establishing a new normal.',
+        dramaticMeta: {
+          climax: 'Decisive confrontation testing the core moral premise',
+          payoff: ['All setup foreshadowing reaches fruition'],
+        },
+        sequences: [
+          {
+            id: generateId('seq'),
+            orderIndex: 0,
+            title: 'Sequence 5: The Final Standoff',
+            summary: 'The inevitable confrontation where everything is on the line.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 5: Climax Peak',
+                summary: 'The protagonist must make an ultimate sacrifice or definitive choice.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: Decisive Action',
+                    content: 'The conflict reaches its definitive resolution.',
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            id: generateId('seq'),
+            orderIndex: 1,
+            title: 'Sequence 6: Resolution & New Equilibrium',
+            summary: 'The dust settles and the new order is revealed.',
+            scenes: [
+              {
+                id: generateId('scene'),
+                orderIndex: 0,
+                title: 'Scene 6: Final Resonance',
+                summary: 'A lingering image or statement establishing the transformed world.',
+                beats: [
+                  {
+                    id: generateId('beat'),
+                    orderIndex: 0,
+                    title: 'Beat 1: The New Horizon',
+                    content: 'Quiet closure and future promise.',
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+    onUpdateActs(seeded);
+    const allIds: Record<string, boolean> = {};
+    seeded.forEach((a) => {
+      allIds[a.id] = true;
+      a.sequences.forEach((s) => {
+        allIds[s.id] = true;
+        s.scenes.forEach((sc) => {
+          allIds[sc.id] = true;
+        });
+      });
+    });
+    setExpandedNodes(allIds);
+  };
+
+  const allExpanded = acts.length > 0 && acts.every((a) => expandedNodes[a.id] !== false);
+
+  const handleToggleAll = () => {
+    const nextState = !allExpanded;
+    const updated: Record<string, boolean> = {};
+    acts.forEach((a) => {
+      updated[a.id] = nextState;
+      a.sequences.forEach((s) => {
+        updated[s.id] = nextState;
+        s.scenes.forEach((sc) => {
+          updated[sc.id] = nextState;
+        });
+      });
+    });
+    setExpandedNodes(updated);
   };
 
   // Node Deletion helpers
@@ -545,31 +823,72 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
           </p>
         </div>
 
-        {!readOnly && (
-          <button
-            type="button"
-            className="btn btn-primary btn-sm"
-            onClick={openAddAct}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-          >
-            <Plus size={14} />
-            <span>Add Act</span>
-          </button>
-        )}
-      </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {acts.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={handleToggleAll}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              {allExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              <span>{allExpanded ? 'Collapse All' : 'Expand All'}</span>
+            </button>
+          )}
 
-      {acts.length === 0 ? (
-        <div className="card" style={{ textAlign: 'center', padding: '32px 16px' }}>
-          <p className="muted-text">No acts have been outlined yet for this story.</p>
           {!readOnly && (
             <button
               type="button"
               className="btn btn-primary btn-sm"
               onClick={openAddAct}
-              style={{ marginTop: 12 }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
             >
-              + Create First Act
+              <Plus size={14} />
+              <span>Add Act</span>
             </button>
+          )}
+        </div>
+      </div>
+
+      {acts.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '40px 20px', background: '#F8FAFC', border: '1px dashed #CBD5E1' }}>
+          <div style={{ display: 'inline-flex', padding: 12, borderRadius: 12, background: '#EFF6FF', color: '#2563EB', marginBottom: 12 }}>
+            <Clapperboard size={32} />
+          </div>
+          <h4 style={{ margin: '0 0 6px', fontSize: '1.1rem', color: '#0F172A' }}>No Narrative Acts Outlined Yet</h4>
+          <p className="muted-text" style={{ maxWidth: 520, margin: '0 auto 18px', fontSize: '0.88rem', lineHeight: 1.5 }}>
+            Creator Mode breaks down full narrative arcs into a production-ready 4-tier hierarchy:
+            <strong> Act &rarr; Sequence &rarr; Scene &rarr; Beat</strong>. Connect narrative beats directly to shots and continuity.
+          </p>
+          {!readOnly && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 10, flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={openAddAct}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <Plus size={14} />
+                <span>+ Create First Act</span>
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={handleSeed3ActStructure}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#FFFFFF',
+                  borderColor: '#93C5FD',
+                  color: '#1D4ED8',
+                  fontWeight: 600,
+                }}
+              >
+                <Sparkles size={14} />
+                <span>Seed 3-Act Structure</span>
+              </button>
+            </div>
           )}
         </div>
       ) : (
@@ -611,6 +930,28 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
 
                   {!readOnly && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => handleMoveAct(act.id, 'up')}
+                        disabled={actIdx === 0}
+                        title="Move Act Up"
+                        aria-label="Move Up"
+                        style={{ padding: '2px 6px', fontSize: '0.75rem', opacity: actIdx === 0 ? 0.4 : 1 }}
+                      >
+                        <ChevronUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => handleMoveAct(act.id, 'down')}
+                        disabled={actIdx === acts.length - 1}
+                        title="Move Act Down"
+                        aria-label="Move Down"
+                        style={{ padding: '2px 6px', fontSize: '0.75rem', opacity: actIdx === acts.length - 1 ? 0.4 : 1 }}
+                      >
+                        <ChevronDown size={13} />
+                      </button>
                       <button
                         type="button"
                         className="btn btn-outline btn-sm"
@@ -703,7 +1044,29 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                             </div>
 
                             {!readOnly && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-sm"
+                                  onClick={() => handleMoveSequence(act.id, seq.id, 'up')}
+                                  disabled={seqIdx === 0}
+                                  title="Move Sequence Up"
+                                  aria-label="Move Up"
+                                  style={{ padding: '2px 5px', fontSize: '0.72rem', opacity: seqIdx === 0 ? 0.4 : 1 }}
+                                >
+                                  <ChevronUp size={12} />
+                                </button>
+                                <button
+                                  type="button"
+                                  className="btn btn-outline btn-sm"
+                                  onClick={() => handleMoveSequence(act.id, seq.id, 'down')}
+                                  disabled={seqIdx === act.sequences.length - 1}
+                                  title="Move Sequence Down"
+                                  aria-label="Move Down"
+                                  style={{ padding: '2px 5px', fontSize: '0.72rem', opacity: seqIdx === act.sequences.length - 1 ? 0.4 : 1 }}
+                                >
+                                  <ChevronDown size={12} />
+                                </button>
                                 <button
                                   type="button"
                                   className="btn btn-outline btn-sm"
@@ -837,6 +1200,28 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                                             <button
                                               type="button"
                                               className="btn btn-outline btn-sm"
+                                              onClick={() => handleMoveScene(act.id, seq.id, scene.id, 'up')}
+                                              disabled={scIdx === 0}
+                                              title="Move Scene Up"
+                                              aria-label="Move Up"
+                                              style={{ padding: '2px 5px', fontSize: '0.72rem', opacity: scIdx === 0 ? 0.4 : 1 }}
+                                            >
+                                              <ChevronUp size={12} />
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="btn btn-outline btn-sm"
+                                              onClick={() => handleMoveScene(act.id, seq.id, scene.id, 'down')}
+                                              disabled={scIdx === seq.scenes.length - 1}
+                                              title="Move Scene Down"
+                                              aria-label="Move Down"
+                                              style={{ padding: '2px 5px', fontSize: '0.72rem', opacity: scIdx === seq.scenes.length - 1 ? 0.4 : 1 }}
+                                            >
+                                              <ChevronDown size={12} />
+                                            </button>
+                                            <button
+                                              type="button"
+                                              className="btn btn-outline btn-sm"
                                               onClick={() => openAddBeat(scene.id, seq.id, act.id)}
                                               style={{
                                                 display: 'flex',
@@ -936,6 +1321,28 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                                                   <button
                                                     type="button"
                                                     className="btn btn-outline btn-sm"
+                                                    onClick={() => handleMoveBeat(act.id, seq.id, scene.id, beat.id, 'up')}
+                                                    disabled={beatIdx === 0}
+                                                    title="Move Beat Up"
+                                                    aria-label="Move Up"
+                                                    style={{ padding: '2px 5px', fontSize: '0.7rem', opacity: beatIdx === 0 ? 0.4 : 1 }}
+                                                  >
+                                                    <ChevronUp size={11} />
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className="btn btn-outline btn-sm"
+                                                    onClick={() => handleMoveBeat(act.id, seq.id, scene.id, beat.id, 'down')}
+                                                    disabled={beatIdx === scene.beats.length - 1}
+                                                    title="Move Beat Down"
+                                                    aria-label="Move Down"
+                                                    style={{ padding: '2px 5px', fontSize: '0.7rem', opacity: beatIdx === scene.beats.length - 1 ? 0.4 : 1 }}
+                                                  >
+                                                    <ChevronDown size={11} />
+                                                  </button>
+                                                  <button
+                                                    type="button"
+                                                    className="btn btn-outline btn-sm"
                                                     onClick={() =>
                                                       openEditBeat(beat, scene.id, seq.id, act.id)
                                                     }
@@ -1018,10 +1425,54 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
               flexDirection: 'column',
             }}
           >
-            <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9' }}>
-              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0F172A' }}>
-                {editingNode.mode === 'add' ? 'Add' : 'Edit'} {editingNode.kind.toUpperCase()}
-              </h3>
+            <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span
+                    className="badge"
+                    style={{
+                      background:
+                        editingNode.kind === 'act'
+                          ? '#EEF2FF'
+                          : editingNode.kind === 'sequence'
+                          ? '#F0F9FF'
+                          : editingNode.kind === 'scene'
+                          ? '#FFFBEB'
+                          : '#ECFDF5',
+                      color:
+                        editingNode.kind === 'act'
+                          ? '#4338CA'
+                          : editingNode.kind === 'sequence'
+                          ? '#0369A1'
+                          : editingNode.kind === 'scene'
+                          ? '#B45309'
+                          : '#047857',
+                      fontWeight: 700,
+                      fontSize: '0.75rem',
+                    }}
+                  >
+                    {editingNode.kind === 'act'
+                      ? 'Tier 1 • Narrative Arc'
+                      : editingNode.kind === 'sequence'
+                      ? 'Tier 2 • Sequence'
+                      : editingNode.kind === 'scene'
+                      ? 'Tier 3 • Scene'
+                      : 'Tier 4 • Beat'}
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#0F172A', fontWeight: 700 }}>
+                    {editingNode.mode === 'add' ? 'Add' : 'Edit'} {editingNode.kind.toUpperCase()}
+                  </h3>
+                </div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: '#64748B' }}>
+                  {editingNode.kind === 'act'
+                    ? 'Major narrative chapter, world shift, and thematic stakes'
+                    : editingNode.kind === 'sequence'
+                    ? 'Goal-driven group of scenes unified by immediate protagonist objective'
+                    : editingNode.kind === 'scene'
+                    ? 'Continuous dramatic interaction in a specific time and location'
+                    : 'Smallest emotional turning point, dialogue cue, or physical gesture'}
+                </p>
+              </div>
               <button
                 type="button"
                 className="icon-btn"

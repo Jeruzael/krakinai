@@ -15,6 +15,7 @@ interface StoryCardModalProps {
   onClose: () => void;
   onUpdated?: () => void;
   onStoryUpdated?: () => void | Promise<void>;
+  onEditStory?: (story: Story) => void;
 }
 
 export const StoryCardModal: React.FC<StoryCardModalProps> = ({
@@ -22,6 +23,7 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
   onClose,
   onUpdated,
   onStoryUpdated,
+  onEditStory,
 }) => {
   const { navigate, snapshot, refreshSnapshot, showToast, openConfirmDialog } = useLibrary();
   const [busy, setBusy] = useState(false);
@@ -29,6 +31,15 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
   const handleReadFullStory = () => {
     onClose();
     navigate(`/stories/${story.id}`);
+  };
+
+  const handleEditStory = () => {
+    if (onEditStory) {
+      onEditStory(story);
+    } else {
+      onClose();
+      navigate(`/stories/${story.id}`);
+    }
   };
 
   const handleToggleFavorite = async () => {
@@ -270,7 +281,7 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
             <button
               type="button"
               className="btn btn-secondary"
-              onClick={handleReadFullStory}
+              onClick={handleEditStory}
               aria-label="Edit Story"
             >
               <Edit3 size={16} />

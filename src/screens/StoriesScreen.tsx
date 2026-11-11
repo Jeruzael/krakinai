@@ -2,11 +2,13 @@ import React, { useState, useMemo } from 'react';
 import type { Story } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
 import { StoryCardModal } from '../components/stories/StoryCardModal';
+import { StoryEditModal } from '../components/stories/StoryEditModal';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import { saveStory } from '../storage/stories';
 import { SAMPLE_STORY_CREATOR_MODE } from '../domain/sampleStory';
 import {
   BookOpen,
+  Edit3,
   Filter,
   Grid,
   Heart,
@@ -18,13 +20,15 @@ import {
 } from 'lucide-react';
 
 export const StoriesScreen: React.FC = () => {
-  const { snapshot, navigate, refreshSnapshot } = useLibrary();
+  const { snapshot, navigate, refreshSnapshot, showToast } = useLibrary();
   const [layoutMode, setLayoutMode] = useState<'grid' | 'list'>('grid');
   const [searchQuery, setSearchQuery] = useState('');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
   const [archiveFilter, setArchiveFilter] = useState<'active' | 'archived' | 'all'>('active');
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [inspectingStory, setInspectingStory] = useState<Story | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingStory, setEditingStory] = useState<Story | null>(null);
 
   const stories = snapshot?.stories || [];
 
@@ -106,34 +110,34 @@ export const StoriesScreen: React.FC = () => {
             type="button"
             className="btn btn-primary"
             onClick={async () => {
-            const newId = `story_${Date.now()}`;
-            const newStory: Story = {
-              id: newId,
-              title: 'Untitled Story',
-              author: 'Author',
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              favorite: false,
-              revisionNumber: 1,
-              tags: [],
-              logline: '',
-              premise: '',
-              synopsis: '',
-              treatment: '',
-              fullBookText: '',
-              referencePack: { assetIds: [], variantIds: [], mediaIds: [] },
-              colorScript: [],
-              acts: [],
-            };
-            await saveStory(newStory);
-            await refreshSnapshot();
-            navigate(`/stories/${newId}`);
-          }}
-          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
-        >
-          <Plus size={16} />
-          <span>New Story</span>
-        </button>
+              const newId = `story_${Date.now()}`;
+              const newStory: Story = {
+                id: newId,
+                title: 'Untitled Story',
+                author: 'Author',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                favorite: false,
+                revisionNumber: 1,
+                tags: [],
+                logline: '',
+                premise: '',
+                synopsis: '',
+                treatment: '',
+                fullBookText: '',
+                referencePack: { assetIds: [], variantIds: [], mediaIds: [] },
+                colorScript: [],
+                acts: [],
+              };
+              await saveStory(newStory);
+              await refreshSnapshot();
+              navigate(`/stories/${newId}`);
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Plus size={16} />
+            <span>New Story</span>
+          </button>
         </div>
       </div>
 
@@ -422,6 +426,24 @@ export const StoriesScreen: React.FC = () => {
                       )}
                     </div>
                   )}
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}>
+                    <button
+                      type="button"
+                      className="btn btn-outline btn-sm"
+                      title="Edit story details"
+                      aria-label={`Edit ${story.title}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditingStory(story);
+                        setShowEditModal(true);
+                      }}
+                      style={{ padding: '3px 8px', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: 4 }}
+                    >
+                      <Edit3 size={13} />
+                      <span>Edit</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             );
@@ -436,6 +458,29 @@ export const StoriesScreen: React.FC = () => {
           onClose={() => setInspectingStory(null)}
           onStoryUpdated={async () => {
             await refreshSnapshot();
+          }}
+          onEditStory={(targetStory) => {
+            setInspectingStory(null);
+            setEditingStory(targetStory);
+            setShowEditModal(true);
+          }}
+        />
+      )}
+
+      {/* Story Edit / Create Modal */}
+      {showEditModal && (
+        <StoryEditModal
+          story={editingStory}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingStory(null);
+          }}
+          onSave={async (savedStory) => {
+            await saveStory(savedStory);
+            await refreshSnapshot();
+            showToast(editingStory ? 'Story updated successfully' : 'New story created successfully');
+            navigate(`/stories/${savedStory.id}`);
           }}
         />
       )}

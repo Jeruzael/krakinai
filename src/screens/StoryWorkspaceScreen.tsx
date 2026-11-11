@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import type { Story, StoryAct, StoryColorScriptEntry, StoryReferencePack } from '../types/domain';
+import type { Story, StoryAct, StoryColorScriptEntry, StoryReferencePack, MediaAsset } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
 import { getStory, saveStory, toggleStoryFavorite } from '../storage/stories';
 import { generateId } from '../storage/db';
 import { StoryCreatorMode } from '../components/stories/StoryCreatorMode';
+import { StoryEditModal } from '../components/stories/StoryEditModal';
 import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import { useMediaObjectUrl } from '../hooks/useObjectUrl';
@@ -31,6 +32,106 @@ import {
   X,
 } from 'lucide-react';
 
+const COLOR_PRESETS = [
+  { name: 'Frost Mist', colors: ['#1e293b', '#334155', '#475569', '#94a3b8'] },
+  { name: 'Warm Ember', colors: ['#450a0a', '#7f1d1d', '#b91c1c', '#f97316'] },
+  { name: 'Cyber Neon', colors: ['#09090b', '#3b0764', '#7c3aed', '#06b6d4'] },
+  { name: 'Pine Forest', colors: ['#052e16', '#14532d', '#15803d', '#86efac'] },
+  { name: 'Golden Hour', colors: ['#1c1917', '#78350f', '#d97706', '#fde68a'] },
+  { name: 'Noir Contrast', colors: ['#09090b', '#27272a', '#52525b', '#e4e4e7'] },
+];
+
+interface ReferencePackCardProps {
+  id: string;
+  title: string;
+  categoryOrType: string;
+  media?: MediaAsset;
+  onRemove: () => void;
+}
+
+const ReferencePackCard: React.FC<ReferencePackCardProps> = ({
+  title,
+  categoryOrType,
+  media,
+  onRemove,
+}) => {
+  const mediaUrl = useMediaObjectUrl(media);
+
+  return (
+    <div
+      className="card reference-pack-item-card"
+      data-testid="reference-pack-card"
+      style={{
+        position: 'relative',
+        minWidth: 175,
+        maxWidth: 240,
+        height: 110,
+        borderRadius: 8,
+        overflow: 'hidden',
+        border: mediaUrl ? '1px solid rgba(255,255,255,0.2)' : '1px solid #e2e8f0',
+        background: mediaUrl
+          ? `linear-gradient(180deg, rgba(15, 23, 42, 0.25) 0%, rgba(15, 23, 42, 0.65) 50%, rgba(15, 23, 42, 0.95) 100%), url(${mediaUrl}) center/cover no-repeat`
+          : '#f8fafc',
+        boxShadow: mediaUrl ? '0 4px 14px rgba(0,0,0,0.35)' : '0 1px 3px rgba(0,0,0,0.05)',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        padding: '10px 12px',
+        flex: '1 1 180px',
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 6 }}>
+        <span
+          className="badge"
+          style={{
+            fontSize: '0.7rem',
+            textTransform: 'capitalize',
+            background: mediaUrl ? 'rgba(15, 23, 42, 0.8)' : '#e0e7ff',
+            color: mediaUrl ? '#93c5fd' : '#3730a3',
+            border: mediaUrl ? '1px solid rgba(147, 197, 253, 0.3)' : 'none',
+            backdropFilter: mediaUrl ? 'blur(4px)' : undefined,
+          }}
+        >
+          {categoryOrType}
+        </span>
+        <button
+          type="button"
+          className="icon-btn"
+          title="Remove reference"
+          aria-label={`Remove reference ${title}`}
+          onClick={onRemove}
+          style={{
+            color: mediaUrl ? '#ffffff' : '#94a3b8',
+            background: mediaUrl ? 'rgba(0, 0, 0, 0.45)' : 'transparent',
+            borderRadius: '50%',
+            padding: 3,
+            cursor: 'pointer',
+          }}
+        >
+          <X size={13} />
+        </button>
+      </div>
+
+      <div>
+        <div
+          style={{
+            fontWeight: 600,
+            fontSize: '0.88rem',
+            color: mediaUrl ? '#ffffff' : '#0f172a',
+            textShadow: mediaUrl ? '0 1px 3px rgba(0,0,0,0.9)' : 'none',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+          title={title}
+        >
+          {title}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export interface StoryWorkspaceScreenProps {
   storyId: string;
 }
@@ -47,6 +148,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const [proseDraft, setProseDraft] = useState(() => story?.fullBookText || '');
 
   // Media pickers & dialogs
+  const [showEditModal, setShowEditModal] = useState(false);
   const [coverPickerKind, setCoverPickerKind] = useState<'cover' | 'hero' | null>(null);
   const [showReferenceManager, setShowReferenceManager] = useState(false);
   const [refSearch, setRefSearch] = useState('');
@@ -57,6 +159,12 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
     notes: string;
     hexPalette: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.hash.includes('edit=true')) {
+      setShowEditModal(true);
+    }
+  }, []);
 
   useEffect(() => {
     if (story) setProseDraft(story.fullBookText || '');
@@ -258,6 +366,17 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             type="button"
+            className="btn btn-primary"
+            onClick={() => setShowEditModal(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            aria-label="Edit Story"
+          >
+            <Edit3 size={15} />
+            <span>Edit Story</span>
+          </button>
+
+          <button
+            type="button"
             className="btn btn-outline"
             onClick={() => setCoverPickerKind('hero')}
             style={{
@@ -371,7 +490,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
 
           {/* Story Metadata */}
           <div style={{ flex: 1, minWidth: 280 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, flexWrap: 'wrap' }}>
               <span className="badge" style={{ background: '#3b82f6', color: '#fff' }}>
                 Rev {story.revisionNumber}
               </span>
@@ -380,6 +499,27 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                   Archived
                 </span>
               )}
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={() => setShowEditModal(true)}
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '2px 8px',
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: '#FFFFFF',
+                  borderColor: 'rgba(255, 255, 255, 0.35)',
+                  borderRadius: 4,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  fontWeight: 600,
+                  backdropFilter: 'blur(4px)',
+                }}
+              >
+                <Edit3 size={12} />
+                <span>Edit Details</span>
+              </button>
             </div>
 
             <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, color: '#ffffff' }}>
@@ -431,24 +571,54 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       </div>
 
       {/* Collapsible Pitch Treatment */}
-      {story.treatment && (
-        <div className="card" style={{ padding: 16 }}>
-          <div
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
-            onClick={() => setTreatmentExpanded(!treatmentExpanded)}
-          >
+      <div className="card" style={{ padding: 16 }}>
+        <div
+          style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+          onClick={() => setTreatmentExpanded(!treatmentExpanded)}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Sparkles size={18} style={{ color: '#F59E0B' }} />
             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Story Pitch & Treatment</h3>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowEditModal(true);
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.75rem' }}
+            >
+              <Edit3 size={13} />
+              <span>Edit Treatment</span>
+            </button>
             <button type="button" className="icon-btn" aria-label="Toggle treatment">
               {treatmentExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
             </button>
           </div>
-          {treatmentExpanded && (
-            <div style={{ marginTop: 12, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
-              {story.treatment}
-            </div>
-          )}
         </div>
-      )}
+        {treatmentExpanded && (
+          <div style={{ marginTop: 12, color: '#334155', lineHeight: 1.6, whiteSpace: 'pre-wrap', fontSize: '0.95rem' }}>
+            {story.treatment ? (
+              story.treatment
+            ) : (
+              <div style={{ textAlign: 'center', padding: '16px', background: '#F8FAFC', borderRadius: 6, border: '1px dashed #CBD5E1' }}>
+                <p className="muted-text" style={{ margin: '0 0 8px', fontSize: '0.85rem' }}>
+                  No pitch treatment drafted yet. Outline your 3-act narrative summary to guide sequence generation.
+                </p>
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => setShowEditModal(true)}
+                >
+                  + Add Pitch Treatment
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Organized Reference Pack (Always Visible with Manage References) */}
       <div className="card" style={{ padding: 16 }}>
@@ -486,70 +656,34 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
           </div>
         ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
-            {referencedAssets.map((asset: any) => (
-              <div
-                key={asset.id}
-                className="card"
-                style={{
-                  padding: '8px 12px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  minWidth: 160,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <span className="badge badge-outline" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
-                    {asset.category}
-                  </span>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{asset.title}</div>
-                </div>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  title="Remove asset reference"
-                  onClick={() => handleRemoveAssetReference(asset.id)}
-                  style={{ color: '#94a3b8', padding: 2 }}
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-            {referencedVariants.map((variant: any) => (
-              <div
-                key={variant.id}
-                className="card"
-                style={{
-                  padding: '8px 12px',
-                  background: '#f8fafc',
-                  border: '1px solid #e2e8f0',
-                  minWidth: 160,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-start',
-                  gap: 8,
-                }}
-              >
-                <div>
-                  <span className="badge" style={{ fontSize: '0.7rem', background: '#ede9fe', color: '#6d28d9' }}>
-                    Outfit Variant
-                  </span>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{variant.title}</div>
-                </div>
-                <button
-                  type="button"
-                  className="icon-btn"
-                  title="Remove variant reference"
-                  onClick={() => handleRemoveVariantReference(variant.id)}
-                  style={{ color: '#94a3b8', padding: 2 }}
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
+            {referencedAssets.map((asset: any) => {
+              const assetMediaId = asset.coverMediaId || asset.mediaLinks?.[0]?.mediaId;
+              const assetMedia = assetMediaId ? snapshot?.media?.find((m) => m.id === assetMediaId) : undefined;
+              return (
+                <ReferencePackCard
+                  key={asset.id}
+                  id={asset.id}
+                  title={asset.title}
+                  categoryOrType={asset.category}
+                  media={assetMedia}
+                  onRemove={() => handleRemoveAssetReference(asset.id)}
+                />
+              );
+            })}
+            {referencedVariants.map((variant: any) => {
+              const variantMediaId = variant.coverMediaId || variant.mediaLinks?.[0]?.mediaId;
+              const variantMedia = variantMediaId ? snapshot?.media?.find((m) => m.id === variantMediaId) : undefined;
+              return (
+                <ReferencePackCard
+                  key={variant.id}
+                  id={variant.id}
+                  title={variant.title}
+                  categoryOrType="Outfit Variant"
+                  media={variantMedia}
+                  onRemove={() => handleRemoveVariantReference(variant.id)}
+                />
+              );
+            })}
           </div>
         )}
       </div>
@@ -882,13 +1016,15 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                     })
                     .map((asset) => {
                       const isBound = (story.referencePack?.assetIds || []).includes(asset.id);
+                      const assetMediaId = asset.coverMediaId || asset.mediaLinks?.[0]?.mediaId;
+                      const assetMedia = assetMediaId ? snapshot?.media?.find((m) => m.id === assetMediaId) : undefined;
                       return (
                         <label
                           key={asset.id}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 12,
                             padding: 8,
                             borderRadius: 6,
                             background: isBound ? '#eff6ff' : '#f8fafc',
@@ -917,6 +1053,33 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                               await refreshSnapshot();
                             }}
                           />
+                          <div
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 6,
+                              overflow: 'hidden',
+                              flexShrink: 0,
+                              background: '#1e293b',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid #cbd5e1',
+                            }}
+                          >
+                            {assetMedia ? (
+                              <MediaThumbnail
+                                media={assetMedia}
+                                altText={asset.title}
+                                objectFit="cover"
+                                backgroundColor="#0f172a"
+                              />
+                            ) : (
+                              <div style={{ color: '#94a3b8' }}>
+                                <Layers size={18} />
+                              </div>
+                            )}
+                          </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{asset.title}</div>
                             <span className="badge badge-outline" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
@@ -937,13 +1100,15 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                     })
                     .map((variant) => {
                       const isBound = (story.referencePack?.variantIds || []).includes(variant.id);
+                      const variantMediaId = variant.coverMediaId || variant.mediaLinks?.[0]?.mediaId;
+                      const variantMedia = variantMediaId ? snapshot?.media?.find((m) => m.id === variantMediaId) : undefined;
                       return (
                         <label
                           key={variant.id}
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 12,
                             padding: 8,
                             borderRadius: 6,
                             background: isBound ? '#f5f3ff' : '#f8fafc',
@@ -972,6 +1137,33 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                               await refreshSnapshot();
                             }}
                           />
+                          <div
+                            style={{
+                              width: 44,
+                              height: 44,
+                              borderRadius: 6,
+                              overflow: 'hidden',
+                              flexShrink: 0,
+                              background: '#1e293b',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              border: '1px solid #cbd5e1',
+                            }}
+                          >
+                            {variantMedia ? (
+                              <MediaThumbnail
+                                media={variantMedia}
+                                altText={variant.title}
+                                objectFit="cover"
+                                backgroundColor="#0f172a"
+                              />
+                            ) : (
+                              <div style={{ color: '#94a3b8' }}>
+                                <Sparkles size={18} />
+                              </div>
+                            )}
+                          </div>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{variant.title}</div>
                             <span className="badge" style={{ fontSize: '0.7rem', background: '#ede9fe', color: '#6d28d9' }}>
@@ -1031,7 +1223,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
               </button>
             </div>
 
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12, background: '#FFFFFF' }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 14, background: '#FFFFFF' }}>
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
                   Beat Label
@@ -1060,36 +1252,212 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
                 />
               </div>
 
+              {/* Color Picker & Preset Palettes */}
               <div>
-                <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                  Hex Palette (comma-separated hex codes)
-                </label>
-                <input
-                  type="text"
-                  className="input-field"
-                  style={{ width: '100%' }}
-                  placeholder="#1e293b, #3b82f6, #93c5fd"
-                  value={editingColorBeat.hexPalette}
-                  onChange={(e) => setEditingColorBeat({ ...editingColorBeat, hexPalette: e.target.value })}
-                />
-                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#0F172A', margin: 0 }}>
+                    Color Palette (Interactive Color Picker)
+                  </label>
+                  <label
+                    style={{
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      padding: '4px 10px',
+                      borderRadius: 6,
+                      background: '#EFF6FF',
+                      border: '1px solid #BFDBFE',
+                      fontSize: '0.78rem',
+                      fontWeight: 600,
+                      color: '#1D4ED8',
+                      position: 'relative',
+                    }}
+                  >
+                    <Palette size={14} />
+                    <span>Pick New Color</span>
+                    <input
+                      type="color"
+                      aria-label="Pick New Color"
+                      defaultValue="#3b82f6"
+                      onChange={(e) => {
+                        const newHex = e.target.value.toLowerCase();
+                        const current = editingColorBeat.hexPalette
+                          ? editingColorBeat.hexPalette
+                              .split(',')
+                              .map((h) => h.trim())
+                              .filter(Boolean)
+                          : [];
+                        setEditingColorBeat({
+                          ...editingColorBeat,
+                          hexPalette: [...current, newHex].join(', '),
+                        });
+                      }}
+                      style={{
+                        position: 'absolute',
+                        opacity: 0,
+                        width: '100%',
+                        height: '100%',
+                        left: 0,
+                        top: 0,
+                        cursor: 'pointer',
+                      }}
+                    />
+                  </label>
+                </div>
+
+                {/* Swatches List */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center', padding: '10px', background: '#F8FAFC', borderRadius: 8, border: '1px solid #E2E8F0' }}>
                   {editingColorBeat.hexPalette
                     .split(',')
                     .map((h) => h.trim())
-                    .filter((h) => h.startsWith('#'))
-                    .map((hex, idx) => (
+                    .filter((h) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(h))
+                    .map((hex, idx, arr) => (
                       <div
                         key={idx}
                         style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: 4,
-                          background: hex,
-                          border: '1px solid rgba(0,0,0,0.15)',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          background: '#FFFFFF',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: 6,
+                          padding: '3px 6px',
+                          boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
                         }}
-                        title={hex}
-                      />
+                      >
+                        <div
+                          style={{
+                            width: 20,
+                            height: 20,
+                            borderRadius: 4,
+                            background: hex,
+                            border: '1px solid rgba(0,0,0,0.2)',
+                            position: 'relative',
+                            cursor: 'pointer',
+                          }}
+                          title={`Click to adjust color ${hex}`}
+                        >
+                          <input
+                            type="color"
+                            value={hex}
+                            aria-label={`Adjust color ${hex}`}
+                            onChange={(e) => {
+                              const newArr = [...arr];
+                              newArr[idx] = e.target.value.toLowerCase();
+                              setEditingColorBeat({
+                                ...editingColorBeat,
+                                hexPalette: newArr.join(', '),
+                              });
+                            }}
+                            style={{
+                              position: 'absolute',
+                              opacity: 0,
+                              width: '100%',
+                              height: '100%',
+                              left: 0,
+                              top: 0,
+                              cursor: 'pointer',
+                            }}
+                          />
+                        </div>
+                        <span style={{ fontSize: '0.78rem', fontFamily: 'monospace', color: '#334155', fontWeight: 600 }}>
+                          {hex}
+                        </span>
+                        <button
+                          type="button"
+                          className="icon-btn"
+                          title="Remove color"
+                          aria-label={`Remove color ${hex}`}
+                          onClick={() => {
+                            const newArr = arr.filter((_, i) => i !== idx);
+                            setEditingColorBeat({
+                              ...editingColorBeat,
+                              hexPalette: newArr.join(', '),
+                            });
+                          }}
+                          style={{ color: '#94A3B8', padding: 2 }}
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
                     ))}
+                </div>
+
+                {/* Live Gradient Preview */}
+                {(() => {
+                  const swatches = editingColorBeat.hexPalette
+                    .split(',')
+                    .map((h) => h.trim())
+                    .filter((h) => /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(h));
+                  return (
+                    <div
+                      style={{
+                        height: 14,
+                        borderRadius: 4,
+                        marginTop: 8,
+                        border: '1px solid rgba(0,0,0,0.1)',
+                        background:
+                          swatches.length > 1
+                            ? `linear-gradient(to right, ${swatches.join(', ')})`
+                            : swatches[0] || '#1E293B',
+                      }}
+                      title="Timeline gradient preview"
+                    />
+                  );
+                })()}
+
+                {/* Preset Palettes */}
+                <div style={{ marginTop: 12 }}>
+                  <label style={{ fontSize: '0.78rem', fontWeight: 600, color: '#64748B', display: 'block', marginBottom: 6 }}>
+                    Preset Palettes
+                  </label>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                    {COLOR_PRESETS.map((preset) => (
+                      <button
+                        key={preset.name}
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setEditingColorBeat({
+                            ...editingColorBeat,
+                            hexPalette: preset.colors.join(', '),
+                          });
+                        }}
+                        style={{
+                          fontSize: '0.75rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 6,
+                          padding: '4px 8px',
+                          background: '#F8FAFC',
+                          borderColor: '#E2E8F0',
+                        }}
+                      >
+                        <div style={{ display: 'flex', gap: 2 }}>
+                          {preset.colors.map((c, i) => (
+                            <span key={i} style={{ width: 8, height: 8, borderRadius: 2, background: c }} />
+                          ))}
+                        </div>
+                        <span>{preset.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Manual hex code string fallback */}
+                <div style={{ marginTop: 10 }}>
+                  <label style={{ fontSize: '0.78rem', color: '#64748B', display: 'block', marginBottom: 2 }}>
+                    Manual Hex Codes (comma-separated)
+                  </label>
+                  <input
+                    type="text"
+                    className="input-field"
+                    style={{ width: '100%', fontSize: '0.85rem' }}
+                    placeholder="#1e293b, #3b82f6, #93c5fd"
+                    value={editingColorBeat.hexPalette}
+                    onChange={(e) => setEditingColorBeat({ ...editingColorBeat, hexPalette: e.target.value })}
+                  />
                 </div>
               </div>
             </div>
@@ -1114,6 +1482,21 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
             </div>
           </div>
         </div>
+      )}
+
+      {/* Story Metadata & Pitch Edit Modal */}
+      {showEditModal && (
+        <StoryEditModal
+          story={story}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSave={async (savedStory) => {
+            setStory(savedStory);
+            await saveStory(savedStory);
+            await refreshSnapshot();
+            showToast('Story details saved successfully');
+          }}
+        />
       )}
     </div>
   );
