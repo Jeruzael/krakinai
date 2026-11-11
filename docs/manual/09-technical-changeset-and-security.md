@@ -81,6 +81,16 @@ graph TD
   - `KeyframePatchV1` on scene operations (`frames` with `start`, `middle`, `end`, `custom` roles).
   - Mandatory token: `expectedKeyframeDigest`.
 
+### Schema Version 7: `krakinai.change-set.v7`
+- Introduced Story Section & Creator Mode operations with human-governed staging.
+- Added operations:
+  - `story.create`: Creates a full-length Story container with narrative prose, treatment, reference pack, color script, and Creator Mode hierarchy.
+  - `story.update`: Updates story metadata, logline, premise, synopsis, treatment, or full book text with optimistic concurrency (`expectedRevision`, `expectedStoryDigest`).
+  - `story.set_status`: Modifies story archived status (`active` / `archived`) and favorite flag.
+  - `story.patch_structure`: Replaces the 4-tier structural hierarchy (`Act -> Sequence -> Scene -> Beat`).
+  - `story.patch_dramatic_meta`: Patches targeted dramatic metadata (`incitingIncident`, `subtext`, `climax`, `setupForeshadowing`, `payoff`, `characterArcs`) on an act, sequence, scene, or beat node.
+  - `story.patch_references`: Updates bound library asset references, variant references, color scripts, and storyboard project bindings.
+
 ---
 
 ## 3. Comprehensive Operation Type Catalog
@@ -107,6 +117,12 @@ Every item in a ChangeSet's `operations` array is a strictly validated `ChangeOp
 | **`scene.convert_direct_to_recipe`** | `v4` | `clientRef`, `project`, `shot`, `sceneId`, `expectedHeadId`, `conversion` | Converts legacy direct prompt into a recipe take. |
 | **`frame_image.link`** | `v6` | `project`, `shot`, `scene`, `frameId`, `mediaId`, `expectedFrameDigest` | Links an image file to a specific keyframe beat. |
 | **`frame_image.clear`** | `v6` | `project`, `shot`, `scene`, `frameId`, `expectedFrameDigest` | Unlinks media from a keyframe. |
+| **`story.create`** | `v7` | `clientRef`, `title` | Creates a full story container with prose and creator hierarchy. |
+| **`story.update`** | `v7` | `storyId` or `storyRef` | Modifies story prose, metadata, treatment, or logline. |
+| **`story.set_status`** | `v7` | `storyId` or `storyRef` | Modifies story archived status and favorite state. |
+| **`story.patch_structure`** | `v7` | `storyId` or `storyRef`, `acts` | Updates Act -> Sequence -> Scene -> Beat breakdown. |
+| **`story.patch_dramatic_meta`** | `v7` | `storyId` or `storyRef`, `dramaticMeta` | Patches dramatic notes on a target hierarchy node. |
+| **`story.patch_references`** | `v7` | `storyId` or `storyRef` | Updates reference pack, color script, and project links. |
 
 ---
 
@@ -184,4 +200,4 @@ KRAKINAI enforces four non-negotiable security rules:
 
 ---
 
-> **Next Up:** Continue to [Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference](./10-technical-mcp-reference.md) for the exhaustive specification of all 37 MCP tools.
+> **Next Up:** Continue to [Chapter 10: Complete MCP Protocol, Bridge Architecture & 45-Tool Reference](./10-technical-mcp-reference.md) for the exhaustive specification of all 45 MCP tools.

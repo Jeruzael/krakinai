@@ -8,7 +8,7 @@ describe('actual SDK negotiation drives adapter connection evidence', () => {
     let metadata = ''; transport.stderr?.on('data', bytes => metadata += String(bytes));
     const client = new Client({ name: 'synthetic-handshake-' + mode, version: '1.0.0' }, mode === 'legacy' ? { versionNegotiation: { mode: 'legacy' } } : {});
     try {
-      await client.connect(transport); expect((await client.listTools()).tools).toHaveLength(38);
+      await client.connect(transport); expect((await client.listTools()).tools).toHaveLength(45);
       await vi.waitFor(() => expect(metadata).toContain('SYNTHETIC_ADAPTER_INITIALIZED'), { timeout: 1500 });
     } finally { await client.close(); }
   });

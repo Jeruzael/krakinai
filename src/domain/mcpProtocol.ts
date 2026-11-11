@@ -24,6 +24,11 @@ export const MCP_TOOL_NAMES = [
   'krakinai_stage_scene_blocking', 'krakinai_stage_keyframe_plan', 'krakinai_stage_frame_image',
   // Workstream 5: Saved Scenes
   'krakinai_list_saved_scenes', 'krakinai_export_scene_prompts',
+  // Workstream 6: Stories & Creator Mode
+  'krakinai_list_stories', 'krakinai_get_story',
+  'krakinai_stage_story', 'krakinai_stage_story_status',
+  'krakinai_stage_story_structure', 'krakinai_stage_story_dramatic_meta',
+  'krakinai_stage_story_references',
 ] as const;
 export type McpToolName = typeof MCP_TOOL_NAMES[number];
 export class McpError extends Error {
@@ -254,6 +259,77 @@ export const MCP_INPUT_SCHEMAS: Record<McpToolName, ToolSchema> = {
   krakinai_export_scene_prompts: schema({
     sceneIds: { type: 'array' },
   }, ['sceneIds']),
+
+  // Workstream 6: Stories & Creator Mode
+  krakinai_list_stories: schema({
+    query: { type: 'string', maxLength: 200 },
+    tag: { type: 'string', maxLength: 100 },
+    favorite: { type: 'boolean' },
+    archiveFilter: { type: 'string', enum: ['active', 'archived', 'all'] },
+    ...pageFields,
+  }),
+  krakinai_get_story: schema({
+    storyId: idSchema,
+    projection: { type: 'string', enum: ['overview', 'book', 'creator_hierarchy', 'full'] },
+  }, ['storyId']),
+  krakinai_stage_story: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    storyId: idSchema,
+    mode: { type: 'string', enum: ['create', 'update'] },
+    title: { type: 'string', minLength: 1, maxLength: 200 },
+    author: { type: 'string', maxLength: 200 },
+    tags: { type: 'array' },
+    coverMediaId: idSchema,
+    heroBannerMediaId: idSchema,
+    logline: { type: 'string', maxLength: 2000 },
+    premise: { type: 'string', maxLength: 4000 },
+    synopsis: { type: 'string', maxLength: 4000 },
+    treatment: { type: 'string', maxLength: 20000 },
+    fullBookText: { type: 'string', maxLength: 200000 },
+    expectedRevision: { type: 'integer', minimum: 0 },
+    expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId']),
+  krakinai_stage_story_status: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    storyId: idSchema,
+    storyRef: { type: 'object' },
+    status: { type: 'string', enum: ['active', 'archived'] },
+    favorite: { type: 'boolean' },
+    expectedRevision: { type: 'integer', minimum: 0 },
+    expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId']),
+  krakinai_stage_story_structure: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    storyId: idSchema,
+    storyRef: { type: 'object' },
+    acts: { type: 'array' },
+    expectedRevision: { type: 'integer', minimum: 0 },
+    expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId', 'acts']),
+  krakinai_stage_story_dramatic_meta: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    storyId: idSchema,
+    storyRef: { type: 'object' },
+    targetNode: { type: 'object' },
+    dramaticMeta: { type: 'object' },
+    expectedRevision: { type: 'integer', minimum: 0 },
+    expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId', 'targetNode', 'dramaticMeta']),
+  krakinai_stage_story_references: schema({
+    changeSetId: idSchema,
+    clientRef: idSchema,
+    storyId: idSchema,
+    storyRef: { type: 'object' },
+    referencePack: { type: 'object' },
+    colorScript: { type: 'array' },
+    linkedCollectionId: idSchema,
+    expectedRevision: { type: 'integer', minimum: 0 },
+    expectedStoryDigest: { type: 'string', pattern: '^[a-f0-9]{64}$' },
+  }, ['changeSetId']),
 };
 export function validateToolArgs(name: McpToolName, value: unknown): Record<string, unknown> {
   if (!MCP_TOOL_NAMES.includes(name)) throw new McpError('UNKNOWN_TOOL');

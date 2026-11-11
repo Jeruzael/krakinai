@@ -6,8 +6,24 @@ import type {
   ProjectTarget,
   RecordTarget,
   RecipeSceneOperation,
+  StoryCreateOperation,
+  StoryUpdateOperation,
+  StoryStatusOperation,
+  StoryStructurePatchOperation,
+  StoryDramaticMetaPatchOperation,
+  StoryReferencesPatchOperation,
 } from '../types/changeSet';
-import type { BuilderSlot, ProductionStatus, SceneSettings, ShotType, DialoguePerformanceDirectionV2 } from '../types/domain';
+import type {
+  BuilderSlot,
+  ProductionStatus,
+  SceneSettings,
+  ShotType,
+  DialoguePerformanceDirectionV2,
+  StoryAct,
+  StoryReferencePack,
+  StoryColorScriptEntry,
+  StoryDramaticMeta,
+} from '../types/domain';
 import type { CameraCompositionChoice } from '../types/cinematography';
 import type { DialogueCue } from '../types/ensemble';
 import type { SceneBlockingV1 } from '../types/blocking';
@@ -556,6 +572,9 @@ export function resolveMinimumSchema(operations: ChangeOperation[], currentSchem
   let requiredRank = 3; // Default to v3 for granular support (ensembles)
 
   for (const op of operations) {
+    if (op.type.startsWith('story.')) {
+      requiredRank = Math.max(requiredRank, 7);
+    }
     if (op.type.startsWith('frame_image.') || op.type.startsWith('frame_video.')) {
       requiredRank = Math.max(requiredRank, 6);
     }
@@ -1710,4 +1729,164 @@ export function stageStoryboardBatchOperation(
     stagedCounts: { assets, variants, projects, shots, scenes },
     warnings,
   };
+}
+
+function normalizeStoryTarget(storyId?: string, storyRefRaw?: unknown): RecordTarget | undefined {
+  if (storyRefRaw && typeof storyRefRaw === 'object') {
+    const r = storyRefRaw as Record<string, unknown>;
+    if (typeof r.id === 'string' && r.id) return { id: r.id };
+    if (typeof r.ref === 'string' && r.ref) return { ref: r.ref };
+  }
+  if (storyId) return { id: storyId };
+  return undefined;
+}
+
+export function stageStoryOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const isCreate = args.mode === 'create' || (!args.storyId && !args.storyRef);
+  const clientRef = String(args.clientRef || args.storyId || `story-${Date.now()}`);
+  const operationId = `op-story-${clientRef}`;
+
+  if (isCreate) {
+    const op: StoryCreateOperation = {
+      operationId,
+      type: 'story.create',
+      clientRef,
+      title: typeof args.title === 'string' && args.title.trim() ? args.title.trim() : 'Untitled Story',
+      author: typeof args.author === 'string' ? args.author : undefined,
+      tags: Array.isArray(args.tags) ? (args.tags as string[]) : undefined,
+      coverMediaId: typeof args.coverMediaId === 'string' ? args.coverMediaId : undefined,
+      heroBannerMediaId: typeof args.heroBannerMediaId === 'string' ? args.heroBannerMediaId : undefined,
+      logline: typeof args.logline === 'string' ? args.logline : undefined,
+      premise: typeof args.premise === 'string' ? args.premise : undefined,
+      synopsis: typeof args.synopsis === 'string' ? args.synopsis : undefined,
+      treatment: typeof args.treatment === 'string' ? args.treatment : undefined,
+      fullBookText: typeof args.fullBookText === 'string' ? args.fullBookText : undefined,
+      acts: Array.isArray(args.acts) ? (args.acts as StoryAct[]) : undefined,
+      referencePack: args.referencePack && typeof args.referencePack === 'object' ? (args.referencePack as StoryReferencePack) : undefined,
+      linkedCollectionId: typeof args.linkedCollectionId === 'string' ? args.linkedCollectionId : undefined,
+      colorScript: Array.isArray(args.colorScript) ? (args.colorScript as StoryColorScriptEntry[]) : undefined,
+    };
+    return upsertOperation(draft, op as unknown as ChangeOperation);
+  } else {
+    const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+    const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+    const op: StoryUpdateOperation = {
+      operationId,
+      type: 'story.update',
+      storyId,
+      storyRef,
+      clientRef: args.clientRef ? String(args.clientRef) : undefined,
+      title: typeof args.title === 'string' ? args.title : undefined,
+      author: typeof args.author === 'string' ? args.author : undefined,
+      tags: Array.isArray(args.tags) ? (args.tags as string[]) : undefined,
+      coverMediaId: typeof args.coverMediaId === 'string' ? args.coverMediaId : undefined,
+      heroBannerMediaId: typeof args.heroBannerMediaId === 'string' ? args.heroBannerMediaId : undefined,
+      logline: typeof args.logline === 'string' ? args.logline : undefined,
+      premise: typeof args.premise === 'string' ? args.premise : undefined,
+      synopsis: typeof args.synopsis === 'string' ? args.synopsis : undefined,
+      treatment: typeof args.treatment === 'string' ? args.treatment : undefined,
+      fullBookText: typeof args.fullBookText === 'string' ? args.fullBookText : undefined,
+      expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+      expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+    };
+    return upsertOperation(draft, op as unknown as ChangeOperation);
+  }
+}
+
+export function stageStoryStatusOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-status-${clientRef}`;
+
+  const op: StoryStatusOperation = {
+    operationId,
+    type: 'story.set_status',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    status: args.status === 'active' || args.status === 'archived' ? args.status : undefined,
+    archived: typeof args.archived === 'boolean' ? args.archived : (args.status === 'archived' ? true : args.status === 'active' ? false : undefined),
+    favorite: typeof args.favorite === 'boolean' ? args.favorite : undefined,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryStructureOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-struct-${clientRef}`;
+
+  const op: StoryStructurePatchOperation = {
+    operationId,
+    type: 'story.patch_structure',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    acts: Array.isArray(args.acts) ? (args.acts as StoryAct[]) : [],
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryDramaticMetaOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-dramatic-${clientRef}`;
+
+  const targetNodeId = (args.targetNode as any)?.id || (typeof args.targetNodeId === 'string' ? args.targetNodeId : undefined);
+  const op: StoryDramaticMetaPatchOperation = {
+    operationId,
+    type: 'story.patch_dramatic_meta',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    targetNodeId: String(targetNodeId || 'node-root'),
+    targetNode: args.targetNode as { kind: 'act' | 'sequence' | 'scene' | 'beat'; id: string },
+    dramaticMeta: args.dramaticMeta as StoryDramaticMeta,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryReferencesOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-refs-${clientRef}`;
+
+  const op: StoryReferencesPatchOperation = {
+    operationId,
+    type: 'story.patch_references',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    referencePack: args.referencePack && typeof args.referencePack === 'object' ? (args.referencePack as StoryReferencePack) : undefined,
+    colorScript: Array.isArray(args.colorScript) ? (args.colorScript as StoryColorScriptEntry[]) : undefined,
+    linkedCollectionId: typeof args.linkedCollectionId === 'string' ? args.linkedCollectionId : undefined,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
 }

@@ -13,7 +13,7 @@ describe('actual compiled SDK stdio process', () => {
     const client = new Client({ name: 'krakinai-synthetic-sdk-client', version: '1.0.0' },mode==='legacy'?{versionNegotiation:{mode:'legacy'}}:{});
     try {
       await client.connect(transport);
-      const tools = await client.listTools(); expect(tools.tools).toHaveLength(38);
+      const tools = await client.listTools(); expect(tools.tools).toHaveLength(45);
       const authoring=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!;
       expect(authoring.description).toContain('Prefer Recipe / Build from Assets');
       expect(authoring.description).toContain('explicit user request');
@@ -22,7 +22,7 @@ describe('actual compiled SDK stdio process', () => {
       const inputSchema=tools.tools.find(t=>t.name==='krakinai_submit_change_set')!.inputSchema as any;
       const resolveSchema=(v:any,root:any=inputSchema):any=>Array.isArray(v)?v.map(value=>resolveSchema(value,root)):v&&typeof v==='object'?v.$ref?resolveSchema(root.$defs[v.$ref.slice(8)],root):Object.fromEntries(Object.entries(v).filter(([key])=>key!=='$defs').map(([k,value])=>[k,resolveSchema(value,v.$id?v:root)])):v;
       const versions=resolveSchema(inputSchema.properties.changeSet).oneOf;
-      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6']);
+      expect(versions.map((v:any)=>v.properties.schema.const)).toEqual(['krakinai.change-set.v1','krakinai.change-set.v2','krakinai.change-set.v3','krakinai.change-set.v4','krakinai.change-set.v5','krakinai.change-set.v6','krakinai.change-set.v7']);
       const discoveryBytes=Buffer.byteLength(JSON.stringify(tools));expect(discoveryBytes).toBeLessThan(1310720);console.info('SYNTHETIC_MCP_DISCOVERY_BYTES',discoveryBytes);
       expect(tools.tools.find(t=>t.name==='krakinai_get_generation_prompt')!.inputSchema.properties).toHaveProperty('target');
       for(const version of versions)expect(version.properties.operations.maxItems).toBe(250);

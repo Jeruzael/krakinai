@@ -35,6 +35,11 @@ import {
   stageKeyframePlanOperation,
   stageFrameImageOperation,
   stageStoryboardBatchOperation,
+  stageStoryOperation,
+  stageStoryStatusOperation,
+  stageStoryStructureOperation,
+  stageStoryDramaticMetaOperation,
+  stageStoryReferencesOperation,
 } from '../domain/mcpGranularStaging';
 import {
   readAssetDetail,
@@ -45,6 +50,8 @@ import {
   readSceneAssemblyPreview,
   readSavedScenesList,
   readExportedScenePrompts,
+  readStoriesList,
+  readStoryDetail,
 } from '../domain/mcpGranularReads';
 
 interface Dependencies { readState: typeof getAllSnapshot | (() => Promise<ChangeSetState>); preview: typeof previewChangeSet; apply: typeof applyApprovedChangeSet; now(): number; isSessionLive(id: string): boolean; onApplied(): Promise<void>; inbox?:ReviewInbox|ProposalInbox; origin?:string;reviewLock:typeof withProposalReviewLock }
@@ -126,7 +133,7 @@ export class ProposalBroker {
       this.expire(); const context = this.#current(); this.#assert(context); if (sessionId !== context.sessionId) throw new McpError('DISCONNECTED');
       this.#activity = this.#deps.now(); const args = validateToolArgs(command.tool, command.args);
       if(command.tool==='krakinai_submit_change_set'||command.tool==='krakinai_get_proposal_status'||command.tool==='krakinai_list_proposals'||command.tool==='krakinai_discard_proposal'||command.tool.startsWith('krakinai_stage_')){await this.initializeInbox();this.#assert(context);}
-      if(args.target||args.projection||('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v6'))requireKeyframeCapabilities(this.#capabilities);
+      if(args.target||(args.projection&&command.tool!=='krakinai_get_story')||('changeSet'in args&&(args.changeSet as {schema?:string})?.schema==='krakinai.change-set.v6'))requireKeyframeCapabilities(this.#capabilities);
       if (command.tool === 'krakinai_list_proposals') {
         if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
         const items = [...this.#proposals.values()]
@@ -286,6 +293,16 @@ export class ProposalBroker {
         this.#assert(context);
         return resultData(result);
       }
+      if (command.tool === 'krakinai_list_stories') {
+        const result = readStoriesList(state, this.#effectiveScope(), args);
+        this.#assert(context);
+        return resultData(result);
+      }
+      if (command.tool === 'krakinai_get_story') {
+        const result = readStoryDetail(state, this.#effectiveScope(), args as any);
+        this.#assert(context);
+        return resultData(result);
+      }
       const data = await readMcpTool(command.tool, args, this.#effectiveScope(), state); this.#assert(context); return resultData(data);
     } catch (error) { return resultError(error); }
   }
@@ -295,7 +312,13 @@ export class ProposalBroker {
     sessionId: string,
     context: ScopeContext,
   ): Promise<McpResult> {
-    if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
+    if (tool.startsWith('krakinai_stage_story')) {
+      if (this.#scope.allowStoryProposals === false || (!this.#scope.allowStoryProposals && !this.#scope.allowProposals)) {
+        throw new McpError('PERMISSION_DENIED');
+      }
+    } else {
+      if (!this.#scope.allowProposals) throw new McpError('PERMISSION_DENIED');
+    }
 
     if (
       tool === 'krakinai_stage_scene_blocking' ||
@@ -386,6 +409,21 @@ export class ProposalBroker {
         break;
       case 'krakinai_stage_frame_image':
         staged = stageFrameImageOperation(draft, args);
+        break;
+      case 'krakinai_stage_story':
+        staged = stageStoryOperation(draft, args);
+        break;
+      case 'krakinai_stage_story_status':
+        staged = stageStoryStatusOperation(draft, args);
+        break;
+      case 'krakinai_stage_story_structure':
+        staged = stageStoryStructureOperation(draft, args);
+        break;
+      case 'krakinai_stage_story_dramatic_meta':
+        staged = stageStoryDramaticMetaOperation(draft, args);
+        break;
+      case 'krakinai_stage_story_references':
+        staged = stageStoryReferencesOperation(draft, args);
         break;
       default:
         throw new McpError('UNKNOWN_TOOL');

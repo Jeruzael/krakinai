@@ -1,7 +1,7 @@
-# Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference
+# Chapter 10: Complete MCP Protocol, Bridge Architecture & 45-Tool Reference
 
 > *Part IV: Detailed Technical Documentation*  
-> Previous: [Chapter 9: Change-Set Contracts (v1–v6) & Security Model](./09-technical-changeset-and-security.md) | Next: [README (Cover & Table of Contents)](./README.md)
+> Previous: [Chapter 9: Change-Set Contracts (v1–v7) & Security Model](./09-technical-changeset-and-security.md) | Next: [README (Cover & Table of Contents)](./README.md)
 
 ---
 
@@ -16,7 +16,7 @@ This chapter details:
 2. HMAC pairing challenge-response and session epoch rotation.
 3. Schema discovery factoring and frame budget management.
 4. Error handling and standard error codes.
-5. **The Complete 37-Tool Reference Catalog** (13 core tools + 24 granular inspection & staging tools).
+5. **The Complete 45-Tool Reference Catalog** (13 core tools + 32 granular inspection & staging tools).
 
 ```mermaid
 graph LR
@@ -386,6 +386,46 @@ Staging operations (`krakinai_stage_scene_recipe`, `krakinai_stage_scene_dialogu
 - **Arguments**: `sceneIds: string[]` (required).
 - **Scope**: Every ID in `sceneIds` must have `fullPromptSceneIds` permission.
 - **Returns**: `{ text: string, sceneCount: number }`.
+
+---
+
+### Group 11: Workstream 6 — Stories & Creator Mode (7 Tools)
+
+#### `krakinai_list_stories`
+- **Purpose**: Lists and filters narrative stories across active and archived states.
+- **Arguments**: `query?: string`, `tag?: string`, `favorite?: boolean`, `archiveFilter?: 'active' | 'archived' | 'all'`, `cursor?: string`, `limit?: integer`.
+- **Returns**: `{ items: Array<{ id, title, author, tags, favorite, archivedAt, revisionNumber, createdAt, updatedAt, coverMediaId, heroBannerMediaId, logline?, premise?, synopsis?, textRedacted?, actCount, sceneCount, colorScriptCount, digest }>, total, nextCursor }`.
+
+#### `krakinai_get_story`
+- **Purpose**: Retrieves a single narrative story by ID with projection controls.
+- **Arguments**: `storyId: string` (required), `projection?: 'overview' | 'book' | 'creator_hierarchy' | 'full'`.
+- **Scope**: Requires `storyId` to be within authorized `storyIds`. Narrative prose redacted unless `includeStoryText: true`.
+- **Returns**: Story projection data with `digest` and `revisionNumber`.
+
+#### `krakinai_stage_story`
+- **Purpose**: Stages a `story.create` or `story.update` operation in a draft proposal.
+- **Arguments**: `changeSetId: string` (required), `clientRef?: string`, `storyId?: string`, `mode?: 'create' | 'update'`, `title?: string`, `author?: string`, `tags?: string[]`, `coverMediaId?: string`, `heroBannerMediaId?: string`, `logline?: string`, `premise?: string`, `synopsis?: string`, `treatment?: string`, `fullBookText?: string`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_status`
+- **Purpose**: Stages a `story.set_status` operation archiving/unarchiving or favoriting a story.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `status?: 'active' | 'archived'`, `favorite?: boolean`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_structure`
+- **Purpose**: Stages a `story.patch_structure` operation updating the 4-tier Creator Mode breakdown (`Act -> Sequence -> Scene -> Beat`).
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `acts: Array<StoryAct>` (required), `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_dramatic_meta`
+- **Purpose**: Stages a `story.patch_dramatic_meta` operation targeting an act, sequence, scene, or beat node with dramatic metadata.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `targetNode: { kind, id }` (required), `dramaticMeta: object` (required), `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_references`
+- **Purpose**: Stages a `story.patch_references` operation binding reusable library assets, color scripts, and storyboard project links.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `referencePack?: object`, `colorScript?: Array<object>`, `linkedCollectionId?: string`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
 
 ---
 

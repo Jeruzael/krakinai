@@ -209,7 +209,10 @@ export function createStoryChangeSetSchema(
         type: { const: 'story.set_status' },
         storyId: nativeId,
         storyRef: storyTarget,
+        clientRef: nativeId,
         expectedRevision: revision,
+        expectedStoryDigest: digest,
+        status: { type: 'string', enum: ['active', 'archived'] },
         archived: { type: 'boolean' },
         favorite: { type: 'boolean' },
       },
@@ -225,6 +228,7 @@ export function createStoryChangeSetSchema(
         type: { const: 'story.patch_structure' },
         storyId: nativeId,
         storyRef: storyTarget,
+        clientRef: nativeId,
         expectedRevision: revision,
         expectedStoryDigest: digest,
         acts: arr(actRule, 50),
@@ -241,12 +245,20 @@ export function createStoryChangeSetSchema(
         type: { const: 'story.patch_dramatic_meta' },
         storyId: nativeId,
         storyRef: storyTarget,
+        clientRef: nativeId,
         targetNodeId: nativeId,
+        targetNode: obj(
+          {
+            kind: { type: 'string', enum: ['act', 'sequence', 'scene', 'beat'] },
+            id: nativeId,
+          },
+          ['kind', 'id']
+        ),
         expectedRevision: revision,
         expectedStoryDigest: digest,
         dramaticMeta: dramaticMetaRule,
       },
-      ['operationId', 'type', 'targetNodeId', 'dramaticMeta']
+      ['operationId', 'type', 'dramaticMeta']
     )
   );
 
@@ -258,6 +270,7 @@ export function createStoryChangeSetSchema(
         type: { const: 'story.patch_references' },
         storyId: nativeId,
         storyRef: storyTarget,
+        clientRef: nativeId,
         expectedRevision: revision,
         expectedStoryDigest: digest,
         referencePack: referencePackRule,

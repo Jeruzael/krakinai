@@ -284,6 +284,7 @@ export interface StoryStatusOperation {
   storyRef?: RecordTarget;
   expectedRevision?: number;
   expectedStoryDigest?: string;
+  status?: 'active' | 'archived';
   archived?: boolean;
   favorite?: boolean;
 }
@@ -306,6 +307,7 @@ export interface StoryDramaticMetaPatchOperation {
   storyId?: string;
   storyRef?: RecordTarget;
   targetNodeId: string;
+  targetNode?: { kind: 'act' | 'sequence' | 'scene' | 'beat'; id: string };
   expectedRevision?: number;
   expectedStoryDigest?: string;
   dramaticMeta: StoryDramaticMeta;

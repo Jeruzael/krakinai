@@ -3,10 +3,11 @@ import type {
   ChangeSetState,
   RecipeSceneOperation,
 } from '../types/changeSet';
-import type { BuilderSlot, Collection, ComponentSnapshot, MediaAsset, PromptAsset, SavedScene, SceneDraft, Template, Variant } from '../types/domain';
+import type { BuilderSlot, Collection, ComponentSnapshot, MediaAsset, PromptAsset, SavedScene, SceneDraft, Template, Variant, Story } from '../types/domain';
 import type { McpScope } from '../types/mcp';
 import { McpError } from './mcpProtocol';
 import { authorizedSceneIds, denyScope } from './mcpScope';
+import { computeStoryDigest } from './storyValidator';
 import { buildContinuityWorkspace } from './continuityWorkspace';
 import { buildBlockingFinalReview } from './blockingReview';
 import { applyBlockingPatch, NULL_BLOCKING_DIGEST } from './blockingPatch';
@@ -36,6 +37,7 @@ export type GranularSnapshot = ChangeSetState | {
   variants?: Variant[];
   templates?: Template[];
   media?: MediaAsset[];
+  stories?: Story[];
   preferences?: Record<string, unknown>;
 };
 
@@ -651,4 +653,180 @@ export function resolveLibraryAssets(
   });
 
   return { items };
+}
+
+export function readStoriesList(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: {
+    query?: string;
+    tag?: string;
+    favorite?: boolean;
+    archiveFilter?: 'active' | 'archived' | 'all';
+    cursor?: string;
+    limit?: number;
+  },
+): Record<string, unknown> {
+  const stories = (snapshot as ChangeSetState).stories ?? [];
+  const authorizedIds = new Set(scope.storyIds ?? []);
+  const authorized = stories.filter((s) => authorizedIds.has(s.id));
+
+  const archiveFilter = args.archiveFilter || 'active';
+  const query = args.query ? args.query.toLowerCase().trim() : '';
+
+  const filtered = authorized.filter((s) => {
+    if (archiveFilter === 'active' && s.archivedAt) return false;
+    if (archiveFilter === 'archived' && !s.archivedAt) return false;
+    if (args.favorite !== undefined && s.favorite !== args.favorite) return false;
+    if (args.tag && !s.tags.includes(args.tag)) return false;
+    if (query) {
+      const match =
+        s.title.toLowerCase().includes(query) ||
+        s.author.toLowerCase().includes(query) ||
+        s.logline.toLowerCase().includes(query) ||
+        s.tags.some((t) => t.toLowerCase().includes(query));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  const limit = Math.min(Math.max(Number(args.limit ?? 20), 1), 50);
+  const offset = args.cursor ? Number(args.cursor) || 0 : 0;
+  const page = filtered.slice(offset, offset + limit);
+  const nextCursor = offset + limit < filtered.length ? String(offset + limit) : null;
+
+  const includeText = scope.includeStoryText === true;
+
+  const items = page.map((s) => ({
+    id: s.id,
+    title: s.title,
+    author: s.author,
+    tags: s.tags,
+    favorite: s.favorite,
+    archivedAt: s.archivedAt,
+    revisionNumber: s.revisionNumber,
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+    coverMediaId: s.coverMediaId,
+    heroBannerMediaId: s.heroBannerMediaId,
+    logline: includeText ? s.logline : undefined,
+    premise: includeText ? s.premise : undefined,
+    synopsis: includeText ? s.synopsis : undefined,
+    textRedacted: includeText ? undefined : true,
+    actCount: s.acts.length,
+    sceneCount: s.acts.reduce((acc, act) => acc + act.sequences.reduce((sAcc, seq) => sAcc + seq.scenes.length, 0), 0),
+    colorScriptCount: s.colorScript.length,
+    digest: computeStoryDigest(s),
+  }));
+
+  return {
+    items,
+    total: filtered.length,
+    nextCursor,
+  };
+}
+
+export function readStoryDetail(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: {
+    storyId: string;
+    projection?: 'overview' | 'book' | 'creator_hierarchy' | 'full';
+  },
+): Record<string, unknown> {
+  if (!scope.storyIds?.includes(args.storyId)) {
+    denyScope();
+  }
+
+  const story = ((snapshot as ChangeSetState).stories ?? []).find((s) => s.id === args.storyId);
+  if (!story) {
+    denyScope();
+  }
+
+  const projection = args.projection || 'overview';
+  const includeText = scope.includeStoryText === true;
+  const digest = computeStoryDigest(story);
+
+  if (projection === 'overview') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      author: story.author,
+      createdAt: story.createdAt,
+      updatedAt: story.updatedAt,
+      archivedAt: story.archivedAt,
+      favorite: story.favorite,
+      revisionNumber: story.revisionNumber,
+      tags: story.tags,
+      coverMediaId: story.coverMediaId,
+      heroBannerMediaId: story.heroBannerMediaId,
+      logline: includeText ? story.logline : undefined,
+      premise: includeText ? story.premise : undefined,
+      synopsis: includeText ? story.synopsis : undefined,
+      treatment: includeText ? story.treatment : undefined,
+      textRedacted: includeText ? undefined : true,
+      referencePackStats: {
+        assetCount: story.referencePack.assetIds.length,
+        variantCount: story.referencePack.variantIds.length,
+        mediaCount: story.referencePack.mediaIds.length,
+      },
+      colorScriptCount: story.colorScript.length,
+      actCount: story.acts.length,
+      linkedCollectionId: story.linkedCollectionId,
+      digest,
+    });
+  }
+
+  if (projection === 'book') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      author: story.author,
+      revisionNumber: story.revisionNumber,
+      fullBookText: includeText ? story.fullBookText : undefined,
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
+  if (projection === 'creator_hierarchy') {
+    const projectActs = (acts: Story['acts']) =>
+      acts.map((act) => ({
+        ...act,
+        summary: includeText ? act.summary : undefined,
+        sequences: act.sequences.map((seq) => ({
+          ...seq,
+          summary: includeText ? seq.summary : undefined,
+          scenes: seq.scenes.map((scene) => ({
+            ...scene,
+            summary: includeText ? scene.summary : undefined,
+            beats: scene.beats.map((beat) => ({
+              ...beat,
+              content: includeText ? beat.content : undefined,
+            })),
+          })),
+        })),
+      }));
+
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      revisionNumber: story.revisionNumber,
+      acts: projectActs(story.acts),
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
+  // projection === 'full'
+  return cleanObject({
+    ...story,
+    logline: includeText ? story.logline : undefined,
+    premise: includeText ? story.premise : undefined,
+    synopsis: includeText ? story.synopsis : undefined,
+    treatment: includeText ? story.treatment : undefined,
+    fullBookText: includeText ? story.fullBookText : undefined,
+    textRedacted: includeText ? undefined : true,
+    digest,
+  });
 }

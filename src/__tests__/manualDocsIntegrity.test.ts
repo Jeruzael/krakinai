@@ -51,12 +51,12 @@ describe('KRAKINAI Manual Integrity', () => {
     }
 
     const ch9 = fs.readFileSync(path.join(MANUAL_DIR, '09-technical-changeset-and-security.md'), 'utf8');
-    for (let v = 1; v <= 6; v++) {
+    for (let v = 1; v <= 7; v++) {
       expect(ch9).toContain(`krakinai.change-set.v${v}`);
     }
 
     const ch10 = fs.readFileSync(path.join(MANUAL_DIR, '10-technical-mcp-reference.md'), 'utf8');
-    expect(MCP_TOOL_NAMES).toHaveLength(38);
+    expect(MCP_TOOL_NAMES).toHaveLength(45);
     for (const toolName of MCP_TOOL_NAMES) {
       expect(ch10, `Missing MCP tool ${toolName} in Chapter 10`).toContain(toolName);
     }

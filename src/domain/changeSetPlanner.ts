@@ -311,30 +311,32 @@ export function planChangeSet(
             row.summary = `Update story: ${target.title}`;
           } else if (op.type === "story.set_status") {
             if (op.archived !== undefined) target.archivedAt = op.archived ? allocation.preparedAt : null;
+            else if (op.status !== undefined) target.archivedAt = op.status === 'archived' ? allocation.preparedAt : null;
             if (op.favorite !== undefined) target.favorite = op.favorite;
             row.summary = `Status update: ${target.title}`;
           } else if (op.type === "story.patch_structure") {
             target.acts = op.acts;
             row.summary = `Patch structure: ${target.title} (${op.acts.length} acts)`;
           } else if (op.type === "story.patch_dramatic_meta") {
+            const targetNodeId = op.targetNodeId || op.targetNode?.id;
             let patched = false;
             for (const act of target.acts) {
-              if (act.id === op.targetNodeId) { act.dramaticMeta = op.dramaticMeta; patched = true; break; }
+              if (act.id === targetNodeId) { act.dramaticMeta = op.dramaticMeta; patched = true; break; }
               for (const seq of act.sequences ?? []) {
-                if (seq.id === op.targetNodeId) { seq.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                if (seq.id === targetNodeId) { seq.dramaticMeta = op.dramaticMeta; patched = true; break; }
                 for (const sc of seq.scenes ?? []) {
-                  if (sc.id === op.targetNodeId) { sc.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                  if (sc.id === targetNodeId) { sc.dramaticMeta = op.dramaticMeta; patched = true; break; }
                   for (const b of sc.beats ?? []) {
-                    if (b.id === op.targetNodeId) { b.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                    if (b.id === targetNodeId) { b.dramaticMeta = op.dramaticMeta; patched = true; break; }
                   }
                 }
               }
             }
             if (!patched) {
-              fail("NODE_NOT_FOUND", `Dramatic node '${op.targetNodeId}' not found in story.`);
+              fail("NODE_NOT_FOUND", `Dramatic node '${targetNodeId}' not found in story.`);
               continue;
             }
-            row.summary = `Patch dramatic meta: ${target.title} (node ${op.targetNodeId})`;
+            row.summary = `Patch dramatic meta: ${target.title} (node ${targetNodeId})`;
           } else if (op.type === "story.patch_references") {
             if (op.referencePack) target.referencePack = { ...target.referencePack, ...op.referencePack };
             if (op.linkedCollectionId !== undefined) target.linkedCollectionId = op.linkedCollectionId;
