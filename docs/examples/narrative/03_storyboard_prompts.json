@@ -1,0 +1,2067 @@
+{
+  "project_metadata": {
+    "project_title": "Wool and Fang: The Snare in the Timberline",
+    "target_engine": "google-flow-omni",
+    "clip_budget_policy": {
+      "min_duration_seconds": 5,
+      "max_duration_seconds": 10,
+      "max_words_per_shot": 18
+    },
+    "aspect_ratio": "16:9",
+    "frame_rate": "24fps",
+    "style_preset": "Cinematic dark fantasy realism, intricate fur and wool textures, atmospheric morning mist, rich organic film grain",
+    "spatial_geography_anchor": "Meadowbrook Valley to Whispering Pines. North: steep forested pine ridges with ancient oaks and hunter's tension snare. South/Center: tranquil cobblestone village square, stone cottages, apple orchards, fortified iron-banded garrison gates."
+  },
+  "action_library": [
+    {
+      "ref": "act-ridge-stalk",
+      "title": "Predatory Ridge Crouch & Scrutiny",
+      "promptText": "Character crouches low in thorny brush, coiled shoulder blades, unblinking amber eyes tracking the valley below, claws digging into damp soil.",
+      "tags": [
+        "action",
+        "stealth",
+        "stalking",
+        "predator"
+      ]
+    },
+    {
+      "ref": "act-village-charge",
+      "title": "Explosive Bound & Perimeter Charge",
+      "promptText": "Character sprints forward with low center of gravity, vaulting stone obstacles in lunging bounds, claws kicking up gravel and spray.",
+      "tags": [
+        "action",
+        "combat",
+        "charge",
+        "parkour"
+      ]
+    },
+    {
+      "ref": "act-mastiff-impact",
+      "title": "Heavy Bipedal Shoulder Check & Gauntlet Strike",
+      "promptText": "Massive armored hound drives forward like a battering ram, slamming iron gauntlets and crushing wooden barricades with ground-shaking momentum.",
+      "tags": [
+        "action",
+        "combat",
+        "impact",
+        "battering"
+      ]
+    },
+    {
+      "ref": "act-snare-whip",
+      "title": "Sudden Ankle Snare Recoil & Slam",
+      "promptText": "Concealed noose snaps around ankle; character is yanked skyward in mid-air inversion before crashing violently against massive tree roots.",
+      "tags": [
+        "action",
+        "trap",
+        "impact",
+        "kinetic"
+      ]
+    },
+    {
+      "ref": "act-cornered-predator",
+      "title": "Cornered Tripod Defensive Stance",
+      "promptText": "Wounded predator levers onto one knee and claw, baring bloody fangs, ears pinned flat, chest heaving with defiant ferocity.",
+      "tags": [
+        "action",
+        "defiance",
+        "posture",
+        "feral"
+      ]
+    },
+    {
+      "ref": "act-healer-mercy",
+      "title": "Kneeling Sickle Sawing Mercy",
+      "promptText": "Healer drops gently into damp moss beside the wounded creature, holding taut hemp rope with trembling hands and sawing furiously with curved iron sickle.",
+      "tags": [
+        "action",
+        "rescue",
+        "mercy",
+        "intimate"
+      ]
+    },
+    {
+      "ref": "act-shadow-leap",
+      "title": "Silent Bounding Woodland Escape",
+      "promptText": "Character executes a fluid, silent leap over bracken ferns, disappearing into swirling misty evergreen trees without a sound.",
+      "tags": [
+        "action",
+        "escape",
+        "stealth",
+        "agility"
+      ]
+    }
+  ],
+  "lighting_library": [
+    {
+      "ref": "light-dawn-timberline",
+      "title": "Overcast Dawn Fog & Cold Silver Rim",
+      "promptText": "Cool 5600K diffused morning sky through dense pine canopy, heavy volumetric mist, pale silver rim light picking out wet fur and needle tips.",
+      "tags": [
+        "lighting",
+        "dawn",
+        "fog",
+        "cool"
+      ]
+    },
+    {
+      "ref": "light-village-raid",
+      "title": "Diffused Morning Sunlight & High-Contrast Motion",
+      "promptText": "5000K morning daylight cutting through dissipating fog, dynamic hard motion shadows on wet cobblestones, high-contrast action lighting.",
+      "tags": [
+        "lighting",
+        "daylight",
+        "action",
+        "contrast"
+      ]
+    },
+    {
+      "ref": "light-deep-pine-fog",
+      "title": "Dim Evergreen Canopy & God Rays",
+      "promptText": "Low-key 4500K deep forest canopy ambient, soft white sun shafts slicing through misty pines, cool emerald bounce off mossy floor.",
+      "tags": [
+        "lighting",
+        "forest",
+        "canopy",
+        "godrays"
+      ]
+    },
+    {
+      "ref": "light-snare-clearing",
+      "title": "Warm Golden Sunshaft vs Cool Forest Fill",
+      "promptText": "4200K warm directional sunbeam illuminating cream fleece, contrasting with 6500K cool forest fill on silver wolf fur, ethereal chiaroscuro.",
+      "tags": [
+        "lighting",
+        "chiaroscuro",
+        "emotional",
+        "sunbeam"
+      ]
+    }
+  ],
+  "shots": [
+    {
+      "shot_id": "SHOT_01A",
+      "scene": "EXT. MEADOWBROOK TIMBERLINE - DAWN",
+      "story_beat": "Beat 01.1: Establishing the misty timberline and peaceful sheep village below.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Establishing wide environment shot with crowd permanently visible",
+      "character": "Gaunt wolf raiders (5 silhouettes), distant sheep villagers tending orchards.",
+      "action_ref": "act-ridge-stalk",
+      "lighting_ref": "light-dawn-timberline",
+      "performance": "Wolves remain motionless, breath misting in cold morning air; eyes scanning down.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Prickly pine boughs and tangled briars on the ridge edge.",
+        "midground": "Silhouettes of 5 humanoid wolves crouched on cliff edge watching the valley.",
+        "background_crowd": "Meadowbrook village valley; humanoid sheep in woven aprons tending apple orchards around stone cottages."
+      },
+      "camera": "Extreme Wide Shot (EWS) / High Angle. Slow lateral tracking crane right across ridge axis over 6 seconds. No cuts, no zoom.",
+      "optics": "24mm cine prime lens, deep focus f/5.6 keeping ridge brush and distant valley cottages crisp.",
+      "lighting": "Cool 5600K overcast dawn key, volumetric morning blue mist drifting through conifers.",
+      "environment": "Damp evergreen ridge overlooking pastoral rolling valley, stone cottages, apple orchards.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Distant rooster crow, morning mountain breeze through pine needles.",
+        "foley": "Soft rustle of needle litter.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock valley geography, orchard layout, and wolf pack numbers (5 wolves total).",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background valley, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-01a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "EWS at 0.0s. High crane wide overlooking misty valley; humanoid sheep visible below tending apple groves in dawn light. In foreground right, pine boughs frame the view."
+        },
+        "end_frame": {
+          "id": "frame-01a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "EWS at 6.0s. Crane tracks right, revealing gaunt wolf pack silhouettes crouched in thorny briars along the timberline rim, amber eyes locked onto the village."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second extreme wide shot (24mm lens, deep focus) from a high ridge looking down into Meadowbrook village at dawn. In the midground, silhouettes of five gaunt humanoid wolves crouch motionless among thorny briars. In the background valley, humanoid sheep villagers in linen aprons tend apple orchards around stone cottages. Cool 5600K morning mist drifts through the pine canopy. Smooth slow crane tracking right. Preserve landscape geography and crowd presence. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_01B",
+      "scene": "EXT. MEADOWBROOK TIMBERLINE - DAWN",
+      "story_beat": "Beat 01.2: Vane gives the ruthless attack command to Kael.",
+      "duration_seconds": 8,
+      "sub_cut_reason": "Single primary dialogue turn (16 words) kept within 8s Omni window",
+      "character": "Vane (40s alpha wolf, scarred muzzle, jagged ear), Kael (20s silver wolf).",
+      "action_ref": "act-ridge-stalk",
+      "lighting_ref": "light-dawn-timberline",
+      "performance": "Vane whispers with predatory authority; sharp claw gesture; Kael listens rigid.",
+      "dialogue_cues": [
+        {
+          "speaker": "Vane",
+          "participant": "vane",
+          "line": "Walang bantay sa silangang bakod. Pagbilang ko ng tatlo, sunggaban n'yo agad 'yung mga nasa bungad. Walang matitira.",
+          "word_count": 16,
+          "estimated_speech_seconds": 6.4,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 6.9
+          },
+          "performance": {
+            "emotion": {
+              "primary": "predatory",
+              "intensity": "menacing"
+            },
+            "techniques": [
+              "whispered",
+              "hissed"
+            ],
+            "voice": {
+              "texture": "gravelly",
+              "pitch": "low",
+              "tempo": "measured"
+            },
+            "speech": {
+              "articulation": "staccato",
+              "pauses": "dramatic"
+            },
+            "gestures": [
+              "point_claw_east",
+              "bare_fangs"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Dirty foreground past Kael's scarred leather brigandine shoulder on left third.",
+        "midground": "Vane leaning close, amber eyes glowing, baring yellowed fangs while claw points east.",
+        "background_crowd": "Three gaunt, shivering wolf packmates framed in soft misty bokeh behind them."
+      },
+      "camera": "Medium Close-Up (MCU) / Eye-Level. Slow 5% push-in toward Vane's snarling muzzle over 8 seconds. No pan, no zoom.",
+      "optics": "50mm anamorphic cine prime, shallow depth of field f/2.0 isolating Vane's scarred features.",
+      "lighting": "Pale silver 5600K rim light carving out Vane's jagged left ear; cool blue fog fill.",
+      "environment": "Dense thorny brush and tangled pine roots along the cliff edge.",
+      "audio": {
+        "dialogue": "VANE: 'Walang bantay sa silangang bakod. Pagbilang ko ng tatlo, sunggaban n'yo agad 'yung mga nasa bungad. Walang matitira.'",
+        "ambience": "Wind sighing through pine needles.",
+        "foley": "Low raspy guttural breath, claw scratching dry bark.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Vane's torn ear notch, scarred leather harness, and Kael's brigandine shoulder studs.",
+      "output": {
+        "duration_seconds": 8,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-01b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Vane leans into Kael's ear, scarred muzzle tight, amber eyes glittering with cold malice. Kael's leather-clad shoulder frames the left edge."
+        },
+        "end_frame": {
+          "id": "frame-01b-end",
+          "label": "End Frame (8.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 8.0s. Vane's scarred claw points sharply toward the eastern fence; yellow fangs bared on the final whispered syllable; cold breath hanging in air."
+        }
+      },
+      "compiled_layer_prompt": "One continuous eight-second medium close-up shot (50mm anamorphic prime, f/2.0) on a misty ridge. In the midground, scarred humanoid alpha wolf Vane whispers a ruthless attack command, baring yellow fangs and pointing a claw east. In the foreground left, silver wolf Kael's leather brigandine shoulder frames the shot. In the background, three gaunt packmates watch in misty bokeh. Pale silver dawn rim light catches Vane's jagged ear. Smooth slow push-in. Preserve character scars and wardrobe. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_01C",
+      "scene": "EXT. MEADOWBROOK TIMBERLINE - DAWN",
+      "story_beat": "Beat 01.3: Kael struggles with internal hesitation and hunger.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Reaction close-up isolating Kael's moral conflict and physical famine",
+      "character": "Kael (20s silver humanoid wolf).",
+      "action_ref": "act-ridge-stalk",
+      "lighting_ref": "light-dawn-timberline",
+      "performance": "Internal reluctance, clenched jaw, pupils dilating with hunger and dread.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Damp pine needles, wet moss, and black loam.",
+        "midground": "Kael's silver-furred claws gripping into damp loam; stomach hollow and visibly spasming.",
+        "background_crowd": "Out-of-focus misty ridge edge dropping into the valley below."
+      },
+      "camera": "Close-Up (CU) / Low Angle. Static lock with subtle breathing camera vibration over 6 seconds.",
+      "optics": "65mm macro prime, f/2.8 shallow focus on Kael's claws digging into the soil.",
+      "lighting": "Cold 6000K edge bounce off wet pine needles; high-contrast morning shadows.",
+      "environment": "Wet pine needle bed at timberline edge.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Deep mountain silence, distant rooster crow.",
+        "foley": "Claws tearing wet loam, rapid shaky wolf breath.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's silver fur color, leather wrist wraps, and claw anatomy.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-01c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. Kael's silver-furred claws rest flat against damp pine needles; his face reflects quiet hesitation."
+        },
+        "end_frame": {
+          "id": "frame-01c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 6.0s. Kael's claws dig deep trenches into black loam; jaw clenches tight as famine cramps his hollow belly."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second close-up shot (65mm lens, f/2.8) at ground level. In the midground, humanoid silver wolf Kael digs his claws into damp pine needles and black soil, his lean frame trembling with hunger and inner reluctance. In the background, the misty cliff edge drops into the valley. Cool 6000K dawn light reflects on wet needle tips. Static camera with subtle breathing motion. Preserve fur texture and wardrobe continuity. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_02A",
+      "scene": "EXT. MEADOWBROOK BOUNDARY WALL - DAWN",
+      "story_beat": "Beat 02.1: The wolf pack vaults the stone boundary wall into the village.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "High-action physical vault sequence isolated for kinetic clarity",
+      "character": "Vane and 4 wolf raiders.",
+      "action_ref": "act-village-charge",
+      "lighting_ref": "light-village-raid",
+      "performance": "Explosive kinetic aggression, predatory snarls, bared claws.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Low moss-grown fieldstone boundary wall with dew glistening.",
+        "midground": "Vane and four wolf raiders vaulting over the wall in lunging strides.",
+        "background_crowd": "Outer apple orchard and whitewashed cottage facades of Meadowbrook."
+      },
+      "camera": "Wide Shot (WS) / Low Dutch Angle. Fast low-tracking whip pan following wolves' vault over 6 seconds.",
+      "optics": "28mm cine prime, deep focus f/4.0 maintaining sharpness across the leap.",
+      "lighting": "Pale morning sun slicing through clearing fog, casting dynamic motion shadows.",
+      "environment": "Mossy fieldstone wall separating pine woods from orchard.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Morning mountain wind.",
+        "foley": "Resonant blood-chilling wolf howl, heavy thud of paws on fieldstone, flying gravel.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock pack count (5 wolves), boundary wall height, and cottage architecture.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-02a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Vane throws his head back at frame center unleashing a fierce howl; pack crouched behind wall to spring."
+        },
+        "end_frame": {
+          "id": "frame-02a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 6.0s. All five wolves land in full sprint on village cobblestones, kicking up gravel and morning dew."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second wide action shot (28mm lens, low dutch angle) at the village boundary wall. In the midground, five humanoid wolf raiders led by scarred alpha Vane vault over a low mossy fieldstone wall into the village perimeter. In the background, apple trees and half-timbered cottages stand in clearing dawn fog. 5000K dynamic morning daylight. Fast low-tracking camera following the vault. Preserve pack count and environment layout. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_02B",
+      "scene": "EXT. MEADOWBROOK VILLAGE SQUARE - DAWN",
+      "story_beat": "Beat 02.2: Watchtower bell clangs and sheep villagers flee in panic.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "High-angle crowd panic shot establishing town layout and villager permanence",
+      "character": "Sheep villagers (humanoid sheep in linen aprons and wool coats), watchtower bell ringer.",
+      "action_ref": "act-village-charge",
+      "lighting_ref": "light-village-raid",
+      "performance": "Frantic terror, wide bleating muzzles, mothers grabbing children.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Clanging bronze watchtower bell and timber scaffolding on left edge.",
+        "midground": "Cobblestone square crowded with humanoid sheep villagers dropping apple baskets and scrambling.",
+        "background_crowd": "Half-timbered cottages, cellar doors, and surrounding pastoral foothills."
+      },
+      "camera": "Wide Shot (WS) / High Angle Crane. Rapid crane descent toward village market square over 6 seconds.",
+      "optics": "24mm cine prime, deep focus f/5.6 ensuring crowd detail across entire square.",
+      "lighting": "5000K morning daylight, dynamic running shadows on wet cobblestones.",
+      "environment": "Meadowbrook cobblestone village square, wooden stalls, stone cottages.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Frantic panic tone.",
+        "foley": "Deafening clanging bronze watchtower bell, terrified bleating, wooden crates smashing.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock village architectural style, wooden cart positions, and crowd density.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background square, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-02b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. High perspective from watchtower as bronze bell swings wildly; sheep villagers in square freeze in initial terror."
+        },
+        "end_frame": {
+          "id": "frame-02b-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 6.0s. Crane plunges downward; red apples spill across cobblestones; sheep villagers dive into open storm cellars."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second high-angle wide crane shot (24mm lens, deep focus) over Meadowbrook village square. In the foreground left, a bronze watchtower bell swings and rings violently. In the midground, dozens of humanoid sheep villagers in linen aprons drop wooden apple baskets and flee across wet cobblestones into cellar doors. In the background, stone cottages line the rolling hills. 5000K morning sunlight. Rapid crane descent. Preserve crowd presence and architecture. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_02C",
+      "scene": "EXT. MEADOWBROOK ALLEY - DAWN",
+      "story_beat": "Beat 02.3: Elowen rescues a fallen lamb as Kael's shadow sweeps over.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Isolates the emotional heroism of Elowen and the arrival of Kael",
+      "character": "Elowen (20s sheep healer), young sheep lamb, Kael (shadow).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-village-raid",
+      "performance": "Fierce maternal resolve, gasping breath, swift decisive thrust.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Rolling red apples and puddles on wet cobblestones.",
+        "midground": "Elowen sliding on knees, lifting crying lamb into an open cottage doorway.",
+        "background_crowd": "Looming elongated shadow of silver wolf Kael advancing down the stone alley."
+      },
+      "camera": "Medium Long Shot (MLS) / Ground Level. Rapid dolly forward following Elowen's slide over 7 seconds.",
+      "optics": "35mm cine prime, moderate depth of field f/2.8 keeping Elowen sharp while alley shadow looms.",
+      "lighting": "Alley daylight with deep ominous shadow cast by Kael's silhouette.",
+      "environment": "Narrow cobblestone alley flanked by stone cottage walls.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Distant alarm bells and shouting.",
+        "foley": "Sliding knees on wet pavers, child whimper, heavy door slam, ominous clawed footstep.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Elowen's cream curls, healer apron, satchel strap, and horn nubs.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-02c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MLS at 0.0s. Elowen slides across wet cobblestones on knees, arms reaching out to scoop up a crying lamb."
+        },
+        "end_frame": {
+          "id": "frame-02c-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "MLS at 7.0s. Lamb safely shoved through cottage door; heavy wood slams shut; Kael's massive wolf shadow engulfs the alley pavers."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second ground-level shot (35mm lens, f/2.8) in a narrow cobblestone alley. In the midground, gentle humanoid sheep healer Elowen in a linen apron slides across wet stones to lift a fallen lamb and shove him safely into a cottage doorway. In the background, the looming dark shadow of silver wolf Kael stretches across the alley wall. High-contrast morning light. Smooth fast dolly forward. Preserve character costumes and alley layout. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_03A",
+      "scene": "EXT. MEADOWBROOK GARRISON GATE - DAWN",
+      "story_beat": "Beat 03.1: The village garrison gates smash open with explosive force.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "High-impact environmental destruction establishing the garrison breach",
+      "character": "Mastiff Vanguard (silhouettes inside courtyard).",
+      "action_ref": "act-mastiff-impact",
+      "lighting_ref": "light-village-raid",
+      "performance": "Shockwave of brute physical force.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Wet cobblestone street in front of the garrison threshold.",
+        "midground": "Reinforced iron-banded timber garrison gates blowing outward into flying splinters.",
+        "background_crowd": "Dark stone garrison courtyard shrouded in dust and torch sparks."
+      },
+      "camera": "Wide Shot (WS) / Low Angle. Static locked frame absorbing explosive physical impact over 6 seconds.",
+      "optics": "28mm cine prime, deep focus f/4.0 keeping splinters and stone gates razor-sharp.",
+      "lighting": "Backlit by torches from courtyard; airborne dust illuminated by morning sun shafts.",
+      "environment": "Fortified stone garrison archway and iron-reinforced wooden gates.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Tense village square silence.",
+        "foley": "Explosive crack of heavy oak timber, iron hinges snapping, deep bass ground shudder.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock garrison gate masonry, iron band thickness, and cobblestone texture.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-03a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Heavy iron-banded gates bow outward under immense internal force; dust puffing from seams."
+        },
+        "end_frame": {
+          "id": "frame-03a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 6.0s. Gates blow violently into splinters; smoke and sparks billow outward into the cobblestone street."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second low-angle wide shot (28mm lens, deep focus) facing the Meadowbrook garrison gate. In the midground, reinforced iron-banded oak gates blow outward into explosive splinters and stone dust. In the background, torches flicker inside the dark stone courtyard. Morning sun shafts illuminate airborne debris. Static camera capturing the blast impact. Preserve architectural geometry. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_03B",
+      "scene": "EXT. MEADOWBROOK GARRISON GATE - DAWN",
+      "story_beat": "Beat 03.2: Garrick and the Mastiff Vanguard step out and challenge the wolves.",
+      "duration_seconds": 8,
+      "sub_cut_reason": "Single primary dialogue turn (12 words) + gauntlet slam within 8s Omni window",
+      "character": "Garrick (Mastiff Vanguard Captain), Brutus & Rex (Mastiff enforcers).",
+      "action_ref": "act-mastiff-impact",
+      "lighting_ref": "light-village-raid",
+      "performance": "Dominant, intimidating swagger; heavy wrinkled jowls foaming with fury.",
+      "dialogue_cues": [
+        {
+          "speaker": "Garrick",
+          "participant": "garrick",
+          "line": "Akala n'yo ba puro tupa lang ang madadatnan n'yo rito? Mga hangal!",
+          "word_count": 12,
+          "estimated_speech_seconds": 4.8,
+          "timing": {
+            "startSeconds": 1,
+            "endSeconds": 5.8
+          },
+          "performance": {
+            "emotion": {
+              "primary": "dominant",
+              "intensity": "commanding"
+            },
+            "techniques": [
+              "booming",
+              "projected"
+            ],
+            "voice": {
+              "texture": "guttural_gravel",
+              "pitch": "deep_baritone",
+              "tempo": "steady"
+            },
+            "speech": {
+              "articulation": "resonant",
+              "pauses": "mocking_bite"
+            },
+            "gestures": [
+              "slam_iron_gauntlets",
+              "step_forward"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Spiked iron collar and broad brindle chest of Garrick stepping forward.",
+        "midground": "Brutus and Rex flanking Garrick in spiked collars and heavy plate gauntlets.",
+        "background_crowd": "Garrison stone archway filled with billowing dust and torch embers."
+      },
+      "camera": "Medium Close-Up (MCU) / Low Angle. Slow push-in tracking Garrick's march over 8 seconds. No cuts, no zoom.",
+      "optics": "40mm anamorphic prime, moderate depth of field f/2.8 emphasizing the dogs' immense bulk.",
+      "lighting": "Harsh rim light on spiked iron collars; cold specular glints on plate steel.",
+      "environment": "Splintered threshold of the garrison gates.",
+      "audio": {
+        "dialogue": "GARRICK: 'Akala n'yo ba puro tupa lang ang madadatnan n'yo rito? Mga hangal!'",
+        "ambience": "Subterranean bass rumble.",
+        "foley": "Deafening metallic clash of iron gauntlets slamming together, heavy armored footsteps.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Garrick's spiked collar, chainmail hauberk, and brindle coat pattern.",
+      "output": {
+        "duration_seconds": 8,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-03b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Garrick steps through the dust, heavy jowls tight with ferocious discipline, amber eyes burning."
+        },
+        "end_frame": {
+          "id": "frame-03b-end",
+          "label": "End Frame (8.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 8.0s. Garrick slams iron gauntlets together with flying sparks, roaring 'Mga hangal!' as Brutus and Rex snarl beside him."
+        }
+      },
+      "compiled_layer_prompt": "One continuous eight-second low-angle medium close-up shot (40mm anamorphic prime, f/2.8). In the midground, towering humanoid Mastiff dog captain Garrick in a spiked iron collar and blackened plate gauntlets slams his fists together and bellows a mocking challenge. Flanking him are two hulking Mastiff enforcers. In the background, the shattered garrison archway billows smoke and sparks. Cold specular highlights glint on spiked steel. Slow steady push-in. Preserve armor design and brindle fur markings. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_03C",
+      "scene": "EXT. MEADOWBROOK COBBLESTONE STREET - DAWN",
+      "story_beat": "Beat 03.3: Vane reacts in horror to the Vanguard Mastiffs.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue reaction turn (7 words) kept within 6s Omni window",
+      "character": "Vane (40s alpha wolf), Garrick (framing shoulder).",
+      "action_ref": "act-village-charge",
+      "lighting_ref": "light-village-raid",
+      "performance": "Total shock, panic overtaking aggression, ears flattening.",
+      "dialogue_cues": [
+        {
+          "speaker": "Vane",
+          "participant": "vane",
+          "line": "Mga Aso?! Paanong nagkaroon ng Vanguard dito—?!",
+          "word_count": 7,
+          "estimated_speech_seconds": 2.8,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 3.3
+          },
+          "performance": {
+            "emotion": {
+              "primary": "alarmed",
+              "intensity": "shocked"
+            },
+            "techniques": [
+              "choked",
+              "strained"
+            ],
+            "voice": {
+              "texture": "raspy",
+              "pitch": "sharp_spike",
+              "tempo": "rapid"
+            },
+            "speech": {
+              "articulation": "ragged",
+              "pauses": "abrupt"
+            },
+            "gestures": [
+              "pin_ears_back",
+              "skid_backward"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Garrick's massive armored shoulder framing the left third.",
+        "midground": "Vane skidding to a halt, paws clawing cobblestones in reverse, ears pinned flat.",
+        "background_crowd": "Surprised wolf raiders halting in confusion behind Vane on the street."
+      },
+      "camera": "Over-the-Shoulder (OTS) / Eye-Level. Whip zoom in on Vane's face over 6 seconds. No cuts.",
+      "optics": "50mm prime, shallow depth of field f/2.0 isolating Vane's shock.",
+      "lighting": "Direct morning daylight hitting Vane's bared teeth and flared nostrils.",
+      "environment": "Wet cobblestone village street.",
+      "audio": {
+        "dialogue": "VANE: 'Mga Aso?! Paanong nagkaroon ng Vanguard dito—?!'",
+        "ambience": "Tense village square combat air.",
+        "foley": "Claws scraping violently against wet pavers, ragged intake of breath.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Vane's facial scars, ear notch, and pack position.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-03c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "OTS at 0.0s. Over Garrick's iron pauldron, Vane is mid-charge with aggressive snarl."
+        },
+        "end_frame": {
+          "id": "frame-03c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "OTS at 6.0s. Vane skids back across wet pavers, ears pinned flat in terror, jaw dropped in shock as he gasps his line."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second over-the-shoulder shot (50mm lens, f/2.0). In the foreground left, armored Mastiff Garrick's iron pauldron frames the view. In the midground, scarred alpha wolf Vane skids to a halt on wet cobblestones, his ears flattening and jaw dropping in horror as he shouts in shock. In the background, startled wolf packmates halt in confusion. Direct morning daylight. Smooth dynamic push-in. Preserve character continuity. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_04A",
+      "scene": "EXT. MEADOWBROOK VILLAGE SQUARE - DAWN",
+      "story_beat": "Beat 04.1: The Mastiff Vanguard smashes into the wolf raiding line.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "High-impact kinetic melee sequence isolated for physical clarity",
+      "character": "Brutus, Rex (Mastiffs), wolf raiders.",
+      "action_ref": "act-mastiff-impact",
+      "lighting_ref": "light-village-raid",
+      "performance": "Brutal kinetic dominance, ferocity of disciplined combat dogs.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Splintered wooden market cart debris and scattered vegetables.",
+        "midground": "Brutus bulldozes two leaping wolves; Rex hurls a raider bodily into the mud.",
+        "background_crowd": "Fleeing sheep villagers watching from barred cottage windows."
+      },
+      "camera": "Wide Shot (WS) / Tracking Profile. Fast lateral tracking dolly left following the charge over 7 seconds.",
+      "optics": "35mm cine prime, deep focus f/4.0 capturing multiple points of physical impact.",
+      "lighting": "Dynamic high-contrast daylight, flying mud and wood splinters.",
+      "environment": "Village market lane between timber market stalls.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Combat chaos.",
+        "foley": "Timber cart smashing, heavy canine snarls and yelps, bodies slamming into mud.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Mastiff spiked armor, cart wreckage props, and cottage facades.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-04a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Mastiffs collide with the leaping wolves like freight trains in front of market cart."
+        },
+        "end_frame": {
+          "id": "frame-04a-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 7.0s. Market cart completely demolished; wolves thrown into muddy cobblestones as dogs dominate."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second wide tracking shot (35mm lens, f/4.0) in the village square. In the midground, two massive humanoid Mastiff dogs in spiked iron collars crush through the wolf raiding line, demolishing a timber market cart and hurling wolf raiders bodily into the mud. In the foreground, splintered wood and vegetables scatter. In the background, sheep villagers peer through cottage grates. Dynamic daylight. Fast lateral tracking dolly left. Preserve armor and props. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_04B",
+      "scene": "EXT. MEADOWBROOK VILLAGE SQUARE - DAWN",
+      "story_beat": "Beat 04.2: Garrick delivers a brutal iron backhand to Kael's ribs.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Slow-motion combat impact isolating Kael's injury and defeat",
+      "character": "Kael (silver wolf), Garrick (Mastiff Captain).",
+      "action_ref": "act-mastiff-impact",
+      "lighting_ref": "light-village-raid",
+      "performance": "Kael's protective defiance collapsing into agony as the breath leaves him.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Kael lunging forward with claws bared to intercept Garrick.",
+        "midground": "Garrick's iron-plated gauntlet bats Kael's arm aside and cracks across his rib cage.",
+        "background_crowd": "Chaotic blurred melee and flying mud across village square."
+      },
+      "camera": "Medium Close-Up (MCU) / Slow Motion (48fps). Tight tracking arc around the impact point over 7 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 isolating the gauntlet strike.",
+      "lighting": "Cold specular glint on iron gauntlet studs; mud droplets frozen in air.",
+      "environment": "Muddy cobblestone square.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Muffled combat noise.",
+        "foley": "Brutal iron-on-rib metallic crack, Kael's choked breath knocked out, heavy mud crash.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's leather brigandine studs, Garrick's plate gauntlet, and impact physics.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-04b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Kael mid-air lunging forward with bared claws to guard retreating packmates."
+        },
+        "end_frame": {
+          "id": "frame-04b-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 7.0s. Garrick's heavy iron gauntlet impacts Kael's ribs with visible kinetic shock; Kael crashes hard into wet mud."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second slow-motion medium close-up shot (50mm anamorphic prime, f/2.0) in the muddy square. In the midground, silver humanoid wolf Kael lunges forward to defend his pack, but towering Mastiff captain Garrick bats his claws aside and lands a devastating iron backhand across Kael's ribs, hurling him into the mud. In the background, combat chaos is softly blurred. Specular glints on iron studs. Smooth tracking arc. Preserve character injuries and armor. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_04C",
+      "scene": "EXT. MEADOWBROOK VILLAGE PERIMETER - DAWN",
+      "story_beat": "Beat 04.3: Vane shouts the panicked retreat call.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (7 words) in full retreat within 6s Omni window",
+      "character": "Vane (bleeding alpha wolf).",
+      "action_ref": "act-village-charge",
+      "lighting_ref": "light-village-raid",
+      "performance": "Frantic desperation, cowardice of the defeated alpha.",
+      "dialogue_cues": [
+        {
+          "speaker": "Vane",
+          "participant": "vane",
+          "line": "Umatras na tayo! Masyado silang malakas! Takbo!",
+          "word_count": 7,
+          "estimated_speech_seconds": 2.8,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 3.3
+          },
+          "performance": {
+            "emotion": {
+              "primary": "panicked",
+              "intensity": "frantic"
+            },
+            "techniques": [
+              "screeched",
+              "shouted"
+            ],
+            "voice": {
+              "texture": "breathless_rasping",
+              "pitch": "high_grating",
+              "tempo": "urgent"
+            },
+            "speech": {
+              "articulation": "clipped",
+              "pauses": "none"
+            },
+            "gestures": [
+              "clutch_bleeding_brow",
+              "scramble_turn"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Vane's bleeding brow and panting muzzle in tight profile.",
+        "midground": "Vane scrambling backward through muddy grass, turning to sprint toward woods.",
+        "background_crowd": "Distant Mastiffs subduing remaining wolves in muddy square under morning mist."
+      },
+      "camera": "Close-Up (CU) / Tracking Profile. Handheld tracking run following Vane's retreat over 6 seconds.",
+      "optics": "50mm prime, shallow depth of field f/2.8 isolating Vane's panic.",
+      "lighting": "Mist diffusing morning light into hazy grey-white.",
+      "environment": "Village perimeter trail leading into the Whispering Pines.",
+      "audio": {
+        "dialogue": "VANE: 'Umatras na tayo! Masyado silang malakas! Takbo!'",
+        "ambience": "Retreating screams and dog barking.",
+        "foley": "Mud splashing under paws, ragged panting breath.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Vane's bleeding brow wound and retreat direction northward.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-04c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. Vane clutches a bloody gash on his temple, panting and looking back in terror."
+        },
+        "end_frame": {
+          "id": "frame-04c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 6.0s. Vane screeches 'Takbo!' as he turns his back completely and bolts into the pine woods."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second close-up tracking shot (50mm lens, f/2.8) on the forest edge. In the midground, scarred alpha wolf Vane clutches a bleeding gash on his forehead, panting frantically, and screeches an order to retreat before sprinting into the trees. In the background, Mastiffs battle wolves in misty distance. Diffused cool daylight. Handheld tracking following the run. Preserve brow injury and wardrobe. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_05A",
+      "scene": "EXT. WHISPERING PINES - DAWN",
+      "story_beat": "Beat 05.1: Kael limps through the dense pine fog as rearguard.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Isolates Kael's physical suffering and solitary rearguard sacrifice",
+      "character": "Kael (injured silver wolf).",
+      "action_ref": "act-ridge-stalk",
+      "lighting_ref": "light-deep-pine-fog",
+      "performance": "Pain-etched endurance, protective rearguard vigilance.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Damp pine needles, mossy boulders, and dripping bracken ferns.",
+        "midground": "Kael limping heavily, clutching left ribs with right claw, scanning behind him.",
+        "background_crowd": "Thick white mist swirling through dense towering hemlock trunks."
+      },
+      "camera": "Medium Long Shot (MLS) / Low Angle. Steadicam tracking ahead of Kael limping over 6 seconds.",
+      "optics": "35mm cine prime, moderate depth of field f/2.8 keeping Kael sharp against foggy forest.",
+      "lighting": "4500K dim forest canopy; soft white sun shafts slicing through mist.",
+      "environment": "Whispering Pine Woods, mossy hemlocks, dense carpet of brown needles.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Deep coniferous forest silence, distant dog horns.",
+        "foley": "Labored wheezing breaths, heavy limping steps crunching damp needles.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's rib-clutching posture, bruised brigandine, and limping right leg.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background woods, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-05a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MLS at 0.0s. Kael emerges through thick white pine fog, dragging right hind leg, left claw clutching bruised ribs."
+        },
+        "end_frame": {
+          "id": "frame-05a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "MLS at 6.0s. Kael stumbles into the clearing of the ancient oak, chest heaving in agonizing shallow breaths."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second medium long shot (35mm lens, f/2.8) in a dense coniferous forest. In the midground, wounded humanoid silver wolf Kael limps heavily through swirling white mist, clutching his cracked ribs with one claw and looking back vigilantly to protect his pack. In the foreground, mossy rocks and fern fronds pass by. In the background, towering hemlock trunks fade into fog. 4500K moody forest light. Steadicam tracking ahead. Preserve wound continuity and wardrobe. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_05B",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 05.2: The hidden snare springs and traps Kael against the ancient oak.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "High-impact kinetic trap release + dialogue cry (3 words) in 7s Omni window",
+      "character": "Kael (silver wolf).",
+      "action_ref": "act-snare-whip",
+      "lighting_ref": "light-deep-pine-fog",
+      "performance": "Sudden shock, violent whiplash, desperate panic as trap springs.",
+      "dialogue_cues": [
+        {
+          "speaker": "Kael",
+          "participant": "kael",
+          "line": "Agh! Vane! Tulong!",
+          "word_count": 3,
+          "estimated_speech_seconds": 1.2,
+          "timing": {
+            "startSeconds": 2,
+            "endSeconds": 3.5
+          },
+          "performance": {
+            "emotion": {
+              "primary": "agonized",
+              "intensity": "desperate"
+            },
+            "techniques": [
+              "strained_cry",
+              "gasping"
+            ],
+            "voice": {
+              "texture": "hoarse_cracked",
+              "pitch": "piercing",
+              "tempo": "rapid"
+            },
+            "speech": {
+              "articulation": "shrieked",
+              "pauses": "sharp_breath"
+            },
+            "gestures": [
+              "claw_dirt",
+              "thrash_pinned_ankle"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Mossy fallen hemlock log with concealed tripwire buried in needles.",
+        "midground": "Kael vaults log; snare snaps around ankle; counterweight sapling whips him upward.",
+        "background_crowd": "Massive ancient knotted oak trunk and misty evergreen trees."
+      },
+      "camera": "Wide Shot (WS) / Profile Angle. Fixed wide tracking the sudden vertical snap over 7 seconds.",
+      "optics": "35mm cine prime, deep focus f/4.0 maintaining sharpness through violent vertical motion.",
+      "lighting": "Shaft of cool morning sunlight cutting across the snare trigger line.",
+      "environment": "Forest clearing dominated by a massive ancient oak tree.",
+      "audio": {
+        "dialogue": "KAEL: 'Agh! Vane! Tulong!'",
+        "ambience": "Whispering wind.",
+        "foley": "Violent whip of rope, snapped sapling recoiling, heavy wet thud against oak roots.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock snare rope braided hemp texture, sapling angle, and oak trunk roots.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-05b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Kael vaults a mossy fallen log, his hind paw striking the concealed hemp loop."
+        },
+        "end_frame": {
+          "id": "frame-05b-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 7.0s. Sapling counterweight whips Kael into the air; he slams down hard against ancient oak roots, shouting for help."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second wide profile shot (35mm lens, f/4.0) in an ancient oak clearing. In the midground, silver wolf Kael vaults a fallen log, triggering a hidden hemp snare; the counterweight sapling whips him skyward before slamming him onto his back against ancient oak roots as he cries out in agony. In the background, dense pine fog encloses the clearing. Cool forest lighting with a sharp morning sun shaft. Fixed camera capturing the vertical recoil. Preserve character identity and rope mechanics. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_05C",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 05.3: Vane abandons Kael and flees into the mist.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "POV betrayal shot showing emotional isolation and approaching peril",
+      "character": "Vane (distant wolf silhouette), Kael (claws in FG).",
+      "action_ref": "act-snare-whip",
+      "lighting_ref": "light-deep-pine-fog",
+      "performance": "Cold betrayal, calculated self-preservation of the alpha.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Kael's bared claws gripping mossy earth in frame bottom.",
+        "midground": "Fifty yards ahead, Vane stops, glances back through tree trunks.",
+        "background_crowd": "Distant orange torchlight and canine silhouettes moving up the hill."
+      },
+      "camera": "Point of View (POV) / Low Angle. Slow subtle tilt up from muddy ground toward distant mist over 6 seconds.",
+      "optics": "40mm prime, shallow depth of field f/2.8 keeping foreground claws and Vane readable.",
+      "lighting": "Flickering 2200K orange torchlight cutting through cool 5000K forest fog.",
+      "environment": "Misty pine woods looking downhill from oak base.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Distorted echoes of hunting dogs.",
+        "foley": "Distant hunting horns, barking dogs, snapping twigs downhill.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Vane's distinct silhouette, torchlight color temperature, and tree spacing.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-05c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "POV at 0.0s. From ground level, Kael's claws grip wet moss; fifty yards ahead in fog, Vane halts and looks back."
+        },
+        "end_frame": {
+          "id": "frame-05c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "POV at 6.0s. Vane turns away into dark pines; downhill orange torchlight glimmers closer through trees."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second low-angle POV shot (40mm lens, f/2.8) from Kael's grounded perspective. In the foreground bottom, Kael's trembling claws clutch wet moss. In the midground fifty yards away, alpha wolf Vane pauses between two foggy pines, glances back cold-eyed, and bolts into the shadows. In the background downhill, flickering orange torches and canine silhouettes advance through blue mist. Subtle upward tilt. Preserve spatial geography. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_06A",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 06.1: Kael tears fruitlessly at the tightening hemp snare.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Macro visceral shot establishing the brutality and constriction of the trap",
+      "character": "Kael (bloody claws and ankle).",
+      "action_ref": "act-snare-whip",
+      "lighting_ref": "light-deep-pine-fog",
+      "performance": "Desperate frantic struggle turning into exhausted defeat.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Steel-reinforced braided hemp cord cutting deeply into bloody silver fur.",
+        "midground": "Kael's bloody claws tearing fruitlessly at the double-cinched hunter's knot.",
+        "background_crowd": "Coarse dark oak bark and damp green moss."
+      },
+      "camera": "Extreme Close-Up (ECU) / Macro Top-Down. Slow microscopic roll following claws over 6 seconds.",
+      "optics": "85mm macro cine prime, ultra-shallow depth of field f/1.8 focusing on rope fibers.",
+      "lighting": "Soft forest ambient light with glistening crimson wet blood highlights.",
+      "environment": "Rough bark and knotted roots at oak base.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Whispering pine breeze.",
+        "foley": "Straining wet rope fibers, claws scraping bark, heavy gasping breath.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock snare knot anatomy, blood pattern on silver fur, and claw marks.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-06a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "ECU at 0.0s. Blood oozes through silver fur as thick hemp rope cinches tight against ankle bone."
+        },
+        "end_frame": {
+          "id": "frame-06a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "ECU at 6.0s. Claws slip off bloody rope; knot tightens further into flesh; claws slump exhausted onto bark."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second extreme macro close-up shot (85mm macro lens, f/1.8) on Kael's pinned ankle. In the midground, Kael's bloodied claws desperately rake at a thick braided hemp snare that cinches deeper into his silver fur and flesh against coarse oak bark. Wet crimson blood glistens on fur. Soft moody canopy lighting. Slow microscopic camera roll. Preserve anatomical detail and trap mechanics. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_06B",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 06.2: Kael levers into a cornered defensive crouch as a twig snaps.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Single dialogue defiance turn (6 words) kept within 7s Omni window",
+      "character": "Kael (wounded silver wolf).",
+      "action_ref": "act-cornered-predator",
+      "lighting_ref": "light-deep-pine-fog",
+      "performance": "Feral defiance, cornered beast fighting to the death, unyielding pride.",
+      "dialogue_cues": [
+        {
+          "speaker": "Kael",
+          "participant": "kael",
+          "line": "Lumapit ka na... tapusin mo na 'to!",
+          "word_count": 6,
+          "estimated_speech_seconds": 2.4,
+          "timing": {
+            "startSeconds": 1.5,
+            "endSeconds": 4
+          },
+          "performance": {
+            "emotion": {
+              "primary": "defiant",
+              "intensity": "cornered_feral"
+            },
+            "techniques": [
+              "snarled",
+              "challenging"
+            ],
+            "voice": {
+              "texture": "guttural_rasping",
+              "pitch": "low_rumble",
+              "tempo": "deliberate"
+            },
+            "speech": {
+              "articulation": "harsh_bite",
+              "pauses": "ominous_ellipsis"
+            },
+            "gestures": [
+              "bare_bloody_fangs",
+              "tripod_crouch"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Pinned bloody right paw stretched taut against the oak trunk.",
+        "midground": "Kael levers up onto left knee and claw; fangs bared, ears pinned, snarling defiance.",
+        "background_crowd": "Misty forest background where a twig snaps ten paces away."
+      },
+      "camera": "Medium Close-Up (MCU) / Low Ground Angle. Low push-in as Kael levers himself up over 7 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 focusing on snarling muzzle.",
+      "lighting": "4500K moody fill; sharp specular glint on bared white fangs.",
+      "environment": "Base of massive mossy oak tree in foggy woods.",
+      "audio": {
+        "dialogue": "KAEL: 'Lumapit ka na... tapusin mo na 'to!'",
+        "ambience": "Sudden silence in forest.",
+        "foley": "Sharp dry twig snap 10 paces away, low guttural warning growl, rustling moss.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's facial scratches, brigandine tears, and snare rope tension line.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-06b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Kael slumps exhausted against the oak bark, eyes half-closed in despair."
+        },
+        "end_frame": {
+          "id": "frame-06b-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 7.0s. Twig snaps; Kael levers into a vicious 3-point defensive crouch, baring bloody fangs, growling his defiant challenge."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second low-angle medium close-up shot (50mm anamorphic prime, f/2.0) at the ancient oak. In the midground, wounded silver wolf Kael levers onto one knee and claw in a vicious cornered tripod stance, baring bloody fangs and snarling a defiant challenge into the mist. In the foreground, his bloody paw remains trapped by taut hemp. In the background, foggy pines loom. Moody 4500K canopy lighting with specular fangs. Smooth low push-in. Preserve facial scars and fur texture. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_07A",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 07.1: Elowen steps through the misty ferns and discovers the trapped wolf.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Character reveal isolating Elowen's discovery and delicate vulnerability",
+      "character": "Elowen (20s sheep healer).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Gentle surprise shifting to fearful realization; breath seizing.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Dewdrop-covered bracken ferns parting softly.",
+        "midground": "Elowen freezes mid-step, holding woven herb basket to her chest.",
+        "background_crowd": "Whispering pines enveloped in soft morning haze."
+      },
+      "camera": "Medium Long Shot (MLS) / Eye-Level. Slow push-in past parting dewy ferns over 6 seconds.",
+      "optics": "40mm cine prime, moderate depth of field f/2.8 keeping Elowen luminous against forest.",
+      "lighting": "Soft 4200K sunbeams filtering through pine canopy onto Elowen's cream fleece.",
+      "environment": "Fern-covered forest path entering the ancient oak clearing.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Gentle forest breeze, water dripping from needles.",
+        "foley": "Soft rustle of fern fronds, dripping dew, soft intake of breath.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Elowen's cream curls, natural linen apron, and woven wicker basket.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-07a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MLS at 0.0s. Dewy fern fronds part; Elowen steps cautiously into the clearing carrying herb basket."
+        },
+        "end_frame": {
+          "id": "frame-07a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "MLS at 6.0s. Elowen freezes motionless, wide golden-brown eyes dropping from Kael's fangs to his bloody leg."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second medium long shot (40mm lens, f/2.8) in a pine forest clearing. In the midground, gentle humanoid sheep healer Elowen parts dew-covered bracken ferns and freezes in shock, clutching a woven herb basket to her chest as her golden eyes widen. In the foreground, green ferns frame the shot. In the background, misty evergreen trees fade softly. Warm 4200K sunshafts illuminate her cream wool curls. Slow push-in. Preserve character wardrobe and satchel props. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_07B",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 07.2: Elowen steps back and speaks her fearful realization.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (6 words) kept within 6s Omni window",
+      "character": "Elowen (sheep healer), Kael (framing muzzle).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Fearful hesitation, voice trembling with quiet apprehension.",
+      "dialogue_cues": [
+        {
+          "speaker": "Elowen",
+          "participant": "elowen",
+          "line": "Isa ka sa mga... umatake kanina.",
+          "word_count": 6,
+          "estimated_speech_seconds": 2.4,
+          "timing": {
+            "startSeconds": 1,
+            "endSeconds": 3.5
+          },
+          "performance": {
+            "emotion": {
+              "primary": "fearful",
+              "intensity": "tentative"
+            },
+            "techniques": [
+              "whispered",
+              "trembling"
+            ],
+            "voice": {
+              "texture": "soft_breathy",
+              "pitch": "high_falsetto",
+              "tempo": "halting"
+            },
+            "speech": {
+              "articulation": "fragile",
+              "pauses": "timid_hesitation"
+            },
+            "gestures": [
+              "clutch_satchel",
+              "step_back"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Kael's snarling silver muzzle and bared fangs in left foreground.",
+        "midground": "Elowen clutching her herbal satchel, taking one cautious half-step back.",
+        "background_crowd": "Soft blurred evergreen woods."
+      },
+      "camera": "Over-the-Shoulder (OTS) / Eye-Level. Subtle lateral drift maintaining eye contact over 6 seconds.",
+      "optics": "50mm prime, shallow depth of field f/2.0 isolating Elowen's trembling posture.",
+      "lighting": "Balanced soft daylight; gentle backlight catching Elowen's fleece.",
+      "environment": "Pine clearing near the base of the oak.",
+      "audio": {
+        "dialogue": "ELOWEN: 'Isa ka sa mga... umatake kanina.'",
+        "ambience": "Hushed forest air.",
+        "foley": "Soft linen rustle, shoe shifting on mossy ground.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Elowen's facial proportions and Kael's bared fangs in foreground.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-07b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "OTS at 0.0s. Looking past Kael's fangs, Elowen trembles, holding herb satchel tightly."
+        },
+        "end_frame": {
+          "id": "frame-07b-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "OTS at 6.0s. Elowen steps back half a pace, speaking her trembling realization with wide golden eyes."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second over-the-shoulder shot (50mm lens, f/2.0). In the foreground left, trapped silver wolf Kael's bared fangs and snarling snout frame the shot. In the midground, gentle humanoid sheep Elowen takes a tentative half-step backward, clutching her leather satchel and whispering in trembling realization. In the background, misty green pines blur softly. Gentle morning daylight. Subtle lateral camera drift. Preserve character likeness. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_07C",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 07.3: Kael snaps his proud, bitter challenge.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Single dialogue turn (12 words) + head turn kept within 7s Omni window",
+      "character": "Kael (silver wolf).",
+      "action_ref": "act-cornered-predator",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Bitter resignation, refusal to beg, proud warrior awaiting execution.",
+      "dialogue_cues": [
+        {
+          "speaker": "Kael",
+          "participant": "kael",
+          "line": "Ano pang hinihintay mo? Tawagin mo na 'yung mga bantay n'yo. Sigaw na!",
+          "word_count": 12,
+          "estimated_speech_seconds": 4.8,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 5.3
+          },
+          "performance": {
+            "emotion": {
+              "primary": "bitter",
+              "intensity": "prideful_resignation"
+            },
+            "techniques": [
+              "clipped_snarl",
+              "dry_growl"
+            ],
+            "voice": {
+              "texture": "hoarse_sandpaper",
+              "pitch": "low",
+              "tempo": "rapid"
+            },
+            "speech": {
+              "articulation": "sharp_cynical",
+              "pauses": "staccato"
+            },
+            "gestures": [
+              "turn_head_away",
+              "clench_jaw"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Bloody fur on Kael's chest and shoulder.",
+        "midground": "Kael's face; jaw tightens bitterly; he deliberately turns his head aside toward bark.",
+        "background_crowd": "Deep green moss on the ancient oak trunk."
+      },
+      "camera": "Close-Up (CU) / Low Angle. Static tight frame on Kael's face over 7 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 capturing facial detail.",
+      "lighting": "High-contrast side key carving out Kael's lean, starving cheekbone.",
+      "environment": "Base of oak tree.",
+      "audio": {
+        "dialogue": "KAEL: 'Ano pang hinihintay mo? Tawagin mo na 'yung mga bantay n'yo. Sigaw na!'",
+        "ambience": "Still forest air.",
+        "foley": "Harsh growled rasp, jaw clicking shut on final syllable.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's amber eye color, scars across muzzle, and turned profile.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-07c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. Kael glares directly into the camera with bitter amber fire, jaw clenched tight."
+        },
+        "end_frame": {
+          "id": "frame-07c-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 7.0s. Kael finishes barking 'Sigaw na!', clenches his bloody jaw, and deliberately averts his eyes in prideful disdain."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second close-up shot (50mm anamorphic prime, f/2.0) on wounded silver wolf Kael. In the midground, Kael glares with bitter defiance, snarls a challenge to call the guards, and deliberately snaps his jaw shut and turns his head away in agonizing pride. In the foreground, his scarred leather shoulder is visible. In the background, mossy oak bark forms soft green bokeh. High-contrast side lighting. Static locked frame. Preserve character facial structure and fur realism. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_08A",
+      "scene": "EXT. RIDGE CREST - DAWN",
+      "story_beat": "Beat 08.1: Garrick's voice echoes from down the ridge.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (7 words O.S.) + reaction cutaway kept within 6s Omni window",
+      "character": "Elowen (sheep healer), Garrick (O.S. voice).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Alarm turning into urgent moral decision; fear overridden by empathy.",
+      "dialogue_cues": [
+        {
+          "speaker": "Garrick",
+          "participant": "garrick",
+          "line": "Suyurin ang gubat! Siguraduhing walang natirang lobo!",
+          "word_count": 7,
+          "estimated_speech_seconds": 2.8,
+          "timing": {
+            "startSeconds": 1,
+            "endSeconds": 3.8
+          },
+          "performance": {
+            "emotion": {
+              "primary": "commanding",
+              "intensity": "relentless"
+            },
+            "techniques": [
+              "bellowed",
+              "distant_projection"
+            ],
+            "voice": {
+              "texture": "booming_gravel",
+              "pitch": "deep_baritone",
+              "tempo": "marching"
+            },
+            "speech": {
+              "articulation": "resonant_echo",
+              "pauses": "command_cadence"
+            },
+            "gestures": [
+              "shout_down_slope",
+              "motion_patrol_forward"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Downhill slope with drifting fog and flickering orange torchlight reflections.",
+        "midground": "Elowen looking down the hill in alarm; ears twitching as the shout reverberates.",
+        "background_crowd": "Distant massive trees and shadow silhouettes of hunting Mastiffs."
+      },
+      "camera": "Medium Long Shot (MLS) / Low Dutch Angle. Slow upward tilt from downhill slope toward Elowen over 6 seconds.",
+      "optics": "35mm cine prime, moderate depth of field f/2.8 keeping Elowen and torchlight balanced.",
+      "lighting": "Orange torchlight flickering from downhill against cool blue forest fog.",
+      "environment": "Ridge crest overlooking lower forest trail.",
+      "audio": {
+        "dialogue": "GARRICK (O.S.): 'Suyurin ang gubat! Siguraduhing walang natirang lobo!'",
+        "ambience": "Distant baying of hounds and stomping armor.",
+        "foley": "Wind gusting through pine branches.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock downhill slope angle, torchlight color temperature, and Elowen's posture.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-08a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MLS at 0.0s. Downhill orange torchlight flickers through the mist as dogs bay in distance."
+        },
+        "end_frame": {
+          "id": "frame-08a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "MLS at 6.0s. Garrick's voice echoes; Elowen turns back toward Kael, her golden eyes setting with moral resolve."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second medium long shot (35mm lens, low dutch angle) on the forest ridge. In the midground, gentle sheep healer Elowen listens in alarm as Mastiff Captain Garrick's booming command echoes up the slope, her ears twitching. In the foreground downhill, orange torchlight flickers through swirling blue fog. In the background, massive hemlock trunks rise into mist. Slow upward camera tilt. Preserve atmospheric lighting contrast. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_08B",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 08.2: Elowen draws her sickle; Kael flinches bracing for death.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Tense dramatic reveal isolating the sickle draw and psychological reversal",
+      "character": "Elowen (sheep healer), Kael (trapped wolf).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Elowen's focused resolve vs Kael's grim acceptance of death.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Elowen's hand reaching into her satchel and pulling out a curved iron harvesting sickle.",
+        "midground": "Kael in background against the oak, eyes widening in panic.",
+        "background_crowd": "Dark canopy branches and ancient oak trunk."
+      },
+      "camera": "Medium Close-Up (MCU) / Two-Shot Profile. Push-in toward the drawn steel sickle over 7 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 catching sickle reflection.",
+      "lighting": "Sharp specular morning glint along curved iron sickle blade.",
+      "environment": "Pine clearing beside oak tree.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Whispering pine breeze.",
+        "foley": "Sharp metallic chime as sickle blade slides from sheath, Kael's sharp breath intake.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock sickle curvature, handle binding, and satchel design.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-08b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Elowen's small hands pull a curved iron sickle from her herbal satchel."
+        },
+        "end_frame": {
+          "id": "frame-08b-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 7.0s. Sickle catches the dawn light; Kael shuts his eyes tight and pulls his head back, bracing for slaughter."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second medium close-up two-shot (50mm anamorphic prime, f/2.0) in the clearing. In the foreground right, gentle sheep healer Elowen draws a curved iron harvesting sickle from her satchel with quiet resolve. In the midground left, trapped silver wolf Kael widens his eyes in horror and squeezes them shut, bracing his neck for execution. In the background, the ancient oak stands silent. Morning glint flashes on the iron blade. Smooth push-in. Preserve prop detail. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_08C",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 08.3: Elowen drops to her knees and begins sawing the rope.",
+      "duration_seconds": 7,
+      "sub_cut_reason": "Physical act of mercy and proximity isolated for emotional weight",
+      "character": "Elowen (kneeling sheep healer), Kael (trapped wolf).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Tender selflessness, hurried focus, soft maternal proximity.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Thick green moss and fallen pine needles at ground level.",
+        "midground": "Elowen drops to knees beside Kael, lavender scent billowing; begins sawing rope.",
+        "background_crowd": "Massive oak roots anchoring the taut tension line."
+      },
+      "camera": "Medium Long Shot (MLS) / Ground Level. Smooth descent to ground level following Elowen's drop over 7 seconds.",
+      "optics": "35mm cine prime, moderate depth of field f/2.8 keeping both characters sharp.",
+      "lighting": "Warm 4200K sunshaft illuminating Elowen's cream fleece; cool 6500K fill on Kael's silver fur.",
+      "environment": "Base of ancient oak surrounded by lush moss.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Soft forest rustle.",
+        "foley": "Soft rustle of linen and wool brushing moss, rhythmic grating of blade on coarse hemp.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock kneeling positions, 0.5m distance between characters, and rope angle.",
+      "output": {
+        "duration_seconds": 7,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-08c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MLS at 0.0s. Elowen drops her linen skirts into the damp moss beside Kael, her fleece brushing his fur."
+        },
+        "end_frame": {
+          "id": "frame-08c-end",
+          "label": "End Frame (7.0s)",
+          "role": "end",
+          "visual_instructions": "MLS at 7.0s. Her small trembling hands grip the taut rope away from his bloodied fur and saw furiously with sickle."
+        }
+      },
+      "compiled_layer_prompt": "One continuous seven-second ground-level shot (35mm lens, f/2.8) at the ancient oak base. In the midground, gentle sheep healer Elowen drops to her knees in damp green moss right beside trapped wolf Kael, her cream wool brushing his silver fur, and begins sawing frantically at the taut hemp snare with her curved iron sickle. In the foreground, moss and pine needles pass. In the background, massive oak roots anchor the rope. Warm 4200K sunbeam on Elowen contrasting cool forest ambient. Smooth descent. Preserve costume textures. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_09A",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 09.1: Kael questions her in bewildered disbelief.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (8 words) kept within 6s Omni window",
+      "character": "Kael (bewildered silver wolf), Elowen (cream fleece curls).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Bewildered vulnerability, predatory instinct silenced by wonder.",
+      "dialogue_cues": [
+        {
+          "speaker": "Kael",
+          "participant": "kael",
+          "line": "A-anong ginagawa mo? Nababaliw ka na ba? Lobo ako!",
+          "word_count": 8,
+          "estimated_speech_seconds": 3.2,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 3.8
+          },
+          "performance": {
+            "emotion": {
+              "primary": "bewildered",
+              "intensity": "disbelieving"
+            },
+            "techniques": [
+              "breathy_whisper",
+              "strained"
+            ],
+            "voice": {
+              "texture": "husky_gasp",
+              "pitch": "variable_spike",
+              "tempo": "faltering"
+            },
+            "speech": {
+              "articulation": "stammering",
+              "pauses": "breathless"
+            },
+            "gestures": [
+              "eyes_wide",
+              "stare_at_sickle"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Kael's silver muzzle and twitching black nose in high-angle framing.",
+        "midground": "Elowen's cream fleece curls and small wrists sawing furiously.",
+        "background_crowd": "Bloodied hemp cord parting fiber by fiber against rough bark."
+      },
+      "camera": "Medium Close-Up (MCU) / High-Angle OTS. Slow push-in over Kael's snout looking down at her hands over 6 seconds.",
+      "optics": "50mm prime, shallow depth of field f/2.0 focusing on Elowen's working wrists.",
+      "lighting": "Diffused warm morning light catching golden flecks in Kael's wide amber iris.",
+      "environment": "Base of oak tree.",
+      "audio": {
+        "dialogue": "KAEL: 'A-anong ginagawa mo? Nababaliw ka na ba? Lobo ako!'",
+        "ambience": "Intimate close forest tone.",
+        "foley": "Rapid friction of blade on hemp, breathless husky wolf whisper.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's expression, Elowen's fleece curls, and blade friction.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-09a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Looking down past Kael's silver snout, his amber eyes pop open in total bewilderment."
+        },
+        "end_frame": {
+          "id": "frame-09a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 6.0s. Kael stammers his line, head leaning closer to her, watching her wrists saw through the tough cord."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second high-angle over-the-shoulder shot (50mm lens, f/2.0). In the foreground, silver wolf Kael's snout and twitching nose look down. In the midground, gentle sheep healer Elowen saws desperately at his bloodied snare rope with a sickle, her cream wool brushing against him as Kael stammers in total disbelief: 'Lobo ako!' In the background, mossy tree bark. Diffused morning sunbeams. Slow push-in. Preserve character intimacy. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_09B",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 09.2: Elowen affirms her conviction while sawing with all her might.",
+      "duration_seconds": 9,
+      "sub_cut_reason": "Single dialogue turn (14 words) + vigorous physical sawing within 9s Omni window",
+      "character": "Elowen (sheep healer), Kael (silver fur beside her).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Burning moral conviction, relentless physical effort, fierce compassion.",
+      "dialogue_cues": [
+        {
+          "speaker": "Elowen",
+          "participant": "elowen",
+          "line": "Alam ko! Pero kapag naabutan ka nila Garrick dito, papatayin ka nila nang walang kalaban-laban!",
+          "word_count": 14,
+          "estimated_speech_seconds": 5.6,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 6.5
+          },
+          "performance": {
+            "emotion": {
+              "primary": "resolute",
+              "intensity": "urgent_conviction"
+            },
+            "techniques": [
+              "breathless_hiss",
+              "urgent_whisper"
+            ],
+            "voice": {
+              "texture": "panting_tremble",
+              "pitch": "mid_toned_fervent",
+              "tempo": "rapid_cadence"
+            },
+            "speech": {
+              "articulation": "sharp_emphatic",
+              "pauses": "exertion_gasp"
+            },
+            "gestures": [
+              "saw_sickle_vigorously",
+              "lean_into_wool"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Kael's silver fur brushing against Elowen's left shoulder.",
+        "midground": "Elowen's face; sweat and dew glistening, teeth gritted in intense exertion.",
+        "background_crowd": "Soft green bokeh of mossy tree bark."
+      },
+      "camera": "Close-Up (CU) / Low Angle. Slow tracking push toward Elowen's sweating brow over 9 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 highlighting emotional intensity.",
+      "lighting": "Golden morning backlight haloing stray fleece curls around her face.",
+      "environment": "Base of oak tree.",
+      "audio": {
+        "dialogue": "ELOWEN: 'Alam ko! Pero kapag naabutan ka nila Garrick dito, papatayin ka nila nang walang kalaban-laban!'",
+        "ambience": "Heavy silence of the clearing.",
+        "foley": "Strained panting breaths, coarse hemp fibers snapping one by one.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Elowen's facial details, sweat droplets, eye moisture, and linen apron strap.",
+      "output": {
+        "duration_seconds": 9,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-09b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. Elowen grinds her teeth, sawing with all her body weight, looking fiercely into Kael's eyes."
+        },
+        "end_frame": {
+          "id": "frame-09b-end",
+          "label": "End Frame (9.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 9.0s. Elowen finishes her passionate line, breath ragged, as the last stubborn hemp strands begin to fray apart."
+        }
+      },
+      "compiled_layer_prompt": "One continuous nine-second close-up shot (50mm anamorphic prime, f/2.0) on humanoid sheep healer Elowen. In the midground, Elowen saws fiercely at the hemp rope with an iron sickle, sweat and dew glistening on her brow, her teeth gritted as she speaks with passionate moral conviction. In the foreground, silver wolf fur brushes her shoulder. In the background, mossy oak bark blurs in soft green bokeh. Golden morning rim light halos her cream fleece. Slow push-in. Preserve facial emotional authenticity. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_09C",
+      "scene": "EXT. BASE OF ANCIENT OAK - DAWN",
+      "story_beat": "Beat 09.3: The sickle severs the final strand; the counterweight snaps up.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "High-speed macro action isolating the physical climax of liberation",
+      "character": "Kael (paw), Elowen (sickle).",
+      "action_ref": "act-snare-whip",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Release of visceral tension, kinetic explosion.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "The last three hemp strands groaning under severe tension.",
+        "midground": "Sickle slices through; rope snaps with explosive recoil; sapling whips upward.",
+        "background_crowd": "Kael's silver paw instantly pulling free from the parted noose."
+      },
+      "camera": "Close-Up (CU) / Macro Action. High-speed slow motion (60fps) capturing severance over 6 seconds.",
+      "optics": "65mm macro cine prime, shallow depth of field f/2.8 focused on cutting edge.",
+      "lighting": "High-contrast morning light glinting on parting fibers.",
+      "environment": "Ground level at oak roots.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Still forest air.",
+        "foley": "Loud sharp *SNAP* of rope parting, high-velocity whip through pine branches, Kael's sigh of relief.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock severed rope frayed ends, paw movement, and sickle position.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-09c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. The last frayed fibers of hemp groaning under sickle pressure."
+        },
+        "end_frame": {
+          "id": "frame-09c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 6.0s. *SHHK!* Rope snaps violently upward into oak branches; Kael pulls his bloodied paw free into safety."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second slow-motion macro shot (65mm macro lens, f/2.8) at ground level. In the midground, the curved iron sickle cuts through the final frayed hemp strands; the tension releases violently as the counterweight rope whips upward into the oak canopy, freeing Kael's bloodied silver paw. In the background, mossy roots absorb the recoil. Sharp morning light glints on parting fibers. High-speed camera capturing the severance. Preserve physics and anatomy. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_10A",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 10.1: Kael rises to full height; fragile standoff with kneeling Elowen.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Visual standoff establishing the dynamic power reversal and fragile trust",
+      "character": "Kael (standing silver wolf), Elowen (kneeling sheep healer).",
+      "action_ref": "act-shadow-leap",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Fragile awe, apex predator looking down at gentle savior with newfound reverence.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Ferns and mossy forest floor in lower frame.",
+        "midground": "Kael rises to his full, towering height; Elowen remains kneeling below him holding sickle loosely.",
+        "background_crowd": "Towering ancient pine trunks enveloped in morning mist."
+      },
+      "camera": "Wide Shot (WS) / Eye-Level Two-Shot. Slow lateral track right maintaining the standoff over 6 seconds.",
+      "optics": "35mm cine prime, moderate depth of field f/2.8 keeping both figures sharp.",
+      "lighting": "High-contrast light: warm sunbeam on kneeling Elowen, cool blue rim on standing Kael.",
+      "environment": "Clearing dominated by the massive ancient oak.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Profound silence in the clearing.",
+        "foley": "Moss crunching softly under wolf paw, distant snapping branches downhill.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock height contrast (Kael towers over kneeling Elowen) and sickle resting loosely in her lap.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-10a-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Kael rises from the moss to full height, gingerly putting weight on bruised right ankle."
+        },
+        "end_frame": {
+          "id": "frame-10a-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 6.0s. Kael and Elowen freeze in breathless eye contact; nothing separates predator and prey."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second wide two-shot (35mm lens, f/2.8) in the forest clearing. In the midground, silver humanoid wolf Kael rises to his towering height, testing his bruised leg, while gentle sheep healer Elowen remains kneeling in the moss holding the sickle loosely, gazing up with fragile, unshielded trust. In the background, misty hemlocks stand like cathedral pillars. Warm sunbeam strikes Elowen; cool blue rim light traces Kael. Slow lateral tracking right. Preserve character height contrast. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_10B",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 10.2: Elowen frantically urges Kael to flee before the dogs arrive.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (9 words) + urgent hand gesture within 6s Omni window",
+      "character": "Elowen (kneeling sheep healer), Kael (framing edge).",
+      "action_ref": "act-healer-mercy",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Frantic protective urgency, selflessness, fear of incoming dogs.",
+      "dialogue_cues": [
+        {
+          "speaker": "Elowen",
+          "participant": "elowen",
+          "line": "Umalis ka na! Bilis, bago pa sila makarating dito!",
+          "word_count": 9,
+          "estimated_speech_seconds": 3.6,
+          "timing": {
+            "startSeconds": 0.5,
+            "endSeconds": 4.2
+          },
+          "performance": {
+            "emotion": {
+              "primary": "protective",
+              "intensity": "frantic"
+            },
+            "techniques": [
+              "urgent_whisper",
+              "staccato_plea"
+            ],
+            "voice": {
+              "texture": "rapid_breathy",
+              "pitch": "high_urgent",
+              "tempo": "accelerated"
+            },
+            "speech": {
+              "articulation": "clipped",
+              "pauses": "rushed"
+            },
+            "gestures": [
+              "wave_hands_shoo",
+              "look_downhill_frantic"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Blurred edge of Kael's scuffed leather brigandine on left frame.",
+        "midground": "Elowen looks up from the moss, urgently waving both hands toward the deep mountain pass.",
+        "background_crowd": "Lower ridge where heavy crashing footsteps and armor clanking grow loud."
+      },
+      "camera": "Medium Close-Up (MCU) / Low Angle. Quick handheld push-in on Elowen's urgent gesture over 6 seconds.",
+      "optics": "50mm prime, shallow depth of field f/2.0 focusing on Elowen's expressive eyes.",
+      "lighting": "Soft morning light illuminating her earnest, pleading face.",
+      "environment": "Pine clearing near oak tree.",
+      "audio": {
+        "dialogue": "ELOWEN: 'Umalis ka na! Bilis, bago pa sila makarating dito!'",
+        "ambience": "Escalating danger.",
+        "foley": "Distant dog barks 30 yards away, heavy iron armor clanking through brush.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Elowen's hand gestures, clothing, and background sound ramp-up.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-10b-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "MCU at 0.0s. Elowen hears the nearby crashing of armor; her golden eyes widen in terror for him."
+        },
+        "end_frame": {
+          "id": "frame-10b-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "MCU at 6.0s. Elowen frantically waves both hands, urging him to flee into the deep mountain pass."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second low-angle medium close-up shot (50mm lens, f/2.0). In the midground, gentle sheep healer Elowen kneels in moss, her face full of frantic concern as she waves both hands urgently, urging the silver wolf to flee before the Mastiff dogs arrive. In the foreground left, Kael's leather brigandine frames the edge. In the background, misty trees echo with approaching armor clanks. Soft morning daylight. Handheld push-in. Preserve character expression. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_10C",
+      "scene": "EXT. ANCIENT OAK CLEARING - DAWN",
+      "story_beat": "Beat 10.3: Kael speaks his solemn vow of gratitude.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Single dialogue turn (4 words) + respectful bow within 6s Omni window",
+      "character": "Kael (silver wolf).",
+      "action_ref": "act-shadow-leap",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Undying honor, soul-deep gratitude, indelible bond forged across species.",
+      "dialogue_cues": [
+        {
+          "speaker": "Kael",
+          "participant": "kael",
+          "line": "Hindi ko kakalimutan 'to.",
+          "word_count": 4,
+          "estimated_speech_seconds": 1.6,
+          "timing": {
+            "startSeconds": 1,
+            "endSeconds": 2.8
+          },
+          "performance": {
+            "emotion": {
+              "primary": "reverent",
+              "intensity": "solemn_gratitude"
+            },
+            "techniques": [
+              "quiet_murmur",
+              "low_intimate"
+            ],
+            "voice": {
+              "texture": "husky_raw",
+              "pitch": "warm_baritone",
+              "tempo": "slow_deliberate"
+            },
+            "speech": {
+              "articulation": "resonant_clarity",
+              "pauses": "solemn"
+            },
+            "gestures": [
+              "lock_amber_eyes",
+              "bow_head_nod"
+            ]
+          }
+        }
+      ],
+      "blocking": {
+        "foreground": "Dark pine branch tips framing the shot.",
+        "midground": "Kael's face; amber eyes locked onto hers with profound, unforgettable vow.",
+        "background_crowd": "Soft misty evergreen forest."
+      },
+      "camera": "Close-Up (CU) / Low Angle. Slow static push-in on Kael's eyes over 6 seconds.",
+      "optics": "50mm anamorphic prime, shallow depth of field f/2.0 highlighting eye reflection.",
+      "lighting": "Warm golden rim light catching Kael's silver ear tips.",
+      "environment": "Edge of the ancient oak clearing.",
+      "audio": {
+        "dialogue": "KAEL: 'Hindi ko kakalimutan 'to.'",
+        "ambience": "Intimate close tone.",
+        "foley": "Heavy resonant wolf breath, firm solemn murmur.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock Kael's eyeline to kneeling Elowen, respectful nod kinematics, and ear posture.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-10c-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "CU at 0.0s. Kael looks down at her, amber eyes softening with profound emotion."
+        },
+        "end_frame": {
+          "id": "frame-10c-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "CU at 6.0s. Kael speaks 'Hindi ko kakalimutan 'to.', his chin dipping in a deep, reverent bow of gratitude."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second close-up shot (50mm anamorphic prime, f/2.0). In the midground, silver humanoid wolf Kael gazes down with profound reverence, his amber eyes locked onto the healer as he speaks a quiet, solemn vow: 'Hindi ko kakalimutan 'to.', bowing his head slightly in eternal gratitude. In the foreground, evergreen needles frame the lens. In the background, misty hemlocks blur softly. Warm golden rim light touches his silver ears. Slow push-in. Preserve facial emotional nuance. No cuts, no zoom, no captions, no music."
+    },
+    {
+      "shot_id": "SHOT_10D",
+      "scene": "EXT. WHISPERING PINES RIDGE - DAWN",
+      "story_beat": "Beat 10.4: Kael vanishes into the misty pines as the Mastiff Vanguard crests the ridge.",
+      "duration_seconds": 6,
+      "sub_cut_reason": "Climactic resolution tracking the phantom escape and the arrival of the hounds",
+      "character": "Kael (bounding silver wolf), Garrick, Brutus & Rex (Mastiffs).",
+      "action_ref": "act-shadow-leap",
+      "lighting_ref": "light-snare-clearing",
+      "performance": "Fluid phantom disappearance vs brute heavy force of the Vanguard hounds.",
+      "dialogue_cues": [],
+      "blocking": {
+        "foreground": "Dew-covered tall ferns waving in the morning breeze.",
+        "midground": "Kael leaps into dense pine shadows; two seconds later Garrick & Mastiffs crest ridge.",
+        "background_crowd": "Whispering Pine woods vanishing into thick mountain fog."
+      },
+      "camera": "Wide Shot (WS) / Dynamic Low Tracking. Fast pan right following Kael's leap, locking on cresting Mastiffs over 6 seconds.",
+      "optics": "28mm cine prime, deep focus f/4.0 maintaining sharpness across both factions.",
+      "lighting": "Dense fog backlit by cold morning sun; shadowy armored dog silhouettes with torches.",
+      "environment": "Pine ridge crest with ancient trees.",
+      "audio": {
+        "dialogue": "None.",
+        "ambience": "Morning mountain wind.",
+        "foley": "Soft phantom leap over ferns, heavy iron boots stomping, Mastiffs panting heavily in fog.",
+        "music": "None generated in clip."
+      },
+      "continuity": "Lock forest ridge geography, Mastiff armor continuity, and vanishing vector of Kael.",
+      "output": {
+        "duration_seconds": 6,
+        "aspect_ratio": "16:9",
+        "shot_count": 1,
+        "forbidden_transitions": "No scene cuts, no empty background set, no camera zoom, no text captions, no generated music."
+      },
+      "keyframe_plan": {
+        "start_frame": {
+          "id": "frame-10d-start",
+          "label": "Start Frame (0.0s)",
+          "role": "start",
+          "visual_instructions": "WS at 0.0s. Kael bounds effortlessly over tall ferns, vanishing like a ghost into the misty pine shadows."
+        },
+        "end_frame": {
+          "id": "frame-10d-end",
+          "label": "End Frame (6.0s)",
+          "role": "end",
+          "visual_instructions": "WS at 6.0s. Garrick, Brutus, and Rex smash onto the ridge in heavy iron collars and plate armor, snarling as they find only empty ferns."
+        }
+      },
+      "compiled_layer_prompt": "One continuous six-second wide tracking shot (28mm lens, deep focus) on the misty forest ridge. In the midground, silver wolf Kael executes a fluid, silent bounding leap over tall ferns, vanishing into dense evergreen shadows. Two seconds later, towering Mastiff Captain Garrick and two armored hounds smash onto the ridge in clanking spiked iron collars, searching the mist in vain. In the background, fog swirls between ancient pine trunks. Fast dynamic pan right. Preserve character armor and environment continuity. No cuts, no zoom, no captions, no music."
+    }
+  ]
+}

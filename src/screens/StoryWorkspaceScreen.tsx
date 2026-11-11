@@ -7,9 +7,11 @@ import {
   ArrowLeft,
   BookOpen,
   Calendar,
+  Check,
   ChevronDown,
   ChevronUp,
   Clock,
+  Edit3,
   ExternalLink,
   Film,
   Heart,
@@ -31,6 +33,12 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const [activeTab, setActiveTab] = useState<'book' | 'creator'>('book');
   const [treatmentExpanded, setTreatmentExpanded] = useState(true);
   const [loading, setLoading] = useState(!story);
+  const [editingProse, setEditingProse] = useState(false);
+  const [proseDraft, setProseDraft] = useState(() => story?.fullBookText || '');
+
+  useEffect(() => {
+    if (story) setProseDraft(story.fullBookText || '');
+  }, [story?.id]);
 
   useEffect(() => {
     let active = true;
@@ -291,27 +299,90 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       {/* Active Mode View */}
       {activeTab === 'book' ? (
         <div className="card story-book-mode-container" style={{ padding: 32, maxWidth: 840, margin: '0 auto', width: '100%' }}>
-          <div style={{ marginBottom: 20, textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
             <span className="badge" style={{ background: '#e2e8f0', color: '#475569' }}>
               Full Story Manuscript
             </span>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {editingProse ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-outline btn-sm"
+                    onClick={() => {
+                      setProseDraft(story.fullBookText || '');
+                      setEditingProse(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary btn-sm"
+                    onClick={async () => {
+                      const next = { ...story, fullBookText: proseDraft, updatedAt: new Date().toISOString() };
+                      setStory(next);
+                      await saveStory(next);
+                      await refreshSnapshot();
+                      setEditingProse(false);
+                      showToast('Manuscript saved', 'info');
+                    }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                  >
+                    <Check size={14} />
+                    <span>Save Manuscript</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-outline btn-sm"
+                  onClick={() => {
+                    setProseDraft(story.fullBookText || '');
+                    setEditingProse(true);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  <Edit3 size={14} />
+                  <span>Edit Manuscript</span>
+                </button>
+              )}
+            </div>
           </div>
-          <div
-            className="story-book-body"
-            style={{
-              fontSize: '1.1rem',
-              lineHeight: 1.8,
-              color: '#1e293b',
-              whiteSpace: 'pre-wrap',
-              fontFamily: 'Georgia, serif',
-            }}
-          >
-            {story.fullBookText || (
-              <p className="muted-text" style={{ fontStyle: 'italic', textAlign: 'center' }}>
-                No prose written for this story yet.
-              </p>
-            )}
-          </div>
+
+          {editingProse ? (
+            <textarea
+              className="input-field"
+              rows={16}
+              style={{
+                width: '100%',
+                fontSize: '1.05rem',
+                lineHeight: 1.8,
+                fontFamily: 'Georgia, serif',
+                padding: 16,
+              }}
+              placeholder="Write or paste full-length manuscript prose here..."
+              value={proseDraft}
+              onChange={(e) => setProseDraft(e.target.value)}
+            />
+          ) : (
+            <div
+              className="story-book-body"
+              style={{
+                fontSize: '1.1rem',
+                lineHeight: 1.8,
+                color: '#1e293b',
+                whiteSpace: 'pre-wrap',
+                fontFamily: 'Georgia, serif',
+              }}
+            >
+              {story.fullBookText || (
+                <p className="muted-text" style={{ fontStyle: 'italic', textAlign: 'center' }}>
+                  No prose written for this story yet.
+                </p>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <StoryCreatorMode

@@ -2,6 +2,8 @@ import React, { useState, useMemo } from 'react';
 import type { Story } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
 import { StoryCardModal } from '../components/stories/StoryCardModal';
+import { saveStory } from '../storage/stories';
+import { SAMPLE_STORY_CREATOR_MODE } from '../domain/sampleStory';
 import {
   BookOpen,
   Filter,
@@ -79,11 +81,47 @@ export const StoriesScreen: React.FC = () => {
           </p>
         </div>
 
-        <button
-          type="button"
-          className="btn btn-primary"
-          onClick={() => {
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {!stories.some((s) => s.id === SAMPLE_STORY_CREATOR_MODE.id) && (
+            <button
+              type="button"
+              className="btn btn-outline"
+              onClick={async () => {
+                await saveStory(SAMPLE_STORY_CREATOR_MODE);
+                await refreshSnapshot();
+                navigate(`/stories/${SAMPLE_STORY_CREATOR_MODE.id}`);
+              }}
+              style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <Sparkles size={15} />
+              <span>Load Sample Story</span>
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={async () => {
             const newId = `story_${Date.now()}`;
+            const newStory: Story = {
+              id: newId,
+              title: 'Untitled Story',
+              author: 'Author',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              favorite: false,
+              revisionNumber: 1,
+              tags: [],
+              logline: '',
+              premise: '',
+              synopsis: '',
+              treatment: '',
+              fullBookText: '',
+              referencePack: { assetIds: [], variantIds: [], mediaIds: [] },
+              colorScript: [],
+              acts: [],
+            };
+            await saveStory(newStory);
+            await refreshSnapshot();
             navigate(`/stories/${newId}`);
           }}
           style={{ display: 'flex', alignItems: 'center', gap: 6 }}
@@ -91,6 +129,7 @@ export const StoriesScreen: React.FC = () => {
           <Plus size={16} />
           <span>New Story</span>
         </button>
+        </div>
       </div>
 
       {/* Filter and Control Bar */}
@@ -212,9 +251,24 @@ export const StoriesScreen: React.FC = () => {
             <h3 style={{ margin: 0 }}>No Stories Found</h3>
             <p className="muted-text" style={{ margin: '6px 0 16px' }}>
               {stories.length === 0
-                ? 'Your narrative library is currently empty. Start by creating a story or importing one with an AI agent.'
+                ? 'Your narrative library is currently empty. Start by creating a story or exploring our sample Creator Mode beat sheet.'
                 : 'No stories matched your current search filters.'}
             </p>
+            {stories.length === 0 && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={async () => {
+                  await saveStory(SAMPLE_STORY_CREATOR_MODE);
+                  await refreshSnapshot();
+                  navigate(`/stories/${SAMPLE_STORY_CREATOR_MODE.id}`);
+                }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}
+              >
+                <Sparkles size={16} />
+                <span>Load Sample Story (Creator Mode)</span>
+              </button>
+            )}
           </div>
         ) : (
           filteredStories.map((story) => (

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Bookmark, BookmarkCheck, Archive, RotateCcw, Trash2, X } from 'lucide-react';
+import { BookOpen, Bookmark, BookmarkCheck, Archive, RotateCcw, Trash2, Edit3, X } from 'lucide-react';
 import type { Story } from '../../types/domain';
 import { useLibrary } from '../../context/LibraryContext';
 import {
@@ -209,6 +209,15 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
           <div style={{ display: 'flex', gap: '8px' }}>
             <button type="button" className="btn btn-secondary" onClick={onClose}>
               Close
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={handleReadFullStory}
+              aria-label="Edit Story"
+            >
+              <Edit3 size={16} />
+              <span>Edit Story</span>
             </button>
             <button
               type="button"

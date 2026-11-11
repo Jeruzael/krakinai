@@ -226,6 +226,18 @@ describe('StoriesScreen Component', () => {
     expect(screen.getByRole('dialog', { name: /Chronicles of the Deep/i })).toBeInTheDocument();
     expect(screen.getByText(/What if humanity was not the first civilization/)).toBeInTheDocument();
   });
+
+  it('clicking "New Story" persists an initial story record and navigates to its workspace', async () => {
+    const { saveStory } = await import('../storage/stories');
+    render(<StoriesScreen />);
+    const newBtn = screen.getByRole('button', { name: /New Story/i });
+    fireEvent.click(newBtn);
+
+    await waitFor(() => {
+      expect(saveStory).toHaveBeenCalled();
+      expect(mockNavigate).toHaveBeenCalledWith(expect.stringMatching(/^\/stories\/story_/));
+    });
+  });
 });
 
 describe('StoryCardModal Component', () => {
@@ -243,14 +255,28 @@ describe('StoryCardModal Component', () => {
     expect(mockNavigate).toHaveBeenCalledWith('/stories/story-alpha');
     expect(onClose).toHaveBeenCalled();
   });
+
+  it('provides an explicit Edit button that routes directly to story workspace', () => {
+    const onClose = vi.fn();
+    render(<StoryCardModal story={sampleStory} onClose={onClose} />);
+
+    const editBtn = screen.getByRole('button', { name: /Edit Story/i });
+    fireEvent.click(editBtn);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/stories/story-alpha');
+    expect(onClose).toHaveBeenCalled();
+  });
 });
 
 describe('StoryWorkspaceScreen Component', () => {
-  it('renders hero banner, treatment, reference pack, color script, and toggles Book vs Creator modes', () => {
+  it('renders hero banner, treatment, reference pack, color script, and toggles Book vs Creator modes', async () => {
     render(<StoryWorkspaceScreen storyId="story-alpha" />);
 
-    // Hero metadata
-    expect(screen.getByText('Chronicles of the Deep')).toBeInTheDocument();
+    // Wait for async load to finish
+    await waitFor(() => {
+      expect(screen.getByText('Chronicles of the Deep')).toBeInTheDocument();
+    });
+
     expect(screen.getByText(/By Maya Lin/i)).toBeInTheDocument();
     expect(screen.getByText(/Rev 2/i)).toBeInTheDocument();
 
@@ -277,10 +303,42 @@ describe('StoryWorkspaceScreen Component', () => {
     fireEvent.click(creatorModeTab);
 
     // Creator Mode tree
-    expect(screen.getByText('Act I: The Descent')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('Act I: The Descent')).toBeInTheDocument();
+    });
     expect(screen.getByText('Sequence 1: The Pressure Test')).toBeInTheDocument();
     expect(screen.getByText('Scene 1: Midnight Zone')).toBeInTheDocument();
     expect(screen.getByText('Depth Gauge Warning')).toBeInTheDocument();
+  });
+
+  it('allows authoring linear prose in Book Mode via Edit Manuscript toggle', async () => {
+    const { saveStory } = await import('../storage/stories');
+    render(<StoryWorkspaceScreen storyId="story-alpha" />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Chapter 1: The Descent Begins/i)).toBeInTheDocument();
+    });
+
+    // Toggle edit mode
+    const editBtn = screen.getByRole('button', { name: /Edit Manuscript/i });
+    fireEvent.click(editBtn);
+
+    const textarea = screen.getByPlaceholderText(/Write or paste full-length manuscript/i);
+    expect(textarea).toBeInTheDocument();
+
+    fireEvent.change(textarea, { target: { value: 'Updated Chapter 1 text with new revelations.' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save Manuscript/i });
+    fireEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(saveStory).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'story-alpha',
+          fullBookText: 'Updated Chapter 1 text with new revelations.',
+        })
+      );
+    });
   });
 });
 
