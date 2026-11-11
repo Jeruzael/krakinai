@@ -260,7 +260,15 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
             type="button"
             className="btn btn-outline"
             onClick={() => setCoverPickerKind('hero')}
-            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: '#FFFFFF',
+              color: '#0F172A',
+              borderColor: '#CBD5E1',
+              fontWeight: 600,
+            }}
           >
             <ImageIcon size={16} />
             <span>Change Hero Banner</span>
@@ -284,7 +292,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         style={{
           padding: 24,
           background: heroBannerUrl
-            ? `linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.94)), url(${heroBannerUrl}) center/cover no-repeat`
+            ? `linear-gradient(to right, rgba(15, 23, 42, 0.95) 0%, rgba(15, 23, 42, 0.88) 50%, rgba(15, 23, 42, 0.75) 100%), url(${heroBannerUrl}) center/cover no-repeat`
             : '#1e293b',
           color: '#f8fafc',
           borderRadius: 8,
@@ -297,18 +305,24 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             <div
               style={{
-                width: 120,
-                height: 160,
+                width: 140,
+                height: 180,
                 borderRadius: 8,
                 overflow: 'hidden',
-                background: '#0f172a',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
-                border: '1px solid rgba(255,255,255,0.15)',
+                background: '#0F172A',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+                border: '1px solid rgba(255,255,255,0.2)',
                 position: 'relative',
               }}
             >
               {coverMedia ? (
-                <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} enableHoverPreview />
+                <MediaThumbnail
+                  media={coverMedia}
+                  altText={`${story.title} cover`}
+                  enableHoverPreview
+                  objectFit="cover"
+                  backgroundColor="#0F172A"
+                />
               ) : (
                 <div
                   style={{
@@ -338,12 +352,16 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
               onClick={() => setCoverPickerKind('cover')}
               style={{
                 fontSize: '0.75rem',
-                padding: '4px 8px',
-                color: '#f1f5f9',
-                borderColor: '#64748b',
+                padding: '6px 12px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#FFFFFF',
+                borderColor: 'rgba(255, 255, 255, 0.45)',
+                borderRadius: 6,
+                backdropFilter: 'blur(8px)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: 4,
+                gap: 5,
+                fontWeight: 600,
               }}
             >
               <Image size={13} />
@@ -793,14 +811,24 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       {showReferenceManager && (
         <div className="modal-backdrop" onClick={() => setShowReferenceManager(false)}>
           <div
-            className="modal-card"
+            className="modal-panel modal-card"
             role="dialog"
             aria-label="Manage Story References"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 640, width: '92vw' }}
+            style={{
+              maxWidth: 640,
+              width: '92vw',
+              background: '#FFFFFF',
+              borderRadius: 12,
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Manage Reference Pack</h3>
+            <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0F172A' }}>Manage Reference Pack</h3>
               <button
                 type="button"
                 className="icon-btn"
@@ -811,7 +839,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
               </button>
             </div>
 
-            <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+            <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto', background: '#FFFFFF' }}>
               <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                 <div style={{ position: 'relative', flex: 1 }}>
                   <Search size={14} style={{ position: 'absolute', left: 10, top: 11, color: '#94a3b8' }} />
@@ -973,14 +1001,24 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       {editingColorBeat && (
         <div className="modal-backdrop" onClick={() => setEditingColorBeat(null)}>
           <div
-            className="modal-card"
+            className="modal-panel modal-card"
             role="dialog"
             aria-label="Edit Color Beat"
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 480, width: '92vw' }}
+            style={{
+              maxWidth: 480,
+              width: '92vw',
+              background: '#FFFFFF',
+              borderRadius: 12,
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '1.15rem' }}>
+            <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0F172A' }}>
                 {editingColorBeat.id ? 'Edit Color Beat' : 'Add Color Beat'}
               </h3>
               <button
@@ -993,7 +1031,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
               </button>
             </div>
 
-            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12, background: '#FFFFFF' }}>
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
                   Beat Label

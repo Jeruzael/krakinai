@@ -1002,14 +1002,24 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
       {editingNode && (
         <div className="modal-backdrop" onClick={() => setEditingNode(null)}>
           <div
-            className="modal-card"
+            className="modal-panel modal-card"
             role="dialog"
             aria-label={`${editingNode.mode === 'add' ? 'Add' : 'Edit'} ${editingNode.kind}`}
             onClick={(e) => e.stopPropagation()}
-            style={{ maxWidth: 540, width: '92vw' }}
+            style={{
+              maxWidth: 540,
+              width: '92vw',
+              background: '#FFFFFF',
+              borderRadius: 12,
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
           >
-            <div className="modal-header">
-              <h3 style={{ margin: 0, fontSize: '1.15rem' }}>
+            <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9' }}>
+              <h3 style={{ margin: 0, fontSize: '1.15rem', color: '#0F172A' }}>
                 {editingNode.mode === 'add' ? 'Add' : 'Edit'} {editingNode.kind.toUpperCase()}
               </h3>
               <button
@@ -1024,7 +1034,14 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
 
             <div
               className="modal-body"
-              style={{ maxHeight: '70vh', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 12 }}
+              style={{
+                maxHeight: '70vh',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 12,
+                background: '#FFFFFF',
+              }}
             >
               <div>
                 <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
@@ -1155,7 +1172,7 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
               </div>
             </div>
 
-            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, background: '#F8FAFC', borderTop: '1px solid #F1F5F9' }}>
               <button
                 type="button"
                 className="btn btn-outline"

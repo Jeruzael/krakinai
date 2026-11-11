@@ -106,13 +106,23 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
-        className="modal-card story-preview-modal"
+        className="modal-panel modal-card story-preview-modal"
         role="dialog"
         aria-label={story.title}
         onClick={(e) => e.stopPropagation()}
-        style={{ maxWidth: '640px', width: '92vw' }}
+        style={{
+          maxWidth: '640px',
+          width: '92vw',
+          background: '#FFFFFF',
+          borderRadius: 12,
+          border: '1px solid #E2E8F0',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column',
+        }}
       >
-        <div className="modal-header">
+        <div className="modal-header" style={{ background: '#FFFFFF', borderBottom: '1px solid #F1F5F9' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <BookOpen size={20} className="text-accent" />
             <h2 style={{ margin: 0, fontSize: '1.25rem' }}>{story.title}</h2>
@@ -127,22 +137,28 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
           </button>
         </div>
 
-        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto', background: '#FFFFFF' }}>
           {/* Cover Display */}
           <div
             className="story-modal-cover"
             data-testid="story-modal-cover"
             style={{
               width: '100%',
-              height: 160,
+              height: 180,
               borderRadius: 8,
               overflow: 'hidden',
-              background: '#1e293b',
+              background: '#0F172A',
               marginBottom: 16,
             }}
           >
             {coverMedia ? (
-              <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} enableHoverPreview />
+              <MediaThumbnail
+                media={coverMedia}
+                altText={`${story.title} cover`}
+                enableHoverPreview
+                objectFit="cover"
+                backgroundColor="#0F172A"
+              />
             ) : (
               <div
                 style={{

@@ -313,6 +313,8 @@ export const StoriesScreen: React.FC = () => {
                         media={coverMedia}
                         altText={`${story.title} cover`}
                         enableHoverPreview
+                        objectFit="cover"
+                        backgroundColor="#0f172a"
                       />
                     ) : (
                       <div
@@ -351,7 +353,12 @@ export const StoriesScreen: React.FC = () => {
                     }}
                   >
                     {coverMedia ? (
-                      <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} />
+                      <MediaThumbnail
+                        media={coverMedia}
+                        altText={`${story.title} cover`}
+                        objectFit="cover"
+                        backgroundColor="#0f172a"
+                      />
                     ) : (
                       <div
                         style={{
