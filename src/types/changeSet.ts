@@ -399,7 +399,6 @@ export const emptyChangeSetApproval = (): ChangeSetApproval => ({
   scenes: false,
   preferred: false,
   statuses: false,
-  stories: false,
   assetDecisions: {},
   allowDuplicateSceneOperations: [],
 });

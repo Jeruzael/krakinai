@@ -11,7 +11,7 @@ import {ProposalBroker} from '../connections/proposalBroker';
 import {MCP_KEYFRAME_CAPABILITIES} from '../domain/mcpCapabilities';
 async function fixture(){const f=await keyframeChangeScenario(),scope={...emptyMcpScopeV3(),projectIds:[f.projectId],keyframeSceneIds:[f.parent.id],blockingSceneIds:[f.parent.id],assetIds:f.state.assets.map(a=>a.id),variantIds:f.state.variants.map(v=>v.id),includeCharacterIdentity:true,includeAssetText:true,includeNotes:true,includeMediaFilenames:true,allowImagePromptDerivation:true};const allocation=allocationFor(f.input),context=await prepareKeyframeChangeSet(f.input,f.approval,f.state,allocation,new Map(),f.proofs),plan=planChangeSet(f.input,f.approval,f.state,allocation,new Map(),f.proofs,context);return{...f,scope,preview:{version:1,changeSet:f.input,plan} as any};}
 it('registers tools and rejects unknown nested image/projection controls',()=>{
- expect(MCP_TOOL_NAMES).toHaveLength(38);expect(()=>validateToolArgs('krakinai_get_generation_prompt',{sceneId:'scene',target:{kind:'image',keyframeId:'middle',mode:'full'}})).not.toThrow();
+ expect(MCP_TOOL_NAMES).toHaveLength(45);expect(()=>validateToolArgs('krakinai_get_generation_prompt',{sceneId:'scene',target:{kind:'image',keyframeId:'middle',mode:'full'}})).not.toThrow();
  for(const target of [{kind:'image',keyframeId:'middle',mode:'full',approved:true},{kind:'video'},{kind:'image',keyframeId:'middle',mode:'bad'}])expect(()=>validateToolArgs('krakinai_get_generation_prompt',{sceneId:'scene',target})).toThrow();
  expect(()=>validateToolArgs('krakinai_get_scene',{sceneId:'scene',projection:'keyframes'})).not.toThrow();
 });

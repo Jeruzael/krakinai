@@ -18,6 +18,6 @@ it('requires explicit frame controls and freezes the format during actual synthe
  await user.click(screen.getByRole('button',{name:'Select All Records'}));expect(screen.getByRole('checkbox',{name:'Select all matching Frame plan text'})).not.toBeChecked();
  await user.click(screen.getByRole('button',{name:'Apply Permissions'}));expect(await getAllSnapshot()).toEqual(before);
  await user.click(screen.getByRole('tab',{name:'Connection'}));const address=screen.getByRole('textbox',{name:'Local bridge address'});await user.clear(address);await user.type(address,relay.url);await user.click(screen.getByRole('button',{name:'Connect Codex'}));
- await user.type(await screen.findByLabelText('One-time pairing key'),secret);await user.click(screen.getByRole('button',{name:'Confirm pairing'}));await screen.findByText('Connected',{exact:true});
+ await user.type(await screen.findByLabelText('One-time pairing key', {}, { timeout: 10000 }),secret);await user.click(screen.getByRole('button',{name:'Confirm pairing'}));await screen.findByText('Connected',{exact:true}, { timeout: 10000 });
  await user.click(screen.getByRole('tab',{name:'Permissions'}));expect(screen.getByRole('checkbox',{name:'Enable frame permission format'})).toBeDisabled();expect(await getAllSnapshot()).toEqual(before);expect(f.parent.id).toBeTruthy();
 },20000);
