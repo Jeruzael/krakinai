@@ -6,6 +6,7 @@ import {
   validateStoryInput,
   validateStoryReferences,
 } from '../domain/storyValidator';
+import { SAMPLE_STORY_CREATOR_MODE } from '../domain/sampleStory';
 import {
   openStoriesDatabase,
   saveStory,
@@ -126,6 +127,14 @@ describe('Story Validator & Digest', () => {
     const warnings = validateStoryReferences(badRefs, state);
     expect(warnings.some((w) => w.includes('missing-asset'))).toBe(true);
     expect(warnings.some((w) => w.includes('missing-collection'))).toBe(true);
+  });
+
+  it('validates SAMPLE_STORY_CREATOR_MODE input and computes a valid 64-character sha256 digest', async () => {
+    expect(() => validateStoryInput(SAMPLE_STORY_CREATOR_MODE)).not.toThrow();
+    const digest = await computeStoryDigest(SAMPLE_STORY_CREATOR_MODE);
+    expect(digest).toMatch(/^[a-f0-9]{64}$/);
+    expect(SAMPLE_STORY_CREATOR_MODE.acts.length).toBe(3);
+    expect(SAMPLE_STORY_CREATOR_MODE.colorScript.length).toBe(3);
   });
 });
 
