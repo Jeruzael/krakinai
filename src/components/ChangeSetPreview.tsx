@@ -98,6 +98,7 @@ export function ChangeSetPreview({
       assetDecisions: { ...approval.assetDecisions, [id]: value },
     });
   const groups = [
+    ["Stories", (t: string) => t.startsWith("story.")],
     ["Projects", (t: string) => t.startsWith("project.")],
     [
       "Storyboard",

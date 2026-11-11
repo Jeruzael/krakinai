@@ -14,6 +14,8 @@ import {isDirectPrompt} from './domain/directPrompt';
 import { PromptOutputScreen } from './screens/PromptOutputScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { TemplatesScreen } from './screens/TemplatesScreen';
+import { StoriesScreen } from './screens/StoriesScreen';
+import { StoryWorkspaceScreen } from './screens/StoryWorkspaceScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
 import { AiConnectionProvider } from './connections/AiConnectionContext';
@@ -178,6 +180,15 @@ const RouteDispatcher: React.FC = () => {
   // S09 Templates
   if (path === '/templates') {
     return <TemplatesScreen />;
+  }
+
+  // S10 Stories & Creator Mode
+  if (path === '/stories') {
+    return <StoriesScreen />;
+  }
+  const storyWorkspaceMatch = path.match(/^\/stories\/([^/]+)$/);
+  if (storyWorkspaceMatch) {
+    return <StoryWorkspaceScreen storyId={storyWorkspaceMatch[1]} />;
   }
 
   return (

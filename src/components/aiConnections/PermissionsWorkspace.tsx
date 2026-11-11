@@ -77,6 +77,40 @@ export function PermissionsWorkspace({ snapshot, onDirty }: { snapshot: ChangeSe
         {([{field:'allowKeyframeProposals',label:'Allow frame plan proposals'},{field:'allowFrameImageProposals',label:'Allow frame image association proposals'},{field:'allowImagePromptDerivation',label:'Allow canonical image-prompt derivation'}] as const).map(item=><label className="ai-disclosure" key={item.field}><input type="checkbox" aria-label={item.label} checked={draft[item.field]} disabled={disabled} onChange={e=>edit(s=>s.version===3?{...s,[item.field]:e.target.checked}:s)}/><span><strong>{item.label}</strong><small>Derivation is read-only and needs all contributing text grants. Proposed writes also need change-set permission and exact browser approval. Presets never enable these switches.</small></span></label>)}
       </>}
     </section>
+    <section className="card ai-story-permissions" aria-label="Story and Creator Mode permissions">
+      <h3>Story and Creator Mode permissions</h3>
+      <p className="muted-text">
+        Control agent access to story manuscripts, pitch treatments, and Creator Mode 4-tier structural breakdowns.
+      </p>
+      <div className="ai-disclosure-grid">
+        <label className="ai-disclosure">
+          <input
+            type="checkbox"
+            aria-label="Share full story prose and beat sheets"
+            checked={Boolean(draft.includeStoryText)}
+            disabled={disabled}
+            onChange={(e) => edit((s) => ({ ...s, includeStoryText: e.target.checked }))}
+          />
+          <span>
+            <strong>Share full story prose and beat sheets</strong>
+            <small>Codex can read full book text, scene beats, and dramatic continuity metadata.</small>
+          </span>
+        </label>
+        <label className="ai-disclosure">
+          <input
+            type="checkbox"
+            aria-label="Allow story & Creator Mode proposals"
+            checked={Boolean(draft.allowStoryProposals)}
+            disabled={disabled}
+            onChange={(e) => edit((s) => ({ ...s, allowStoryProposals: e.target.checked }))}
+          />
+          <span>
+            <strong>Allow story & Creator Mode proposals</strong>
+            <small>Codex may propose new stories, acts, sequences, beats, and dramatic metadata edits.</small>
+          </span>
+        </label>
+      </div>
+    </section>
     <section className="card ai-privacy-section" aria-label="Sensitive information permissions"><div className="ai-section-heading"><div><h3>Sensitive information</h3><p className="muted-text">Separate opt-ins for text within selected records. Original media bytes are never shared.</p></div></div><div className="ai-disclosure-grid">{DISCLOSURE_FIELDS.map(item => <label className="ai-disclosure" key={item.field}><input type="checkbox" aria-label={item.label} checked={draft[item.field]} disabled={disabled} onChange={e => edit(s => ({ ...s, [item.field]: e.target.checked }))}/><span><strong>{item.label}</strong><small>{item.description}</small></span></label>)}</div></section>
     <section className="card ai-capability-section" aria-label="Proposal capabilities"><h3>Proposal capabilities</h3><div className="ai-disclosure-grid">{CAPABILITY_FIELDS.map(item => <label className="ai-disclosure" key={item.field}><input type="checkbox" aria-label={item.label} checked={draft[item.field]} disabled={disabled} onChange={e => edit(s => ({ ...s, [item.field]: e.target.checked }))}/><span><strong>{item.label}</strong><small>{item.description}</small></span></label>)}</div><p className="muted-text">Automatic application: <strong>Never</strong>. Changing permissions does not approve incoming proposals.</p></section>
     {dependentRemoved.length > 0 && <div className="banner banner-warning" role="status"><strong>{dependentRemoved.length} dependent full-prompt selection(s) removed from this draft:</strong><ul>{dependentRemoved.map(id => <li key={id}>{snapshot.scenes.find(s => s.id === id)?.title ?? id} <code>{id}</code></li>)}</ul>Active grants change only after Apply.</div>}

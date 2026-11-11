@@ -439,6 +439,7 @@ export interface StorySceneNode {
   environmentAssetId?: string;
   dramaticMeta?: StoryDramaticMeta;
   linkedShotIds?: string[];
+  linkedSceneId?: string;
   beats: StoryBeat[];
 }
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../studio.css';
 import {
+  BookOpen,
   Camera,
   Clapperboard,
   Film,
@@ -253,6 +254,19 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
         <div className="nav-section">
           <div className="nav-section-label">Workspace</div>
+          <button
+            type="button"
+            className={`nav-link ${cleanPath.startsWith('/stories') ? 'active' : ''}`}
+            onClick={() => handleNav('/stories')}
+            aria-label="Stories"
+            title="Stories"
+          >
+            <BookOpen size={18} />
+            <span>Stories</span>
+            {snapshot && (
+              <span className="nav-link-count">{snapshot.stories?.length ?? 0}</span>
+            )}
+          </button>
           <button type="button" className={`nav-link ${cleanPath === '/connections/ai' ? 'active' : ''}`} onClick={() => handleNav('/connections/ai')} aria-label="AI Connections" title="AI Connections"><Sparkles size={18}/><span>AI Connections</span>{pendingProposals > 0 && <span className="nav-link-count" aria-label={`${pendingProposals} pending proposals`}>{pendingProposals}</span>}</button>
           <button
             type="button"

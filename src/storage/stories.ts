@@ -123,6 +123,12 @@ export async function setStoryArchived(id: string, archived: boolean): Promise<S
   return updated;
 }
 
+export const archiveStory = setStoryArchived;
+
+export function activeCollectionReferencingStory(storyId: string, collections: Collection[]): Collection | undefined {
+  return collections.find((c) => (c.project as any)?.storyId === storyId || (c as any).storyId === storyId);
+}
+
 export async function deleteStory(id: string, collections?: Collection[]): Promise<void> {
   const existing = await getStory(id);
   if (!existing) return;
