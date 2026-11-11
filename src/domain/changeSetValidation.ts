@@ -6,6 +6,7 @@ import {
   CHANGE_SET_V4_SCHEMA,
   CHANGE_SET_V5_SCHEMA,
   CHANGE_SET_V6_SCHEMA,
+  CHANGE_SET_V7_SCHEMA,
   type JsonRule,
 } from "./changeSetSchema";
 import { isRecipeOperation } from "../types/changeSet";
@@ -136,12 +137,14 @@ const createdKind = (o: ChangeOperation) =>
     ? "project"
     : o.type === "shot.create"
       ? "shot"
-      : o.type === "asset.propose"
-        ? "candidate"
-        : o.type.startsWith('variant.')?'variant_candidate'
-        : o.type.startsWith("scene.")
-          ? "scene"
-          : undefined;
+      : o.type === "story.create"
+        ? "story"
+        : o.type === "asset.propose"
+          ? "candidate"
+          : o.type.startsWith('variant.')?'variant_candidate'
+          : o.type.startsWith("scene.")
+            ? "scene"
+            : undefined;
 export function parseChangeSet(input: string | unknown): ChangeSet {
   const raw = typeof input === "string" ? input : JSON.stringify(input);
   if (
@@ -158,7 +161,7 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
   }
   inspect(value);
   validateJsonRule(
-    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v6'?CHANGE_SET_V6_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v5'?CHANGE_SET_V5_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
+    value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v7'?CHANGE_SET_V7_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v6'?CHANGE_SET_V6_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v5'?CHANGE_SET_V5_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v4'?CHANGE_SET_V4_SCHEMA:value&&typeof value==='object'&&'schema'in value&&value.schema==='krakinai.change-set.v3'?CHANGE_SET_V3_SCHEMA:value &&
       typeof value === "object" &&
       "schema" in value &&
       value.schema === "krakinai.change-set.v2"
@@ -227,6 +230,9 @@ export function parseChangeSet(input: string | unknown): ChangeSet {
     edges[index].push(reference.index);
   };
   data.operations.forEach((o, i) => {
+    if ('storyRef' in o && o.storyRef) {
+      use(o.storyRef, 'story', i);
+    }
     if(o.type==='scene.convert_direct_to_recipe')validateConversionInput(o.conversion);
     if (isRecipeOperation(o)) {
       if(o.keyframes){const upserts=o.keyframes.frameUpserts??[],removed=o.keyframes.removeFrameIds??[],order=o.keyframes.frameOrder;for(const ids of [upserts.map(f=>f.id),removed,...(order?[order]:[])])if(new Set(ids).size!==ids.length)throw Error('Duplicate keyframe patch IDs.');if(upserts.some(f=>removed.includes(f.id)))throw Error('Conflicting keyframe patch edits.');}

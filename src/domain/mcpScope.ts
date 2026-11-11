@@ -6,19 +6,29 @@ import { McpError, record, exactKeys } from './mcpProtocol';
 import{getSceneSnapshotEntries}from'./ensembleReferences';
 import{isRecipeOperation}from'../types/changeSet';
 
-export const MCP_SCOPE_ID_LIMITS = Object.freeze({ projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250 });
+export const MCP_SCOPE_ID_LIMITS = Object.freeze({ projectIds: 10, sceneIds: 250, assetIds: 500, variantIds: 500, templateIds: 500, fullPromptSceneIds: 250, mediaIds: 2000, candidateIds: 250, storyIds: 250 });
 export const MCP_SCOPE_LIMITS = Object.freeze({ ...MCP_SCOPE_ID_LIMITS, blockingSceneIds:250,keyframeSceneIds:250,imagePromptFrameGrants:250,reusableRecords: 500, receiptGrants: 1000 });
 export function emptyMcpScope(): McpScopeV1 { return { version: 1, epoch: 0, projectIds: [], sceneIds: [], assetIds: [], variantIds: [], templateIds: [], fullPromptSceneIds: [], mediaIds: [], candidateIds: [], receiptGrants: [], includeAssetText: false, includeCharacterIdentity: false, includeNotes: false, includeMediaFilenames: false, allowNewProjects: false, allowProposals: false }; }
 export function emptyMcpScopeV2():McpScopeV2{return{...emptyMcpScope(),version:2,blockingSceneIds:[],allowBlockingProposals:false};}
 export function emptyMcpScopeV3():McpScopeV3{return{...emptyMcpScopeV2(),version:3,keyframeSceneIds:[],imagePromptFrameGrants:[],allowKeyframeProposals:false,allowFrameImageProposals:false,allowImagePromptDerivation:false};}
 export function validateMcpScope(scope: McpScope): McpScope {
-  record(scope);const keys=Object.keys(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope());exactKeys(scope,keys,keys);
+  record(scope);
+  const requiredKeys=Object.keys(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope());
+  const allowedKeys=[...requiredKeys, 'storyIds', 'includeStoryText', 'allowStoryProposals'];
+  exactKeys(scope,allowedKeys,requiredKeys);
   const invalid = () => { throw new McpError('INVALID_SCOPE', 'Select at most 10 projects, 250 explicit scenes and 500 reusable records, using unique native record IDs.'); };
   if (![1,2,3].includes(scope.version) || !Number.isSafeInteger(scope.epoch) || scope.epoch < 0) invalid();
   const fields = {...MCP_SCOPE_ID_LIMITS,...(scope.version!==1?{blockingSceneIds:250}:{}),...(scope.version===3?{keyframeSceneIds:250}:{})};
-  for (const [field, maximum] of Object.entries(fields)) { const values = scope[field as keyof typeof fields]; if (!Array.isArray(values) || values.length > maximum || new Set(values).size !== values.length || values.some(id => typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(id))) invalid(); }
+  for (const [field, maximum] of Object.entries(fields)) {
+    const values = scope[field as keyof typeof fields];
+    if (values !== undefined) {
+      if (!Array.isArray(values) || values.length > maximum || new Set(values).size !== values.length || values.some(id => typeof id !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,199}$/.test(id))) invalid();
+    }
+  }
   if (scope.assetIds.length + scope.variantIds.length + scope.templateIds.length > MCP_SCOPE_LIMITS.reusableRecords) invalid();
   for (const field of ['includeAssetText', 'includeCharacterIdentity', 'includeNotes', 'includeMediaFilenames', 'allowNewProjects', 'allowProposals'] as const) if (typeof scope[field] !== 'boolean') invalid();
+  if (scope.includeStoryText !== undefined && typeof scope.includeStoryText !== 'boolean') invalid();
+  if (scope.allowStoryProposals !== undefined && typeof scope.allowStoryProposals !== 'boolean') invalid();
   if(scope.version!==1&&typeof scope.allowBlockingProposals!=='boolean')invalid();
   if(scope.version===3){
     for(const key of ['allowKeyframeProposals','allowFrameImageProposals','allowImagePromptDerivation'] as const)if(typeof scope[key]!=='boolean')invalid();
@@ -78,7 +88,7 @@ function availableMedia(scope: McpScope, state: ChangeSetState): Set<string> {
 }
 export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state: ChangeSetState, localReuseGrants: ReadonlySet<string> = new Set(), readOnlyDerivation=false): void {
   if(readOnlyDerivation){if(changeSet.schema!=='krakinai.change-set.v6'||scope.version!==3||!scope.allowImagePromptDerivation||changeSet.operations.some(op=>!isRecipeOperation(op)||!('sceneId'in op)||!!op.imageCarryOver?.length))denyScope();}
-  else if (!scope.allowProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
+  else if (!scope.allowProposals && !scope.allowStoryProposals) denyScope(); const scenes = authorizedSceneIds(scope, state), media = availableMedia(scope, state);
   if(changeSet.schema==='krakinai.change-set.v5'&&(scope.version===1||!scope.allowBlockingProposals))denyScope();
   if(changeSet.schema==='krakinai.change-set.v6'){
     if(scope.version!==3)denyScope();
@@ -104,6 +114,15 @@ export function assertProposalScope(changeSet: ChangeSet, scope: McpScope, state
   }
   const requireExistingScene = (id: string) => { if (!scenes.has(id) || !state.scenes.some(s => s.id === id)) denyScope(); };
   for (const op of changeSet.operations) {
+    if (op.type.startsWith('story.')) {
+      if (scope.allowStoryProposals === false || (!scope.allowStoryProposals && !scope.allowProposals)) denyScope();
+      if ('storyId' in op && op.storyId) {
+        if (!scope.storyIds?.includes(op.storyId)) denyScope();
+      }
+      if ('storyRef' in op && op.storyRef && 'id' in op.storyRef) {
+        if (!scope.storyIds?.includes(op.storyRef.id)) denyScope();
+      }
+    }
     if(changeSet.schema==='krakinai.change-set.v5'&&isRecipeOperation(op)&&'sceneId'in op&&(scope.version===1||!scope.blockingSceneIds.includes(op.sceneId)))denyScope();
     if(op.type==='scene.convert_direct_to_recipe'&&!scope.fullPromptSceneIds.includes(op.sceneId))denyScope();
     const requireParent=(id:string)=>{if(!scope.assetIds.includes(id)||!state.assets.some(a=>a.id===id&&a.category==='characters'))denyScope()};

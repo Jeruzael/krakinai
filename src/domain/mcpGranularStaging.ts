@@ -502,6 +502,7 @@ const SCHEMA_RANK: Record<ChangeSet['schema'], number> = {
   'krakinai.change-set.v4': 4,
   'krakinai.change-set.v5': 5,
   'krakinai.change-set.v6': 6,
+  'krakinai.change-set.v7': 7,
 };
 
 const SCHEMAS_BY_RANK: Record<number, ChangeSet['schema']> = {
@@ -511,11 +512,15 @@ const SCHEMAS_BY_RANK: Record<number, ChangeSet['schema']> = {
   4: 'krakinai.change-set.v4',
   5: 'krakinai.change-set.v5',
   6: 'krakinai.change-set.v6',
+  7: 'krakinai.change-set.v7',
 };
 
 function getOperationBucket(type: string): number {
   if (type === 'asset.propose' || type === 'variant.propose' || type === 'asset.review_candidate' || type === 'variant.review_candidate') {
     return 10;
+  }
+  if (type.startsWith('story.')) {
+    return 15;
   }
   if (type.startsWith('project.')) {
     return 20;

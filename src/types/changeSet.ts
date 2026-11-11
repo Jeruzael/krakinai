@@ -11,6 +11,11 @@ import type {
   SceneDraft,
   SceneSettings,
   ShotType,
+  Story,
+  StoryAct,
+  StoryColorScriptEntry,
+  StoryDramaticMeta,
+  StoryReferencePack,
   Template,
   Variant,
 } from "./domain";
@@ -231,6 +236,106 @@ export function isRecipeOperation(
     "scene.convert_direct_to_recipe",
   ].includes(op.type);
 }
+export interface StoryCreateOperation {
+  operationId: string;
+  type: 'story.create';
+  clientRef?: string;
+  title: string;
+  author?: string;
+  tags?: string[];
+  coverMediaId?: string | null;
+  heroBannerMediaId?: string | null;
+  logline?: string;
+  premise?: string;
+  synopsis?: string;
+  treatment?: string;
+  fullBookText?: string;
+  linkedCollectionId?: string | null;
+  referencePack?: StoryReferencePack;
+  colorScript?: StoryColorScriptEntry[];
+  acts?: StoryAct[];
+}
+
+export interface StoryUpdateOperation {
+  operationId: string;
+  type: 'story.update';
+  clientRef?: string;
+  storyId?: string;
+  storyRef?: RecordTarget;
+  expectedRevision?: number;
+  expectedStoryDigest?: string;
+  title?: string;
+  author?: string;
+  tags?: string[];
+  coverMediaId?: string | null;
+  heroBannerMediaId?: string | null;
+  logline?: string;
+  premise?: string;
+  synopsis?: string;
+  treatment?: string;
+  fullBookText?: string;
+}
+
+export interface StoryStatusOperation {
+  operationId: string;
+  type: 'story.set_status';
+  clientRef?: string;
+  storyId?: string;
+  storyRef?: RecordTarget;
+  expectedRevision?: number;
+  expectedStoryDigest?: string;
+  archived?: boolean;
+  favorite?: boolean;
+}
+
+export interface StoryStructurePatchOperation {
+  operationId: string;
+  type: 'story.patch_structure';
+  clientRef?: string;
+  storyId?: string;
+  storyRef?: RecordTarget;
+  expectedRevision?: number;
+  expectedStoryDigest?: string;
+  acts: StoryAct[];
+}
+
+export interface StoryDramaticMetaPatchOperation {
+  operationId: string;
+  type: 'story.patch_dramatic_meta';
+  clientRef?: string;
+  storyId?: string;
+  storyRef?: RecordTarget;
+  targetNodeId: string;
+  expectedRevision?: number;
+  expectedStoryDigest?: string;
+  dramaticMeta: StoryDramaticMeta;
+}
+
+export interface StoryReferencesPatchOperation {
+  operationId: string;
+  type: 'story.patch_references';
+  clientRef?: string;
+  storyId?: string;
+  storyRef?: RecordTarget;
+  expectedRevision?: number;
+  expectedStoryDigest?: string;
+  referencePack?: Partial<StoryReferencePack>;
+  linkedCollectionId?: string | null;
+  colorScript?: StoryColorScriptEntry[];
+}
+
+export type StoryOperation =
+  | StoryCreateOperation
+  | StoryUpdateOperation
+  | StoryStatusOperation
+  | StoryStructurePatchOperation
+  | StoryDramaticMetaPatchOperation
+  | StoryReferencesPatchOperation;
+
+export function isStoryOperation(op: ChangeOperation): op is StoryOperation {
+  return op.type.startsWith('story.');
+}
+
 export type ChangeOperation =
   | ProjectCreate
   | ProjectUpdate
@@ -248,9 +353,20 @@ export type ChangeOperation =
   | OutfitReviewOperation
   | FrameImageOperation
   | FrameVideoOperation
-  | RecipeSceneOperation;
+  | RecipeSceneOperation
+  | StoryOperation;
+
+export type ChangeSetSchema =
+  | "krakinai.change-set.v1"
+  | "krakinai.change-set.v2"
+  | "krakinai.change-set.v3"
+  | "krakinai.change-set.v4"
+  | "krakinai.change-set.v5"
+  | "krakinai.change-set.v6"
+  | "krakinai.change-set.v7";
+
 export interface ChangeSet {
-  schema: "krakinai.change-set.v1" | "krakinai.change-set.v2" | "krakinai.change-set.v3" | "krakinai.change-set.v4" | "krakinai.change-set.v5" | "krakinai.change-set.v6";
+  schema: ChangeSetSchema;
   changeSetId: string;
   source: { kind: PromptOrigin; label?: string };
   title?: string;
@@ -270,6 +386,7 @@ export interface ChangeSetApproval extends BlockingApprovalFields,KeyframeApprov
   scenes: boolean;
   preferred: boolean;
   statuses: boolean;
+  stories?: boolean;
   assetDecisions: Record<string, CandidateDecision>;
   allowDuplicateSceneOperations: string[];
   /** Browser-owned consent; never a caller-supplied operation flag. */
@@ -280,6 +397,7 @@ export const emptyChangeSetApproval = (): ChangeSetApproval => ({
   scenes: false,
   preferred: false,
   statuses: false,
+  stories: false,
   assetDecisions: {},
   allowDuplicateSceneOperations: [],
 });
@@ -302,10 +420,11 @@ export interface ImportCandidate {
   updatedAt: string;
 }
 export interface ImportMapping {
-  kind: "project" | "shot" | "scene" | "candidate" | 'variant_candidate';
+  kind: "project" | "shot" | "scene" | "candidate" | 'variant_candidate' | 'story';
   variantId?:string;
   id: string;
   assetId?: string;
+  storyId?: string;
 }
 export interface ImportOperationResult {
   operationId: string;
@@ -334,8 +453,8 @@ export interface ChangeSetReceiptBase {
   operations: ImportOperationResult[];
   projectRevisions: Record<string, { before: number; after: number }>;
 }
-export type LegacyChangeSetReceipt=ChangeSetReceiptBase&({version:1}|{version:2;changeSetSchema:'krakinai.change-set.v5';/** Canonical, non-executable review evidence including complete reviewed buffers. */reviewedContent:string}|{version:3;changeSetSchema:'krakinai.change-set.v6';reviewedContent:string;frameResults:{operationId:string;sceneId:string;frameIds:string[];associationIds:string[]}[]});
-export type CompactChangeSetReceipt=ChangeSetReceiptBase&{version:4;reviewedEvidence:import('../domain/importEvidence').CompactImportEvidence}&({changeSetSchema:'krakinai.change-set.v5'}|{changeSetSchema:'krakinai.change-set.v6';frameResults:Extract<LegacyChangeSetReceipt,{version:3}>['frameResults']});
+export type LegacyChangeSetReceipt=ChangeSetReceiptBase&({version:1}|{version:2;changeSetSchema:'krakinai.change-set.v5';/** Canonical, non-executable review evidence including complete reviewed buffers. */reviewedContent:string}|{version:3;changeSetSchema:'krakinai.change-set.v6';reviewedContent:string;frameResults:{operationId:string;sceneId:string;frameIds:string[];associationIds:string[]}[]}|{version:5;changeSetSchema:'krakinai.change-set.v7';reviewedContent:string});
+export type CompactChangeSetReceipt=ChangeSetReceiptBase&{version:4;reviewedEvidence:import('../domain/importEvidence').CompactImportEvidence}&({changeSetSchema:'krakinai.change-set.v5'}|{changeSetSchema:'krakinai.change-set.v6';frameResults:Extract<LegacyChangeSetReceipt,{version:3}>['frameResults']}|{changeSetSchema:'krakinai.change-set.v7'});
 export type ChangeSetReceipt=LegacyChangeSetReceipt|CompactChangeSetReceipt;
 export interface ImportLedger {
   variantCandidates?:ImportVariantCandidate[];
@@ -388,6 +507,7 @@ export interface ChangeSetPlan {
   scenes: SavedScene[];
   assets: PromptAsset[];
   templates: Template[];
+  stories?: Story[];
   candidates: ImportCandidate[];
   projectRevisions: ChangeSetReceipt["projectRevisions"];
   stateSignature: string;
@@ -398,6 +518,7 @@ export interface ChangeSetPlan {
     candidates: number;
     pendingInputs: number;
     plannedSeconds: number;
+    stories?: number;
   };
 }
 export interface ChangeSetPreview {
@@ -420,4 +541,5 @@ export interface ChangeSetState {
   templates: Template[];
   media: MediaAsset[];
   preferences: Preferences;
+  stories?: Story[];
 }
