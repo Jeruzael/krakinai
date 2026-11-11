@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import type { Story, StoryAct } from '../types/domain';
+import React, { useState, useEffect, useMemo } from 'react';
+import type { Story, StoryAct, StoryColorScriptEntry, StoryReferencePack } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
 import { getStory, saveStory, toggleStoryFavorite } from '../storage/stories';
+import { generateId } from '../storage/db';
 import { StoryCreatorMode } from '../components/stories/StoryCreatorMode';
+import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
+import { MediaThumbnail } from '../components/MediaThumbnail';
+import { useMediaObjectUrl } from '../hooks/useObjectUrl';
 import {
   ArrowLeft,
   BookOpen,
@@ -15,10 +19,16 @@ import {
   ExternalLink,
   Film,
   Heart,
+  Image,
+  ImageIcon,
   Layers,
   Palette,
+  Plus,
+  Search,
   Sparkles,
+  Trash2,
   User,
+  X,
 } from 'lucide-react';
 
 export interface StoryWorkspaceScreenProps {
@@ -36,24 +46,52 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const [editingProse, setEditingProse] = useState(false);
   const [proseDraft, setProseDraft] = useState(() => story?.fullBookText || '');
 
+  // Media pickers & dialogs
+  const [coverPickerKind, setCoverPickerKind] = useState<'cover' | 'hero' | null>(null);
+  const [showReferenceManager, setShowReferenceManager] = useState(false);
+  const [refSearch, setRefSearch] = useState('');
+  const [refCategory, setRefCategory] = useState<string>('all');
+  const [editingColorBeat, setEditingColorBeat] = useState<{
+    id?: string;
+    label: string;
+    notes: string;
+    hexPalette: string;
+  } | null>(null);
+
   useEffect(() => {
     if (story) setProseDraft(story.fullBookText || '');
   }, [story?.id]);
 
   useEffect(() => {
     let active = true;
-    getStory(storyId).then((res) => {
-      if (active && res) {
-        setStory(res);
-        setLoading(false);
-      }
-    }).catch(() => {
-      if (active) setLoading(false);
-    });
+    getStory(storyId)
+      .then((res) => {
+        if (active && res) {
+          setStory(res);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (active) setLoading(false);
+      });
     return () => {
       active = false;
     };
   }, [storyId]);
+
+  const coverMedia = useMemo(() => {
+    return story?.coverMediaId
+      ? snapshot?.media?.find((m) => m.id === story.coverMediaId)
+      : undefined;
+  }, [story?.coverMediaId, snapshot?.media]);
+
+  const heroBannerMedia = useMemo(() => {
+    return story?.heroBannerMediaId
+      ? snapshot?.media?.find((m) => m.id === story.heroBannerMediaId)
+      : undefined;
+  }, [story?.heroBannerMediaId, snapshot?.media]);
+
+  const heroBannerUrl = useMediaObjectUrl(heroBannerMedia);
 
   if (loading && !story) {
     return (
@@ -68,7 +106,12 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       <div className="card" style={{ padding: 32, textAlign: 'center' }}>
         <h2>Story Not Found</h2>
         <p className="muted-text">The requested story could not be loaded.</p>
-        <button type="button" className="btn btn-primary" onClick={() => navigate('/stories')} style={{ marginTop: 16 }}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={() => navigate('/stories')}
+          style={{ marginTop: 16 }}
+        >
           Return to Stories
         </button>
       </div>
@@ -78,7 +121,7 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const handleFavoriteToggle = async () => {
     try {
       await toggleStoryFavorite(story.id);
-      setStory((prev) => prev ? { ...prev, favorite: !prev.favorite } : null);
+      setStory((prev) => (prev ? { ...prev, favorite: !prev.favorite } : null));
       await refreshSnapshot();
       showToast(story.favorite ? 'Removed from favorites' : 'Added to favorites');
     } catch (err: any) {
@@ -86,18 +129,117 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
     }
   };
 
-  // Resolve reference pack assets, variants, media
+  // Resolved reference pack items
   const referencedAssets = (story.referencePack?.assetIds || [])
-    .map((aid) => snapshot?.assets.find((a) => a.id === aid))
+    .map((aid) => snapshot?.assets?.find((a) => a.id === aid))
     .filter(Boolean);
 
   const referencedVariants = (story.referencePack?.variantIds || [])
-    .map((vid) => snapshot?.variants.find((v) => v.id === vid))
+    .map((vid) => snapshot?.variants?.find((v) => v.id === vid))
     .filter(Boolean);
 
-  const pairedCollection = snapshot?.collections.find(
+  const pairedCollection = snapshot?.collections?.find(
     (c) => c.id === story.linkedCollectionId
   );
+
+  // Reference pack unbind handler
+  const handleRemoveAssetReference = async (assetId: string) => {
+    const nextAssetIds = (story.referencePack?.assetIds || []).filter((id) => id !== assetId);
+    const next: Story = {
+      ...story,
+      referencePack: {
+        ...(story.referencePack || { assetIds: [], variantIds: [], mediaIds: [] }),
+        assetIds: nextAssetIds,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    setStory(next);
+    await saveStory(next);
+    await refreshSnapshot();
+    showToast('Asset reference unlinked');
+  };
+
+  const handleRemoveVariantReference = async (variantId: string) => {
+    const nextVariantIds = (story.referencePack?.variantIds || []).filter((id) => id !== variantId);
+    const next: Story = {
+      ...story,
+      referencePack: {
+        ...(story.referencePack || { assetIds: [], variantIds: [], mediaIds: [] }),
+        variantIds: nextVariantIds,
+      },
+      updatedAt: new Date().toISOString(),
+    };
+    setStory(next);
+    await saveStory(next);
+    await refreshSnapshot();
+    showToast('Variant reference unlinked');
+  };
+
+  // Color script handlers
+  const handleOpenAddColorBeat = () => {
+    setEditingColorBeat({
+      label: `Beat ${(story.colorScript?.length || 0) + 1}`,
+      notes: '',
+      hexPalette: '#1e293b, #3b82f6, #93c5fd',
+    });
+  };
+
+  const handleSaveColorBeat = async () => {
+    if (!editingColorBeat || !editingColorBeat.label.trim()) return;
+    const currentScript = [...(story.colorScript || [])];
+    const rawPalette = editingColorBeat.hexPalette
+      .split(',')
+      .map((h) => h.trim())
+      .filter((h) => h.startsWith('#'));
+
+    const hexPalette = rawPalette.length > 0 ? rawPalette : ['#1e293b', '#3b82f6'];
+
+    if (editingColorBeat.id) {
+      // Editing existing
+      const nextScript = currentScript.map((node) =>
+        node.id === editingColorBeat.id
+          ? {
+              ...node,
+              label: editingColorBeat.label.trim(),
+              notes: editingColorBeat.notes.trim() || undefined,
+              hexPalette,
+            }
+          : node
+      );
+      const next: Story = { ...story, colorScript: nextScript, updatedAt: new Date().toISOString() };
+      setStory(next);
+      await saveStory(next);
+      await refreshSnapshot();
+    } else {
+      // Adding new
+      const newNode: StoryColorScriptEntry = {
+        id: generateId('cs_beat'),
+        orderIndex: currentScript.length,
+        label: editingColorBeat.label.trim(),
+        notes: editingColorBeat.notes.trim() || undefined,
+        hexPalette,
+      };
+      const nextScript = [...currentScript, newNode];
+      const next: Story = { ...story, colorScript: nextScript, updatedAt: new Date().toISOString() };
+      setStory(next);
+      await saveStory(next);
+      await refreshSnapshot();
+    }
+
+    setEditingColorBeat(null);
+    showToast('Color script updated');
+  };
+
+  const handleDeleteColorBeat = async (nodeId: string) => {
+    const nextScript = (story.colorScript || [])
+      .filter((n) => n.id !== nodeId)
+      .map((n, idx) => ({ ...n, orderIndex: idx }));
+    const next: Story = { ...story, colorScript: nextScript, updatedAt: new Date().toISOString() };
+    setStory(next);
+    await saveStory(next);
+    await refreshSnapshot();
+    showToast('Color beat removed');
+  };
 
   return (
     <div className="story-workspace-screen" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -116,6 +258,16 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <button
             type="button"
+            className="btn btn-outline"
+            onClick={() => setCoverPickerKind('hero')}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <ImageIcon size={16} />
+            <span>Change Hero Banner</span>
+          </button>
+
+          <button
+            type="button"
             className={`btn ${story.favorite ? 'btn-danger' : 'btn-outline'}`}
             onClick={handleFavoriteToggle}
             style={{ display: 'flex', alignItems: 'center', gap: 6 }}
@@ -127,8 +279,79 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       </div>
 
       {/* Hero Banner & Metadata */}
-      <div className="card story-hero-banner" style={{ padding: 24, background: '#1e293b', color: '#f8fafc', borderRadius: 8 }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+      <div
+        className="card story-hero-banner"
+        style={{
+          padding: 24,
+          background: heroBannerUrl
+            ? `linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.94)), url(${heroBannerUrl}) center/cover no-repeat`
+            : '#1e293b',
+          color: '#f8fafc',
+          borderRadius: 8,
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <div style={{ display: 'flex', gap: 24, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+          {/* Cover Artwork & Uploader */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div
+              style={{
+                width: 120,
+                height: 160,
+                borderRadius: 8,
+                overflow: 'hidden',
+                background: '#0f172a',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.5)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                position: 'relative',
+              }}
+            >
+              {coverMedia ? (
+                <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} enableHoverPreview />
+              ) : (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                    color: '#94a3b8',
+                    padding: 8,
+                    textAlign: 'center',
+                  }}
+                >
+                  <BookOpen size={28} style={{ color: '#60a5fa' }} />
+                  <span style={{ fontSize: '0.75rem', color: '#cbd5e1', fontWeight: 600 }}>
+                    Story Book
+                  </span>
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => setCoverPickerKind('cover')}
+              style={{
+                fontSize: '0.75rem',
+                padding: '4px 8px',
+                color: '#f1f5f9',
+                borderColor: '#64748b',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+              }}
+            >
+              <Image size={13} />
+              <span>Change Cover</span>
+            </button>
+          </div>
+
+          {/* Story Metadata */}
           <div style={{ flex: 1, minWidth: 280 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span className="badge" style={{ background: '#3b82f6', color: '#fff' }}>
@@ -209,47 +432,194 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         </div>
       )}
 
-      {/* Organized Reference Pack */}
-      {((referencedAssets && referencedAssets.length > 0) || (referencedVariants && referencedVariants.length > 0)) && (
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      {/* Organized Reference Pack (Always Visible with Manage References) */}
+      <div className="card" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Layers size={18} style={{ color: '#6366f1' }} />
             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Organized Reference Pack</h3>
+            <span className="badge" style={{ background: '#e0e7ff', color: '#4338ca', fontSize: '0.75rem' }}>
+              {referencedAssets.length + referencedVariants.length} Bound
+            </span>
           </div>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => setShowReferenceManager(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Plus size={14} />
+            <span>Manage References</span>
+          </button>
+        </div>
+
+        {referencedAssets.length === 0 && referencedVariants.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '24px 16px', background: '#f8fafc', borderRadius: 6, border: '1px dashed #cbd5e1' }}>
+            <p className="muted-text" style={{ margin: '0 0 10px', fontSize: '0.9rem' }}>
+              No library assets bound to this story yet. Connect characters, outfits, and environments to keep narrative continuity.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowReferenceManager(true)}
+            >
+              + Add Asset References
+            </button>
+          </div>
+        ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12 }}>
             {referencedAssets.map((asset: any) => (
-              <div key={asset.id} className="card" style={{ padding: '8px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', minWidth: 160 }}>
-                <span className="badge badge-outline" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
-                  {asset.category}
-                </span>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{asset.title}</div>
+              <div
+                key={asset.id}
+                className="card"
+                style={{
+                  padding: '8px 12px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  minWidth: 160,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <span className="badge badge-outline" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
+                    {asset.category}
+                  </span>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{asset.title}</div>
+                </div>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  title="Remove asset reference"
+                  onClick={() => handleRemoveAssetReference(asset.id)}
+                  style={{ color: '#94a3b8', padding: 2 }}
+                >
+                  <X size={12} />
+                </button>
               </div>
             ))}
             {referencedVariants.map((variant: any) => (
-              <div key={variant.id} className="card" style={{ padding: '8px 12px', background: '#f8fafc', border: '1px solid #e2e8f0', minWidth: 160 }}>
-                <span className="badge" style={{ fontSize: '0.7rem', background: '#ede9fe', color: '#6d28d9' }}>
-                  Outfit Variant
-                </span>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{variant.title}</div>
+              <div
+                key={variant.id}
+                className="card"
+                style={{
+                  padding: '8px 12px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  minWidth: 160,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'flex-start',
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <span className="badge" style={{ fontSize: '0.7rem', background: '#ede9fe', color: '#6d28d9' }}>
+                    Outfit Variant
+                  </span>
+                  <div style={{ fontWeight: 600, fontSize: '0.9rem', marginTop: 4 }}>{variant.title}</div>
+                </div>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  title="Remove variant reference"
+                  onClick={() => handleRemoveVariantReference(variant.id)}
+                  style={{ color: '#94a3b8', padding: 2 }}
+                >
+                  <X size={12} />
+                </button>
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {/* Color Script Timeline */}
-      {story.colorScript && story.colorScript.length > 0 && (
-        <div className="card" style={{ padding: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+      {/* Color Script Timeline (Always Visible with Add/Edit/Delete Controls) */}
+      <div className="card" style={{ padding: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12, flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <Palette size={18} style={{ color: '#ec4899' }} />
             <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>Color Script Timeline</h3>
+            <span className="badge" style={{ background: '#fce7f3', color: '#be185d', fontSize: '0.75rem' }}>
+              {(story.colorScript || []).length} Beats
+            </span>
           </div>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={handleOpenAddColorBeat}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <Plus size={14} />
+            <span>Add Color Beat</span>
+          </button>
+        </div>
+
+        {(!story.colorScript || story.colorScript.length === 0) ? (
+          <div style={{ textAlign: 'center', padding: '24px 16px', background: '#f8fafc', borderRadius: 6, border: '1px dashed #cbd5e1' }}>
+            <p className="muted-text" style={{ margin: '0 0 10px', fontSize: '0.9rem' }}>
+              No color script beats added yet. Define color palettes and mood lighting across your story progression.
+            </p>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={handleOpenAddColorBeat}
+            >
+              + Add First Color Beat
+            </button>
+          </div>
+        ) : (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             {story.colorScript.map((node) => (
-              <div key={node.id} className="card" style={{ padding: 12, background: '#fafafa', border: '1px solid #e2e8f0', minWidth: 180, flex: 1 }}>
-                <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{node.label}</div>
-                {node.notes && <p className="muted-text" style={{ fontSize: '0.8rem', margin: '4px 0 8px' }}>{node.notes}</p>}
-                <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+              <div
+                key={node.id}
+                className="card"
+                style={{
+                  padding: 12,
+                  background: '#fafafa',
+                  border: '1px solid #e2e8f0',
+                  minWidth: 180,
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{node.label}</div>
+                    <div style={{ display: 'flex', gap: 4 }}>
+                      <button
+                        type="button"
+                        className="icon-btn"
+                        title="Edit color beat"
+                        onClick={() =>
+                          setEditingColorBeat({
+                            id: node.id,
+                            label: node.label,
+                            notes: node.notes || '',
+                            hexPalette: (node.hexPalette || []).join(', '),
+                          })
+                        }
+                      >
+                        <Edit3 size={12} />
+                      </button>
+                      <button
+                        type="button"
+                        className="icon-btn text-danger"
+                        title="Delete color beat"
+                        onClick={() => handleDeleteColorBeat(node.id)}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    </div>
+                  </div>
+                  {node.notes && <p className="muted-text" style={{ fontSize: '0.8rem', margin: '4px 0 8px' }}>{node.notes}</p>}
+                </div>
+
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
                   {node.hexPalette.map((hex, hIdx) => (
                     <div
                       key={hIdx}
@@ -267,8 +637,8 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
               </div>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Dual Mode Switcher: Book Mode vs Creator Mode */}
       <div style={{ borderBottom: '1px solid #e2e8f0', display: 'flex', gap: 8, marginTop: 8 }} role="tablist">
@@ -387,12 +757,325 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       ) : (
         <StoryCreatorMode
           acts={story.acts}
-          onUpdateActs={(updatedActs) => {
-            const next = { ...story, acts: updatedActs };
+          onUpdateActs={async (updatedActs) => {
+            const next = { ...story, acts: updatedActs, updatedAt: new Date().toISOString() };
             setStory(next);
-            saveStory(next);
+            await saveStory(next);
+            await refreshSnapshot();
           }}
         />
+      )}
+
+      {/* Cover / Hero Banner Media Picker Modal */}
+      {coverPickerKind && (
+        <CollectionCoverPicker
+          media={snapshot?.media ?? []}
+          currentId={coverPickerKind === 'cover' ? story.coverMediaId : story.heroBannerMediaId}
+          saveActionLabel={coverPickerKind === 'cover' ? 'Set Story Cover' : 'Set Hero Banner'}
+          onSelect={async (newId) => {
+            const next: Story = {
+              ...story,
+              ...(coverPickerKind === 'cover' ? { coverMediaId: newId } : { heroBannerMediaId: newId }),
+              updatedAt: new Date().toISOString(),
+            };
+            setStory(next);
+            await saveStory(next);
+            await refreshSnapshot();
+            setCoverPickerKind(null);
+            showToast(coverPickerKind === 'cover' ? 'Story cover updated' : 'Hero banner updated');
+          }}
+          onClose={() => setCoverPickerKind(null)}
+          onUploaded={refreshSnapshot}
+        />
+      )}
+
+      {/* Reference Pack Manager Modal */}
+      {showReferenceManager && (
+        <div className="modal-backdrop" onClick={() => setShowReferenceManager(false)}>
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-label="Manage Story References"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 640, width: '92vw' }}
+          >
+            <div className="modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.15rem' }}>Manage Reference Pack</h3>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setShowReferenceManager(false)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ maxHeight: '65vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  <Search size={14} style={{ position: 'absolute', left: 10, top: 11, color: '#94a3b8' }} />
+                  <input
+                    type="text"
+                    className="input-field"
+                    style={{ paddingLeft: 30, width: '100%' }}
+                    placeholder="Search library assets..."
+                    value={refSearch}
+                    onChange={(e) => setRefSearch(e.target.value)}
+                  />
+                </div>
+                <select
+                  className="input-field"
+                  value={refCategory}
+                  onChange={(e) => setRefCategory(e.target.value)}
+                  style={{ width: 140 }}
+                >
+                  <option value="all">All Types</option>
+                  <option value="characters">Characters</option>
+                  <option value="wardrobe">Wardrobe</option>
+                  <option value="environments">Environments</option>
+                  <option value="actions">Actions</option>
+                  <option value="camera">Camera</option>
+                  <option value="lighting">Lighting</option>
+                  <option value="styles">Styles</option>
+                  <option value="variants">Outfit Variants</option>
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {/* Assets */}
+                {refCategory !== 'variants' &&
+                  (snapshot?.assets ?? [])
+                    .filter((a) => {
+                      if (refCategory !== 'all' && a.category !== refCategory) return false;
+                      if (!refSearch.trim()) return true;
+                      const q = refSearch.toLowerCase();
+                      return a.title.toLowerCase().includes(q) || a.tags?.some((t) => t.toLowerCase().includes(q));
+                    })
+                    .map((asset) => {
+                      const isBound = (story.referencePack?.assetIds || []).includes(asset.id);
+                      return (
+                        <label
+                          key={asset.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: 8,
+                            borderRadius: 6,
+                            background: isBound ? '#eff6ff' : '#f8fafc',
+                            border: `1px solid ${isBound ? '#bfdbfe' : '#e2e8f0'}`,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isBound}
+                            onChange={async (e) => {
+                              const currentIds = story.referencePack?.assetIds || [];
+                              const nextIds = e.target.checked
+                                ? [...currentIds, asset.id]
+                                : currentIds.filter((id) => id !== asset.id);
+                              const next: Story = {
+                                ...story,
+                                referencePack: {
+                                  ...(story.referencePack || { assetIds: [], variantIds: [], mediaIds: [] }),
+                                  assetIds: nextIds,
+                                },
+                                updatedAt: new Date().toISOString(),
+                              };
+                              setStory(next);
+                              await saveStory(next);
+                              await refreshSnapshot();
+                            }}
+                          />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{asset.title}</div>
+                            <span className="badge badge-outline" style={{ fontSize: '0.7rem', textTransform: 'capitalize' }}>
+                              {asset.category}
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+
+                {/* Variants */}
+                {(refCategory === 'all' || refCategory === 'variants') &&
+                  (snapshot?.variants ?? [])
+                    .filter((v) => {
+                      if (!refSearch.trim()) return true;
+                      const q = refSearch.toLowerCase();
+                      return v.title.toLowerCase().includes(q) || v.tags?.some((t) => t.toLowerCase().includes(q));
+                    })
+                    .map((variant) => {
+                      const isBound = (story.referencePack?.variantIds || []).includes(variant.id);
+                      return (
+                        <label
+                          key={variant.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            padding: 8,
+                            borderRadius: 6,
+                            background: isBound ? '#f5f3ff' : '#f8fafc',
+                            border: `1px solid ${isBound ? '#ddd6fe' : '#e2e8f0'}`,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isBound}
+                            onChange={async (e) => {
+                              const currentIds = story.referencePack?.variantIds || [];
+                              const nextIds = e.target.checked
+                                ? [...currentIds, variant.id]
+                                : currentIds.filter((id) => id !== variant.id);
+                              const next: Story = {
+                                ...story,
+                                referencePack: {
+                                  ...(story.referencePack || { assetIds: [], variantIds: [], mediaIds: [] }),
+                                  variantIds: nextIds,
+                                },
+                                updatedAt: new Date().toISOString(),
+                              };
+                              setStory(next);
+                              await saveStory(next);
+                              await refreshSnapshot();
+                            }}
+                          />
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{variant.title}</div>
+                            <span className="badge" style={{ fontSize: '0.7rem', background: '#ede9fe', color: '#6d28d9' }}>
+                              Outfit Variant
+                            </span>
+                          </div>
+                        </label>
+                      );
+                    })}
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowReferenceManager(false)}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Color Beat Edit Dialog */}
+      {editingColorBeat && (
+        <div className="modal-backdrop" onClick={() => setEditingColorBeat(null)}>
+          <div
+            className="modal-card"
+            role="dialog"
+            aria-label="Edit Color Beat"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: 480, width: '92vw' }}
+          >
+            <div className="modal-header">
+              <h3 style={{ margin: 0, fontSize: '1.15rem' }}>
+                {editingColorBeat.id ? 'Edit Color Beat' : 'Add Color Beat'}
+              </h3>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setEditingColorBeat(null)}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="modal-body" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                  Beat Label
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  style={{ width: '100%' }}
+                  placeholder="e.g. Act I - Dawn Mist"
+                  value={editingColorBeat.label}
+                  onChange={(e) => setEditingColorBeat({ ...editingColorBeat, label: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                  Color & Mood Notes
+                </label>
+                <textarea
+                  className="input-field"
+                  rows={2}
+                  style={{ width: '100%' }}
+                  placeholder="e.g. Muted amber fading into cold frosty blue"
+                  value={editingColorBeat.notes}
+                  onChange={(e) => setEditingColorBeat({ ...editingColorBeat, notes: e.target.value })}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                  Hex Palette (comma-separated hex codes)
+                </label>
+                <input
+                  type="text"
+                  className="input-field"
+                  style={{ width: '100%' }}
+                  placeholder="#1e293b, #3b82f6, #93c5fd"
+                  value={editingColorBeat.hexPalette}
+                  onChange={(e) => setEditingColorBeat({ ...editingColorBeat, hexPalette: e.target.value })}
+                />
+                <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+                  {editingColorBeat.hexPalette
+                    .split(',')
+                    .map((h) => h.trim())
+                    .filter((h) => h.startsWith('#'))
+                    .map((hex, idx) => (
+                      <div
+                        key={idx}
+                        style={{
+                          width: 24,
+                          height: 24,
+                          borderRadius: 4,
+                          background: hex,
+                          border: '1px solid rgba(0,0,0,0.15)',
+                        }}
+                        title={hex}
+                      />
+                    ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setEditingColorBeat(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={handleSaveColorBeat}
+                style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <Check size={14} />
+                <span>Save Beat</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

@@ -189,6 +189,10 @@ describe('StoriesScreen Component', () => {
     fireEvent.click(listBtn);
     expect(screen.getByTestId('stories-container')).toHaveClass('stories-list-view');
 
+    // Asserts cover elements are rendered for story cards
+    const covers = screen.getAllByTestId('story-card-cover');
+    expect(covers.length).toBeGreaterThan(0);
+
     // Search filter
     const searchInput = screen.getByPlaceholderText(/Search stories/i);
     fireEvent.change(searchInput, { target: { value: 'Nonexistent query' } });
@@ -340,6 +344,24 @@ describe('StoryWorkspaceScreen Component', () => {
       );
     });
   });
+
+  it('provides cover, hero banner, reference pack, and color script management controls', async () => {
+    render(<StoryWorkspaceScreen storyId="story-alpha" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Chronicles of the Deep')).toBeInTheDocument();
+    });
+
+    // Cover & Hero Banner management buttons
+    expect(screen.getByRole('button', { name: /Change Cover/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Change Hero Banner/i })).toBeInTheDocument();
+
+    // Manage References button
+    expect(screen.getByRole('button', { name: /Manage References/i })).toBeInTheDocument();
+
+    // Add Color Beat button
+    expect(screen.getByRole('button', { name: /Add Color Beat/i })).toBeInTheDocument();
+  });
 });
 
 describe('StoryCreatorMode Component', () => {
@@ -351,6 +373,62 @@ describe('StoryCreatorMode Component', () => {
     expect(screen.getByText(/Sonar anomaly detected at 10,000 meters/i)).toBeInTheDocument();
     expect(screen.getByText(/Maya hides her claustrophobia/i)).toBeInTheDocument();
     expect(screen.getByText(/Cracked gauge glass/i)).toBeInTheDocument();
+  });
+
+  it('provides structural authoring controls (Add Act, Add Sequence, Add Scene, Add Beat, Edit, Delete)', () => {
+    const onUpdate = vi.fn();
+    render(<StoryCreatorMode acts={sampleStory.acts} onUpdateActs={onUpdate} />);
+
+    // Add Act button in header
+    const addActBtn = screen.getByRole('button', { name: /Add Act/i });
+    expect(addActBtn).toBeInTheDocument();
+
+    // Add Sequence button inside Act
+    expect(screen.getByRole('button', { name: /Add Sequence/i })).toBeInTheDocument();
+
+    // Add Scene button inside Sequence
+    expect(screen.getByRole('button', { name: /Add Scene/i })).toBeInTheDocument();
+
+    // Add Beat button inside Scene
+    expect(screen.getByRole('button', { name: /Add Beat/i })).toBeInTheDocument();
+
+    // Edit and Delete buttons
+    expect(screen.getAllByRole('button', { name: /^Edit Act/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /^Delete Act/i }).length).toBeGreaterThan(0);
+  });
+
+  it('triggers onUpdateActs when adding and editing an act in Creator Mode', () => {
+    const onUpdate = vi.fn();
+    render(<StoryCreatorMode acts={sampleStory.acts} onUpdateActs={onUpdate} />);
+
+    // Click Add Act
+    const addActBtn = screen.getByRole('button', { name: /Add Act/i });
+    fireEvent.click(addActBtn);
+
+    // Dialog is open
+    expect(screen.getByRole('dialog', { name: /Add ACT/i })).toBeInTheDocument();
+
+    const titleInput = screen.getByPlaceholderText(/Enter act title/i);
+    fireEvent.change(titleInput, { target: { value: 'Act II: The Ancient Core' } });
+
+    const saveBtn = screen.getByRole('button', { name: /Save ACT/i });
+    fireEvent.click(saveBtn);
+
+    expect(onUpdate).toHaveBeenCalledWith(
+      expect.arrayContaining([
+        expect.objectContaining({ title: 'Act II: The Ancient Core' }),
+      ])
+    );
+  });
+
+  it('triggers onUpdateActs when deleting an act in Creator Mode', () => {
+    const onUpdate = vi.fn();
+    render(<StoryCreatorMode acts={sampleStory.acts} onUpdateActs={onUpdate} />);
+
+    const deleteBtn = screen.getAllByRole('button', { name: /^Delete Act/i })[0];
+    fireEvent.click(deleteBtn);
+
+    expect(onUpdate).toHaveBeenCalledWith([]);
   });
 });
 

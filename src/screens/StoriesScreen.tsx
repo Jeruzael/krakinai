@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { Story } from '../types/domain';
 import { useLibrary } from '../context/LibraryContext';
 import { StoryCardModal } from '../components/stories/StoryCardModal';
+import { MediaThumbnail } from '../components/MediaThumbnail';
 import { saveStory } from '../storage/stories';
 import { SAMPLE_STORY_CREATOR_MODE } from '../domain/sampleStory';
 import {
@@ -26,6 +27,10 @@ export const StoriesScreen: React.FC = () => {
   const [inspectingStory, setInspectingStory] = useState<Story | null>(null);
 
   const stories = snapshot?.stories || [];
+
+  const mediaMap = useMemo(() => {
+    return new Map((snapshot?.media ?? []).map((m) => [m.id, m]));
+  }, [snapshot?.media]);
 
   // Collect all unique tags across stories
   const allTags = useMemo(() => {
@@ -271,69 +276,149 @@ export const StoriesScreen: React.FC = () => {
             )}
           </div>
         ) : (
-          filteredStories.map((story) => (
-            <div
-              key={story.id}
-              className="card story-card"
-              onClick={() => setInspectingStory(story)}
-              style={{
-                cursor: 'pointer',
-                padding: 16,
-                display: 'flex',
-                flexDirection: layoutMode === 'list' ? 'row' : 'column',
-                justifyContent: 'space-between',
-                gap: 12,
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-              }}
-            >
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                  <span className="badge" style={{ background: '#3b82f6', color: '#fff', fontSize: '0.75rem' }}>
-                    Rev {story.revisionNumber}
-                  </span>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    {story.favorite && (
-                      <Heart size={14} style={{ color: '#ef4444' }} fill="#ef4444" />
-                    )}
-                    {story.archivedAt && (
-                      <span className="badge" style={{ fontSize: '0.7rem', background: '#cbd5e1', color: '#334155' }}>
-                        Archived
-                      </span>
+          filteredStories.map((story) => {
+            const coverMedia = story.coverMediaId ? mediaMap.get(story.coverMediaId) : undefined;
+            return (
+              <div
+                key={story.id}
+                className="card story-card"
+                onClick={() => setInspectingStory(story)}
+                style={{
+                  cursor: 'pointer',
+                  padding: layoutMode === 'list' ? 12 : 0,
+                  overflow: 'hidden',
+                  display: 'flex',
+                  flexDirection: layoutMode === 'list' ? 'row' : 'column',
+                  alignItems: layoutMode === 'list' ? 'center' : 'stretch',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+                }}
+              >
+                {/* Story Card Cover */}
+                {layoutMode === 'grid' ? (
+                  <div
+                    className="story-card-cover"
+                    data-testid="story-card-cover"
+                    style={{
+                      width: '100%',
+                      height: 140,
+                      background: '#1e293b',
+                      position: 'relative',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {coverMedia ? (
+                      <MediaThumbnail
+                        media={coverMedia}
+                        altText={`${story.title} cover`}
+                        enableHoverPreview
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: 6,
+                          color: '#94a3b8',
+                          padding: 12,
+                          textAlign: 'center',
+                        }}
+                      >
+                        <BookOpen size={28} style={{ color: '#60a5fa' }} />
+                        <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#cbd5e1' }}>
+                          Story Manuscript
+                        </span>
+                      </div>
                     )}
                   </div>
-                </div>
+                ) : (
+                  <div
+                    className="story-card-cover-list"
+                    data-testid="story-card-cover"
+                    style={{
+                      width: 72,
+                      height: 72,
+                      borderRadius: 6,
+                      overflow: 'hidden',
+                      flexShrink: 0,
+                      background: '#1e293b',
+                    }}
+                  >
+                    {coverMedia ? (
+                      <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} />
+                    ) : (
+                      <div
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#60a5fa',
+                        }}
+                      >
+                        <BookOpen size={24} />
+                      </div>
+                    )}
+                  </div>
+                )}
 
-                <h3 style={{ margin: '8px 0 4px', fontSize: '1.15rem', fontWeight: 600 }}>
-                  {story.title}
-                </h3>
+                <div style={{ flex: 1, padding: layoutMode === 'grid' ? 16 : 0, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <span className="badge" style={{ background: '#3b82f6', color: '#fff', fontSize: '0.75rem' }}>
+                      Rev {story.revisionNumber}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      {story.favorite && (
+                        <Heart size={14} style={{ color: '#ef4444' }} fill="#ef4444" />
+                      )}
+                      {story.archivedAt && (
+                        <span className="badge" style={{ fontSize: '0.7rem', background: '#cbd5e1', color: '#334155' }}>
+                          Archived
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-                <p className="muted-text" style={{ margin: '0 0 8px', fontSize: '0.85rem' }}>
-                  {story.author || 'Anonymous'}
-                </p>
+                  <h3 style={{ margin: '8px 0 4px', fontSize: '1.15rem', fontWeight: 600 }}>
+                    {story.title}
+                  </h3>
 
-                {story.logline && (
-                  <p style={{ margin: '0 0 10px', fontSize: '0.9rem', color: '#475569', lineHeight: 1.4 }}>
-                    {story.logline}
+                  <p className="muted-text" style={{ margin: '0 0 8px', fontSize: '0.85rem' }}>
+                    {story.author || 'Anonymous'}
                   </p>
-                )}
 
-                {story.tags && story.tags.length > 0 && (
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                    {story.tags.slice(0, 3).map((t) => (
-                      <span key={t} className="badge badge-outline" style={{ fontSize: '0.7rem' }}>
-                        #{t}
-                      </span>
-                    ))}
-                    {story.tags.length > 3 && (
-                      <span className="muted-text" style={{ fontSize: '0.7rem' }}>
-                        +{story.tags.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                )}
+                  {story.logline && (
+                    <p style={{ margin: '0 0 10px', fontSize: '0.9rem', color: '#475569', lineHeight: 1.4 }}>
+                      {story.logline}
+                    </p>
+                  )}
+
+                  {story.tags && story.tags.length > 0 && (
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {story.tags.slice(0, 3).map((t) => (
+                        <span key={t} className="badge badge-outline" style={{ fontSize: '0.7rem' }}>
+                          #{t}
+                        </span>
+                      ))}
+                      {story.tags.length > 3 && (
+                        <span className="muted-text" style={{ fontSize: '0.7rem' }}>
+                          +{story.tags.length - 3} more
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

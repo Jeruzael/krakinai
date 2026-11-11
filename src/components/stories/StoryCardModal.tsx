@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BookOpen, Bookmark, BookmarkCheck, Archive, RotateCcw, Trash2, Edit3, X } from 'lucide-react';
 import type { Story } from '../../types/domain';
 import { useLibrary } from '../../context/LibraryContext';
+import { MediaThumbnail } from '../MediaThumbnail';
 import {
   archiveStory,
   deleteStory,
@@ -98,6 +99,10 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
     });
   };
 
+  const coverMedia = story.coverMediaId
+    ? (snapshot?.media ?? []).find((m) => m.id === story.coverMediaId)
+    : undefined;
+
   return (
     <div className="modal-backdrop" onClick={onClose}>
       <div
@@ -123,6 +128,42 @@ export const StoryCardModal: React.FC<StoryCardModalProps> = ({
         </div>
 
         <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+          {/* Cover Display */}
+          <div
+            className="story-modal-cover"
+            data-testid="story-modal-cover"
+            style={{
+              width: '100%',
+              height: 160,
+              borderRadius: 8,
+              overflow: 'hidden',
+              background: '#1e293b',
+              marginBottom: 16,
+            }}
+          >
+            {coverMedia ? (
+              <MediaThumbnail media={coverMedia} altText={`${story.title} cover`} enableHoverPreview />
+            ) : (
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  color: '#94a3b8',
+                }}
+              >
+                <BookOpen size={36} style={{ color: '#60a5fa' }} />
+                <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#e2e8f0' }}>
+                  Story Manuscript
+                </span>
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '12px' }}>
             <span className="badge badge-subtle">By {story.author || 'Unknown'}</span>
             <span className="badge badge-subtle">Rev {story.revisionNumber}</span>
