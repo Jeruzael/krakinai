@@ -6,6 +6,10 @@ import { generateId } from '../storage/db';
 import { StoryCreatorMode } from '../components/stories/StoryCreatorMode';
 import { StoryDirectorBriefing } from '../components/stories/StoryDirectorBriefing';
 import { StoryEditModal } from '../components/stories/StoryEditModal';
+import { useQwen } from '../context/QwenContext';
+import { applyQwenStoryPatch } from '../services/qwenStoryContext';
+import type { CreatorModeSelection, QwenStoryPatchAction } from '../types/qwen';
+import { StoryMarkdownRenderer } from '../components/stories/StoryMarkdownRenderer';
 import { CollectionCoverPicker } from '../components/CollectionCoverPicker';
 import { MediaThumbnail } from '../components/MediaThumbnail';
 import { useMediaObjectUrl } from '../hooks/useObjectUrl';
@@ -148,6 +152,38 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   const [loading, setLoading] = useState(!story);
   const [editingProse, setEditingProse] = useState(false);
   const [proseDraft, setProseDraft] = useState(() => story?.fullBookText || '');
+  const [creatorSelection, setCreatorSelection] = useState<CreatorModeSelection | undefined>(undefined);
+  const [modalDrafts, setModalDrafts] = useState<Partial<import('../types/qwen').ActiveScreenFormDrafts>>({});
+  const { registerStoryContext, unregisterStoryContext } = useQwen();
+
+  const handleApplyStoryPatch = async (action: QwenStoryPatchAction) => {
+    if (!story) return;
+    try {
+      const updated = applyQwenStoryPatch(story, action);
+      setStory(updated);
+      if (updated.fullBookText !== undefined) {
+        setProseDraft(updated.fullBookText);
+      }
+      await saveStory(updated);
+      await refreshSnapshot();
+      showToast('Applied to story draft successfully', 'info');
+    } catch (err) {
+      showToast(`Failed to apply story patch: ${(err as Error).message}`, 'error');
+    }
+  };
+
+  const handleUndoStoryPatch = async (previousStory: Story) => {
+    if (!previousStory) return;
+    try {
+      setStory(previousStory);
+      setProseDraft(previousStory.fullBookText || '');
+      await saveStory(previousStory);
+      await refreshSnapshot();
+      showToast('Reverted to previous story state', 'info');
+    } catch (err) {
+      showToast(`Failed to undo story patch: ${(err as Error).message}`, 'error');
+    }
+  };
 
   // Media pickers & dialogs
   const [showEditModal, setShowEditModal] = useState(false);
@@ -240,13 +276,57 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
   };
 
   // Resolved reference pack items
-  const referencedAssets = (story.referencePack?.assetIds || [])
-    .map((aid) => snapshot?.assets?.find((a) => a.id === aid))
-    .filter(Boolean);
+  const referencedAssets = useMemo(() => {
+    return (story?.referencePack?.assetIds || [])
+      .map((aid) => snapshot?.assets?.find((a) => a.id === aid))
+      .filter(Boolean);
+  }, [story?.referencePack?.assetIds, snapshot?.assets]);
 
-  const referencedVariants = (story.referencePack?.variantIds || [])
-    .map((vid) => snapshot?.variants?.find((v) => v.id === vid))
-    .filter(Boolean);
+  const referencedVariants = useMemo(() => {
+    return (story?.referencePack?.variantIds || [])
+      .map((vid) => snapshot?.variants?.find((v) => v.id === vid))
+      .filter(Boolean);
+  }, [story?.referencePack?.variantIds, snapshot?.variants]);
+
+  useEffect(() => {
+    if (!story) return;
+    registerStoryContext({
+      story,
+      mode: activeTab === 'creator' ? 'creator' : activeTab === 'book' ? 'book' : 'pitch',
+      selection: creatorSelection,
+      onApplyStoryPatch: handleApplyStoryPatch,
+      onUndoStoryPatch: handleUndoStoryPatch,
+      formDrafts: {
+        isEditModalOpen: showEditModal,
+        isEditingManuscript: editingProse,
+        title: showEditModal ? (modalDrafts.title ?? story.title) : story.title,
+        author: showEditModal ? (modalDrafts.author ?? story.author) : story.author,
+        tags: showEditModal ? (modalDrafts.tags ?? story.tags) : story.tags,
+        logline: showEditModal ? (modalDrafts.logline ?? story.logline) : story.logline,
+        premise: showEditModal ? (modalDrafts.premise ?? story.premise) : story.premise,
+        synopsis: showEditModal ? (modalDrafts.synopsis ?? story.synopsis) : story.synopsis,
+        treatment: showEditModal ? (modalDrafts.treatment ?? story.treatment) : story.treatment,
+        manuscriptDraft: proseDraft,
+      },
+      referencedAssets: referencedAssets.map((a: any) => ({
+        id: a.id,
+        name: a.title,
+        kind: a.category,
+      })),
+    });
+    return () => {
+      unregisterStoryContext();
+    };
+  }, [
+    story,
+    activeTab,
+    creatorSelection,
+    referencedAssets,
+    showEditModal,
+    editingProse,
+    proseDraft,
+    modalDrafts,
+  ]);
 
   const pairedCollection = snapshot?.collections?.find(
     (c) => c.id === story.linkedCollectionId
@@ -904,14 +984,12 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
             <div
               className="story-book-body"
               style={{
-                fontSize: '1.1rem',
-                lineHeight: 1.8,
-                color: '#1e293b',
-                whiteSpace: 'pre-wrap',
-                fontFamily: 'Georgia, serif',
+                padding: '1rem 0',
               }}
             >
-              {story.fullBookText || (
+              {story.fullBookText ? (
+                <StoryMarkdownRenderer content={story.fullBookText} variant="book" />
+              ) : (
                 <p className="muted-text" style={{ fontStyle: 'italic', textAlign: 'center' }}>
                   No prose written for this story yet.
                 </p>
@@ -922,6 +1000,8 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
       ) : activeTab === 'creator' ? (
         <StoryCreatorMode
           acts={story.acts}
+          selectedNode={creatorSelection}
+          onSelectNode={setCreatorSelection}
           onUpdateActs={async (updatedActs) => {
             const next = { ...story, acts: updatedActs, updatedAt: new Date().toISOString() };
             setStory(next);
@@ -1513,7 +1593,11 @@ export const StoryWorkspaceScreen: React.FC<StoryWorkspaceScreenProps> = ({ stor
         <StoryEditModal
           story={story}
           isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
+          onClose={() => {
+            setShowEditModal(false);
+            setModalDrafts({});
+          }}
+          onDraftChange={setModalDrafts}
           onSave={async (savedStory) => {
             setStory(savedStory);
             await saveStory(savedStory);

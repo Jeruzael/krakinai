@@ -403,6 +403,75 @@ describe('Story MCP Incremental Staging Tools', () => {
     expect(ops[0].type).toBe('story.create');
   });
 
+  it('krakinai_stage_story creates new story with Creator Mode acts, fullBookText, and directorBriefing atomically', async () => {
+    const { state } = fixture();
+    const broker = new ProposalBroker({ readState: async () => state });
+    const scope = {
+      ...emptyMcpScope(),
+      allowProposals: true,
+      allowStoryProposals: true,
+    };
+    broker.connect('session-stage-creator-mode', scope);
+
+    const testActs = [
+      {
+        id: 'act-1',
+        orderIndex: 0,
+        title: 'Act I: The Emergence',
+        sequences: [
+          {
+            id: 'seq-1',
+            orderIndex: 0,
+            title: 'Sequence 1: Slack Tide',
+            scenes: [
+              {
+                id: 'sc-1',
+                orderIndex: 0,
+                title: 'Scene 1: The Sunken Bell',
+                beats: [
+                  { id: 'beat-1', orderIndex: 0, title: 'Beat 1', content: 'Tala wades through current' },
+                ],
+              },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const stageRes = await broker.handle({
+      requestId: 'stage-creator-mode-1',
+      tool: 'krakinai_stage_story' as any,
+      args: {
+        changeSetId: 'cs-story-creator-mode-1',
+        title: 'Story With Creator Mode',
+        clientRef: 'story-creator-ref',
+        mode: 'create',
+        author: 'AI Co-Director',
+        fullBookText: 'Continuous book prose for Book Mode...',
+        acts: testActs,
+        directorBriefing: {
+          pacingAuditSummary: 'All beats verified <= 10s',
+          continuityLocks: [],
+          lightingProgression: [],
+          actionArchetypes: [],
+          vocalRegister: [],
+        },
+      },
+    }, 'session-stage-creator-mode');
+
+    expect(stageRes.ok).toBe(true);
+    if (!stageRes.ok) return;
+    const brokerState = broker.getState();
+    const proposal = brokerState.proposals.find((p) => p.changeSetId === 'cs-story-creator-mode-1');
+    expect(proposal).toBeDefined();
+    const planStory = proposal?.preview?.plan.stories?.[0];
+    expect(planStory).toBeDefined();
+    expect(planStory?.fullBookText).toBe('Continuous book prose for Book Mode...');
+    expect(planStory?.acts).toEqual(testActs);
+    expect(planStory?.directorBriefing?.pacingAuditSummary).toBe('All beats verified <= 10s');
+    expect(proposal?.preview?.plan.findings.filter((f) => f.severity === 'blocking')).toHaveLength(0);
+  });
+
   it('krakinai_stage_story_status stages status and favorite toggles', async () => {
     const { state, story1 } = fixture();
     const broker = new ProposalBroker({ readState: async () => state });

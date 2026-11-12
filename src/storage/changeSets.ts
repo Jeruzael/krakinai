@@ -21,7 +21,7 @@ import { planChangeSet } from "../domain/changeSetPlanner";
 import {prepareConversionSources,type ConversionSourceProofs}from'../domain/recipeConversion';
 import {prepareBlockingSources,type BlockingSourceProofs} from '../domain/blockingPatch';
 import {blockingReviewedProjection} from '../domain/blockingReview';
-import type {SavedScene}from'../types/domain';
+import type {SavedScene, Story}from'../types/domain';
 import {
   appendImportReceipt,
   readImportLedger,
@@ -207,7 +207,7 @@ async function previewChangeSetInternal(
   }
   return { version: 1, ...draft, packageDigest, approvedDigest,capacity };
 }
-async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
+async function readState(tx: IDBTransaction, stories: Story[] = []): Promise<ChangeSetState> {
   const [
     collections,
     scenes,
@@ -217,7 +217,6 @@ async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
     media,
     drafts,
     pref,
-    stories,
   ] = await Promise.all([
     request(tx.objectStore("collections").getAll()),
     request(tx.objectStore("scenes").getAll()),
@@ -227,7 +226,6 @@ async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
     request(tx.objectStore("media").getAll()),
     request(tx.objectStore("drafts").getAll()),
     request(tx.objectStore("preferences").get("app_preferences")),
-    listStories({ archiveFilter: 'all' }),
   ]);
   if (!pref)
     throw Error("Initialize the local library before applying a change set.");
@@ -301,6 +299,7 @@ async function applyApprovedChangeSetInternal(
   const verificationState=await getAllSnapshot(),verifiedLedger=await prepareImportLedger(readImportLedger(verificationState.preferences));
   const verifiedEvidence=prepared.replay?undefined:await receiptVersion(changeSet,prepared.plan,verificationState);
   const verifiedText=prepared.replay?undefined:evidenceText(changeSet,prepared.plan);
+  const currentStories = await listStories({ archiveFilter: 'all' });
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -317,7 +316,7 @@ async function applyApprovedChangeSetInternal(
     ),
     completion = done(tx);
   try {
-    const state = await readState(tx),
+    const state = await readState(tx, currentStories),
       ledger = readImportLedger(state.preferences),
       previous = ledger.receipts.find(
         (r) => r.changeSetId === changeSet.changeSetId,

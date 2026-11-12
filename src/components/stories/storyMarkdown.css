@@ -1,0 +1,191 @@
+.story-markdown-root {
+  user-select: text;
+  word-break: break-word;
+}
+
+/* Book Mode */
+.story-markdown-root.book-mode {
+  font-family: 'Georgia', 'Cambria', 'Times New Roman', serif;
+  font-size: 1.125rem;
+  line-height: 1.85;
+  color: #1e293b;
+}
+
+.story-markdown-root.book-mode .story-md-h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 1.25rem;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+}
+
+.story-markdown-root.book-mode .story-md-h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #334155;
+  letter-spacing: 0.01em;
+}
+
+.story-markdown-root.book-mode .story-md-h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.story-markdown-root.book-mode .story-md-h4 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #475569;
+}
+
+.story-markdown-root.book-mode .story-md-p {
+  margin-bottom: 1.25rem;
+  text-align: justify;
+}
+
+.story-markdown-root.book-mode .story-md-divider {
+  border: none;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #cbd5e1, transparent);
+  margin: 2.25rem 0;
+}
+
+.story-markdown-root.book-mode .story-md-dialogue {
+  font-style: italic;
+  color: #0369a1;
+  font-weight: 500;
+}
+
+.story-markdown-root.book-mode .story-md-list {
+  margin: 0.75rem 0 1.25rem 1.75rem;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.story-markdown-root.book-mode .story-md-list.story-md-ordered-list {
+  list-style-type: decimal;
+}
+
+.story-markdown-root.book-mode .story-md-list-item {
+  margin-bottom: 0.45rem;
+  line-height: 1.7;
+}
+
+.story-markdown-root.book-mode .story-md-list-item strong {
+  color: #0f172a;
+}
+
+.story-markdown-root.book-mode .story-md-blockquote {
+  border-left: 3px solid #60a5fa;
+  padding-left: 1.25rem;
+  margin: 1.25rem 0;
+  color: #475569;
+  font-style: italic;
+}
+
+.story-markdown-root.book-mode .story-md-pre {
+  background: #0f172a;
+  color: #f8fafc;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 0.95rem;
+  margin: 1.25rem 0;
+}
+
+.story-markdown-root.book-mode .story-md-inline-code {
+  background: #f1f5f9;
+  color: #0f172a;
+  padding: 2px 5px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.9em;
+}
+
+/* Chat Mode */
+.story-markdown-root.chat-mode {
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: inherit;
+}
+
+.story-markdown-root.chat-mode .story-md-h1,
+.story-markdown-root.chat-mode .story-md-h2,
+.story-markdown-root.chat-mode .story-md-h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0.5rem 0 0.25rem;
+  color: #f8fafc;
+}
+
+.story-markdown-root.chat-mode .story-md-h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin: 0.4rem 0 0.2rem;
+  color: #cbd5e1;
+}
+
+.story-markdown-root.chat-mode .story-md-p {
+  margin-bottom: 0.6rem;
+}
+
+.story-markdown-root.chat-mode .story-md-p:last-child {
+  margin-bottom: 0;
+}
+
+.story-markdown-root.chat-mode .story-md-divider {
+  border: none;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0.75rem 0;
+}
+
+.story-markdown-root.chat-mode .story-md-dialogue {
+  font-style: italic;
+  color: #38bdf8;
+}
+
+.story-markdown-root.chat-mode .story-md-list {
+  margin: 0.4rem 0 0.6rem 1.2rem;
+  padding: 0;
+  list-style-type: disc;
+}
+
+.story-markdown-root.chat-mode .story-md-list.story-md-ordered-list {
+  list-style-type: decimal;
+}
+
+.story-markdown-root.chat-mode .story-md-list-item {
+  margin-bottom: 0.25rem;
+  line-height: 1.45;
+}
+
+.story-markdown-root.chat-mode .story-md-list-item strong {
+  color: #f1f5f9;
+}
+
+.story-markdown-root.chat-mode .story-md-blockquote {
+  border-left: 2px solid #38bdf8;
+  padding-left: 0.75rem;
+  margin: 0.5rem 0;
+  color: #94a3b8;
+  font-style: italic;
+}
+
+.story-markdown-root.chat-mode .story-md-inline-code {
+  background: rgba(255, 255, 255, 0.12);
+  color: #38bdf8;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 0.85em;
+}

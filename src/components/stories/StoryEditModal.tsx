@@ -3,11 +3,22 @@ import type { Story } from '../../types/domain';
 import { useLibrary } from '../../context/LibraryContext';
 import { BookOpen, Check, Edit3, Film, Sparkles, Tag, User, X } from 'lucide-react';
 
+export interface StoryModalDrafts {
+  title: string;
+  author: string;
+  logline: string;
+  premise: string;
+  synopsis: string;
+  treatment: string;
+  tags: string[];
+}
+
 export interface StoryEditModalProps {
   story: Story | null;
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedStory: Story) => Promise<void> | void;
+  onDraftChange?: (drafts: StoryModalDrafts) => void;
 }
 
 export const StoryEditModal: React.FC<StoryEditModalProps> = ({
@@ -15,6 +26,7 @@ export const StoryEditModal: React.FC<StoryEditModalProps> = ({
   isOpen,
   onClose,
   onSave,
+  onDraftChange,
 }) => {
   const { snapshot, showToast } = useLibrary();
 
@@ -30,6 +42,15 @@ export const StoryEditModal: React.FC<StoryEditModalProps> = ({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // When modal is newly opened, reset to 'info' tab
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab('info');
+      setError(null);
+    }
+  }, [isOpen]);
+
+  // Sync fields whenever story prop updates (including when Qwen applies a patch while open)
   useEffect(() => {
     if (isOpen) {
       setTitle(story?.title ?? '');
@@ -40,10 +61,27 @@ export const StoryEditModal: React.FC<StoryEditModalProps> = ({
       setTreatment(story?.treatment ?? '');
       setTagsStr((story?.tags ?? []).join(', '));
       setLinkedCollectionId(story?.linkedCollectionId ?? '');
-      setError(null);
-      setActiveTab('info');
     }
   }, [isOpen, story]);
+
+  // Report live drafts back up
+  useEffect(() => {
+    if (isOpen && onDraftChange) {
+      const parsedTags = tagsStr
+        .split(',')
+        .map((t) => t.trim().toLowerCase().replace(/^#/, ''))
+        .filter(Boolean);
+      onDraftChange({
+        title,
+        author,
+        logline,
+        premise,
+        synopsis,
+        treatment,
+        tags: parsedTags,
+      });
+    }
+  }, [isOpen, title, author, logline, premise, synopsis, treatment, tagsStr, onDraftChange]);
 
   if (!isOpen) return null;
 

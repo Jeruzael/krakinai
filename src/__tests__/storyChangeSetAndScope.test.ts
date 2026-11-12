@@ -215,6 +215,61 @@ describe('Change-Set v7 Story Validation & Planning', () => {
     expect(updated?.favorite).toBe(true);
     expect(updated?.revisionNumber).toBe(2);
   });
+
+  it('applies story.create atomically with fullBookText, Creator Mode acts, and directorBriefing without transaction premature closure', async () => {
+    const changeSet: ChangeSet = {
+      schema: 'krakinai.change-set.v7',
+      changeSetId: 'cs-apply-story-create-atomic',
+      source: { kind: 'codex', label: 'Story Create Atomic Test' },
+      operations: [
+        {
+          operationId: 'op-create-story-atomic',
+          type: 'story.create',
+          clientRef: 'story-atomic-ref',
+          title: 'Atomic Story',
+          author: 'Director',
+          fullBookText: '# Chapter 1\n\nBook mode continuous prose.',
+          acts: [
+            {
+              id: 'act-1',
+              orderIndex: 0,
+              title: 'Act I',
+              sequences: [],
+            },
+          ],
+          directorBriefing: {
+            pacingAuditSummary: 'Verified pacing',
+            continuityLocks: [],
+            lightingProgression: [],
+            actionArchetypes: [],
+            vocalRegister: [],
+          },
+        },
+      ],
+    };
+
+    const approval: ChangeSetApproval = {
+      ...emptyChangeSetApproval(),
+      stories: true,
+    } as any;
+
+    const preview = await previewChangeSet(changeSet, approval);
+    expect(preview.plan.findings.filter((f) => f.severity === 'blocking')).toHaveLength(0);
+
+    const receipt = await applyApprovedChangeSet(preview, preview.approvedDigest);
+    expect(receipt.changeSetId).toBe('cs-apply-story-create-atomic');
+
+    const createdStoryId = receipt.idMappings['story-atomic-ref']?.id || preview.allocation.ids['op-create-story-atomic'];
+    expect(createdStoryId).toBeDefined();
+
+    const created = await getStory(createdStoryId);
+    expect(created).toBeDefined();
+    expect(created?.title).toBe('Atomic Story');
+    expect(created?.fullBookText).toBe('# Chapter 1\n\nBook mode continuous prose.');
+    expect(created?.acts).toHaveLength(1);
+    expect(created?.acts[0].title).toBe('Act I');
+    expect(created?.directorBriefing?.pacingAuditSummary).toBe('Verified pacing');
+  });
 });
 
 describe('McpScope Story Governance', () => {

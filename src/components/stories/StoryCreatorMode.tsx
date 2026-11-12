@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import type { StoryAct, StorySequence, StorySceneNode, StoryBeat, StoryDramaticMeta } from '../../types/domain';
+import type { CreatorModeSelection } from '../../types/qwen';
 import { generateId } from '../../storage/db';
 import {
   ChevronDown,
@@ -13,12 +14,15 @@ import {
   Sparkles,
   X,
   Check,
+  Target,
 } from 'lucide-react';
 
 export interface StoryCreatorModeProps {
   acts: StoryAct[];
   onUpdateActs?: (acts: StoryAct[]) => void;
   readOnly?: boolean;
+  selectedNode?: CreatorModeSelection;
+  onSelectNode?: (selection: CreatorModeSelection) => void;
 }
 
 interface EditingNode {
@@ -41,6 +45,8 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
   acts,
   onUpdateActs,
   readOnly = false,
+  selectedNode,
+  onSelectNode,
 }) => {
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>(() => {
     const init: Record<string, boolean> = {};
@@ -926,6 +932,41 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                       Act {actIdx + 1}
                     </span>
                     <h4 style={{ margin: 0, fontSize: '1.1rem' }}>{act.title}</h4>
+                    {onSelectNode && (
+                      <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectNode({ actId: act.id });
+                        }}
+                        style={{
+                          fontSize: '0.7rem',
+                          padding: '1px 6px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 3,
+                          background:
+                            selectedNode?.actId === act.id && !selectedNode.sequenceId
+                              ? '#10b981'
+                              : '#f1f5f9',
+                          color:
+                            selectedNode?.actId === act.id && !selectedNode.sequenceId
+                              ? '#ffffff'
+                              : '#475569',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: 4,
+                        }}
+                        title="Target this Act for Qwen Co-Pilot"
+                      >
+                        <Target size={11} />
+                        <span>
+                          {selectedNode?.actId === act.id && !selectedNode.sequenceId
+                            ? 'Targeted'
+                            : 'Target Qwen'}
+                        </span>
+                      </button>
+                    )}
                   </div>
 
                   {!readOnly && (
@@ -1041,6 +1082,41 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                               <h5 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 600 }}>
                                 {seq.title}
                               </h5>
+                              {onSelectNode && (
+                                <button
+                                  type="button"
+                                  className="btn btn-sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSelectNode({ actId: act.id, sequenceId: seq.id });
+                                  }}
+                                  style={{
+                                    fontSize: '0.68rem',
+                                    padding: '1px 5px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 3,
+                                    background:
+                                      selectedNode?.sequenceId === seq.id && !selectedNode.sceneId
+                                        ? '#10b981'
+                                        : '#f8fafc',
+                                    color:
+                                      selectedNode?.sequenceId === seq.id && !selectedNode.sceneId
+                                        ? '#ffffff'
+                                        : '#64748b',
+                                    border: '1px solid #cbd5e1',
+                                    borderRadius: 4,
+                                  }}
+                                  title="Target this Sequence for Qwen Co-Pilot"
+                                >
+                                  <Target size={10} />
+                                  <span>
+                                    {selectedNode?.sequenceId === seq.id && !selectedNode.sceneId
+                                      ? 'Targeted'
+                                      : 'Target Qwen'}
+                                  </span>
+                                </button>
+                              )}
                             </div>
 
                             {!readOnly && (
@@ -1161,6 +1237,45 @@ export const StoryCreatorMode: React.FC<StoryCreatorModeProps> = ({
                                         <h6 style={{ margin: 0, fontSize: '0.9rem', fontWeight: 600 }}>
                                           {scene.title}
                                         </h6>
+                                        {onSelectNode && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              onSelectNode({
+                                                actId: act.id,
+                                                sequenceId: seq.id,
+                                                sceneId: scene.id,
+                                              });
+                                            }}
+                                            style={{
+                                              fontSize: '0.68rem',
+                                              padding: '1px 5px',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              gap: 3,
+                                              background:
+                                                selectedNode?.sceneId === scene.id
+                                                  ? '#10b981'
+                                                  : '#f8fafc',
+                                              color:
+                                                selectedNode?.sceneId === scene.id
+                                                  ? '#ffffff'
+                                                  : '#64748b',
+                                              border: '1px solid #cbd5e1',
+                                              borderRadius: 4,
+                                            }}
+                                            title="Target this Scene for Qwen Co-Pilot"
+                                          >
+                                            <Target size={10} />
+                                            <span>
+                                              {selectedNode?.sceneId === scene.id
+                                                ? 'Targeted'
+                                                : 'Target Qwen'}
+                                            </span>
+                                          </button>
+                                        )}
                                       </div>
 
                                       <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

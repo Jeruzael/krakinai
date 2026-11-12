@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Story } from '../types/domain';
+import type { StoryFieldsUpdatePayload } from '../types/qwen';
 import { useLibrary } from '../context/LibraryContext';
+import { useQwen } from '../context/QwenContext';
 import { StoryCardModal } from '../components/stories/StoryCardModal';
 import { StoryEditModal } from '../components/stories/StoryEditModal';
 import { MediaThumbnail } from '../components/MediaThumbnail';
@@ -29,6 +31,40 @@ export const StoriesScreen: React.FC = () => {
   const [inspectingStory, setInspectingStory] = useState<Story | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingStory, setEditingStory] = useState<Story | null>(null);
+
+  const { registerStoryCreationHandler } = useQwen();
+
+  useEffect(() => {
+    const unregister = registerStoryCreationHandler(async (fields: StoryFieldsUpdatePayload) => {
+      const newId = `story_${Date.now()}`;
+      const newStory: Story = {
+        id: newId,
+        title: fields.title?.trim() || 'Untitled Story',
+        author: fields.author || 'Author',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        favorite: false,
+        revisionNumber: 1,
+        tags: fields.tags || [],
+        logline: fields.logline || '',
+        premise: fields.premise || '',
+        synopsis: fields.synopsis || '',
+        treatment: fields.treatment || '',
+        fullBookText: fields.fullBookText || '',
+        referencePack: { assetIds: [], variantIds: [], mediaIds: [] },
+        colorScript: [],
+        acts: [],
+      };
+      await saveStory(newStory);
+      await refreshSnapshot();
+      showToast(`Created new story: "${newStory.title}"`, 'info');
+      navigate(`/stories/${newId}`);
+      return newId;
+    });
+    return () => {
+      unregister();
+    };
+  }, [navigate, refreshSnapshot, showToast, registerStoryCreationHandler]);
 
   const stories = snapshot?.stories || [];
 

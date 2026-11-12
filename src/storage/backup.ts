@@ -5,6 +5,7 @@ import {readLegacyRecordsForBackup} from './libraryCompatibility';
 import {canonicalStringify} from '../domain/changeSetCanonical';
 import { getShotTypeRules, validateShotSourceMedia } from '../domain/shotTypeRules';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
+import { loadDictionaryLibrary, importDictionaryFromJson } from './dictionaryLibrary';
 import {
   SCHEMA_VERSION,
   type Collection,
@@ -168,11 +169,24 @@ export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint
   const manifestBytes = strToU8(JSON.stringify(manifest, null, 2));
   totalUncompressed += manifestBytes.byteLength;
 
+  files['manifest.json'] = manifestBytes;
+
+  // Bundle Qwen Dictionary Library if words are cached in localStorage
+  try {
+    const dictLibrary = loadDictionaryLibrary();
+    if (dictLibrary && Object.keys(dictLibrary).length > 0) {
+      const dictBytes = strToU8(JSON.stringify(dictLibrary, null, 2));
+      files['qwen_dictionary.json'] = dictBytes;
+      totalUncompressed += dictBytes.byteLength;
+    }
+  } catch {
+    // ignore dictionary read failure in non-browser or sandbox environments
+  }
+
   if (totalUncompressed > MAX_BACKUP_UNCOMPRESSED_BYTES) {
     throw new Error(`Backup exceeds the configured ${MAX_BACKUP_UNCOMPRESSED_BYTES/(1024*1024)} MiB uncompressed limit.`);
   }
 
-  files['manifest.json'] = manifestBytes;
   return zipSync(files, { level: 6 });
 }
 
@@ -219,7 +233,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     if (p.includes('..') || p.startsWith('/') || p.includes('\\')) {
       return { valid: false, error: `Unsafe archive path rejected: ${p}` };
     }
-    if (p !== 'manifest.json' && !p.startsWith('media/') && !p.startsWith('posters/')) {
+    if (p !== 'manifest.json' && p !== 'qwen_dictionary.json' && !p.startsWith('media/') && !p.startsWith('posters/')) {
       return { valid: false, error: `Unexpected archive entry rejected: ${p}` };
     }
     totalUncompressed += entries[p].byteLength;
@@ -532,6 +546,19 @@ export async function restoreFullBackupZip(zipBytes: Uint8Array): Promise<Backup
   }
 
   await replaceAllStoresTransactionally(validation.parsedSnapshot);
+
+  // Restore bundled Qwen Dictionary Library to localStorage if present in backup archive
+  try {
+    const zip = unzipSync(zipBytes);
+    const dictBytes = zip['qwen_dictionary.json'];
+    if (dictBytes) {
+      const rawJson = strFromU8(dictBytes);
+      importDictionaryFromJson(rawJson, 'merge');
+    }
+  } catch (err) {
+    console.warn('[Backup] Failed to restore bundled qwen_dictionary.json:', err);
+  }
+
   return validation.summary;
 }
 

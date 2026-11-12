@@ -34,6 +34,9 @@ import {
   ConfirmModal,
   SettingsBackupModal,
 } from './SharedModals';
+import { QwenTopbarBed } from './stories/QwenTopbarBed';
+import { QwenFloatingCompanion } from './stories/QwenFloatingCompanion';
+import { useQwen } from '../context/QwenContext';
 
 const CATEGORY_NAV_ITEMS: Array<{
   category: PromptCategory;
@@ -145,6 +148,42 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
   }, [mobile, drawerOpen]);
 
   const cleanPath = hashPath.split('?')[0];
+
+  const { setActiveScreen } = useQwen();
+
+  useEffect(() => {
+    if (cleanPath === '/stories' || cleanPath === '/stories/') {
+      setActiveScreen({
+        screenKind: 'stories_overview',
+        routePath: cleanPath,
+        screenLabel: 'Stories & Creator Mode Overview',
+      });
+    } else if (cleanPath.startsWith('/builder')) {
+      setActiveScreen({
+        screenKind: 'scene_builder',
+        routePath: cleanPath,
+        screenLabel: 'Scene Builder',
+      });
+    } else if (cleanPath.startsWith('/library')) {
+      setActiveScreen({
+        screenKind: 'library',
+        routePath: cleanPath,
+        screenLabel: 'Visual Prompt Library',
+      });
+    } else if (cleanPath.startsWith('/collections')) {
+      setActiveScreen({
+        screenKind: 'collections',
+        routePath: cleanPath,
+        screenLabel: 'Collections',
+      });
+    } else if (!cleanPath.startsWith('/stories/')) {
+      setActiveScreen({
+        screenKind: 'other',
+        routePath: cleanPath,
+        screenLabel: cleanPath === '/' ? 'Home' : 'KRAKINAI',
+      });
+    }
+  }, [cleanPath, setActiveScreen]);
 
   const handleNav = (target: string) => {
     setDrawerOpen(false);
@@ -429,6 +468,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
             >
               <Plus size={15} /> New Prompt
             </button>
+            <QwenTopbarBed />
             <button
               type="button"
               className="icon-btn"
@@ -502,6 +542,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
       <CollectionMembershipModal />
       <ClipboardFallbackModal />
       <ConfirmModal />
+      <QwenFloatingCompanion />
     </div>
   );
 };
