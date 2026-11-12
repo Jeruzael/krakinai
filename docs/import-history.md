@@ -26,8 +26,8 @@ New Blocking/frame receipts store their complete canonical evidence using lossle
 | Allowance | Limit |
 | --- | ---: |
 | Stored import ledger, including candidates | 8 MiB |
-| Expanded evidence in one new receipt | 4 MiB |
-| Aggregate expanded review evidence | 32 MiB |
+| Expanded evidence in one new receipt | 50 MiB |
+| Aggregate expanded review evidence | 96 MiB |
 | Import receipts | 1,000 |
 | Combined reusable-asset and Outfit candidates | 250 |
 | Entire full-backup metadata manifest | 20 MiB, unchanged |

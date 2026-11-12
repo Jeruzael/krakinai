@@ -228,14 +228,14 @@ export function validateImportLedger(
   for (const storedReceipt of ledger.receipts) {
     if(storedReceipt.version===4&&ledger.version!==4)throw Error('Compact receipt v4 requires protected ledger v4.');
     const receipt=logicalImportReceipt(storedReceipt);
-    if(receipt.version!==1){const bytes=new TextEncoder().encode(receipt.reviewedContent).length;if(bytes>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY','Receipt review evidence exceeds its 4 MiB expanded limit.');expandedBytes+=bytes;if(expandedBytes>MAX_EXPANDED_IMPORT_EVIDENCE_BYTES)throw new ImportAdmissionError('LEDGER_EVIDENCE_CAPACITY','Import review evidence exceeds its 32 MiB aggregate expanded limit.');}
+    if(receipt.version!==1){const bytes=new TextEncoder().encode(receipt.reviewedContent).length;if(bytes>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY',`Receipt review evidence exceeds its ${MAX_RECEIPT_EVIDENCE_BYTES/(1024*1024)} MiB expanded limit.`,bytes,MAX_RECEIPT_EVIDENCE_BYTES);expandedBytes+=bytes;if(expandedBytes>MAX_EXPANDED_IMPORT_EVIDENCE_BYTES)throw new ImportAdmissionError('LEDGER_EVIDENCE_CAPACITY',`Import review evidence exceeds its ${MAX_EXPANDED_IMPORT_EVIDENCE_BYTES/(1024*1024)} MiB aggregate expanded limit.`,expandedBytes,MAX_EXPANDED_IMPORT_EVIDENCE_BYTES);}
     if(receipt.version===2&&ledger.version<2)throw Error('Receipt v2 requires ledger v2.');
     if(receipt.version===3&&ledger.version<3)throw Error('Receipt v3 requires ledger v3 or newer.');
     validateJsonRule(
       obj(
         {
           version: { const: receipt.version===5?5:receipt.version===3?3:receipt.version===2?2:1 },
-          ...(receipt.version===5?{changeSetSchema:{const:'krakinai.change-set.v7'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES)}:receipt.version===2?{changeSetSchema:{const:'krakinai.change-set.v5'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES)}:receipt.version===3?{changeSetSchema:{const:'krakinai.change-set.v6'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES),frameResults:{type:'array',maxItems:250,items:obj({operationId:id,sceneId:id,frameIds:{type:'array',maxItems:16,items:{...id,maxLength:64}},associationIds:{type:'array',maxItems:250,items:id}})} as JsonRule}:{}),
+          ...(receipt.version===5?{changeSetSchema:{const:'krakinai.change-set.v7'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES)}:receipt.version===2?{changeSetSchema:{const:'krakinai.change-set.v5'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES)}:receipt.version===3?{changeSetSchema:{const:'krakinai.change-set.v6'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES),frameResults:{type:'array',maxItems:250,items:obj({operationId:id,sceneId:id,frameIds:{type:'array',maxItems:16,items:{...id,maxLength:64}},associationIds:{type:'array',maxItems:250,items:id}})} as JsonRule}:{}),
           changeSetId: id,
           packageDigest: sha,
           approvedDigest: sha,

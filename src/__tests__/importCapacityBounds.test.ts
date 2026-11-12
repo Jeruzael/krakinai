@@ -18,11 +18,11 @@ it('accepts exactly 8 MiB stored and rejects one byte over without discarding le
  expect(new TextEncoder().encode(JSON.stringify(ledger)).length).toBe(MAX_IMPORT_LEDGER_BYTES);expect(()=>validateImportLedger(ledger)).not.toThrow();
  ledger.receipts[1].title='x';expect(()=>validateImportLedger(ledger)).toThrow(/8 MiB/);
 });
-it('accepts 32 MiB expanded evidence and rejects another compact receipt while stored bytes still fit',async()=>{
- const evidence=await encodeImportEvidence(review(4*1024*1024)),receipt=(i:number)=>({...base,version:4 as const,changeSetId:'expanded-'+i,changeSetSchema:'krakinai.change-set.v6' as const,reviewedEvidence:evidence,frameResults:[]});
- const ledger={version:4 as const,receipts:Array.from({length:8},(_,i)=>receipt(i)),candidates:[]};
- expect((await prepareImportLedger(ledger)).expandedBytes).toBe(32*1024*1024);expect(JSON.stringify(ledger).length).toBeLessThan(MAX_IMPORT_LEDGER_BYTES);
- expect(()=>validateImportLedger({...ledger,receipts:[...ledger.receipts,receipt(8)]})).toThrow(/32 MiB/);
+it('accepts 96 MiB expanded evidence and rejects another compact receipt while stored bytes still fit',async()=>{
+ const evidence=await encodeImportEvidence(review(8*1024*1024)),receipt=(i:number)=>({...base,version:4 as const,changeSetId:'expanded-'+i,changeSetSchema:'krakinai.change-set.v6' as const,reviewedEvidence:evidence,frameResults:[]});
+ const ledger={version:4 as const,receipts:Array.from({length:12},(_,i)=>receipt(i)),candidates:[]};
+ expect((await prepareImportLedger(ledger)).expandedBytes).toBe(96*1024*1024);expect(JSON.stringify(ledger).length).toBeLessThan(MAX_IMPORT_LEDGER_BYTES);
+ expect(()=>validateImportLedger({...ledger,receipts:[...ledger.receipts,receipt(12)]})).toThrow(/96 MiB/);
 },30000);
 it('enforces the unchanged receipt and combined candidate count bounds independently',()=>{
  const receipts=Array.from({length:1000},(_,i)=>({...base,changeSetId:'count-'+i})),ledger:any={version:4,receipts,candidates:[]};expect(()=>validateImportLedger(ledger)).not.toThrow();
