@@ -6,10 +6,12 @@ export interface AiContextSelection {
   templateIds?: string[];
   fullPromptSceneIds?: string[];
   blockingSceneIds?:string[];
+  storyIds?: string[];
   includeAssetText?: boolean;
   includeCharacterIdentity?: boolean;
   includeNotes?: boolean;
   includeMediaFilenames?: boolean;
+  includeStoryText?: boolean;
 }
 export interface AiContextScene {
   id: string;

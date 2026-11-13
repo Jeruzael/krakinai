@@ -47,7 +47,7 @@ export function validateChangeSetBackupCapacity(
   const checkedBytes=bytes+(hasCBackupFeature(detectBackupFeatures(snapshot))?snapshot.media.reduce((n,m)=>n+96+(m.posterBlob?128:0),0):0);
   if (checkedBytes > MAX_MANIFEST_BYTES)
     throw new ImportAdmissionError('BACKUP_METADATA_CAPACITY',
-      `Resulting full-backup metadata would be ${checkedBytes.toLocaleString()} bytes, exceeding the existing 20 MiB backup metadata allowance. Use a smaller batch; no records were changed.`,
+      `Resulting full-backup metadata would be ${checkedBytes.toLocaleString()} bytes, exceeding the 100 MiB backup metadata allowance. Use a smaller batch; no records were changed.`,
     checkedBytes,MAX_MANIFEST_BYTES);
   return checkedBytes;
 }

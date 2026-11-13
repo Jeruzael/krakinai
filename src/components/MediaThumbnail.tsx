@@ -15,6 +15,8 @@ interface MediaThumbnailProps {
   roleBadge?: string;
   imageZoom?: number | 'actual';
   onImageDimensions?: (size: { width: number; height: number }) => void;
+  objectFit?: 'contain' | 'cover';
+  backgroundColor?: string;
 }
 
 export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
@@ -26,6 +28,8 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
   roleBadge,
   imageZoom,
   onImageDimensions,
+  objectFit = 'contain',
+  backgroundColor,
 }) => {
   const url = useMediaObjectUrl(media);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -226,7 +230,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
           zoomable && imageHeight > viewport.height ? 'flex-start' : 'center',
         justifyContent:
           zoomable && imageWidth > viewport.width ? 'flex-start' : 'center',
-        background: '#F8FAFC',
+        background: backgroundColor ?? '#F8FAFC',
         overflow: zoomable ? 'auto' : undefined,
       }}
     >
@@ -247,7 +251,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
               width: '100%',
               height: '100%',
               maxHeight: 520,
-              objectFit: 'contain',
+              objectFit,
             }}
           >
             Your browser does not support playable MP4/WebM video.
@@ -265,7 +269,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
                 stop();
                 setDecodeError(true);
               }}
-              style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              style={{ width: '100%', height: '100%', objectFit }}
             />
             <span
               className="badge badge-primary"
@@ -309,7 +313,7 @@ export const MediaThumbnail: React.FC<MediaThumbnailProps> = ({
                   maxHeight: 'none',
                   flexShrink: 0,
                 }
-              : { width: '100%', height: '100%', objectFit: 'contain' }
+              : { width: '100%', height: '100%', objectFit }
           }
         />
       )}

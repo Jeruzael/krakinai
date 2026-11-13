@@ -71,13 +71,17 @@ Introduce import ledger storage version 4 and receipt storage version 4. These a
 | Limit | Proposal | Meaning |
 | --- | ---: | --- |
 | Serialized ledger | **8 MiB test target** | Exact UTF-8 length of compact `JSON.stringify(ledger)`, including base64, envelopes and candidates |
-| Expanded evidence per new receipt | 4 MiB | Exact canonical UTF-8 bytes, independent of compression ratio; retains the existing review-evidence ceiling |
-| Aggregate expanded evidence | 32 MiB test target | Sum of actual verified evidence lengths for all v2/v3/v4 receipts, without retaining all expanded strings |
+| Expanded evidence per new receipt | 50 MiB | Exact canonical UTF-8 bytes, independent of compression ratio |
+| Aggregate expanded evidence | 96 MiB | Sum of actual verified evidence lengths for all v2/v3/v4 receipts, without retaining all expanded strings |
 | Receipt count | 1,000, unchanged | No implicit pruning |
 | Combined candidates | 250, unchanged | Pending and resolved records retain current semantics |
 | Full-backup metadata | 20 MiB, unchanged | Existing prospective manifest check, including checksum-field reservation |
 
-The 32 MiB expansion bound is an engineering proposal to bound validation work, not a new media allowance or an unlimited logical archive. Legacy ledgers that were valid under 4 MiB fit this bound. The implementation must measure worst-case memory and durations. Lower an unverified target if necessary and report the demonstrated result; do not silently increase a bound to pass a fixture.
+The 96 MiB expansion bound is an engineering limit for validation work, not a media allowance or an unlimited logical archive. Legacy ledgers that were valid under 32 MiB fit this bound. The implementation must measure worst-case memory and durations. Lower an unverified target if necessary and report the demonstrated result; do not silently increase a bound to pass a fixture.
+
+### Owner-directed capacity update (2026-11-13)
+
+The owner requested a 50 MiB per-receipt ceiling after a 91-shot proposal exceeded the previous 8 MiB ceiling. The aggregate cap is 96 MiB so one 50 MiB receipt can coexist with the previously supported 32 MiB of expanded history. The serialized ledger remains capped at 8 MiB, the encoded evidence envelope remains capped at 8 MiB, and the full-backup metadata guard remains 20 MiB. A large expanded receipt still has to compress enough to fit those independent physical-storage limits. The updated 50/96 MiB boundaries require fresh isolated QA; the earlier 4/32 MiB QA results do not establish those new bounds.
 
 Compressed input is independently bounded by the physical ledger limit before decoding. Use incremental inflation with small controlled input chunks, enforce the output ceiling during decoding and stop at the first overrun. Do not use a whole-stream decoder that allocates from an attacker-declared expansion size. Test the decoder's internal allocation/overshoot as well as callback output; an after-the-fact length check is insufficient. Validate receipts sequentially and reject an aggregate expansion overrun. No public claim of a safe bound until adversarial fixtures and process-memory observations support it.
 
@@ -149,7 +153,7 @@ Bridge inputs, tool names and native pairing format stay unchanged. Validate the
 Implementation is not complete until these claims have machine-readable evidence from isolated synthetic libraries:
 
 1. **Lossless codec:** full Unicode, escapes/newlines, manual and canonical prompt choices; exact original bytes and SHA-256 after decode; representative v5/v6 projections; incompressible input; unsupported encoding, noncanonical base64, trailing input, wrong length/hash, truncated/corrupt streams and decompression bombs. Preserve legacy evidence validation.
-2. **All independent bounds:** below/at/over stored 8 MiB target, per-receipt 4 MiB, aggregate expanded 32 MiB target, 1,000 receipts, 250 combined candidates and 20 MiB prospective backup metadata. Test one bound failing while others fit. Never replace boundary tests with highly compressible repeated filler alone.
+2. **All independent bounds:** below/at/over stored 8 MiB target, per-receipt 50 MiB, aggregate expanded 96 MiB, 1,000 receipts, 250 combined candidates and 20 MiB prospective backup metadata. Test one bound failing while others fit. Never replace boundary tests with highly compressible repeated filler alone.
 3. **Representative end-to-end batch:** independently authored 15-shot/33-frame/30-operation Recipe fixture with Characters, Outfits, environments, Blocking, cues and separate complete image/video prompts. Seed legitimate mixed prior receipts, pass review, approve via actual synthetic browser controls and atomically save; restart, verify every ID/count, old scene and preferred take integrity, exact output/media hashes and receipt replay. Record before/after stored and expanded sizes.
 4. **Atomic failures:** stale source, concurrent receipt append, permission rejection/revocation, altered approved content, forced failure after at least one staged write and receipt-write failure. Compare the complete pre/post library and preserve original receipt/record/media contents on failure. No duplicate take or partial receipt.
 5. **Compatibility/backup:** v1/v2/v3 library upgrade, v3 connection blocked/cancelled, old-reader rejection, no record changes during header upgrade, mixed-history full ZIP backup/restore and re-export, malformed/new unsupported features, corrupt compressed evidence, restart/replay and legacy backups. Verify the 128 MiB Project Export and unrelated backup/media/archive limits are unchanged; do not claim near-limit media certification.

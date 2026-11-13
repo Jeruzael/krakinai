@@ -387,4 +387,44 @@ describe('IndexedDB Repository, Snapshots, Dependencies & Full ZIP Backup/Restor
     expect(validation.valid).toBe(false);
     expect(validation.error).toMatch(/MIME|unsupported/i);
   });
+
+  it('bundles qwen_dictionary.json into full backup ZIP and restores words to localStorage upon restore', async () => {
+    await initializeDatabase();
+
+    // Populate a test word in dictionary library
+    const { saveToDictionaryLibrary, loadDictionaryLibrary, clearDictionaryLibrary } = await import(
+      '../storage/dictionaryLibrary'
+    );
+    clearDictionaryLibrary();
+    saveToDictionaryLibrary({
+      word: 'corrugated',
+      partOfSpeech: 'adjective',
+      definition: 'Having a wavy or ridged surface.',
+      contextualMeaning: 'Describes industrial siding.',
+      examples: ['The corrugated roof groaned.'],
+      synonyms: ['ridged'],
+      detailLevel: 'full_with_context',
+    });
+
+    // Export backup ZIP
+    const zipBytes = await exportFullBackupZip();
+    const entries = unzipSync(zipBytes);
+    expect(entries['qwen_dictionary.json']).toBeDefined();
+
+    const dictPayload = JSON.parse(strFromU8(entries['qwen_dictionary.json']));
+    expect(dictPayload.corrugated).toBeDefined();
+    expect(dictPayload.corrugated.word).toBe('corrugated');
+
+    // Clear dictionary library in localStorage
+    clearDictionaryLibrary();
+    expect(loadDictionaryLibrary().corrugated).toBeUndefined();
+
+    // Restore full backup ZIP
+    await restoreFullBackupZip(zipBytes);
+
+    // Verify word was restored to localStorage
+    const restoredLib = loadDictionaryLibrary();
+    expect(restoredLib.corrugated).toBeDefined();
+    expect(restoredLib.corrugated.definition).toBe('Having a wavy or ridged surface.');
+  });
 });

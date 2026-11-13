@@ -3,6 +3,7 @@ import{createEnsembleChangeSetSchema}from'./ensembleChangeSetSchema';
 import{createConversionChangeSetSchema}from'./recipeConversionSchema';
 import{createBlockingChangeSetSchema}from'./blockingChangeSetSchema';
 import{createKeyframeChangeSetSchema}from'./keyframeChangeSetSchema';
+import{createStoryChangeSetSchema}from'./storyChangeSetSchema';
 export interface JsonRule {
   type?: string | string[];
   const?: unknown;
@@ -375,7 +376,8 @@ export const CHANGE_SET_V3_SCHEMA:JsonRule=createEnsembleChangeSetSchema(CHANGE_
 export const CHANGE_SET_V4_SCHEMA:JsonRule=createConversionChangeSetSchema(CHANGE_SET_V3_SCHEMA,CHANGE_SET_ID_SCHEMA);
 export const CHANGE_SET_V5_SCHEMA:JsonRule=createBlockingChangeSetSchema(CHANGE_SET_V4_SCHEMA);
 export const CHANGE_SET_V6_SCHEMA:JsonRule=createKeyframeChangeSetSchema(CHANGE_SET_V5_SCHEMA,CHANGE_SET_ID_SCHEMA);
+export const CHANGE_SET_V7_SCHEMA:JsonRule=createStoryChangeSetSchema(CHANGE_SET_V6_SCHEMA,CHANGE_SET_ID_SCHEMA);
 export const SUPPORTED_CHANGE_SET_SCHEMA: JsonRule = {
   type: "object",
-  oneOf: [CHANGE_SET_SCHEMA, CHANGE_SET_V2_SCHEMA,CHANGE_SET_V3_SCHEMA,CHANGE_SET_V4_SCHEMA,CHANGE_SET_V5_SCHEMA,CHANGE_SET_V6_SCHEMA],
+  oneOf: [CHANGE_SET_SCHEMA, CHANGE_SET_V2_SCHEMA,CHANGE_SET_V3_SCHEMA,CHANGE_SET_V4_SCHEMA,CHANGE_SET_V5_SCHEMA,CHANGE_SET_V6_SCHEMA,CHANGE_SET_V7_SCHEMA],
 };

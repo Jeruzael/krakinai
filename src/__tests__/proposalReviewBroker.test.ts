@@ -6,7 +6,7 @@ import {REVIEW_WINDOW_MS} from '../domain/proposalReview';
 import {emptyMcpScope} from '../domain/mcpScope';
 import {clearAllStoresForTesting,initializeDatabase,getAllSnapshot,openDatabase} from '../storage/db';
 import {midoriChangeSet,syntheticCamera} from './fixtures/changeSetFixture';
-import type {McpCommand} from '../domain/mcpProtocol';
+import {type McpCommand, MCP_LIMITS} from '../domain/mcpProtocol';
 let now:number,inbox:ReviewInboxRepository;
 const allowed=()=>({...emptyMcpScope(),assetIds:['asset_synthetic_camera'],allowNewProjects:true,allowProposals:true});
 const submit=(changeSet=midoriChangeSet()):McpCommand=>({requestId:crypto.randomUUID(),tool:'krakinai_submit_change_set',args:{changeSet}});
@@ -56,7 +56,7 @@ it('leaves rejected saved packages rejected rather than implicitly reconsidering
 });
 it('keeps ten-minute review available while retaining the independent session idle limit',async()=>{
  const broker=make();broker.connect('first',allowed());await broker.handle(submit(),'first');now+=600001;broker.expire();
- expect(broker.getState().proposals[0].status).toBe('review_required');now+=300000;broker.expire();
+ expect(broker.getState().proposals[0].status).toBe('review_required');now+=MCP_LIMITS.idleMs+1;broker.expire();
  expect(broker.getState().connected).toBe(false);expect((await inbox.list()).records).toHaveLength(1);
 });
 it('shows expiry after a day even when disconnected, without deleting the package',async()=>{
@@ -123,4 +123,48 @@ it('shows the actual review-cache failure and clears authority instead of a gene
  const broker=make();broker.connect('first',allowed());await broker.handle(submit(),'first');const id=broker.getState().proposals[0].id;
  vi.spyOn(inbox,'update').mockRejectedValueOnce(new DOMException('Saved review metadata exceeds 64 KiB. Request a smaller batch.','QuotaExceededError'));
  await broker.review(id);expect(broker.getState().proposals[0].status).toBe('conflict');expect(broker.getState().proposals[0].error).toContain('metadata exceeds 64 KiB');expect(broker.isReviewed(id)).toBe(false);
+});
+it('returns staging warnings in the stage tool result', async () => {
+  const broker = make();
+  broker.connect('first', { ...allowed(), allowProposals: true, allowNewProjects: true });
+  await broker.handle({
+    requestId: 'r-proj',
+    tool: 'krakinai_stage_project',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'proj-1', name: 'Warn Project' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-shot',
+    tool: 'krakinai_stage_shot',
+    args: { changeSetId: 'cs-broker-warn', project: { ref: 'proj-1' }, clientRef: 'shot-s01', code: 'S01', title: 'Shot 1' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-env',
+    tool: 'krakinai_stage_asset_candidate',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'env-1', kind: 'environment', title: 'Env 1', promptText: 'An environment' },
+  }, 'first');
+  await broker.handle({
+    requestId: 'r-style',
+    tool: 'krakinai_stage_asset_candidate',
+    args: { changeSetId: 'cs-broker-warn', clientRef: 'style-1', kind: 'style', title: 'Style 1', promptText: 'A style' },
+  }, 'first');
+  const res = await broker.handle({
+    requestId: 'r-stage-warn',
+    tool: 'krakinai_stage_scene_recipe',
+    args: {
+      changeSetId: 'cs-broker-warn',
+      clientRef: 'scene-s01',
+      project: { ref: 'proj-1' },
+      shot: { ref: 'shot-s01' },
+      title: 'Opening Recipe',
+      shotType: 'character_scene',
+      assetRefs: [
+        { slot: 'environment', asset: { ref: 'env-1' } },
+        { slot: 'style', asset: { ref: 'style-1' } },
+      ],
+    },
+  }, 'first');
+  expect(res.ok).toBe(true);
+  const data = (res as any).data;
+  expect(data.warnings).toBeDefined();
+  expect(data.warnings[0].code).toBe('SLOT_REQUIRED_MISSING');
 });

@@ -2,6 +2,8 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking. The owner approved inline execution and waived a separate plan approval.
 
+> **Owner-directed follow-up (2026-11-13):** The per-receipt expanded-evidence cap is now 50 MiB, the aggregate cap is 96 MiB, and the full-backup manifest cap is 100 MiB. The implementation and QA results recorded in this original plan used the prior 4/32 MiB evidence and 20 MiB manifest limits; the new boundaries still require isolated QA. The 8 MiB stored-ledger limit remains unchanged.
+
 **Goal:** Preserve complete import evidence compactly, demonstrate bounded 8 MiB history, and expose batch-level admission failures before approval.
 
 **Architecture:** A versioned receipt codec preserves exact canonical bytes while a protected database/backup feature version prevents old-reader writes. Verified asynchronous preparation precedes the existing synchronous atomic transaction; typed capacity checks feed browser and allowlisted MCP summaries.
@@ -12,8 +14,8 @@
 
 ## Global Constraints
 
-- Stored ledger: 8 MiB test target; expanded receipt: 4 MiB; aggregate evidence: 32 MiB test target.
-- Preserve 1,000 receipts, 250 combined candidates, 20 MiB backup metadata and 128 MiB Project Export limits.
+- Stored ledger: 8 MiB test target; expanded receipt: 50 MiB; aggregate evidence: 96 MiB.
+- Preserve 1,000 receipts, 250 combined candidates, the current 100 MiB backup metadata allowance and 128 MiB Project Export limit.
 - Preserve v1-v6 inputs, all existing evidence, exact output bytes, scene immutability, atomicity and permissions.
 - Main database v4, eight unchanged stores, explicit upgrade/backup acknowledgement. No live library/launcher/configuration activation.
 - Synthetic isolated QA only. Retain ignored files/profiles. No signing keys/certificates or actual library/story content in Git.
@@ -40,7 +42,7 @@
 
 ### Task 1: Lossless bounded evidence codec
 
-**Interfaces:** `encodeImportEvidence(text:string):Promise<CompactImportEvidence>`, `decodeImportEvidence(envelope):string`, `verifyImportEvidence(envelope):Promise<string>`; constants for 4 MiB evidence and bounded input chunks. Decode validates encoding/UTF-8/canonical payload boundaries; verify additionally checks SHA-256.
+**Interfaces:** `encodeImportEvidence(text:string):Promise<CompactImportEvidence>`, `decodeImportEvidence(envelope):string`, `verifyImportEvidence(envelope):Promise<string>`; constants for 50 MiB evidence and bounded input chunks. Decode validates encoding/UTF-8/canonical payload boundaries; verify additionally checks SHA-256.
 
 - [x] Add `src/__tests__/importEvidence.test.ts`: exact Unicode/canonical round trip; wrong size/hash/encoding/base64; truncated/trailing/corrupt streams; incompressible boundary; bomb stops during decoding.
 - [x] Run focused Vitest; establish the new tests fail before implementation.

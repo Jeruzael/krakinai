@@ -21,7 +21,7 @@ import { planChangeSet } from "../domain/changeSetPlanner";
 import {prepareConversionSources,type ConversionSourceProofs}from'../domain/recipeConversion';
 import {prepareBlockingSources,type BlockingSourceProofs} from '../domain/blockingPatch';
 import {blockingReviewedProjection} from '../domain/blockingReview';
-import type {SavedScene}from'../types/domain';
+import type {SavedScene, Story}from'../types/domain';
 import {
   appendImportReceipt,
   readImportLedger,
@@ -34,6 +34,7 @@ import {encodeImportEvidence,verifyImportEvidence} from '../domain/importEvidenc
 import type {ImportCapacity} from '../domain/importAdmission';
 import {ImportAdmissionError} from '../domain/importAdmission';
 import {withStableLibraryMedia} from './mediaPreparationLock';
+import { saveStory, listStories } from './stories';
 const request = <T>(r: IDBRequest<T>) =>
   new Promise<T>((resolve, reject) => {
     r.onsuccess = () => resolve(r.result);
@@ -61,8 +62,9 @@ async function readBlockingProofs(input:ChangeSet):Promise<BlockingSourceProofs>
  const scenes=await Promise.all(ids.map(id=>request<SavedScene|undefined>(tx.objectStore('scenes').get(id))));await completion;
  return prepareBlockingSources(scenes.filter((s):s is SavedScene=>!!s));
 }
-const evidenceText=(input:ChangeSet,plan:ChangeSetPlan)=>input.schema==='krakinai.change-set.v6'?canonicalStringify(keyframeReviewedProjection(plan)):input.schema==='krakinai.change-set.v5'?canonicalStringify(blockingReviewedProjection(plan)):undefined;
+const evidenceText=(input:ChangeSet,plan:ChangeSetPlan)=>input.schema==='krakinai.change-set.v7'?canonicalStringify({ stories: plan.stories?.map(s => ({ id: s.id, revision: s.revisionNumber })) ?? [] }):input.schema==='krakinai.change-set.v6'?canonicalStringify(keyframeReviewedProjection(plan)):input.schema==='krakinai.change-set.v5'?canonicalStringify(blockingReviewedProjection(plan)):undefined;
 async function receiptVersion(input:ChangeSet,plan:ChangeSetPlan,state:ChangeSetState){
+ if(input.schema==='krakinai.change-set.v7')return{version:4 as const,changeSetSchema:'krakinai.change-set.v7' as const,reviewedEvidence:await encodeImportEvidence(evidenceText(input,plan)!)};
  if(input.schema==='krakinai.change-set.v6')return{version:4 as const,changeSetSchema:'krakinai.change-set.v6' as const,reviewedEvidence:await encodeImportEvidence(evidenceText(input,plan)!),frameResults:frameReceiptResults(input,plan,state)};
  if(input.schema==='krakinai.change-set.v5')return{version:4 as const,changeSetSchema:'krakinai.change-set.v5' as const,reviewedEvidence:await encodeImportEvidence(evidenceText(input,plan)!)};
  return{version:1 as const};
@@ -115,6 +117,7 @@ function emptyPlan(): ChangeSetPlan {
     scenes: [],
     assets: [],
     templates: [],
+    stories: [],
     candidates: [],
     projectRevisions: {},
     stateSignature: "",
@@ -125,6 +128,7 @@ function emptyPlan(): ChangeSetPlan {
       candidates: 0,
       pendingInputs: 0,
       plannedSeconds: 0,
+      stories: 0,
     },
   };
 }
@@ -203,7 +207,7 @@ async function previewChangeSetInternal(
   }
   return { version: 1, ...draft, packageDigest, approvedDigest,capacity };
 }
-async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
+async function readState(tx: IDBTransaction, stories: Story[] = []): Promise<ChangeSetState> {
   const [
     collections,
     scenes,
@@ -234,6 +238,7 @@ async function readState(tx: IDBTransaction): Promise<ChangeSetState> {
     media,
     drafts,
     preferences: pref,
+    stories,
   };
 }
 function checkSynchronousAuthorization(
@@ -294,6 +299,7 @@ async function applyApprovedChangeSetInternal(
   const verificationState=await getAllSnapshot(),verifiedLedger=await prepareImportLedger(readImportLedger(verificationState.preferences));
   const verifiedEvidence=prepared.replay?undefined:await receiptVersion(changeSet,prepared.plan,verificationState);
   const verifiedText=prepared.replay?undefined:evidenceText(changeSet,prepared.plan);
+  const currentStories = await listStories({ archiveFilter: 'all' });
   const db = await openDatabase(),
     tx = db.transaction(
       [
@@ -310,7 +316,7 @@ async function applyApprovedChangeSetInternal(
     ),
     completion = done(tx);
   try {
-    const state = await readState(tx),
+    const state = await readState(tx, currentStories),
       ledger = readImportLedger(state.preferences),
       previous = ledger.receipts.find(
         (r) => r.changeSetId === changeSet.changeSetId,
@@ -387,6 +393,11 @@ async function applyApprovedChangeSetInternal(
       updatedAt: appliedAt,
     });
     await completion;
+    if (plan.stories && plan.stories.length > 0) {
+      for (const story of plan.stories) {
+        await saveStory(story);
+      }
+    }
     return receipt;
   } catch (error) {
     try {

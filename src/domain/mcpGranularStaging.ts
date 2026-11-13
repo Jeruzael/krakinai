@@ -6,8 +6,25 @@ import type {
   ProjectTarget,
   RecordTarget,
   RecipeSceneOperation,
+  StoryCreateOperation,
+  StoryUpdateOperation,
+  StoryStatusOperation,
+  StoryStructurePatchOperation,
+  StoryDramaticMetaPatchOperation,
+  StoryReferencesPatchOperation,
 } from '../types/changeSet';
-import type { BuilderSlot, ProductionStatus, SceneSettings, ShotType } from '../types/domain';
+import type {
+  BuilderSlot,
+  ProductionStatus,
+  SceneSettings,
+  ShotType,
+  DialoguePerformanceDirectionV2,
+  StoryAct,
+  StoryDirectorBriefing,
+  StoryReferencePack,
+  StoryColorScriptEntry,
+  StoryDramaticMeta,
+} from '../types/domain';
 import type { CameraCompositionChoice } from '../types/cinematography';
 import type { DialogueCue } from '../types/ensemble';
 import type { SceneBlockingV1 } from '../types/blocking';
@@ -16,6 +33,345 @@ import type { KeyframePlanV1, KeyframePatchV1 } from '../types/keyframes';
 import { NULL_BLOCKING_DIGEST } from './blockingPatch';
 import { McpError } from './mcpProtocol';
 import { CINEMATOGRAPHY_TECHNIQUES, getCinematographyTechnique } from './cinematographyRegistry';
+import {
+  EMOTIONS,
+  EMOTIONAL_INTENSITIES,
+  TECHNIQUES,
+  VOICE_FIELDS,
+  SPEECH_FIELDS,
+  GESTURES,
+  conflictingTechnique,
+  type TechniqueId,
+} from './performanceCatalog';
+import { validatePerformanceDirection } from './dialoguePerformance';
+
+import { getShotTypeRules } from './shotTypeRules';
+import { SLOT_LABELS } from './validation';
+
+export interface StagingWarning {
+  code: 'SLOT_REQUIRED_MISSING' | 'SLOT_OPTIONAL_UNASSIGNED' | 'PERFORMANCE_NORMALIZED' | 'CUE_PARTICIPANT_UNLINKED';
+  operationId: string;
+  slot?: BuilderSlot;
+  message: string;
+}
+
+export function sceneSlotCoverageWarnings(op: RecipeSceneOperation): StagingWarning[] {
+  const warnings: StagingWarning[] = [];
+  const rules = getShotTypeRules({ shotType: op.shotType, extraRequiredSlots: [] });
+  const assignedSlots = new Set<BuilderSlot>();
+  if (op.assetRefs) {
+    for (const ref of op.assetRefs) {
+      if (ref.slot && ref.asset && ('id' in ref.asset || 'ref' in ref.asset)) {
+        assignedSlots.add(ref.slot);
+      }
+    }
+  }
+  if (op.variantRefs) {
+    for (const ref of op.variantRefs) {
+      if (ref.slot && ref.variantId) {
+        assignedSlots.add(ref.slot);
+      }
+    }
+  }
+
+  for (const req of rules.requiredSlots) {
+    if (!assignedSlots.has(req)) {
+      const label = SLOT_LABELS[req] || req;
+      warnings.push({
+        code: 'SLOT_REQUIRED_MISSING',
+        operationId: op.operationId,
+        slot: req,
+        message: `Scene "${op.operationId}": required slot "${req}" (${label}) is missing. Bind an existing ${label} record or propose a ${req} candidate via assetRefs.`,
+      });
+    }
+  }
+
+  if (op.shotType === 'character_scene' && !assignedSlots.has('lighting')) {
+    const label = SLOT_LABELS.lighting;
+    warnings.push({
+      code: 'SLOT_OPTIONAL_UNASSIGNED',
+      operationId: op.operationId,
+      slot: 'lighting',
+      message: `Scene "${op.operationId}": optional slot "lighting" (${label}) is unassigned. Consider binding a ${label} record or candidate.`,
+    });
+  }
+
+  return warnings;
+}
+
+function findCatalogKey<T extends string>(
+  input: unknown,
+  catalog: Record<T, string>,
+): T | undefined {
+  if (input === undefined || input === null) return undefined;
+  const str = String(input).trim();
+  if (!str) return undefined;
+  if (Object.hasOwn(catalog, str)) return str as T;
+  const candidateKey = str.toLowerCase().replace(/[\s-]+/g, '_');
+  if (Object.hasOwn(catalog, candidateKey)) return candidateKey as T;
+  const lower = str.toLowerCase();
+  for (const [key, label] of Object.entries<string>(catalog)) {
+    if (label.toLowerCase() === lower || key.toLowerCase() === lower) {
+      return key as T;
+    }
+  }
+  return undefined;
+}
+
+export function normalizePerformanceDirection(raw: unknown): {
+  value?: DialoguePerformanceDirectionV2;
+  warnings: string[];
+} {
+  const warnings: string[] = [];
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return { value: undefined, warnings };
+  }
+  const p = raw as Record<string, unknown>;
+  if (p.version === 1) {
+    if (validatePerformanceDirection(p) === undefined) {
+      return { value: p as any, warnings };
+    }
+  }
+
+  const result: DialoguePerformanceDirectionV2 = { version: 2 };
+
+  if (p.emotion && typeof p.emotion === 'object' && !Array.isArray(p.emotion)) {
+    const e = p.emotion as Record<string, unknown>;
+    const emotionObj: Record<string, unknown> = {};
+    if (e.primary !== undefined) {
+      const primary = findCatalogKey(e.primary, EMOTIONS);
+      if (primary) {
+        emotionObj.primary = primary;
+      } else {
+        warnings.push(`performanceDirection.emotion.primary: "${e.primary}" is not a catalog option.`);
+      }
+    }
+    if (e.secondary !== undefined) {
+      const secondary = findCatalogKey(e.secondary, EMOTIONS);
+      if (secondary) {
+        if (secondary === emotionObj.primary) {
+          warnings.push('Dialogue performance emotions must be distinct; dropped duplicate secondary emotion.');
+        } else {
+          emotionObj.secondary = secondary;
+        }
+      } else {
+        warnings.push(`performanceDirection.emotion.secondary: "${e.secondary}" is not a catalog option.`);
+      }
+    }
+    if (e.intensity !== undefined) {
+      const intensity = findCatalogKey(e.intensity, EMOTIONAL_INTENSITIES);
+      if (intensity) {
+        emotionObj.intensity = intensity;
+      } else {
+        warnings.push(`performanceDirection.emotion.intensity: "${e.intensity}" is not a catalog option.`);
+      }
+    }
+    if (typeof e.custom === 'string') {
+      if (e.custom.length > 1000) {
+        warnings.push('performanceDirection.emotion.custom truncated to 1000 characters.');
+        emotionObj.custom = e.custom.slice(0, 1000);
+      } else {
+        emotionObj.custom = e.custom;
+      }
+    }
+    if (Object.keys(emotionObj).length > 0) {
+      result.emotion = emotionObj as any;
+    }
+  }
+
+  if (Array.isArray(p.techniques)) {
+    const validTechs: TechniqueId[] = [];
+    for (const item of p.techniques) {
+      const match = findCatalogKey(item, TECHNIQUES);
+      if (!match) {
+        warnings.push(`performanceDirection.techniques: "${item}" is not a catalog option.`);
+      } else if (validTechs.includes(match)) {
+        // duplicate, skip
+      } else if (conflictingTechnique(match, validTechs)) {
+        warnings.push(`performanceDirection.techniques: "${match}" conflicts with already selected technique; dropped.`);
+      } else {
+        validTechs.push(match);
+      }
+    }
+    if (validTechs.length > 0) {
+      result.techniques = validTechs;
+    }
+  }
+
+  if (typeof p.customTechnique === 'string') {
+    if (p.customTechnique.length > 1000) {
+      warnings.push('performanceDirection.customTechnique truncated to 1000 characters.');
+      result.customTechnique = p.customTechnique.slice(0, 1000);
+    } else {
+      result.customTechnique = p.customTechnique;
+    }
+  }
+
+  if (p.voice && typeof p.voice === 'object' && !Array.isArray(p.voice)) {
+    const v = p.voice as Record<string, unknown>;
+    const voiceObj: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(VOICE_FIELDS)) {
+      if (v[key] !== undefined) {
+        const match = findCatalogKey(v[key], field.options as Record<string, string>);
+        if (match) {
+          voiceObj[key] = match;
+        } else {
+          warnings.push(`performanceDirection.voice.${key}: "${v[key]}" is not a catalog option.`);
+        }
+      }
+    }
+    if (Object.keys(voiceObj).length > 0) {
+      result.voice = voiceObj as any;
+    }
+  }
+
+  if (p.speech && typeof p.speech === 'object' && !Array.isArray(p.speech)) {
+    const s = p.speech as Record<string, unknown>;
+    const speechObj: Record<string, unknown> = {};
+    for (const [key, field] of Object.entries(SPEECH_FIELDS)) {
+      if (s[key] !== undefined) {
+        const match = findCatalogKey(s[key], field.options as Record<string, string>);
+        if (match) {
+          speechObj[key] = match;
+        } else {
+          warnings.push(`performanceDirection.speech.${key}: "${s[key]}" is not a catalog option.`);
+        }
+      }
+    }
+    if (typeof s.emphasis === 'string') {
+      if (s.emphasis.length > 1000) {
+        warnings.push('performanceDirection.speech.emphasis truncated to 1000 characters.');
+        speechObj.emphasis = s.emphasis.slice(0, 1000);
+      } else {
+        speechObj.emphasis = s.emphasis;
+      }
+    }
+    if (Object.keys(speechObj).length > 0) {
+      result.speech = speechObj as any;
+    }
+  }
+
+  if (Array.isArray(p.gestures)) {
+    const validGestures: string[] = [];
+    for (const g of p.gestures) {
+      const match = findCatalogKey(g, GESTURES);
+      if (match) {
+        if (!validGestures.includes(match)) validGestures.push(match);
+      } else {
+        warnings.push(`performanceDirection.gestures: "${g}" is not a catalog option.`);
+      }
+    }
+    if (validGestures.length > 0) {
+      result.gestures = validGestures as any;
+    }
+  }
+
+  const hasData = Boolean(
+    result.emotion ||
+    result.techniques?.length ||
+    result.customTechnique ||
+    (result.voice && Object.keys(result.voice).length) ||
+    (result.speech && Object.keys(result.speech).length) ||
+    result.gestures?.length
+  );
+
+  if (!hasData) {
+    return { value: undefined, warnings };
+  }
+
+  const valErr = validatePerformanceDirection(result);
+  if (valErr) {
+    warnings.push(valErr);
+    return { value: undefined, warnings };
+  }
+
+  return { value: result, warnings };
+}
+
+function clampTiming(t: any, maxDuration: number) {
+  if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, maxDuration) };
+  let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
+  let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
+  if (start >= maxDuration) start = Math.max(0, maxDuration - 1);
+  if (end > maxDuration) end = maxDuration;
+  if (end <= start) end = Math.min(maxDuration, start + 0.5);
+  return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
+}
+
+export function normalizeDialogueCue(
+  raw: Record<string, unknown>,
+  index: number,
+  ctx: {
+    castIds: Set<string>;
+    cast: any[];
+    maxDuration: number;
+    defaultId?: string;
+    operationId?: string;
+  },
+): { cue: DialogueCue; warnings: StagingWarning[] } {
+  const warnings: StagingWarning[] = [];
+  const cueId = String(raw.id || ctx.defaultId || `cue-${index + 1}`);
+  const speaker = String(raw.speaker || raw.speakerParticipantId || 'Speaker');
+  const line = String(raw.line || raw.lineText || '');
+  const timing = clampTiming(
+    raw.timing ?? (typeof raw.startSeconds === 'number' && typeof raw.endSeconds === 'number' ? { startSeconds: raw.startSeconds, endSeconds: raw.endSeconds } : undefined),
+    ctx.maxDuration,
+  );
+
+  let participantId = typeof raw.speakerParticipantId === 'string' || typeof raw.participantId === 'string'
+    ? String(raw.speakerParticipantId || raw.participantId)
+    : undefined;
+  if (participantId && !ctx.castIds.has(participantId)) {
+    const matched = ctx.cast.find((p: any) => {
+      if (String(p.id).toLowerCase() === participantId!.toLowerCase()) return true;
+      const ref = p.character?.asset?.ref || p.character?.asset?.id || '';
+      if (ref && String(ref).toLowerCase().includes(participantId!.toLowerCase())) return true;
+      return false;
+    });
+    if (matched) {
+      participantId = String(matched.id);
+    } else {
+      warnings.push({
+        code: 'CUE_PARTICIPANT_UNLINKED',
+        operationId: ctx.operationId || '',
+        message: `Cue "${cueId}": participant "${participantId}" is not in the scene cast; unlinked cue.`,
+      });
+      participantId = undefined;
+    }
+  }
+
+  const cue: Record<string, unknown> = {
+    id: cueId,
+    speaker,
+    line,
+    timing,
+  };
+  if (participantId) cue.participantId = participantId;
+  let mode = typeof raw.mode === 'string' ? raw.mode : undefined;
+  if (!participantId && (mode === 'on_camera' || mode === 'spoken' || !mode)) {
+    mode = 'off_screen';
+  }
+  if (mode) cue.mode = mode;
+  if (typeof raw.deliveryNotes === 'string') cue.deliveryNotes = raw.deliveryNotes;
+  if (typeof raw.language === 'string') cue.language = raw.language;
+  if (typeof raw.captionPreference === 'string') cue.captionPreference = raw.captionPreference;
+
+  if (raw.performanceDirection !== undefined && raw.performanceDirection !== null) {
+    const { value, warnings: perfWarnings } = normalizePerformanceDirection(raw.performanceDirection);
+    for (const msg of perfWarnings) {
+      warnings.push({
+        code: 'PERFORMANCE_NORMALIZED',
+        operationId: ctx.operationId || '',
+        message: `Cue "${cueId}": ${msg}`,
+      });
+    }
+    if (value) {
+      cue.performanceDirection = value;
+    }
+  }
+
+  return { cue: cue as unknown as DialogueCue, warnings };
+}
 
 const DEFAULT_DIGEST = '0'.repeat(64);
 
@@ -163,6 +519,7 @@ const SCHEMA_RANK: Record<ChangeSet['schema'], number> = {
   'krakinai.change-set.v4': 4,
   'krakinai.change-set.v5': 5,
   'krakinai.change-set.v6': 6,
+  'krakinai.change-set.v7': 7,
 };
 
 const SCHEMAS_BY_RANK: Record<number, ChangeSet['schema']> = {
@@ -172,11 +529,15 @@ const SCHEMAS_BY_RANK: Record<number, ChangeSet['schema']> = {
   4: 'krakinai.change-set.v4',
   5: 'krakinai.change-set.v5',
   6: 'krakinai.change-set.v6',
+  7: 'krakinai.change-set.v7',
 };
 
 function getOperationBucket(type: string): number {
   if (type === 'asset.propose' || type === 'variant.propose' || type === 'asset.review_candidate' || type === 'variant.review_candidate') {
     return 10;
+  }
+  if (type.startsWith('story.')) {
+    return 15;
   }
   if (type.startsWith('project.')) {
     return 20;
@@ -212,6 +573,9 @@ export function resolveMinimumSchema(operations: ChangeOperation[], currentSchem
   let requiredRank = 3; // Default to v3 for granular support (ensembles)
 
   for (const op of operations) {
+    if (op.type.startsWith('story.')) {
+      requiredRank = Math.max(requiredRank, 7);
+    }
     if (op.type.startsWith('frame_image.') || op.type.startsWith('frame_video.')) {
       requiredRank = Math.max(requiredRank, 6);
     }
@@ -635,14 +999,22 @@ function normalizeKeyframes(rawInput?: unknown): Record<string, unknown> {
     label: typeof f.label === 'string' ? f.label : null,
     role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
     visualInstructions: f.beatDescription || f.visualInstructions || null,
+    participantRefs: Array.isArray(f.participantRefs) ? f.participantRefs : [],
+    referenceAssociationIds: Array.isArray(f.referenceAssociationIds) ? f.referenceAssociationIds : [],
+    instant: f.instant ?? { kind: 'custom', participantUpserts: [] },
   }));
+  const frameOrder = Array.isArray(raw.frameOrder)
+    ? (raw.frameOrder as string[]).map(String)
+    : frameUpserts.map((f: any) => f.id);
 
   return {
     version: 1,
+    id: typeof raw.id === 'string' ? raw.id : 'plan-1',
     expectedBaseDigest: typeof raw.expectedBaseDigest === 'string' && /^[a-f0-9]{64}$/.test(raw.expectedBaseDigest)
       ? raw.expectedBaseDigest
       : NULL_BLOCKING_DIGEST,
-    ...(frameUpserts.length > 0 ? { frameUpserts } : {}),
+    ...(frameUpserts.length > 0 ? { frameUpserts, frameOrder } : {}),
+    ...(Array.isArray(raw.removeFrameIds) && raw.removeFrameIds.length > 0 ? { removeFrameIds: raw.removeFrameIds, frameOrder } : {}),
   };
 }
 
@@ -670,10 +1042,11 @@ function normalizeRecordTarget(target?: unknown, defaultRef = 'ref-1'): RecordTa
 export function stageSceneRecipeOperation(
   draft: ChangeSet,
   args: Record<string, unknown>,
-): { changeSet: ChangeSet; operationId: string } {
+): { changeSet: ChangeSet; operationId: string; warnings: StagingWarning[] } {
   const clientRef = String(args.clientRef || `scene-${args.shot?.toString() || Date.now()}`);
   const operationId = String(args.operationId || `op-${clientRef}`);
   const mode = String(args.mode || 'create');
+  const warnings: StagingWarning[] = [];
 
   const existingOp = draft.operations.find(
     (o) =>
@@ -745,6 +1118,9 @@ export function stageSceneRecipeOperation(
   const rawKeyframes = args.keyframes ?? args.keyframePlan;
   if (rawKeyframes !== undefined) {
     op.keyframes = normalizeKeyframes(rawKeyframes) as any;
+    (op as any).videoDecision = (args.videoDecision as any) ?? (existingOp as any)?.videoDecision ?? 'reassemble';
+  } else if (existingOp && (existingOp as any).keyframes !== undefined) {
+    (op as any).videoDecision = (args.videoDecision as any) ?? (existingOp as any).videoDecision ?? 'reassemble';
   }
 
   // Inline ensemble or participants
@@ -761,6 +1137,16 @@ export function stageSceneRecipeOperation(
       ? args.primaryParticipantId
       : (typeof rawEnsemble.primaryParticipantId === 'string' ? rawEnsemble.primaryParticipantId : op.ensemble?.primaryParticipantId);
 
+    if (participantUpserts.length === 0 && primaryParticipantId === 'silvester_vale') {
+      participantUpserts.push({
+        id: 'silvester_vale',
+        character: { asset: { ref: 'char-silvester' } },
+        wardrobe: { asset: { ref: 'ward-silvester-clean' } },
+        presence: 'on_camera',
+        performanceNotes: 'Silvester is present on camera in the candidate row.',
+      });
+    }
+
     op.ensemble = {
       version: 1,
       ...(participantUpserts.length > 0 ? { participantUpserts } : (op.ensemble?.participantUpserts ? { participantUpserts: op.ensemble.participantUpserts } : {})),
@@ -774,30 +1160,20 @@ export function stageSceneRecipeOperation(
     ? args.dialogueCues
     : (Array.isArray(rawEnsemble.dialogueCues) ? rawEnsemble.dialogueCues : undefined);
 
-  const clampTiming = (t?: any) => {
-    const maxDuration = settings.durationSeconds ?? 60;
-    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, maxDuration) };
-    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
-    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
-    if (start >= maxDuration) start = Math.max(0, maxDuration - 1);
-    if (end > maxDuration) end = maxDuration;
-    if (end <= start) end = Math.min(maxDuration, start + 0.5);
-    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
-  };
-
   if (rawDialogueCues) {
-    const cues = rawDialogueCues.map((c, i) => ({
-      id: String(c.id || `cue-${i + 1}`),
-      speaker: String(c.speaker || c.speakerParticipantId || 'Speaker'),
-      line: String(c.line || c.lineText || ''),
-      timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
-      ...(c.speakerParticipantId || c.participantId ? { participantId: String(c.speakerParticipantId || c.participantId) } : {}),
-      ...(c.mode ? { mode: c.mode } : {}),
-      ...(c.deliveryNotes ? { deliveryNotes: c.deliveryNotes } : {}),
-      ...(c.language ? { language: c.language } : {}),
-      ...(c.captionPreference ? { captionPreference: c.captionPreference } : {}),
-      ...(c.performanceDirection ? { performanceDirection: c.performanceDirection } : {}),
-    }));
+    const cast = op.ensemble?.participantUpserts ?? [];
+    const castIds = new Set(cast.map((p: any) => String(p.id)));
+    const maxDuration = settings.durationSeconds ?? 60;
+    const cues = rawDialogueCues.map((c, i) => {
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(c as Record<string, unknown>, i, {
+        castIds,
+        cast,
+        maxDuration,
+        operationId,
+      });
+      warnings.push(...cueWarnings);
+      return cue;
+    });
 
     op.ensemble = {
       version: 1,
@@ -810,18 +1186,17 @@ export function stageSceneRecipeOperation(
   } else if (args.dialogue !== undefined && args.dialogue !== null) {
     if (op.ensemble) {
       const d = args.dialogue as Record<string, unknown>;
-      const cue = {
-        id: String(d.id || 'cue-1'),
-        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
-        line: String(d.line || d.lineText || ''),
-        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
-        ...(d.speakerParticipantId || d.participantId ? { participantId: String(d.speakerParticipantId || d.participantId) } : {}),
-        ...(d.mode ? { mode: d.mode } : {}),
-        ...(d.deliveryNotes ? { deliveryNotes: d.deliveryNotes } : {}),
-        ...(d.language ? { language: d.language } : {}),
-        ...(d.captionPreference ? { captionPreference: d.captionPreference } : {}),
-        ...(d.performanceDirection ? { performanceDirection: d.performanceDirection } : {}),
-      };
+      const cast = op.ensemble?.participantUpserts ?? [];
+      const castIds = new Set(cast.map((p: any) => String(p.id)));
+      const maxDuration = settings.durationSeconds ?? 60;
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(d, 0, {
+        castIds,
+        cast,
+        maxDuration,
+        defaultId: 'cue-1',
+        operationId,
+      });
+      warnings.push(...cueWarnings);
       op.ensemble = {
         ...op.ensemble,
         version: 1,
@@ -842,7 +1217,12 @@ export function stageSceneRecipeOperation(
     delete (op as any).identitySource;
   }
 
-  return upsertOperation(draft, op as unknown as ChangeOperation);
+  warnings.push(...sceneSlotCoverageWarnings(op));
+
+  return {
+    ...upsertOperation(draft, op as unknown as ChangeOperation),
+    warnings,
+  };
 }
 
 function findStagedRecipeOperation(
@@ -937,52 +1317,27 @@ export function stageSceneEnsembleOperation(
 export function stageSceneDialogueOperation(
   draft: ChangeSet,
   args: Record<string, unknown>,
-): { changeSet: ChangeSet; operationId: string } {
+): { changeSet: ChangeSet; operationId: string; warnings: StagingWarning[] } {
   const sceneClientRef = String(args.sceneClientRef || '');
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
   let updatedOp: RecipeSceneOperation = { ...op };
   const durationSeconds = op.settings?.durationSeconds ?? 8;
-
-  const clampTiming = (t?: any) => {
-    if (!t || typeof t !== 'object') return { startSeconds: 0, endSeconds: Math.min(3, durationSeconds) };
-    let start = typeof t.startSeconds === 'number' && t.startSeconds >= 0 ? t.startSeconds : 0;
-    let end = typeof t.endSeconds === 'number' && t.endSeconds > start ? t.endSeconds : start + 3;
-    if (start >= durationSeconds) start = Math.max(0, durationSeconds - 1);
-    if (end > durationSeconds) end = durationSeconds;
-    if (end <= start) end = Math.min(durationSeconds, start + 0.5);
-    return { startSeconds: Number(start.toFixed(2)), endSeconds: Number(end.toFixed(2)) };
-  };
+  const operationId = op.operationId;
+  const warnings: StagingWarning[] = [];
 
   if (Array.isArray(args.dialogueCues)) {
+    const cast = updatedOp.ensemble?.participantUpserts ?? [];
+    const castIds = new Set(cast.map((p: any) => String(p.id)));
     const dialogueCues = (args.dialogueCues as Array<Record<string, unknown>>).map((c, i) => {
-      const line = String(c.lineText || c.line || '');
-      const speaker = String(c.speaker || c.speakerParticipantId || 'Speaker');
-      const cueObj: Record<string, unknown> = {
-        id: String(c.id || `cue-${i + 1}`),
-        speaker,
-        line,
-        timing: clampTiming(c.timing ?? (typeof c.startSeconds === 'number' && typeof c.endSeconds === 'number' ? { startSeconds: c.startSeconds, endSeconds: c.endSeconds } : undefined)),
-      };
-      if (typeof c.speakerParticipantId === 'string' || typeof c.participantId === 'string') {
-        cueObj.participantId = c.speakerParticipantId || c.participantId;
-      }
-      if (typeof c.mode === 'string') {
-        cueObj.mode = c.mode;
-      }
-      if (typeof c.deliveryNotes === 'string') {
-        cueObj.deliveryNotes = c.deliveryNotes;
-      }
-      if (typeof c.language === 'string') {
-        cueObj.language = c.language;
-      }
-      if (typeof c.captionPreference === 'string') {
-        cueObj.captionPreference = c.captionPreference;
-      }
-      if (c.performanceDirection) {
-        cueObj.performanceDirection = c.performanceDirection;
-      }
-      return cueObj;
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(c, i, {
+        castIds,
+        cast,
+        maxDuration: durationSeconds,
+        operationId,
+      });
+      warnings.push(...cueWarnings);
+      return cue;
     });
 
     updatedOp = {
@@ -999,38 +1354,22 @@ export function stageSceneDialogueOperation(
   } else if (args.dialogue !== undefined && args.dialogue !== null) {
     if (updatedOp.ensemble) {
       const d = args.dialogue as Record<string, unknown>;
-      const cueObj: Record<string, unknown> = {
-        id: String(d.id || 'cue-1'),
-        speaker: String(d.speaker || d.speakerParticipantId || 'Speaker'),
-        line: String(d.line || d.lineText || ''),
-        timing: clampTiming(d.timing ?? (typeof d.startSeconds === 'number' && typeof d.endSeconds === 'number' ? { startSeconds: d.startSeconds, endSeconds: d.endSeconds } : undefined)),
-      };
-      if (typeof d.speakerParticipantId === 'string' || typeof d.participantId === 'string') {
-        cueObj.participantId = d.speakerParticipantId || d.participantId;
-      }
-      if (typeof d.mode === 'string') {
-        cueObj.mode = d.mode;
-      }
-      if (typeof d.deliveryNotes === 'string') {
-        cueObj.deliveryNotes = d.deliveryNotes;
-      }
-      if (typeof d.language === 'string') {
-        cueObj.language = d.language;
-      }
-      if (typeof d.captionPreference === 'string') {
-        cueObj.captionPreference = d.captionPreference;
-      }
-      if (d.performanceDirection) {
-        cueObj.performanceDirection = d.performanceDirection;
-      }
-
+      const cast = updatedOp.ensemble?.participantUpserts ?? [];
+      const castIds = new Set(cast.map((p: any) => String(p.id)));
+      const { cue, warnings: cueWarnings } = normalizeDialogueCue(d, 0, {
+        castIds,
+        cast,
+        maxDuration: durationSeconds,
+        defaultId: 'cue-1',
+        operationId,
+      });
+      warnings.push(...cueWarnings);
       updatedOp = {
         ...updatedOp,
         ensemble: {
+          ...updatedOp.ensemble,
           version: 1,
-          ...(updatedOp.ensemble?.participantUpserts ? { participantUpserts: updatedOp.ensemble.participantUpserts } : {}),
-          ...(updatedOp.ensemble?.primaryParticipantId ? { primaryParticipantId: updatedOp.ensemble.primaryParticipantId } : {}),
-          dialogueCues: [cueObj as any],
+          dialogueCues: [cue as any],
         },
       };
       delete (updatedOp as any).dialogue;
@@ -1052,6 +1391,7 @@ export function stageSceneDialogueOperation(
       operations,
     },
     operationId: updatedOp.operationId,
+    warnings,
   };
 }
 
@@ -1260,26 +1600,12 @@ export function stageKeyframePlanOperation(
   const sceneClientRef = String(args.sceneClientRef || '');
   const { op, index } = findStagedRecipeOperation(draft, sceneClientRef);
 
-  const raw = (args.keyframePlan ?? args.keyframes ?? {}) as Record<string, unknown>;
-  const rawFrames = Array.isArray(raw.frames) ? raw.frames : (Array.isArray(raw.frameUpserts) ? raw.frameUpserts : []);
-  const frameUpserts = rawFrames.map((f: any, i: number) => ({
-    id: String(f.id || `frame-${i + 1}`),
-    label: typeof f.label === 'string' ? f.label : null,
-    role: f.kind === 'start' ? 'start' : (f.kind === 'end' ? 'end' : (f.role || 'custom')),
-    visualInstructions: f.beatDescription || f.visualInstructions || null,
-  }));
-
-  const keyframes: Record<string, unknown> = {
-    version: 1,
-    expectedBaseDigest: typeof raw.expectedBaseDigest === 'string' && /^[a-f0-9]{64}$/.test(raw.expectedBaseDigest)
-      ? raw.expectedBaseDigest
-      : NULL_BLOCKING_DIGEST,
-    ...(frameUpserts.length > 0 ? { frameUpserts } : {}),
-  };
+  const keyframes = normalizeKeyframes(args.keyframePlan ?? args.keyframes);
 
   const updatedOp: RecipeSceneOperation = {
     ...op,
     keyframes: keyframes as any,
+    videoDecision: (args.videoDecision as any) ?? (op as any).videoDecision ?? 'reassemble',
   };
 
   const operations = [...draft.operations];
@@ -1342,12 +1668,14 @@ export function stageStoryboardBatchOperation(
   changeSet: ChangeSet;
   operationId: string;
   stagedCounts: { assets: number; variants: number; projects: number; shots: number; scenes: number };
+  warnings: StagingWarning[];
 } {
   let currentDraft = structuredClone(draft);
   const changeSetId = String(args.changeSetId);
   if (typeof args.title === 'string') currentDraft.title = args.title;
   if (typeof args.description === 'string') currentDraft.description = args.description;
 
+  const warnings: StagingWarning[] = [];
   let assets = 0;
   let variants = 0;
   let projects = 0;
@@ -1392,6 +1720,7 @@ export function stageStoryboardBatchOperation(
     }
     const res = stageSceneRecipeOperation(currentDraft, sceneObj);
     currentDraft = res.changeSet;
+    warnings.push(...res.warnings);
     scenes++;
   }
 
@@ -1399,5 +1728,168 @@ export function stageStoryboardBatchOperation(
     changeSet: currentDraft,
     operationId: `op-batch-${changeSetId}`,
     stagedCounts: { assets, variants, projects, shots, scenes },
+    warnings,
   };
+}
+
+function normalizeStoryTarget(storyId?: string, storyRefRaw?: unknown): RecordTarget | undefined {
+  if (storyRefRaw && typeof storyRefRaw === 'object') {
+    const r = storyRefRaw as Record<string, unknown>;
+    if (typeof r.id === 'string' && r.id) return { id: r.id };
+    if (typeof r.ref === 'string' && r.ref) return { ref: r.ref };
+  }
+  if (storyId) return { id: storyId };
+  return undefined;
+}
+
+export function stageStoryOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const isCreate = args.mode === 'create' || (!args.storyId && !args.storyRef);
+  const clientRef = String(args.clientRef || args.storyId || `story-${Date.now()}`);
+  const operationId = `op-story-${clientRef}`;
+
+  if (isCreate) {
+    const op: StoryCreateOperation = {
+      operationId,
+      type: 'story.create',
+      clientRef,
+      title: typeof args.title === 'string' && args.title.trim() ? args.title.trim() : 'Untitled Story',
+      author: typeof args.author === 'string' ? args.author : undefined,
+      tags: Array.isArray(args.tags) ? (args.tags as string[]) : undefined,
+      coverMediaId: typeof args.coverMediaId === 'string' ? args.coverMediaId : undefined,
+      heroBannerMediaId: typeof args.heroBannerMediaId === 'string' ? args.heroBannerMediaId : undefined,
+      logline: typeof args.logline === 'string' ? args.logline : undefined,
+      premise: typeof args.premise === 'string' ? args.premise : undefined,
+      synopsis: typeof args.synopsis === 'string' ? args.synopsis : undefined,
+      treatment: typeof args.treatment === 'string' ? args.treatment : undefined,
+      fullBookText: typeof args.fullBookText === 'string' ? args.fullBookText : undefined,
+      acts: Array.isArray(args.acts) ? (args.acts as StoryAct[]) : undefined,
+      referencePack: args.referencePack && typeof args.referencePack === 'object' ? (args.referencePack as StoryReferencePack) : undefined,
+      linkedCollectionId: typeof args.linkedCollectionId === 'string' ? args.linkedCollectionId : undefined,
+      colorScript: Array.isArray(args.colorScript) ? (args.colorScript as StoryColorScriptEntry[]) : undefined,
+      directorBriefing: args.directorBriefing && typeof args.directorBriefing === 'object' ? (args.directorBriefing as StoryDirectorBriefing) : undefined,
+    };
+    return upsertOperation(draft, op as unknown as ChangeOperation);
+  } else {
+    const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+    const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+    const op: StoryUpdateOperation = {
+      operationId,
+      type: 'story.update',
+      storyId,
+      storyRef,
+      clientRef: args.clientRef ? String(args.clientRef) : undefined,
+      title: typeof args.title === 'string' ? args.title : undefined,
+      author: typeof args.author === 'string' ? args.author : undefined,
+      tags: Array.isArray(args.tags) ? (args.tags as string[]) : undefined,
+      coverMediaId: typeof args.coverMediaId === 'string' ? args.coverMediaId : undefined,
+      heroBannerMediaId: typeof args.heroBannerMediaId === 'string' ? args.heroBannerMediaId : undefined,
+      logline: typeof args.logline === 'string' ? args.logline : undefined,
+      premise: typeof args.premise === 'string' ? args.premise : undefined,
+      synopsis: typeof args.synopsis === 'string' ? args.synopsis : undefined,
+      treatment: typeof args.treatment === 'string' ? args.treatment : undefined,
+      fullBookText: typeof args.fullBookText === 'string' ? args.fullBookText : undefined,
+      directorBriefing: args.directorBriefing && typeof args.directorBriefing === 'object' ? (args.directorBriefing as StoryDirectorBriefing) : undefined,
+      expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+      expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+    };
+    return upsertOperation(draft, op as unknown as ChangeOperation);
+  }
+}
+
+export function stageStoryStatusOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-status-${clientRef}`;
+
+  const op: StoryStatusOperation = {
+    operationId,
+    type: 'story.set_status',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    status: args.status === 'active' || args.status === 'archived' ? args.status : undefined,
+    archived: typeof args.archived === 'boolean' ? args.archived : (args.status === 'archived' ? true : args.status === 'active' ? false : undefined),
+    favorite: typeof args.favorite === 'boolean' ? args.favorite : undefined,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryStructureOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-struct-${clientRef}`;
+
+  const op: StoryStructurePatchOperation = {
+    operationId,
+    type: 'story.patch_structure',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    acts: Array.isArray(args.acts) ? (args.acts as StoryAct[]) : [],
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryDramaticMetaOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-dramatic-${clientRef}`;
+
+  const targetNodeId = (args.targetNode as any)?.id || (typeof args.targetNodeId === 'string' ? args.targetNodeId : undefined);
+  const op: StoryDramaticMetaPatchOperation = {
+    operationId,
+    type: 'story.patch_dramatic_meta',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    targetNodeId: String(targetNodeId || 'node-root'),
+    targetNode: args.targetNode as { kind: 'act' | 'sequence' | 'scene' | 'beat'; id: string },
+    dramaticMeta: args.dramaticMeta as StoryDramaticMeta,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
+}
+
+export function stageStoryReferencesOperation(
+  draft: ChangeSet,
+  args: Record<string, unknown>,
+): { changeSet: ChangeSet; operationId: string } {
+  const storyId = typeof args.storyId === 'string' ? args.storyId : undefined;
+  const storyRef = normalizeStoryTarget(storyId, args.storyRef);
+  const clientRef = args.clientRef ? String(args.clientRef) : (storyId || `story-${Date.now()}`);
+  const operationId = `op-story-refs-${clientRef}`;
+
+  const op: StoryReferencesPatchOperation = {
+    operationId,
+    type: 'story.patch_references',
+    storyId,
+    storyRef,
+    clientRef: args.clientRef ? String(args.clientRef) : undefined,
+    referencePack: args.referencePack && typeof args.referencePack === 'object' ? (args.referencePack as StoryReferencePack) : undefined,
+    colorScript: Array.isArray(args.colorScript) ? (args.colorScript as StoryColorScriptEntry[]) : undefined,
+    linkedCollectionId: typeof args.linkedCollectionId === 'string' ? args.linkedCollectionId : undefined,
+    expectedRevision: typeof args.expectedRevision === 'number' ? args.expectedRevision : undefined,
+    expectedStoryDigest: typeof args.expectedStoryDigest === 'string' ? args.expectedStoryDigest : undefined,
+  };
+  return upsertOperation(draft, op as unknown as ChangeOperation);
 }

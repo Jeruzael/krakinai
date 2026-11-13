@@ -6,7 +6,7 @@ const messages:Record<AdmissionCode,string>={
  LEDGER_CANDIDATE_CAPACITY:'This batch exceeds the combined reusable-candidate allowance.',
  RECEIPT_EVIDENCE_CAPACITY:'The complete evidence for this receipt exceeds its expanded-size allowance.',
  LEDGER_EVIDENCE_CAPACITY:'This batch exceeds the aggregate expanded-evidence allowance.',
- BACKUP_METADATA_CAPACITY:'The resulting full-backup metadata exceeds its unchanged allowance.',
+ BACKUP_METADATA_CAPACITY:'The resulting full-backup metadata exceeds its 100 MiB allowance.',
  IMPORT_EVIDENCE_INVALID:'Import evidence could not be verified. No batch was applied.',
 };
 /** Only this authorized proposal's admission outcome; never history measurements/content. */

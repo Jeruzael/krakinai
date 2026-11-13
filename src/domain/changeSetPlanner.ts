@@ -1,5 +1,5 @@
 import { requiresStoryboardApproval } from "./changeSetLedger";
-import { isRecipeOperation } from "../types/changeSet";
+import { isRecipeOperation, isStoryOperation } from "../types/changeSet";
 import {
   buildRecipeChangeDraft,
   recipeDraftPreview,
@@ -17,8 +17,10 @@ import type {
   PromptAsset,
   SavedScene,
   SceneDraft,
+  Story,
   Template,
 } from "../types/domain";
+import { computeStoryDigest } from "./storyValidator";
 import type {
   ChangeOperation,
   ChangeSet,
@@ -85,6 +87,7 @@ export function planChangeSet(
     assets: [...initial.assets],
     variants:[...(initial.variants??[])],
     templates: [...initial.templates],
+    stories: copy(initial.stories ?? []),
   };
   const mappings: Record<string, ImportMapping> = {},
     dirtyProjects = new Set<string>(),
@@ -107,6 +110,7 @@ export function planChangeSet(
     scenes: [],
     assets: [],
     templates: [],
+    stories: [],
     candidates: [],
     projectRevisions: {},
     stateSignature: "",
@@ -117,6 +121,7 @@ export function planChangeSet(
       candidates: 0,
       pendingInputs: 0,
       plannedSeconds: 0,
+      stories: 0,
     },
   };
   const finding = (
@@ -217,7 +222,139 @@ export function planChangeSet(
           "APPROVAL_SCENES",
           "Explicit approval to save new immutable scenes is required.",
         );
-      if (op.type === "project.create") {
+      if (isStoryOperation(op)) {
+        if (approval.stories === false) {
+          row.summary = `Story proposal: ${op.type}`;
+          row.resolved = { status: "excluded" };
+          finding(
+            op.operationId,
+            "STORIES_NOT_APPROVED",
+            "Story changes were not approved.",
+            "blocking",
+          );
+          continue;
+        }
+
+        if (op.type === "story.create") {
+          const storyId = allocation.ids[op.operationId] || `story_import_${op.operationId.replaceAll("-", "_")}`;
+          if (op.clientRef) {
+            mappings[op.clientRef] = {
+              kind: "story",
+              id: storyId,
+            };
+          }
+          const created: Story = {
+            id: storyId,
+            title: op.title.trim(),
+            author: op.author ?? "AI Co-Director",
+            createdAt: allocation.preparedAt,
+            updatedAt: allocation.preparedAt,
+            archivedAt: null,
+            favorite: false,
+            revisionNumber: 1,
+            tags: op.tags ?? [],
+            coverMediaId: op.coverMediaId ?? null,
+            heroBannerMediaId: op.heroBannerMediaId ?? null,
+            logline: op.logline ?? "",
+            premise: op.premise ?? "",
+            synopsis: op.synopsis ?? "",
+            treatment: op.treatment ?? "",
+            fullBookText: op.fullBookText ?? "",
+            referencePack: op.referencePack ?? { assetIds: [], variantIds: [], mediaIds: [] },
+            linkedCollectionId: op.linkedCollectionId ?? null,
+            colorScript: op.colorScript ?? [],
+            acts: op.acts ?? [],
+            directorBriefing: op.directorBriefing,
+          };
+          state.stories!.push(created);
+          plan.stories!.push(created);
+          plan.summary.stories = (plan.summary.stories ?? 0) + 1;
+          row.summary = `New story: ${created.title}`;
+          row.resolved = { storyId: created.id };
+          record(op, created.id, "created");
+        } else {
+          const storyTarget = op.storyRef ?? (op.storyId ? { id: op.storyId } : undefined);
+          if (!storyTarget) {
+            fail("STORY_TARGET", "Missing story reference or ID.");
+            continue;
+          }
+          const targetId = resolve(storyTarget, "story");
+          const target = state.stories?.find((s) => s.id === targetId);
+          if (!target) {
+            fail("STORY_NOT_FOUND", `Story '${targetId}' was not found in state.`);
+            continue;
+          }
+
+          if (op.expectedRevision !== undefined && target.revisionNumber !== op.expectedRevision) {
+            fail("CONFLICT", `Expected story revision ${op.expectedRevision} but found ${target.revisionNumber}.`);
+            continue;
+          }
+
+          if ('expectedStoryDigest' in op && op.expectedStoryDigest !== undefined) {
+            const actualDigest = computeStoryDigest(target);
+            if (actualDigest !== op.expectedStoryDigest) {
+              fail("CONFLICT", `Expected story digest ${op.expectedStoryDigest} but found ${actualDigest}.`);
+              continue;
+            }
+          }
+
+          if (op.type === "story.update") {
+            if (op.title !== undefined) target.title = op.title.trim();
+            if (op.author !== undefined) target.author = op.author;
+            if (op.tags !== undefined) target.tags = op.tags;
+            if (op.coverMediaId !== undefined) target.coverMediaId = op.coverMediaId;
+            if (op.heroBannerMediaId !== undefined) target.heroBannerMediaId = op.heroBannerMediaId;
+            if (op.logline !== undefined) target.logline = op.logline;
+            if (op.premise !== undefined) target.premise = op.premise;
+            if (op.synopsis !== undefined) target.synopsis = op.synopsis;
+            if (op.treatment !== undefined) target.treatment = op.treatment;
+            if (op.fullBookText !== undefined) target.fullBookText = op.fullBookText;
+            if (op.directorBriefing !== undefined) target.directorBriefing = op.directorBriefing;
+            row.summary = `Update story: ${target.title}`;
+          } else if (op.type === "story.set_status") {
+            if (op.archived !== undefined) target.archivedAt = op.archived ? allocation.preparedAt : null;
+            else if (op.status !== undefined) target.archivedAt = op.status === 'archived' ? allocation.preparedAt : null;
+            if (op.favorite !== undefined) target.favorite = op.favorite;
+            row.summary = `Status update: ${target.title}`;
+          } else if (op.type === "story.patch_structure") {
+            target.acts = op.acts;
+            row.summary = `Patch structure: ${target.title} (${op.acts.length} acts)`;
+          } else if (op.type === "story.patch_dramatic_meta") {
+            const targetNodeId = op.targetNodeId || op.targetNode?.id;
+            let patched = false;
+            for (const act of target.acts) {
+              if (act.id === targetNodeId) { act.dramaticMeta = op.dramaticMeta; patched = true; break; }
+              for (const seq of act.sequences ?? []) {
+                if (seq.id === targetNodeId) { seq.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                for (const sc of seq.scenes ?? []) {
+                  if (sc.id === targetNodeId) { sc.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                  for (const b of sc.beats ?? []) {
+                    if (b.id === targetNodeId) { b.dramaticMeta = op.dramaticMeta; patched = true; break; }
+                  }
+                }
+              }
+            }
+            if (!patched) {
+              fail("NODE_NOT_FOUND", `Dramatic node '${targetNodeId}' not found in story.`);
+              continue;
+            }
+            row.summary = `Patch dramatic meta: ${target.title} (node ${targetNodeId})`;
+          } else if (op.type === "story.patch_references") {
+            if (op.referencePack) target.referencePack = { ...target.referencePack, ...op.referencePack };
+            if (op.linkedCollectionId !== undefined) target.linkedCollectionId = op.linkedCollectionId;
+            if (op.colorScript) target.colorScript = op.colorScript;
+            row.summary = `Patch references: ${target.title}`;
+          }
+
+          target.revisionNumber++;
+          target.updatedAt = allocation.preparedAt;
+          if (!plan.stories!.some((s) => s.id === target.id)) {
+            plan.stories!.push(target);
+          }
+          row.resolved = { storyId: target.id, revision: target.revisionNumber };
+          record(op, target.id, "updated");
+        }
+      } else if (op.type === "project.create") {
         const valid = validateCollectionInput(op);
         if (!valid.valid)
           fail("PROJECT_FIELDS", Object.values(valid.errors).join(" "));

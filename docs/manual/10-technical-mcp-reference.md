@@ -1,7 +1,7 @@
-# Chapter 10: Complete MCP Protocol, Bridge Architecture & 37-Tool Reference
+# Chapter 10: Complete MCP Protocol, Bridge Architecture & 45-Tool Reference
 
 > *Part IV: Detailed Technical Documentation*  
-> Previous: [Chapter 9: Change-Set Contracts (v1–v6) & Security Model](./09-technical-changeset-and-security.md) | Next: [README (Cover & Table of Contents)](./README.md)
+> Previous: [Chapter 9: Change-Set Contracts (v1–v7) & Security Model](./09-technical-changeset-and-security.md) | Next: [README (Cover & Table of Contents)](./README.md)
 
 ---
 
@@ -16,7 +16,7 @@ This chapter details:
 2. HMAC pairing challenge-response and session epoch rotation.
 3. Schema discovery factoring and frame budget management.
 4. Error handling and standard error codes.
-5. **The Complete 37-Tool Reference Catalog** (13 core tools + 24 granular inspection & staging tools).
+5. **The Complete 45-Tool Reference Catalog** (13 core tools + 32 granular inspection & staging tools).
 
 ```mermaid
 graph LR
@@ -246,7 +246,7 @@ graph TD
   - `variants?: Array<object>`: List of outfit variants (`clientRef`, `parentCharacterId`, `title`, `promptText`).
   - `shots?: Array<object>`: List of shots to create (`clientRef`, `code`, `title`, `plannedShotType`, `plannedDurationSeconds`).
   - `scenes?: Array<object>`: List of composite scene recipes (`clientRef`, `shot`, `title`, `shotType`, `settings`, `assetRefs`, `ensemble`, `cameraComposition`, `sceneInstructions`, `avoidText`, `blocking`, `keyframes`).
-- **Returns**: `{ proposalId, changeSetId, operationCount, stagedCounts: { assets, variants, projects, shots, scenes }, batchChecks }`.
+- **Returns**: `{ proposalId, changeSetId, operationCount, stagedCounts: { assets, variants, projects, shots, scenes }, warnings: Array<StagingWarning>, batchChecks }`.
 
 #### `krakinai_stage_project`
 - **Purpose**: Stages a `project.create` or `project.update` operation into a draft proposal.
@@ -270,7 +270,7 @@ graph TD
 
 ---
 
-### Group 7: Workstream 2 — Assets, Variants & Presets (4 Tools)
+### Group 7: Workstream 2 — Assets, Variants & Presets (5 Tools)
 
 #### `krakinai_get_asset`
 - **Purpose**: Returns complete authorized details for an individual asset, including linked Outfit variants.
@@ -278,10 +278,16 @@ graph TD
 - **Scope**: Redacts prompt text unless `includeAssetText` is true; redacts Identity Anchor unless `includeCharacterIdentity` is true.
 - **Returns**: Asset metadata, prompt text, identity anchor, and `outfitVariants` array.
 
+#### `krakinai_resolve_library_assets`
+- **Purpose**: Batch checks proposed character, outfit, and element candidate titles against authorized library records in a single round-trip, returning recommended actions (`reuse` vs `create`) and exact IDs/revisions.
+- **Arguments**: `items: Array<{ clientRef: string, kind: string, title: string, promptText?: string, tags?: string[], parentAssetId?: string }>` (required).
+- **Scope**: Matches only against authorized assets and variants granted in the active MCP session.
+- **Returns**: `items` array with `matchStatus` (`exact_match`, `title_match`, `similar_match`, `no_match`), `recommendedAction` (`reuse` or `create`), and `matchedRecord` with `{ id, title, revision }`.
+
 #### `krakinai_list_catalog_presets`
 - **Purpose**: Read-only lookup of KRAKINAI's built-in catalogs.
 - **Arguments**: `catalog: 'cinematography' | 'performance' | 'shot_types'` (required).
-- **Returns**: Structured lists of shot sizes, angles, movements, emotions, vocal fields, or shot type rules.
+- **Returns**: Structured lists of shot sizes, angles, movements, emotions, vocal fields (`voiceOptions`, `speechOptions`, `techniqueOptions`, `gestureOptions`, `emotionGroups`), or shot type rules.
 
 #### `krakinai_stage_asset_candidate`
 - **Purpose**: Stages an `asset.propose` operation for a new reusable asset candidate.
@@ -299,8 +305,8 @@ graph TD
 
 #### `krakinai_stage_scene_recipe`
 - **Purpose**: Stages a modular `scene.create_recipe`, `scene.revise_recipe`, or `scene.create_recipe_take` operation.
-- **Arguments**: `changeSetId: string`, `clientRef: string`, `project`, `shot`, `title: string`, `shotType?: string`, `settings?: object`, `slots?: object`, `sceneInstructions?: string`, `avoidText?: string`, `mode?: 'create' | 'revise' | 'take'`.
-- **Returns**: Proposal status and staged operation ID.
+- **Arguments**: `changeSetId: string`, `clientRef: string`, `project`, `shot`, `title: string`, `shotType?: string`, `settings?: object`, `slots?: object`, `assetRefs?: Array<object>`, `sceneInstructions?: string`, `avoidText?: string`, `mode?: 'create' | 'revise' | 'take'`.
+- **Returns**: Proposal status, staged operation ID, and `warnings: Array<StagingWarning>`.
 
 #### `krakinai_stage_scene_ensemble`
 - **Purpose**: Sets or patches the multi-actor `ensemble` block on an already-staged scene recipe.
@@ -310,7 +316,7 @@ graph TD
 #### `krakinai_stage_scene_dialogue`
 - **Purpose**: Sets single-speaker `dialogue` or multi-speaker `dialogueCues` with timing and performance direction.
 - **Arguments**: `changeSetId: string`, `sceneClientRef: string`, `dialogue?: object`, `dialogueCues?: Array<object>`.
-- **Returns**: Proposal status and staged operation ID.
+- **Returns**: Proposal status, staged operation ID, and `warnings: Array<StagingWarning>`.
 
 #### `krakinai_stage_camera_composition`
 - **Purpose**: Sets structured camera framing, angles, lenses, and movement on a staged recipe.
@@ -326,6 +332,13 @@ graph TD
 - **Purpose**: Compiles a prompt assembly preview and runs preflight rules on a saved or staged scene.
 - **Arguments**: `sceneId?: string`, `changeSetId?: string`, `sceneClientRef?: string`.
 - **Returns**: Assembled prompt text (if disclosed), preflight findings, and validation status.
+
+##### Staging Warnings Contract
+Staging operations (`krakinai_stage_scene_recipe`, `krakinai_stage_scene_dialogue`, `krakinai_stage_storyboard_batch`) return a `warnings: Array<{ code, operationId, slot?, message }>` array reporting slot-coverage and cue normalization findings:
+- `SLOT_REQUIRED_MISSING`: A slot required by shot type rules (e.g. `action` on a `character_scene`) is missing from `assetRefs`/`slots`.
+- `SLOT_OPTIONAL_UNASSIGNED`: An optional slot recommended for coverage (e.g. `lighting` on a `character_scene`) is unassigned.
+- `PERFORMANCE_NORMALIZED`: A Performance Studio direction field or value was mapped, defaulted, or de-duplicated.
+- `CUE_PARTICIPANT_UNLINKED`: A dialogue cue participant is not present in the scene ensemble cast.
 
 ---
 
@@ -373,6 +386,46 @@ graph TD
 - **Arguments**: `sceneIds: string[]` (required).
 - **Scope**: Every ID in `sceneIds` must have `fullPromptSceneIds` permission.
 - **Returns**: `{ text: string, sceneCount: number }`.
+
+---
+
+### Group 11: Workstream 6 — Stories & Creator Mode (7 Tools)
+
+#### `krakinai_list_stories`
+- **Purpose**: Lists and filters narrative stories across active and archived states.
+- **Arguments**: `query?: string`, `tag?: string`, `favorite?: boolean`, `archiveFilter?: 'active' | 'archived' | 'all'`, `cursor?: string`, `limit?: integer`.
+- **Returns**: `{ items: Array<{ id, title, author, tags, favorite, archivedAt, revisionNumber, createdAt, updatedAt, coverMediaId, heroBannerMediaId, logline?, premise?, synopsis?, textRedacted?, actCount, sceneCount, colorScriptCount, digest }>, total, nextCursor }`.
+
+#### `krakinai_get_story`
+- **Purpose**: Retrieves a single narrative story by ID with projection controls.
+- **Arguments**: `storyId: string` (required), `projection?: 'overview' | 'book' | 'creator_hierarchy' | 'full'`.
+- **Scope**: Requires `storyId` to be within authorized `storyIds`. Narrative prose redacted unless `includeStoryText: true`.
+- **Returns**: Story projection data with `digest` and `revisionNumber`.
+
+#### `krakinai_stage_story`
+- **Purpose**: Stages a `story.create` or `story.update` operation in a draft proposal.
+- **Arguments**: `changeSetId: string` (required), `clientRef?: string`, `storyId?: string`, `mode?: 'create' | 'update'`, `title?: string`, `author?: string`, `tags?: string[]`, `coverMediaId?: string`, `heroBannerMediaId?: string`, `logline?: string`, `premise?: string`, `synopsis?: string`, `treatment?: string`, `fullBookText?: string`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_status`
+- **Purpose**: Stages a `story.set_status` operation archiving/unarchiving or favoriting a story.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `status?: 'active' | 'archived'`, `favorite?: boolean`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_structure`
+- **Purpose**: Stages a `story.patch_structure` operation updating the 4-tier Creator Mode breakdown (`Act -> Sequence -> Scene -> Beat`).
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `acts: Array<StoryAct>` (required), `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_dramatic_meta`
+- **Purpose**: Stages a `story.patch_dramatic_meta` operation targeting an act, sequence, scene, or beat node with dramatic metadata.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `targetNode: { kind, id }` (required), `dramaticMeta: object` (required), `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
+
+#### `krakinai_stage_story_references`
+- **Purpose**: Stages a `story.patch_references` operation binding reusable library assets, color scripts, and storyboard project links.
+- **Arguments**: `changeSetId: string` (required), `storyId?: string`, `storyRef?: object`, `referencePack?: object`, `colorScript?: Array<object>`, `linkedCollectionId?: string`, `expectedRevision?: integer`, `expectedStoryDigest?: string`.
+- **Returns**: Proposal status and staged operation ID (promotes package to `v7`).
 
 ---
 

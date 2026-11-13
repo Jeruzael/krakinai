@@ -16,7 +16,7 @@ import {
   type JsonRule,
 } from "./changeSetSchema";
 import { parseChangeSet, validateJsonRule } from "./changeSetValidation";
-import {CHANGE_SET_V6_SCHEMA} from './changeSetSchema';
+import {CHANGE_SET_V6_SCHEMA, CHANGE_SET_V7_SCHEMA} from './changeSetSchema';
 import {canonicalStringify} from './changeSetCanonical';
 import {decodeImportEvidence,verifyImportEvidence,MAX_RECEIPT_EVIDENCE_BYTES,MAX_EXPANDED_IMPORT_EVIDENCE_BYTES} from './importEvidence';
 import {ImportAdmissionError} from './importAdmission';
@@ -25,9 +25,9 @@ export const LEGACY_IMPORT_LEDGER_BYTES=4*1024*1024;
 /** Private expansion for validation only; public MCP projections never call this. */
 export function logicalImportReceipt(receipt:ChangeSetReceipt):LegacyChangeSetReceipt{
  if(receipt.version!==4)return receipt;
- if(!['krakinai.change-set.v5','krakinai.change-set.v6'].includes(receipt.changeSetSchema)||'reviewedContent'in receipt)throw Error('Invalid compact receipt schema or duplicate evidence.');
+ if(!['krakinai.change-set.v5','krakinai.change-set.v6','krakinai.change-set.v7'].includes(receipt.changeSetSchema)||'reviewedContent'in receipt)throw Error('Invalid compact receipt schema or duplicate evidence.');
  const {reviewedEvidence,...base}=receipt;
- return {...base,version:receipt.changeSetSchema==='krakinai.change-set.v6'?3:2,reviewedContent:decodeImportEvidence(reviewedEvidence)} as LegacyChangeSetReceipt;
+ return {...base,version:receipt.changeSetSchema==='krakinai.change-set.v7'?5:receipt.changeSetSchema==='krakinai.change-set.v6'?3:2,changeSetSchema:receipt.changeSetSchema,reviewedContent:decodeImportEvidence(reviewedEvidence)} as LegacyChangeSetReceipt;
 }
 export const importLedgerExpandedBytes=(ledger:ImportLedger)=>ledger.receipts.reduce((n,r)=>n+(r.version===4?r.reviewedEvidence.uncompressedBytes:r.version===1?0:new TextEncoder().encode(r.reviewedContent).length),0);
 export interface VerifiedImportLedger{comparison:string;expandedBytes:number}
@@ -85,10 +85,11 @@ export function validateChangeSetApproval(
         scenes: { type: "boolean" },
         preferred: { type: "boolean" },
         statuses: { type: "boolean" },
+        stories: { type: "boolean" },
         assetDecisions: { type: "object" },
         variantDecisions:{type:'object'},
         conversionDecisions:{type:'object'},
-        ...(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(schema??'')?{blocking:{type:'boolean'} as JsonRule,blockingOutputDecisions:{type:'object'} as JsonRule}:{}),
+        ...(['krakinai.change-set.v5','krakinai.change-set.v6','krakinai.change-set.v7'].includes(schema??'')?{blocking:{type:'boolean'} as JsonRule,blockingOutputDecisions:{type:'object'} as JsonRule}:{}),
         ...(schema==='krakinai.change-set.v6'?{keyframes:{type:'boolean'} as JsonRule,frameImages:{type:'boolean'} as JsonRule,frameVideo:{type:'boolean'} as JsonRule,frameOutputDecisions:{type:'object'} as JsonRule}:{}),
         allowDuplicateSceneOperations: {
           type: "array",
@@ -227,14 +228,14 @@ export function validateImportLedger(
   for (const storedReceipt of ledger.receipts) {
     if(storedReceipt.version===4&&ledger.version!==4)throw Error('Compact receipt v4 requires protected ledger v4.');
     const receipt=logicalImportReceipt(storedReceipt);
-    if(receipt.version!==1){const bytes=new TextEncoder().encode(receipt.reviewedContent).length;if(bytes>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY','Receipt review evidence exceeds its 4 MiB expanded limit.');expandedBytes+=bytes;if(expandedBytes>MAX_EXPANDED_IMPORT_EVIDENCE_BYTES)throw new ImportAdmissionError('LEDGER_EVIDENCE_CAPACITY','Import review evidence exceeds its 32 MiB aggregate expanded limit.');}
+    if(receipt.version!==1){const bytes=new TextEncoder().encode(receipt.reviewedContent).length;if(bytes>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY',`Receipt review evidence exceeds its ${MAX_RECEIPT_EVIDENCE_BYTES/(1024*1024)} MiB expanded limit.`,bytes,MAX_RECEIPT_EVIDENCE_BYTES);expandedBytes+=bytes;if(expandedBytes>MAX_EXPANDED_IMPORT_EVIDENCE_BYTES)throw new ImportAdmissionError('LEDGER_EVIDENCE_CAPACITY',`Import review evidence exceeds its ${MAX_EXPANDED_IMPORT_EVIDENCE_BYTES/(1024*1024)} MiB aggregate expanded limit.`,expandedBytes,MAX_EXPANDED_IMPORT_EVIDENCE_BYTES);}
     if(receipt.version===2&&ledger.version<2)throw Error('Receipt v2 requires ledger v2.');
     if(receipt.version===3&&ledger.version<3)throw Error('Receipt v3 requires ledger v3 or newer.');
     validateJsonRule(
       obj(
         {
-          version: { const: receipt.version===3?3:receipt.version===2?2:1 },
-          ...(receipt.version===2?{changeSetSchema:{const:'krakinai.change-set.v5'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES)}:receipt.version===3?{changeSetSchema:{const:'krakinai.change-set.v6'},reviewedContent:text(MAX_IMPORT_LEDGER_BYTES),frameResults:{type:'array',maxItems:250,items:obj({operationId:id,sceneId:id,frameIds:{type:'array',maxItems:16,items:{...id,maxLength:64}},associationIds:{type:'array',maxItems:250,items:id}})} as JsonRule}:{}),
+          version: { const: receipt.version===5?5:receipt.version===3?3:receipt.version===2?2:1 },
+          ...(receipt.version===5?{changeSetSchema:{const:'krakinai.change-set.v7'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES)}:receipt.version===2?{changeSetSchema:{const:'krakinai.change-set.v5'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES)}:receipt.version===3?{changeSetSchema:{const:'krakinai.change-set.v6'},reviewedContent:text(MAX_RECEIPT_EVIDENCE_BYTES),frameResults:{type:'array',maxItems:250,items:obj({operationId:id,sceneId:id,frameIds:{type:'array',maxItems:16,items:{...id,maxLength:64}},associationIds:{type:'array',maxItems:250,items:id}})} as JsonRule}:{}),
           changeSetId: id,
           packageDigest: sha,
           approvedDigest: sha,
@@ -258,7 +259,7 @@ export function validateImportLedger(
           "idMappings",
           "operations",
           "projectRevisions",
-          ...(receipt.version===2?['changeSetSchema','reviewedContent']:receipt.version===3?['changeSetSchema','reviewedContent','frameResults']:[]),
+          ...(receipt.version===2||receipt.version===5?['changeSetSchema','reviewedContent']:receipt.version===3?['changeSetSchema','reviewedContent','frameResults']:[]),
         ],
       ),
       receipt,
@@ -276,7 +277,7 @@ export function validateImportLedger(
         obj(
           {
             operationId: id,
-            type: { type: "string", enum: receipt.version===3?CHANGE_SET_V6_SCHEMA.properties!.operations.items!.oneOf!.map(r=>r.properties!.type.const):types },
+            type: { type: "string", enum: ('changeSetSchema' in receipt && receipt.changeSetSchema === 'krakinai.change-set.v7') ? CHANGE_SET_V7_SCHEMA.properties!.operations.items!.oneOf!.map(r=>r.properties!.type.const) : receipt.version===3?CHANGE_SET_V6_SCHEMA.properties!.operations.items!.oneOf!.map(r=>r.properties!.type.const):types },
             recordId: id,
             status: enumRule(
               "created",
@@ -312,6 +313,11 @@ export function validateImportLedger(
       if(canonicalStringify(reviewed)!==receipt.reviewedContent)throw Error('Receipt evidence must be canonical JSON.');
       const seenFrames=new Set<string>();for(const row of receipt.frameResults){if(!opIds.has(row.operationId)||seenFrames.has(row.operationId)||new Set(row.frameIds).size!==row.frameIds.length||new Set(row.associationIds).size!==row.associationIds.length)throw Error('Invalid exact frame receipt results.');seenFrames.add(row.operationId);}
     }
+    if(receipt.version===5){
+      let reviewed:unknown;try{reviewed=JSON.parse(receipt.reviewedContent);}catch{throw Error('Invalid v7 reviewed evidence.');}
+      validateJsonRule(obj({stories:{type:'array',maxItems:100}}),reviewed,'v7 reviewed evidence');
+      if(canonicalStringify(reviewed)!==receipt.reviewedContent)throw Error('Receipt evidence must be canonical JSON.');
+    }
     if (
       Object.keys(receipt.idMappings).length > 250 ||
       Object.keys(receipt.projectRevisions).length > 10
@@ -322,10 +328,11 @@ export function validateImportLedger(
       validateJsonRule(
         obj(
           {
-            kind: enumRule("project", "shot", "scene", "candidate",'variant_candidate'),
+            kind: enumRule("project", "shot", "scene", "candidate",'variant_candidate', "story"),
             id,
             assetId: id,
             variantId:id,
+            storyId: id,
           },
           ["kind", "id"],
         ),

@@ -15,6 +15,10 @@ import { OutfitReviewDecisions } from './OutfitReviewDecisions';
 import { downloadBlobAsFile } from "../hooks/useObjectUrl";
 import {RecipeConversionReview}from'./RecipeConversionReview';
 import {canonicalStringify}from'../domain/changeSetCanonical';
+import {
+  analyzeProposalCandidateBlockers,
+  applyCandidateDecisionWithSafeguards,
+} from '../domain/proposalReadiness';
 import {KeyframeProposalReview} from './keyframes/KeyframeProposalReview';
 import {BlockingProposalReview} from './blocking/BlockingProposalReview';
 import {KeyframeProposalApprovals} from './keyframes/KeyframeProposalApprovals';
@@ -37,11 +41,25 @@ export function ChangeSetPreview({
 }) {
   const [detail, setDetail] = useState<string>();
   const [downloadStatus, setDownloadStatus] = useState("");
+  const [reuseIntent, setReuseIntent] = useState<Record<string, boolean>>({});
   const { plan, approval, changeSet } = preview;
-  const onApproval=(next:ChangeSetApproval)=>{
-    if(['krakinai.change-set.v5','krakinai.change-set.v6'].includes(changeSet.schema)&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,blocking:false,blockingOutputDecisions:{},...(changeSet.schema==='krakinai.change-set.v6'?{keyframes:false,frameImages:false,frameVideo:false,frameOutputDecisions:{}}:{})};
-    if(changeSet.operations.some(o=>o.type==='scene.convert_direct_to_recipe')&&canonicalStringify([next.assetDecisions,next.variantDecisions??{}])!==canonicalStringify([approval.assetDecisions,approval.variantDecisions??{}]))next={...next,conversionDecisions:{}};
-    supplyApproval(next);
+  const candidateAnalysis = analyzeProposalCandidateBlockers(preview, snapshot);
+  const sceneReferencedOpIds = operationId ? candidateAnalysis.referencedCandidateOpIdsByScene[operationId] : undefined;
+  const onApproval = (next: ChangeSetApproval) => {
+    const candidateChanged =
+      canonicalStringify([next.assetDecisions, next.variantDecisions ?? {}]) !==
+      canonicalStringify([approval.assetDecisions, approval.variantDecisions ?? {}]);
+    if (candidateChanged) {
+      const guarded = applyCandidateDecisionWithSafeguards(
+        changeSet,
+        approval,
+        next.assetDecisions,
+        next.variantDecisions,
+      );
+      supplyApproval({ ...next, ...guarded });
+    } else {
+      supplyApproval(next);
+    }
   };
   const conflicts = plan.findings.filter(
     (f) => f.severity === "blocking" && !f.code.startsWith("APPROVAL_"),
@@ -53,15 +71,34 @@ export function ChangeSetPreview({
     preferred: changeSet.operations.some((o) => o.type === "shot.select_take"),
     statuses: changeSet.operations.some((o) => o.type === "shot.set_status"),
   };
-  const assetOps = changeSet.operations.filter((o) =>
-    o.type.startsWith("asset.")&&(!operationId||o.operationId===operationId),
-  );
+  const selectedOp = operationId
+    ? changeSet.operations.find((o) => o.operationId === operationId)
+    : undefined;
+  const assetOps = changeSet.operations.filter((o) => {
+    if (!o.type.startsWith("asset.")) return false;
+    if (!operationId) return true;
+    if (o.operationId === operationId) return true;
+    if (
+      selectedOp &&
+      (selectedOp.type.startsWith("asset.") ||
+        selectedOp.type.startsWith("variant."))
+    ) {
+      return false;
+    }
+    if (selectedOp && selectedOp.type.startsWith("scene.")) {
+      return sceneReferencedOpIds && sceneReferencedOpIds.length > 0
+        ? sceneReferencedOpIds.includes(o.operationId)
+        : true;
+    }
+    return true;
+  });
   const choice = (id: string, value: CandidateDecision) =>
     onApproval({
       ...approval,
       assetDecisions: { ...approval.assetDecisions, [id]: value },
     });
   const groups = [
+    ["Stories", (t: string) => t.startsWith("story.")],
     ["Projects", (t: string) => t.startsWith("project.")],
     [
       "Storyboard",
@@ -302,7 +339,7 @@ export function ChangeSetPreview({
           )}
           <OutfitReviewDecisions changeSet={changeSet} approval={approval} plan={plan} snapshot={snapshot} disabled={disabled} onApproval={onApproval} operationId={operationId}/>
           {assetOps.length > 0 && (
-            <details className="import-group">
+            <details className="import-group" open={(approvalsOnly && assetOps.some(op => (approval.assetDecisions[op.operationId]?.action ?? 'defer') === 'defer')) ? true : undefined}>
               <summary>Reusable asset decisions ({assetOps.length})</summary>
               <p className="muted-text">
                 Deferred proposals never install a library asset.
@@ -349,13 +386,32 @@ export function ChangeSetPreview({
                       Decision for {op.operationId}
                       <select
                         disabled={disabled}
-                        value={current.action}
-                        onChange={(e) =>
-                          choice(op.operationId, {
-                            action: e.target
-                              .value as CandidateDecision["action"],
-                          })
-                        }
+                        value={reuseIntent[op.operationId] ? "reuse" : current.action}
+                        onChange={(e) => {
+                          const action = e.target.value as CandidateDecision["action"];
+                          setReuseIntent((prev) => ({
+                            ...prev,
+                            [op.operationId]: action === "reuse",
+                          }));
+                          if (action !== "reuse") {
+                            choice(op.operationId, { action });
+                          } else {
+                            const defaultMatch = matches[0]
+                              ? available.find((a) => a.id === matches[0].id) ?? {
+                                  id: matches[0].id,
+                                  title: matches[0].title,
+                                  revision: matches[0].revision,
+                                }
+                              : undefined;
+                            if (defaultMatch) {
+                              choice(op.operationId, {
+                                action: "reuse",
+                                assetId: defaultMatch.id,
+                                expectedRevision: defaultMatch.revision,
+                              });
+                            }
+                          }
+                        }}
                       >
                         <option value="defer">Keep as pending proposal</option>
                         <option value="create">
@@ -364,21 +420,26 @@ export function ChangeSetPreview({
                         <option value="reuse">Reuse an existing asset</option>
                       </select>
                     </label>
-                    {current.action === "reuse" && (
+                    {(current.action === "reuse" || reuseIntent[op.operationId]) && (
                       <label>
                         Existing asset for {op.operationId}
                         <select
                           disabled={disabled}
-                          value={current.assetId ?? ""}
+                          value={current.action === "reuse" ? (current.assetId ?? "") : ""}
                           onChange={(e) => {
                             const a = available.find(
                               (a) => a.id === e.target.value,
                             );
-                            choice(op.operationId, {
-                              action: "reuse",
-                              assetId: a?.id,
-                              expectedRevision: a?.revision,
-                            });
+                            choice(
+                              op.operationId,
+                              a
+                                ? {
+                                    action: "reuse",
+                                    assetId: a.id,
+                                    expectedRevision: a.revision,
+                                  }
+                                : { action: "defer" },
+                            );
                           }}
                         >
                           <option value="">Choose exact existing record</option>
@@ -544,6 +605,7 @@ export function ChangeSetPreview({
                 row={selected}
                 changeSet={changeSet}
                 approval={approval}
+                plan={plan}
                 findings={plan.findings.filter(
                   (f) =>
                     f.operationId === selected.operationId &&

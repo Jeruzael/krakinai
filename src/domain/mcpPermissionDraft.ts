@@ -95,14 +95,49 @@ export function clearAllRecords(scope: McpScope): McpScope {
   if(next.version===3){next.keyframeSceneIds=[];next.imagePromptFrameGrants=[];}
   return next;
 }
-export function presetPermissionDraft(preset: 'minimal' | 'creative' | 'full', scope: McpScope, state: ChangeSetState): McpScope {
-  let next:McpScope = { ...(scope.version===3?emptyMcpScopeV3():scope.version===2?emptyMcpScopeV2():emptyMcpScope()), epoch: scope.epoch, projectIds: [...scope.projectIds] };
-  if (preset === 'creative') next = { ...next, assetIds: [...scope.assetIds], variantIds: [...scope.variantIds], templateIds: [...scope.templateIds], allowProposals: true };
+export function presetPermissionDraft(
+  preset: 'minimal' | 'creative' | 'full',
+  scope: McpScope,
+  state: ChangeSetState,
+  options?: { connected?: boolean; grantAll?: boolean },
+): McpScope {
+  const targetVersion: 1 | 2 | 3 = preset === 'full' && options?.grantAll && !options?.connected ? 3 : scope.version;
+  let next: McpScope = {
+    ...(targetVersion === 3 ? emptyMcpScopeV3() : targetVersion === 2 ? emptyMcpScopeV2() : emptyMcpScope()),
+    epoch: scope.epoch,
+    projectIds: [...scope.projectIds],
+  };
+  if (preset === 'creative') {
+    next = {
+      ...next,
+      assetIds: [...scope.assetIds],
+      variantIds: [...scope.variantIds],
+      templateIds: [...scope.templateIds],
+      allowProposals: true,
+    };
+  }
   if (preset === 'full') {
     next = selectAllRecords(next, state);
-    next.fullPromptSceneIds = state.scenes.map(s => s.id);
-    next.receiptGrants = (state.preferences.aiImports?.receipts ?? []).map(r => ({ changeSetId: r.changeSetId, packageDigest: r.packageDigest }));
+    next.fullPromptSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.fullPromptSceneIds);
+    next.receiptGrants = (state.preferences.aiImports?.receipts ?? [])
+      .slice(0, MCP_SCOPE_LIMITS.receiptGrants)
+      .map(r => ({ changeSetId: r.changeSetId, packageDigest: r.packageDigest }));
     for (const { field } of [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS]) next[field] = true;
+    if (options?.grantAll) {
+      if (next.version !== 1) {
+        next.blockingSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.blockingSceneIds);
+        next.allowBlockingProposals = true;
+      }
+      if (next.version === 3) {
+        next.keyframeSceneIds = state.scenes.map(s => s.id).slice(0, MCP_SCOPE_LIMITS.keyframeSceneIds);
+        next.imagePromptFrameGrants = state.scenes
+          .flatMap(s => (s.keyframePlan?.frames ?? []).map(f => ({ sceneId: s.id, frameId: f.id })))
+          .slice(0, MCP_SCOPE_LIMITS.imagePromptFrameGrants);
+        next.allowKeyframeProposals = true;
+        next.allowFrameImageProposals = true;
+        next.allowImagePromptDerivation = true;
+      }
+    }
   }
   return checked(next);
 }
@@ -129,7 +164,8 @@ export function scopeDiff(before: McpScope, after: McpScope, inventory: Permissi
   return rows;
 }
 export function permissionFingerprint(scope: McpScope): string {
-  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field]),...(scope.version!==1?[{version:scope.version,blockingSceneIds:[...scope.blockingSceneIds].sort(),allowBlockingProposals:scope.allowBlockingProposals}]:[]),...(scope.version===3?[{keyframeSceneIds:[...scope.keyframeSceneIds].sort(),imagePromptFrameGrants:[...permissionIds(scope,'imagePromptFrameGrants')].sort(),allowKeyframeProposals:scope.allowKeyframeProposals,allowFrameImageProposals:scope.allowFrameImageProposals,allowImagePromptDerivation:scope.allowImagePromptDerivation}]:[])]);
+  const hasStories = (scope.storyIds && scope.storyIds.length > 0) || scope.includeStoryText || scope.allowStoryProposals;
+  return JSON.stringify([PERMISSION_FIELDS.map(({ field }) => [...permissionIds(scope, field)].sort()), [...DISCLOSURE_FIELDS, ...CAPABILITY_FIELDS].map(({ field }) => scope[field]),...(scope.version!==1?[{version:scope.version,blockingSceneIds:[...scope.blockingSceneIds].sort(),allowBlockingProposals:scope.allowBlockingProposals}]:[]),...(scope.version===3?[{keyframeSceneIds:[...scope.keyframeSceneIds].sort(),imagePromptFrameGrants:[...permissionIds(scope,'imagePromptFrameGrants')].sort(),allowKeyframeProposals:scope.allowKeyframeProposals,allowFrameImageProposals:scope.allowFrameImageProposals,allowImagePromptDerivation:scope.allowImagePromptDerivation}]:[]),...(hasStories ? [{ storyIds: [...(scope.storyIds ?? [])].sort(), includeStoryText: Boolean(scope.includeStoryText), allowStoryProposals: Boolean(scope.allowStoryProposals) }] : [])]);
 }
 export function permissionInventoryStamp(state: ChangeSetState): string {
   return JSON.stringify([state.collections.map(p => [p.id, p.project?.revision]), state.scenes.map(s => [s.id, s.revision]), state.assets.map(a => [a.id, a.revision]), (state.variants ?? []).map(v => [v.id, v.revision]), state.templates.map(t => [t.id, t.revision]), state.media.map(m => m.id), (state.preferences.aiImports?.candidates ?? []).map(c => [c.id, c.status]), ...((state.preferences.aiImports?.variantCandidates?.length??0)?[(state.preferences.aiImports!.variantCandidates!).map(c=>[c.id,c.status,c.revision])]:[]), (state.preferences.aiImports?.receipts ?? []).map(receiptKey)]);

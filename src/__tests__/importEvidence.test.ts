@@ -30,10 +30,10 @@ describe('compact receipt evidence',()=>{
   expect(()=>decodeImportEvidence(envelope,{onChunk:bytes=>highWater=Math.max(highWater,bytes)})).toThrow(/size|limit/i);
   expect(highWater).toBeLessThan(512*1024);
  });
- it('round trips the exact 4 MiB boundary and rejects one byte over',async()=>{
-  const {encodeImportEvidence,verifyImportEvidence}=await codec(),text='x'.repeat(4*1024*1024),e=await encodeImportEvidence(text);
+ it('round trips the exact 50 MiB boundary and rejects one byte over',async()=>{
+  const {encodeImportEvidence,verifyImportEvidence}=await codec(),text='x'.repeat(50*1024*1024),e=await encodeImportEvidence(text);
   expect((await verifyImportEvidence(e)).length).toBe(text.length);
-  await expect(encodeImportEvidence(text+'x')).rejects.toThrow(/4 MiB/);
+  await expect(encodeImportEvidence(text+'x')).rejects.toThrow(/50 MiB/);
  });
  it('accepts large high-entropy evidence without recursive base64 validation',async()=>{
   const {encodeImportEvidence,verifyImportEvidence}=await codec();let seed=2463534242;

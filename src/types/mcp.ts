@@ -2,9 +2,10 @@ import type { AiContextSelection } from './aiContext';
 import type { ChangeSetPreview, ChangeSetReceipt } from './changeSet';
 import type {ReviewDraftRecord} from './proposalReview';
 export interface ReceiptGrant { changeSetId: string; packageDigest: string }
-export interface McpScopeV1 extends Required<Omit<AiContextSelection,'blockingSceneIds'>> {
+export interface McpScopeV1 extends Required<Omit<AiContextSelection,'blockingSceneIds'|'storyIds'|'includeStoryText'>> {
   version: 1; epoch: number; mediaIds: string[]; candidateIds: string[]; receiptGrants: ReceiptGrant[];
   allowNewProjects: boolean; allowProposals: boolean;
+  storyIds?: string[]; includeStoryText?: boolean; allowStoryProposals?: boolean;
 }
 export interface McpScopeV2 extends Omit<McpScopeV1,'version'>{version:2;blockingSceneIds:string[];allowBlockingProposals:boolean}
 export interface ImagePromptFrameGrant {sceneId:string;frameId:string}

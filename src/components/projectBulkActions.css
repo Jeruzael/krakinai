@@ -3,5 +3,12 @@
 .project-bulk-heading{justify-content:space-between}
 .project-bulk-row label{display:flex;align-items:center;gap:.4rem}
 .project-bulk-row select{max-width:15rem;padding:.4rem}
+.project-bulk-style{display:grid;gap:.55rem;padding:.75rem;border:1px solid var(--border-color,#ddd);border-radius:10px;background:var(--surface-muted,#f8fafc)}
+.project-bulk-style-controls{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.project-bulk-style-controls label{display:flex;align-items:center;gap:.45rem}
+.project-bulk-style-controls select{min-width:14rem;max-width:24rem;padding:.4rem}
+.project-bulk-style-summary p{margin:0;color:var(--text-muted,#667085)}
+.project-bulk-style-summary details{margin-top:.4rem}
+.project-bulk-style-summary ul{margin:.4rem 0 0;padding-left:1.2rem;max-height:8rem;overflow:auto}
 .project-bulk-error{color:var(--danger,#b42318);margin:0}
-@media(max-width:600px){.project-bulk-row>*{max-width:100%}.project-bulk-row label{width:100%;justify-content:space-between}}
+@media(max-width:600px){.project-bulk-row>*{max-width:100%}.project-bulk-row label{width:100%;justify-content:space-between}.project-bulk-style-controls label{width:100%;justify-content:space-between}.project-bulk-style-controls select{min-width:0;max-width:100%;flex:1}}

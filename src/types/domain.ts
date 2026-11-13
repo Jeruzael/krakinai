@@ -407,3 +407,141 @@ export interface Preferences {
   lastCategorySort?: 'updated' | 'newest' | 'az';
   updatedAt: string;
 }
+
+export interface StoryDramaticMeta {
+  setupForeshadowing?: string[];
+  incitingIncident?: string;
+  subtext?: string;
+  climax?: string;
+  payoff?: string[];
+  characterArcs?: Array<{
+    characterAssetId: string;
+    arcState: string;
+    internalShift?: string;
+  }>;
+}
+
+export interface StoryBeat {
+  id: string;
+  orderIndex: number;
+  title: string;
+  content: string;
+  dramaticMeta?: StoryDramaticMeta;
+  linkedShotId?: string;
+  linkedSceneId?: string;
+}
+
+export interface StorySceneNode {
+  id: string;
+  orderIndex: number;
+  title: string;
+  summary?: string;
+  environmentAssetId?: string;
+  dramaticMeta?: StoryDramaticMeta;
+  linkedShotIds?: string[];
+  linkedSceneId?: string;
+  beats: StoryBeat[];
+}
+
+export interface StorySequence {
+  id: string;
+  orderIndex: number;
+  title: string;
+  summary?: string;
+  dramaticMeta?: StoryDramaticMeta;
+  scenes: StorySceneNode[];
+}
+
+export interface StoryAct {
+  id: string;
+  orderIndex: number;
+  title: string;
+  summary?: string;
+  dramaticMeta?: StoryDramaticMeta;
+  sequences: StorySequence[];
+}
+
+export interface StoryColorScriptEntry {
+  id: string;
+  orderIndex: number;
+  label: string;
+  targetNodeId?: string;
+  hexPalette: string[];
+  mediaId?: string;
+  lightingAssetId?: string;
+  styleAssetId?: string;
+  notes?: string;
+}
+
+export interface StoryReferencePack {
+  assetIds: string[];
+  variantIds: string[];
+  mediaIds: string[];
+}
+
+export type StoryBriefingAssetKind = 'character' | 'wardrobe' | 'environment' | 'style' | 'camera';
+
+export interface StoryContinuityLockEntry {
+  id: string;
+  assetType: StoryBriefingAssetKind;
+  candidateRefOrId: string;
+  description: string;
+}
+
+export interface StoryLightingProgressionEntry {
+  id: string;
+  beatRange: string;
+  candidateRefOrId: string;
+  setupAndMood: string;
+}
+
+export interface StoryActionArchetypeEntry {
+  id: string;
+  beatRange: string;
+  candidateRefOrId: string;
+  kinematicsAndIntensity: string;
+}
+
+export interface StoryVocalPerformanceEntry {
+  id: string;
+  character: string;
+  beatId: string;
+  emotion: string;
+  deliveryTechnique: string;
+  voiceCharacteristics: string;
+  speechIntonation: string;
+  bodyLanguage: string;
+}
+
+export interface StoryDirectorBriefing {
+  pacingAuditSummary?: string;
+  continuityLocks: StoryContinuityLockEntry[];
+  lightingProgression: StoryLightingProgressionEntry[];
+  actionArchetypes: StoryActionArchetypeEntry[];
+  vocalRegister: StoryVocalPerformanceEntry[];
+}
+
+export interface Story {
+  id: string;
+  title: string;
+  author: string;
+  createdAt: string;
+  updatedAt: string;
+  archivedAt?: string | null;
+  favorite: boolean;
+  revisionNumber: number;
+  tags: string[];
+  coverMediaId?: string | null;
+  heroBannerMediaId?: string | null;
+  logline: string;
+  premise: string;
+  synopsis: string;
+  treatment: string;
+  fullBookText: string;
+  referencePack: StoryReferencePack;
+  linkedCollectionId?: string | null;
+  colorScript: StoryColorScriptEntry[];
+  acts: StoryAct[];
+  directorBriefing?: StoryDirectorBriefing;
+}
+

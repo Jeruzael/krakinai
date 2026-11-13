@@ -59,7 +59,7 @@ export const MAX_FILES_PER_RECORD = 6;
 export const MAX_TOTAL_MEDIA_BYTES = 5000 * 1024 * 1024; // 5000 MiB
 export const MAX_BACKUP_UNCOMPRESSED_BYTES = 5500 * 1024 * 1024; // 5500 MiB
 export const MAX_BACKUP_ENTRIES = 2000;
-export const MAX_MANIFEST_BYTES = 20 * 1024 * 1024; // 20 MiB
+export const MAX_MANIFEST_BYTES = 100 * 1024 * 1024; // 100 MiB
 
 export const ALLOWED_IMAGE_MIMES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 export const ALLOWED_VIDEO_MIMES = new Set(['video/mp4', 'video/webm']);

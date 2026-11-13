@@ -3,10 +3,11 @@ import type {
   ChangeSetState,
   RecipeSceneOperation,
 } from '../types/changeSet';
-import type { BuilderSlot, Collection, ComponentSnapshot, MediaAsset, PromptAsset, SavedScene, SceneDraft, Template, Variant } from '../types/domain';
+import type { BuilderSlot, Collection, ComponentSnapshot, MediaAsset, PromptAsset, SavedScene, SceneDraft, Template, Variant, Story } from '../types/domain';
 import type { McpScope } from '../types/mcp';
 import { McpError } from './mcpProtocol';
 import { authorizedSceneIds, denyScope } from './mcpScope';
+import { computeStoryDigest } from './storyValidator';
 import { buildContinuityWorkspace } from './continuityWorkspace';
 import { buildBlockingFinalReview } from './blockingReview';
 import { applyBlockingPatch, NULL_BLOCKING_DIGEST } from './blockingPatch';
@@ -17,6 +18,7 @@ import { SHOT_TYPES, SHOT_TYPE_DESCRIPTIONS, SHOT_TYPE_LABELS, getShotTypeRules 
 import { CATALOG_FAMILIES, CATALOG_TECHNIQUES } from './cinematographyCatalog';
 import {
   EMOTIONS,
+  EMOTION_GROUPS,
   EMOTIONAL_INTENSITIES,
   TECHNIQUES,
   VOICE_FIELDS,
@@ -24,6 +26,8 @@ import {
   GESTURES,
 } from './performanceCatalog';
 import { DELIVERY_STYLES, SPEAKING_PACES, BODY_LANGUAGE } from './dialoguePerformance';
+
+import { findCandidateMatches, normalize, normalizeBaseTitle } from './changeSetCandidates';
 
 export type GranularSnapshot = ChangeSetState | {
   projects?: Collection[];
@@ -33,6 +37,7 @@ export type GranularSnapshot = ChangeSetState | {
   variants?: Variant[];
   templates?: Template[];
   media?: MediaAsset[];
+  stories?: Story[];
   preferences?: Record<string, unknown>;
 };
 
@@ -149,6 +154,12 @@ export function readCatalogPresets(args: {
   }
 
   if (args.catalog === 'performance') {
+    const voiceOptions = Object.fromEntries(
+      Object.entries(VOICE_FIELDS).map(([k, v]) => [k, v.options])
+    );
+    const speechOptions = Object.fromEntries(
+      Object.entries(SPEECH_FIELDS).map(([k, v]) => [k, v.options])
+    );
     return {
       catalog: 'performance',
       emotions: Object.keys(EMOTIONS),
@@ -160,6 +171,19 @@ export function readCatalogPresets(args: {
       voiceFields: Object.keys(VOICE_FIELDS),
       speechFields: Object.keys(SPEECH_FIELDS),
       gestures: Object.keys(GESTURES),
+      emotionGroups: EMOTION_GROUPS,
+      techniqueOptions: TECHNIQUES,
+      voiceOptions,
+      speechOptions,
+      gestureOptions: GESTURES,
+      performanceDirectionExample: {
+        version: 2,
+        emotion: { primary: 'excited', intensity: 'strong' },
+        techniques: ['conversational'],
+        voice: { tone: 'warm' },
+        speech: { pace: 'fast' },
+        gestures: ['expressive'],
+      },
     };
   }
 
@@ -505,4 +529,316 @@ export function readExportedScenePrompts(
     text,
     sceneCount: scenes.length,
   };
+}
+
+export interface ResolveLibraryAssetInput {
+  items: Array<{
+    clientRef: string;
+    kind: string;
+    title: string;
+    promptText?: string;
+    tags?: string[];
+    parentAssetId?: string;
+  }>;
+}
+
+export interface ResolveLibraryAssetResultItem {
+  clientRef: string;
+  kind: string;
+  title: string;
+  matchStatus: 'exact_match' | 'title_match' | 'similar_match' | 'no_match';
+  recommendedAction: 'reuse' | 'create';
+  matchedRecord?: {
+    id: string;
+    title: string;
+    revision: number;
+    parentAssetId?: string;
+    matchReason?: string;
+  };
+}
+
+export function resolveLibraryAssets(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: ResolveLibraryAssetInput,
+): { items: ResolveLibraryAssetResultItem[] } {
+  if (!Array.isArray(args?.items)) {
+    throw new McpError('INVALID_REQUEST', 'Items array is required for library resolution.');
+  }
+
+  const authorizedAssets = (snapshot.assets ?? []).filter((a) => scope.assetIds.includes(a.id));
+  const authorizedVariants = (snapshot.variants ?? []).filter((v) => scope.variantIds.includes(v.id));
+  const authorizedTemplates = (snapshot.templates ?? []).filter((t) => (scope.templateIds ?? []).includes(t.id));
+
+  const items: ResolveLibraryAssetResultItem[] = args.items.map((item) => {
+    // 1. Variant matching for wardrobe
+    if (item.kind === 'wardrobe' && item.parentAssetId) {
+      const parentVariants = authorizedVariants.filter((v) => v.parentCharacterId === item.parentAssetId);
+      const itemTitleNorm = normalize(item.title);
+      const itemBaseTitleNorm = normalizeBaseTitle(item.title);
+
+      const matchedVariant = parentVariants.find(
+        (v) => normalize(v.title) === itemTitleNorm || normalizeBaseTitle(v.title) === itemBaseTitleNorm,
+      );
+
+      if (matchedVariant) {
+        const isExact = normalize(matchedVariant.title) === itemTitleNorm;
+        return {
+          clientRef: item.clientRef,
+          kind: item.kind,
+          title: item.title,
+          matchStatus: isExact ? 'exact_match' : 'title_match',
+          recommendedAction: 'reuse',
+          matchedRecord: {
+            id: matchedVariant.id,
+            title: matchedVariant.title,
+            revision: matchedVariant.revision,
+            parentAssetId: matchedVariant.parentCharacterId,
+            matchReason: isExact ? 'Matching variant title' : 'Matching base title',
+          },
+        };
+      }
+    }
+
+    // 2. Candidate matching for assets & templates
+    const candidate = {
+      kind: item.kind as any,
+      title: item.title,
+      promptText: item.promptText ?? '',
+      tags: item.tags ?? [],
+    };
+
+    const matches = findCandidateMatches(candidate, {
+      assets: authorizedAssets,
+      templates: authorizedTemplates,
+    });
+
+    if (matches.length > 0) {
+      const top = matches[0];
+      const normTitle = normalize(top.title);
+      const itemNormTitle = normalize(item.title);
+      let matchStatus: 'exact_match' | 'title_match' | 'similar_match' = 'similar_match';
+      if (normTitle === itemNormTitle) {
+        matchStatus = 'exact_match';
+      } else if (
+        top.reason?.toLowerCase().includes('base title') ||
+        top.reason?.toLowerCase().includes('normalized title')
+      ) {
+        matchStatus = 'title_match';
+      }
+
+      return {
+        clientRef: item.clientRef,
+        kind: item.kind,
+        title: item.title,
+        matchStatus,
+        recommendedAction: 'reuse',
+        matchedRecord: {
+          id: top.id,
+          title: top.title,
+          revision: top.revision,
+          matchReason: top.reason,
+        },
+      };
+    }
+
+    // 3. No match
+    return {
+      clientRef: item.clientRef,
+      kind: item.kind,
+      title: item.title,
+      matchStatus: 'no_match',
+      recommendedAction: 'create',
+    };
+  });
+
+  return { items };
+}
+
+export function readStoriesList(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: {
+    query?: string;
+    tag?: string;
+    favorite?: boolean;
+    archiveFilter?: 'active' | 'archived' | 'all';
+    cursor?: string;
+    limit?: number;
+  },
+): Record<string, unknown> {
+  const stories = (snapshot as ChangeSetState).stories ?? [];
+  const authorizedIds = new Set(scope.storyIds ?? []);
+  const authorized = stories.filter((s) => authorizedIds.has(s.id));
+
+  const archiveFilter = args.archiveFilter || 'active';
+  const query = args.query ? args.query.toLowerCase().trim() : '';
+
+  const filtered = authorized.filter((s) => {
+    if (archiveFilter === 'active' && s.archivedAt) return false;
+    if (archiveFilter === 'archived' && !s.archivedAt) return false;
+    if (args.favorite !== undefined && s.favorite !== args.favorite) return false;
+    if (args.tag && !s.tags.includes(args.tag)) return false;
+    if (query) {
+      const match =
+        s.title.toLowerCase().includes(query) ||
+        s.author.toLowerCase().includes(query) ||
+        s.logline.toLowerCase().includes(query) ||
+        s.tags.some((t) => t.toLowerCase().includes(query));
+      if (!match) return false;
+    }
+    return true;
+  });
+
+  const limit = Math.min(Math.max(Number(args.limit ?? 20), 1), 50);
+  const offset = args.cursor ? Number(args.cursor) || 0 : 0;
+  const page = filtered.slice(offset, offset + limit);
+  const nextCursor = offset + limit < filtered.length ? String(offset + limit) : null;
+
+  const includeText = scope.includeStoryText === true;
+
+  const items = page.map((s) => ({
+    id: s.id,
+    title: s.title,
+    author: s.author,
+    tags: s.tags,
+    favorite: s.favorite,
+    archivedAt: s.archivedAt,
+    revisionNumber: s.revisionNumber,
+    createdAt: s.createdAt,
+    updatedAt: s.updatedAt,
+    coverMediaId: s.coverMediaId,
+    heroBannerMediaId: s.heroBannerMediaId,
+    logline: includeText ? s.logline : undefined,
+    premise: includeText ? s.premise : undefined,
+    synopsis: includeText ? s.synopsis : undefined,
+    textRedacted: includeText ? undefined : true,
+    actCount: s.acts.length,
+    sceneCount: s.acts.reduce((acc, act) => acc + act.sequences.reduce((sAcc, seq) => sAcc + seq.scenes.length, 0), 0),
+    colorScriptCount: s.colorScript.length,
+    digest: computeStoryDigest(s),
+  }));
+
+  return {
+    items,
+    total: filtered.length,
+    nextCursor,
+  };
+}
+
+export function readStoryDetail(
+  snapshot: GranularSnapshot,
+  scope: McpScope,
+  args: {
+    storyId: string;
+    projection?: 'overview' | 'book' | 'creator_hierarchy' | 'director_briefing' | 'full';
+  },
+): Record<string, unknown> {
+  if (!scope.storyIds?.includes(args.storyId)) {
+    denyScope();
+  }
+
+  const story = ((snapshot as ChangeSetState).stories ?? []).find((s) => s.id === args.storyId);
+  if (!story) {
+    denyScope();
+  }
+
+  const projection = args.projection || 'overview';
+  const includeText = scope.includeStoryText === true;
+  const digest = computeStoryDigest(story);
+
+  if (projection === 'overview') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      author: story.author,
+      createdAt: story.createdAt,
+      updatedAt: story.updatedAt,
+      archivedAt: story.archivedAt,
+      favorite: story.favorite,
+      revisionNumber: story.revisionNumber,
+      tags: story.tags,
+      coverMediaId: story.coverMediaId,
+      heroBannerMediaId: story.heroBannerMediaId,
+      logline: includeText ? story.logline : undefined,
+      premise: includeText ? story.premise : undefined,
+      synopsis: includeText ? story.synopsis : undefined,
+      treatment: includeText ? story.treatment : undefined,
+      textRedacted: includeText ? undefined : true,
+      referencePackStats: {
+        assetCount: story.referencePack.assetIds.length,
+        variantCount: story.referencePack.variantIds.length,
+        mediaCount: story.referencePack.mediaIds.length,
+      },
+      colorScriptCount: story.colorScript.length,
+      actCount: story.acts.length,
+      linkedCollectionId: story.linkedCollectionId,
+      digest,
+    });
+  }
+
+  if (projection === 'book') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      author: story.author,
+      revisionNumber: story.revisionNumber,
+      fullBookText: includeText ? story.fullBookText : undefined,
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
+  if (projection === 'creator_hierarchy') {
+    const projectActs = (acts: Story['acts']) =>
+      acts.map((act) => ({
+        ...act,
+        summary: includeText ? act.summary : undefined,
+        sequences: act.sequences.map((seq) => ({
+          ...seq,
+          summary: includeText ? seq.summary : undefined,
+          scenes: seq.scenes.map((scene) => ({
+            ...scene,
+            summary: includeText ? scene.summary : undefined,
+            beats: scene.beats.map((beat) => ({
+              ...beat,
+              content: includeText ? beat.content : undefined,
+            })),
+          })),
+        })),
+      }));
+
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      revisionNumber: story.revisionNumber,
+      acts: projectActs(story.acts),
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
+  if (projection === 'director_briefing') {
+    return cleanObject({
+      id: story.id,
+      title: story.title,
+      revisionNumber: story.revisionNumber,
+      directorBriefing: includeText ? story.directorBriefing : undefined,
+      textRedacted: includeText ? undefined : true,
+      digest,
+    });
+  }
+
+  // projection === 'full'
+  return cleanObject({
+    ...story,
+    logline: includeText ? story.logline : undefined,
+    premise: includeText ? story.premise : undefined,
+    synopsis: includeText ? story.synopsis : undefined,
+    treatment: includeText ? story.treatment : undefined,
+    fullBookText: includeText ? story.fullBookText : undefined,
+    directorBriefing: includeText ? story.directorBriefing : undefined,
+    textRedacted: includeText ? undefined : true,
+    digest,
+  });
 }

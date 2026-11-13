@@ -66,3 +66,24 @@ it('rejects a corrupt same-size raster candidate even when its MIME and metadata
  f.input.operations=[{operationId:'link',type:'frame_image.link',project:f.op.project,shot:f.op.shot,scene:{id:f.parent.id},expectedSceneRevision:f.parent.revision,frameId:'middle',expectedFrameDigest:f.parent.imagePromptSnapshots!.middle.visualDigest,expectedAssociationRevision:0,mediaId:candidate.id}];
  expect(blocks(await plan(f)).some(f=>f.code==='FRAME_IMAGE_MEDIA')).toBe(true);
 });
+it('plans multiple scene.revise_recipe operations in the same project without KEYFRAME_PREPARATION_STALE',async()=>{
+ const f=await keyframeChangeScenario();
+ const parent2=structuredClone(f.parent);
+ parent2.id='scene-2';parent2.title='Scene 2';
+ parent2.sceneRevision={version:1,rootSceneId:parent2.id,sequence:1,createdAt:parent2.createdAt};
+ f.state.scenes.push(parent2);
+ const shot2={...structuredClone(f.state.collections[0].project!.shots[0]),id:'shot-2',title:'Shot 2',order:f.state.collections[0].project!.shots.length,code:'03',takeSceneIds:[parent2.id],selectedSceneId:parent2.id};
+ f.state.collections[0].project!.shots.push(shot2);
+ f.state.collections[0].members.push({type:'scene',id:parent2.id,addedAt:parent2.createdAt});
+ const {prepareBlockingSources}=await import('../domain/blockingPatch');
+ const {prepareKeyframeSources}=await import('../domain/keyframeChangeSet');
+ const proof2=(await prepareBlockingSources([parent2])).get(parent2.id)!;
+ const source2=(await prepareKeyframeSources([parent2],f.media)).get(parent2.id)!;
+ const op2={...structuredClone(f.op),operationId:'revise-2',clientRef:'new-take-2',shot:{id:shot2.id},sceneId:parent2.id,expectedHeadId:parent2.id,expectedSourceRecipeDigest:proof2.recipeDigest,expectedBlockingDigest:proof2.blockingDigest,expectedKeyframeDigest:source2.basis.planDigest,keyframes:{version:1 as const,expectedBaseDigest:source2.basis.planDigest,frameUpserts:[{id:'middle',visualInstructions:'Aya turns toward the chapel door.'}],frameOrder:['start','middle','end']}};
+ f.input.operations.push(op2);
+ f.proofs.set(parent2.id,proof2);
+ f.sources.set(parent2.id,source2);
+ const p=await plan(f);
+ expect(blocks(p)).toEqual([]);
+ expect(p.scenes).toHaveLength(2);
+});

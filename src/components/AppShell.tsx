@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import '../studio.css';
 import {
+  BookOpen,
   Camera,
   Clapperboard,
   Film,
@@ -33,6 +34,9 @@ import {
   ConfirmModal,
   SettingsBackupModal,
 } from './SharedModals';
+import { QwenTopbarBed } from './stories/QwenTopbarBed';
+import { QwenFloatingCompanion } from './stories/QwenFloatingCompanion';
+import { useQwen } from '../context/QwenContext';
 
 const CATEGORY_NAV_ITEMS: Array<{
   category: PromptCategory;
@@ -145,6 +149,42 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
   const cleanPath = hashPath.split('?')[0];
 
+  const { setActiveScreen } = useQwen();
+
+  useEffect(() => {
+    if (cleanPath === '/stories' || cleanPath === '/stories/') {
+      setActiveScreen({
+        screenKind: 'stories_overview',
+        routePath: cleanPath,
+        screenLabel: 'Stories & Creator Mode Overview',
+      });
+    } else if (cleanPath.startsWith('/builder')) {
+      setActiveScreen({
+        screenKind: 'scene_builder',
+        routePath: cleanPath,
+        screenLabel: 'Scene Builder',
+      });
+    } else if (cleanPath.startsWith('/library')) {
+      setActiveScreen({
+        screenKind: 'library',
+        routePath: cleanPath,
+        screenLabel: 'Visual Prompt Library',
+      });
+    } else if (cleanPath.startsWith('/collections')) {
+      setActiveScreen({
+        screenKind: 'collections',
+        routePath: cleanPath,
+        screenLabel: 'Collections',
+      });
+    } else if (!cleanPath.startsWith('/stories/')) {
+      setActiveScreen({
+        screenKind: 'other',
+        routePath: cleanPath,
+        screenLabel: cleanPath === '/' ? 'Home' : 'KRAKINAI',
+      });
+    }
+  }, [cleanPath, setActiveScreen]);
+
   const handleNav = (target: string) => {
     setDrawerOpen(false);
     navigate(target);
@@ -253,6 +293,19 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
 
         <div className="nav-section">
           <div className="nav-section-label">Workspace</div>
+          <button
+            type="button"
+            className={`nav-link ${cleanPath.startsWith('/stories') ? 'active' : ''}`}
+            onClick={() => handleNav('/stories')}
+            aria-label="Stories"
+            title="Stories"
+          >
+            <BookOpen size={18} />
+            <span>Stories</span>
+            {snapshot && (
+              <span className="nav-link-count">{snapshot.stories?.length ?? 0}</span>
+            )}
+          </button>
           <button type="button" className={`nav-link ${cleanPath === '/connections/ai' ? 'active' : ''}`} onClick={() => handleNav('/connections/ai')} aria-label="AI Connections" title="AI Connections"><Sparkles size={18}/><span>AI Connections</span>{pendingProposals > 0 && <span className="nav-link-count" aria-label={`${pendingProposals} pending proposals`}>{pendingProposals}</span>}</button>
           <button
             type="button"
@@ -415,6 +468,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
             >
               <Plus size={15} /> New Prompt
             </button>
+            <QwenTopbarBed />
             <button
               type="button"
               className="icon-btn"
@@ -488,6 +542,7 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({
       <CollectionMembershipModal />
       <ClipboardFallbackModal />
       <ConfirmModal />
+      <QwenFloatingCompanion />
     </div>
   );
 };

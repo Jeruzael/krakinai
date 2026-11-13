@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   createEmptyDraftChangeSet,
+  normalizePerformanceDirection,
+  sceneSlotCoverageWarnings,
   stageAssetCandidateOperation,
   stageCameraCompositionOperation,
   stageDirectToRecipeOperation,
@@ -15,8 +17,12 @@ import {
   stageShotOperation,
   stageShotOrderOperation,
   stageShotStatusOperation,
+  stageStoryboardBatchOperation,
 } from '../domain/mcpGranularStaging';
 import { parseChangeSet } from '../domain/changeSetValidation';
+import { applyKeyframePatch } from '../domain/keyframePatch';
+import { NULL_BLOCKING_DIGEST } from '../domain/blockingPatch';
+import { makeKeyframeFixture } from './fixtures/keyframeFixture';
 
 describe('mcpGranularStaging', () => {
   it('builds a valid ChangeSet in canonical dependency order across granular calls', () => {
@@ -214,5 +220,234 @@ describe('mcpGranularStaging', () => {
 
     const parsed = parseChangeSet(draft);
     expect(parsed.schema).toBe('krakinai.change-set.v6');
+  });
+
+  describe('normalizePerformanceDirection', () => {
+    it('maps labels and casing to catalog IDs and defaults version 2', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'Joyful', intensity: 'STRONG' },
+        techniques: ['Laughing while speaking'],
+        voice: { texture: 'Breathy' },
+        speech: { pauses: 'dramatic' },
+        gestures: ['Open-palm gestures'],
+      });
+      expect(res.value).toEqual({
+        version: 2,
+        emotion: { primary: 'joyful', intensity: 'strong' },
+        techniques: ['laughing_while_speaking'],
+        voice: { texture: 'breathy' },
+        speech: { pauses: 'dramatic' },
+        gestures: ['open_palm'],
+      });
+      expect(res.warnings).toEqual([]);
+    });
+
+    it('drops duplicate secondary emotion and conflicting loud technique with warnings', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'sad', secondary: 'Sad' },
+        techniques: ['whispered', 'shouted'],
+      });
+      expect(res.value?.emotion).toEqual({ primary: 'sad' });
+      expect(res.value?.techniques).toEqual(['whispered']);
+      expect(res.warnings.length).toBe(2);
+    });
+
+    it('drops unknown values and returns undefined when nothing valid remains', () => {
+      const res = normalizePerformanceDirection({
+        emotion: { primary: 'ecstatic-ish' },
+      });
+      expect(res.value).toBeUndefined();
+      expect(res.warnings.length).toBe(1);
+    });
+  });
+
+  it('stages dialogue cues with normalized performanceDirection that passes change-set validation', () => {
+    let draft = createEmptyDraftChangeSet('cs-perf');
+    const res = stageSceneRecipeOperation(draft, {
+      clientRef: 'scene-amber-cue',
+      project: { id: 'proj-1', expectedRevision: 1 },
+      shot: { id: 'shot-1' },
+      title: 'Beat 1',
+      shotType: 'character_scene',
+      ensemble: {
+        version: 1,
+        participantUpserts: [
+          { id: 'amber', presence: 'on_camera' },
+        ],
+        dialogueCues: [
+          {
+            speaker: 'Amber',
+            participantId: 'amber',
+            line: 'Dragon Slayer ako!',
+            performanceDirection: {
+              emotion: { primary: 'Proud' },
+              techniques: ['Shouted'],
+            },
+          },
+        ],
+      },
+    });
+    const cues = (res.changeSet.operations[0] as any).ensemble?.dialogueCues;
+    expect(cues[0].performanceDirection).toEqual({
+      version: 2,
+      emotion: { primary: 'proud' },
+      techniques: ['shouted'],
+    });
+    expect(() => parseChangeSet(res.changeSet)).not.toThrow();
+  });
+
+  describe('sceneSlotCoverageWarnings', () => {
+    it('warns when a character_scene lacks action and lighting', () => {
+      const draft = createEmptyDraftChangeSet('cs-warn');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-s01',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-s01' },
+        title: 'Opening Recipe',
+        shotType: 'character_scene',
+        assetRefs: [
+          { slot: 'environment', asset: { ref: 'env-1' } },
+          { slot: 'style', asset: { ref: 'style-1' } },
+        ],
+      });
+      expect(res.warnings).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ code: 'SLOT_REQUIRED_MISSING', slot: 'action' }),
+          expect.objectContaining({ code: 'SLOT_OPTIONAL_UNASSIGNED', slot: 'lighting' }),
+        ]),
+      );
+      const op = res.changeSet.operations[0] as any;
+      expect(op.assetRefs).toHaveLength(2);
+    });
+
+    it('does not warn for property_environment without action', () => {
+      const draft = createEmptyDraftChangeSet('cs-prop');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-prop',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-prop' },
+        title: 'Property Scene',
+        shotType: 'property_environment',
+        assetRefs: [
+          { slot: 'environment', asset: { ref: 'env-1' } },
+        ],
+      });
+      const missing = res.warnings.filter((w) => w.code === 'SLOT_REQUIRED_MISSING');
+      expect(missing).toHaveLength(0);
+    });
+
+    it('treats an id-bound existing action asset as covered', () => {
+      const draft = createEmptyDraftChangeSet('cs-covered');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-covered',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shot: { id: 'shot-cov' },
+        title: 'Covered Scene',
+        shotType: 'character_scene',
+        assetRefs: [
+          { slot: 'environment', asset: { id: 'env-1' }, expectedRevision: 1 },
+          { slot: 'action', asset: { id: 'act-1' }, expectedRevision: 2 },
+          { slot: 'lighting', asset: { id: 'light-1' }, expectedRevision: 1 },
+        ],
+      });
+      const actionWarn = res.warnings.find((w) => w.slot === 'action');
+      expect(actionWarn).toBeUndefined();
+    });
+
+    it('aggregates warnings across a storyboard batch', () => {
+      const draft = createEmptyDraftChangeSet('cs-batch-warn');
+      const res = stageStoryboardBatchOperation(draft, {
+        changeSetId: 'cs-batch-warn',
+        project: { id: 'proj-1', expectedRevision: 1 },
+        shots: [
+          { clientRef: 'shot-1', code: 'S01', title: 'Shot 1' },
+          { clientRef: 'shot-2', code: 'S02', title: 'Shot 2' },
+        ],
+        scenes: [
+          {
+            clientRef: 'scene-1',
+            shot: { ref: 'shot-1' },
+            title: 'Scene 1',
+            shotType: 'character_scene',
+            assetRefs: [{ slot: 'environment', asset: { ref: 'env-1' } }],
+          },
+          {
+            clientRef: 'scene-2',
+            shot: { ref: 'shot-2' },
+            title: 'Scene 2',
+            shotType: 'character_scene',
+            assetRefs: [{ slot: 'environment', asset: { ref: 'env-2' } }],
+          },
+        ],
+      });
+      const missingAction = res.warnings.filter((w) => w.code === 'SLOT_REQUIRED_MISSING' && w.slot === 'action');
+      expect(missingAction).toHaveLength(2);
+      expect(missingAction[0].operationId).not.toEqual(missingAction[1].operationId);
+    });
+  });
+
+  describe('keyframe plan ordering and contract compatibility', () => {
+    it('populates frameOrder automatically when staging scene recipe with frames', () => {
+      const draft = createEmptyDraftChangeSet('cs-kf-test');
+      const res = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-kf-01',
+        project: { ref: 'proj-1' },
+        shot: { ref: 'shot-1' },
+        title: 'Keyframe scene',
+        shotType: 'character_scene',
+        settings: { aspectRatio: '16:9', durationSeconds: 6 },
+        keyframePlan: {
+          frames: [
+            { id: 'frame-start', label: 'Start Frame', kind: 'start', beatDescription: 'Opening beat' },
+            { id: 'frame-end', label: 'End Frame', kind: 'end', beatDescription: 'Closing beat' },
+          ],
+        },
+      });
+
+      const op = res.changeSet.operations[0] as any;
+      expect(op.keyframes).toBeDefined();
+      expect(op.keyframes.frameUpserts).toHaveLength(2);
+      expect(op.keyframes.frameOrder).toEqual(['frame-start', 'frame-end']);
+
+      // Must succeed without throwing "Provide the complete resulting frame order when adding or removing frames."
+      const { draft: fixtureDraft } = makeKeyframeFixture();
+      fixtureDraft.keyframePlan = undefined;
+      const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
+      expect(patched).toBeDefined();
+      expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
+      expect(patched!.frames[0].instant).toEqual({ kind: 'custom', participants: [] });
+    });
+
+    it('populates frameOrder when using stageKeyframePlanOperation', () => {
+      let draft = createEmptyDraftChangeSet('cs-kf-test2');
+      draft = stageSceneRecipeOperation(draft, {
+        clientRef: 'scene-kf-02',
+        project: { ref: 'proj-1' },
+        shot: { ref: 'shot-1' },
+        title: 'Base scene',
+        shotType: 'character_scene',
+        settings: { aspectRatio: '16:9', durationSeconds: 6 },
+      }).changeSet;
+
+      const staged = stageKeyframePlanOperation(draft, {
+        sceneClientRef: 'scene-kf-02',
+        keyframePlan: {
+          frames: [
+            { id: 'frame-start', label: 'Start Frame', kind: 'start', beatDescription: 'Start beat' },
+            { id: 'frame-end', label: 'End Frame', kind: 'end', beatDescription: 'End beat' },
+          ],
+        },
+      });
+
+      const op = staged.changeSet.operations[0] as any;
+      expect(op.keyframes).toBeDefined();
+      expect(op.keyframes.frameOrder).toEqual(['frame-start', 'frame-end']);
+      const { draft: fixtureDraft } = makeKeyframeFixture();
+      fixtureDraft.keyframePlan = undefined;
+      const patched = applyKeyframePatch(undefined, op.keyframes, fixtureDraft, NULL_BLOCKING_DIGEST);
+      expect(patched).toBeDefined();
+      expect(patched!.frames.map(f => f.id)).toEqual(['frame-start', 'frame-end']);
+      expect(patched!.frames[0].instant).toEqual({ kind: 'custom', participants: [] });
+    });
   });
 });

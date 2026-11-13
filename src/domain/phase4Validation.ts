@@ -1,7 +1,7 @@
 import { ORDERED_BUILDER_SLOTS } from './promptAssembler';
 import { validatePerformanceDirection } from './dialoguePerformance';
 import { isShotType } from './shotTypeRules';
-import { MAX_FILES_PER_RECORD, MAX_MANIFEST_BYTES } from './validation';
+import { MAX_FILES_PER_RECORD } from './validation';
 import {validateCameraComposition,validateCameraCompositionSlots} from './cameraCompositionValidation';
 import {validateSceneAuthoring} from './directPrompt';
 import{validateSceneEnsemble}from'./ensembleValidation';
@@ -17,6 +17,7 @@ const text = (value: unknown, max = 100000, nonblank = false) => typeof value ==
 const revision = (value: unknown) => Number.isSafeInteger(value) && (value as number) >= 1;
 const date = (value: unknown) => text(value, 100, true) && Number.isFinite(Date.parse(value as string));
 const mimes = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml', 'video/mp4', 'video/webm']);
+const MAX_INHERITED_AVOID_PREFIX_LENGTH = 20 * 1024 * 1024;
 
 function identityError(value: Record<string, unknown>): string | undefined {
   if (value.identityRevision !== undefined && !revision(value.identityRevision)) return 'Invalid identityRevision.';
@@ -42,7 +43,7 @@ export function validatePhase4Record(value: unknown): string | undefined {
   if(blockingError)return blockingError.message;
   const cameraError=validateCameraCompositionSlots(value.slots)??validateCameraComposition(value.cameraComposition,typeof value.slot==='string'?value.slot:'');
   if(cameraError)return cameraError;
-  if (value.inheritedAvoidPrefix !== undefined && !text(value.inheritedAvoidPrefix,MAX_MANIFEST_BYTES)) return 'Invalid inherited negative prefix.';
+  if (value.inheritedAvoidPrefix !== undefined && !text(value.inheritedAvoidPrefix,MAX_INHERITED_AVOID_PREFIX_LENGTH)) return 'Invalid inherited negative prefix.';
   if (value.shotType !== undefined && !isShotType(value.shotType)) return 'Invalid Shot Type.';
   if (value.sourceMediaLinks !== undefined) {
     if (!Array.isArray(value.sourceMediaLinks) || value.sourceMediaLinks.length > MAX_FILES_PER_RECORD) return 'Invalid source media links.';

@@ -17,12 +17,16 @@ export const CANDIDATE_CATEGORY: Record<
   lighting: "lighting",
   style: "styles",
 };
-const normalize = (v: string) =>
+export const normalize = (v: string) =>
   v
     .normalize("NFKC")
     .toLocaleLowerCase("en-US")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
+export const normalizeBaseTitle = (v: string) =>
+  normalize(
+    v.replace(/\s*\((?:base\s+character|character|clean|hero|villain|outfit|costume|default|variant|attire|look)\)\s*/gi, ' ')
+  );
 const terms = (v: string) => new Set(normalize(v).split(/\s+/).filter(Boolean));
 const similarity = (a: Set<string>, b: Set<string>) => {
   const both = [...a].filter((x) => b.has(x)).length;
@@ -62,15 +66,20 @@ export function findContentCandidateMatches(candidate:Pick<ImportCandidate,'titl
   const content = normalize(candidate.promptText),
     words = terms(candidate.promptText),
     title = normalize(candidate.title),
+    baseTitle = normalizeBaseTitle(candidate.title),
     tags = new Set(candidate.tags.map(normalize));
   return values
     .flatMap((v) => {
       const current = terms(v.text),
+        vTitle = normalize(v.title),
+        vBaseTitle = normalizeBaseTitle(v.title),
         tagOverlap = v.tags.filter((t) => tags.has(normalize(t))).length;
       const reason =
-        normalize(v.title) === title
+        vTitle === title
           ? "Matching normalized title"
-          : normalize(v.text) === content
+          : vBaseTitle && baseTitle && vBaseTitle === baseTitle
+            ? "Matching base title"
+            : normalize(v.text) === content
             ? "Matching normalized prompt"
             : words.size >= 12 &&
                 current.size >= 12 &&

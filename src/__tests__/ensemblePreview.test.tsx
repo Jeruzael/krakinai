@@ -137,3 +137,31 @@ it("keeps a deferred Outfit accessible for a later typed review without writes o
   ).toBeInTheDocument();
   expect(await getAllSnapshot()).toEqual(before);
 });
+
+it("renders unresolved dialogue cues diagnostic table when a cue references an unknown participant", async () => {
+  const input = ensembleChangeSet();
+  const op = input.operations.find((o: any) => o.type === 'scene.create_recipe') as any;
+  if (op && op.ensemble) {
+    op.ensemble.dialogueCues = [
+      { id: 'cue-valid', speaker: 'Speaker 1', line: 'Hello', participantId: op.ensemble.participantUpserts[0]?.id },
+      { id: 'cue-broken', speaker: 'Unknown', line: 'Ghost voice', participantId: 'non-existent-participant' },
+    ];
+  }
+  const p = await previewChangeSet(input, recipeApproval());
+  const snapshot = await getAllSnapshot();
+  render(
+    <ChangeSetPreview
+      preview={p}
+      snapshot={snapshot}
+      disabled={false}
+      onApproval={() => {}}
+      operationId={op.operationId}
+    />
+  );
+  const user = userEvent.setup();
+  await user.click(screen.getByRole("button", { name: `Review ${op.operationId}` }));
+  const dialog = screen.getByRole("dialog");
+  const cueRegion = within(dialog).getByRole("region", { name: "Authored dialogue cues" });
+  expect(cueRegion).toBeInTheDocument();
+  expect(within(cueRegion).getByText(/not found in participants/i)).toBeInTheDocument();
+});

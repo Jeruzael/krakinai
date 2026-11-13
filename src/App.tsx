@@ -14,9 +14,12 @@ import {isDirectPrompt} from './domain/directPrompt';
 import { PromptOutputScreen } from './screens/PromptOutputScreen';
 import { CollectionsScreen } from './screens/CollectionsScreen';
 import { TemplatesScreen } from './screens/TemplatesScreen';
+import { StoriesScreen } from './screens/StoriesScreen';
+import { StoryWorkspaceScreen } from './screens/StoryWorkspaceScreen';
 import { CATEGORY_TO_SLOT } from './domain/validation';
 import type { PromptCategory } from './types/domain';
 import { AiConnectionProvider } from './connections/AiConnectionContext';
+import { QwenProvider } from './context/QwenContext';
 const CollectionWorkspace = React.lazy(() => import('./screens/CollectionWorkspace').then(module => ({default:module.CollectionWorkspace})));
 const ChangeSetImportScreen=React.lazy(()=>import('./screens/ChangeSetImportScreen').then(m=>({default:m.ChangeSetImportScreen})));
 const AiContextScreen=React.lazy(()=>import('./screens/AiContextScreen').then(m=>({default:m.AiContextScreen})));
@@ -180,6 +183,15 @@ const RouteDispatcher: React.FC = () => {
     return <TemplatesScreen />;
   }
 
+  // S10 Stories & Creator Mode
+  if (path === '/stories') {
+    return <StoriesScreen />;
+  }
+  const storyWorkspaceMatch = path.match(/^\/stories\/([^/]+)$/);
+  if (storyWorkspaceMatch) {
+    return <StoryWorkspaceScreen storyId={storyWorkspaceMatch[1]} />;
+  }
+
   return (
     <div className="card">
       <h1 className="section-title" style={{ marginBottom: 8 }}>
@@ -202,9 +214,9 @@ const RouteDispatcher: React.FC = () => {
 export const App: React.FC = () => {
   return (
     <LibraryCompatibilityGate><LibraryProvider>
-      <AiConnectionProvider><AppShell>
+      <AiConnectionProvider><QwenProvider><AppShell>
         <RouteDispatcher />
-      </AppShell></AiConnectionProvider>
+      </AppShell></QwenProvider></AiConnectionProvider>
     </LibraryProvider></LibraryCompatibilityGate>
   );
 };

@@ -1,9 +1,10 @@
 import {Unzlib,zlibSync} from 'fflate';
 import {ImportAdmissionError} from './importAdmission';
 
-export const MAX_RECEIPT_EVIDENCE_BYTES=4*1024*1024;
-export const MAX_EXPANDED_IMPORT_EVIDENCE_BYTES=32*1024*1024;
+export const MAX_RECEIPT_EVIDENCE_BYTES=50*1024*1024;
+export const MAX_EXPANDED_IMPORT_EVIDENCE_BYTES=96*1024*1024;
 const MAX_ENCODED_BYTES=8*1024*1024;
+const receiptEvidenceLimitMiB=MAX_RECEIPT_EVIDENCE_BYTES/(1024*1024);
 // Small input pushes bound fflate's work/allocation before each output callback.
 const INPUT_CHUNK=256;
 export interface CompactImportEvidence {
@@ -15,7 +16,7 @@ function base64(bytes:Uint8Array){let text='';for(let i=0;i<bytes.length;i+=8192
 function compressed(value:unknown):{envelope:CompactImportEvidence;bytes:Uint8Array}{
  if(!value||typeof value!=='object'||Array.isArray(value))throw Error('Invalid compact receipt evidence.');
  const e=value as CompactImportEvidence;
- if(Object.keys(e).sort().join(',')!=='data,encoding,sha256,uncompressedBytes'||e.encoding!=='deflate-utf8-base64.v1'||!Number.isSafeInteger(e.uncompressedBytes)||e.uncompressedBytes<1||e.uncompressedBytes>MAX_RECEIPT_EVIDENCE_BYTES||typeof e.sha256!=='string'||!/^[a-f0-9]{64}$/.test(e.sha256)||typeof e.data!=='string'||!e.data.length||e.data.length>MAX_ENCODED_BYTES||e.data.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(e.data))throw Error('Invalid encoding, size or fields in compact receipt evidence (4 MiB expanded limit).');
+ if(Object.keys(e).sort().join(',')!=='data,encoding,sha256,uncompressedBytes'||e.encoding!=='deflate-utf8-base64.v1'||!Number.isSafeInteger(e.uncompressedBytes)||e.uncompressedBytes<1||e.uncompressedBytes>MAX_RECEIPT_EVIDENCE_BYTES||typeof e.sha256!=='string'||!/^[a-f0-9]{64}$/.test(e.sha256)||typeof e.data!=='string'||!e.data.length||e.data.length>MAX_ENCODED_BYTES||e.data.length%4||!/^[A-Za-z0-9+/]*={0,2}$/.test(e.data))throw Error(`Invalid encoding, size or fields in compact receipt evidence (${receiptEvidenceLimitMiB} MiB expanded limit).`);
  const bytes=Uint8Array.from(atob(e.data),c=>c.charCodeAt(0));
  if(base64(bytes)!==e.data)throw Error('Receipt evidence base64 must be canonical.');
  return{envelope:e,bytes};
@@ -50,7 +51,7 @@ export async function verifyImportEvidence(value:unknown):Promise<string>{
 }
 export async function encodeImportEvidence(text:string):Promise<CompactImportEvidence>{
  const bytes=utf8.encode(text);
- if(!bytes.length||bytes.length>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY','Receipt review evidence exceeds its 4 MiB expanded limit.',bytes.length,MAX_RECEIPT_EVIDENCE_BYTES);
+ if(!bytes.length||bytes.length>MAX_RECEIPT_EVIDENCE_BYTES)throw new ImportAdmissionError('RECEIPT_EVIDENCE_CAPACITY',`Receipt review evidence exceeds its ${receiptEvidenceLimitMiB} MiB expanded limit.`,bytes.length,MAX_RECEIPT_EVIDENCE_BYTES);
  const evidence:CompactImportEvidence={encoding:'deflate-utf8-base64.v1',uncompressedBytes:bytes.length,sha256:await sha(bytes),data:base64(zlibSync(bytes,{level:6}))};
  if(await verifyImportEvidence(evidence)!==text)throw Error('Receipt evidence did not round trip exactly.');
  return evidence;

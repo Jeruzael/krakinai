@@ -1,7 +1,8 @@
-import type {Collection,ProductionStatus,ProjectShot,SavedScene} from '../types/domain';
+import type {Collection,ProductionStatus,ProjectShot,PromptAsset,SavedScene} from '../types/domain';
 import {getProjectShots,projectMembersFromShots,removeTakeFromProject} from '../domain/projectStoryboard';
 import {validateProject,validateShotChange} from '../domain/phase5ProjectValidation';
-import {generateId,openDatabase} from './db';
+import {classifyProjectStyleBatch,buildProjectStyleTake,type ProjectStyleBatchClassification} from '../domain/projectStyleBatch';
+import {generateId,openDatabase,savedAvoidPrefix} from './db';
 import {retireUnavailableFrameImages} from '../domain/frameImageAssociations';
 
 const statuses=new Set<ProductionStatus>(['planned','prompt_ready','generated','reviewed','final']);
@@ -49,6 +50,53 @@ export function bulkUpdateProjectShots({collectionId,shotIds,status,move,remove,
   return changed(c,next,transitions);
  });
 }
+
+export interface ProjectStyleApplyResult {
+ collection:Collection;
+ createdSceneIds:string[];
+ classification:ProjectStyleBatchClassification;
+}
+
+export async function bulkApplyProjectStyle({collectionId,shotIds,styleAssetId,expectedStyleRevision,expectedProjectRevision}:{collectionId:string;shotIds:string[];styleAssetId:string;expectedStyleRevision:number;expectedProjectRevision:number}):Promise<ProjectStyleApplyResult>{
+ if(typeof collectionId!=='string'||!collectionId.trim())throw new Error('Invalid collection ID.');
+ if(typeof styleAssetId!=='string'||!styleAssetId.trim())throw new Error('Select a valid Style library asset.');
+ if(!Number.isSafeInteger(expectedProjectRevision)||expectedProjectRevision<0)throw new Error('Invalid expected project revision.');
+ if(!Number.isSafeInteger(expectedStyleRevision)||expectedStyleRevision<1)throw new Error('Invalid expected Style asset revision.');
+ const ids=selected(shotIds,'shot');
+ const db=await openDatabase();const tx=db.transaction(['collections','scenes','assets'],'readwrite');const completion=done(tx);
+ try{
+  const collectionStore=tx.objectStore('collections');
+  const raw=await request<Collection|undefined>(collectionStore.get(collectionId));if(!raw)throw new Error('Collection not found.');
+  const scenes=await request<SavedScene[]>(tx.objectStore('scenes').getAll());
+  const styleAsset=await request<PromptAsset|undefined>(tx.objectStore('assets').get(styleAssetId));
+  if(!styleAsset||styleAsset.category!=='styles'||styleAsset.revision!==expectedStyleRevision)throw new Error('The selected Style asset changed or is no longer available. Refresh and select its current revision.');
+  const collection=materialize(raw,scenes);
+  if((collection.project?.revision??0)!==expectedProjectRevision)throw new Error('Project revision changed. Refresh before applying a Style.');
+  const shots=getProjectShots(collection,scenes);
+  if(ids.some(id=>!shots.some(shot=>shot.id===id)))throw new Error('One or more selected project shots no longer exist. Refresh the project.');
+  const classification=classifyProjectStyleBatch(collection,scenes,ids,styleAsset);
+  const sceneIds=new Set(scenes.map(scene=>scene.id));
+  const now=new Date().toISOString();
+  const created=classification.changed.map(candidate=>{
+   const id=generateId('scene');if(sceneIds.has(id))throw new Error('Could not allocate a unique saved scene ID.');sceneIds.add(id);
+   return {shotId:candidate.shotId,scene:buildProjectStyleTake(candidate.source,styleAsset,{id,now,inheritedAvoidPrefix:savedAvoidPrefix(candidate.source,scenes)})};
+  });
+  if(!created.length){await completion;return {collection:raw,createdSceneIds:[],classification};}
+  const sceneByShot=new Map(created.map(item=>[item.shotId,item.scene]));
+  const nextShots=shots.map(shot=>{
+   const scene=sceneByShot.get(shot.id);return scene?{...shot,takeSceneIds:[...shot.takeSceneIds,scene.id],selectedSceneId:scene.id}:shot;
+  });
+  const updated=changed(collection,nextShots);
+  const validation=validateProject(updated,[...scenes,...created.map(item=>item.scene)]);
+  if(validation)throw new Error(validation);
+  const sceneStore=tx.objectStore('scenes');
+  for(const item of created)sceneStore.add(item.scene);
+  collectionStore.put(updated);
+  await completion;
+  return {collection:updated,createdSceneIds:created.map(item=>item.scene.id),classification};
+ }catch(error){try{tx.abort();}catch{}await completion.catch(()=>undefined);throw error;}
+}
+
 export function bulkAddScenesToCollection({collectionId,sceneIds}:{collectionId:string;sceneIds:string[]}):Promise<Collection>{
  return mutate(collectionId,(raw,scenes)=>{
   const ids=selected(sceneIds,'scene');const sceneMap=new Map(scenes.map(s=>[s.id,s]));
