@@ -31,13 +31,13 @@ it('enforces the unchanged receipt and combined candidate count bounds independe
  const source={...base,changeSetId:'candidates',operations:candidates.map(c=>({operationId:c.operationId,type:'asset.propose',status:'candidate_pending'}))};
  expect(()=>validateImportLedger({version:4,receipts:[source],candidates})).not.toThrow();expect(()=>validateImportLedger({version:4,receipts:[source],candidates,variantCandidates:[{}]})).toThrow(/250/);
 });
-it('reports all independently exceeded allowances and leaves backup metadata at 20 MiB',()=>{
+it('reports an exceeded receipt allowance and exposes the separate 100 MiB backup metadata limit',()=>{
  const state=emptyState(),plan:any={assets:[],variants:[],scenes:[],templates:[],collections:[],candidates:[]},camera=syntheticCamera();
  state.assets=Array.from({length:215},(_,i)=>({...camera,id:'synthetic-large-'+i,promptText:'x'.repeat(97000)}));
  plan.assets=Array.from({length:4},(_,i)=>({...camera,id:'synthetic-add-'+i,promptText:'y'.repeat(97000)}));
  const previous:any={version:4,receipts:Array.from({length:1000},(_,i)=>({...base,changeSetId:'many-'+i})),candidates:[]};
  const result=assessImportCapacity(state,plan,previous,base.appliedAt,{...base,changeSetId:'added'});
- expect(result.status).toBe('blocked');expect(result.findings.map(f=>f.code)).toContain('LEDGER_RECEIPT_CAPACITY');expect(result.findings.map(f=>f.code)).toContain('BACKUP_METADATA_CAPACITY');expect(result.backupMetadataLimit).toBe(20*1024*1024);expect(result.prospective!.storedBytes).toBeLessThan(MAX_IMPORT_LEDGER_BYTES);
+ expect(result.status).toBe('blocked');expect(result.findings.map(f=>f.code)).toContain('LEDGER_RECEIPT_CAPACITY');expect(result.findings.map(f=>f.code)).not.toContain('BACKUP_METADATA_CAPACITY');expect(result.backupMetadataLimit).toBe(100*1024*1024);expect(result.prospective!.storedBytes).toBeLessThan(MAX_IMPORT_LEDGER_BYTES);
 });
 it('reports both stored bytes and receipt count when one prospective batch exceeds both',()=>{
  const large={...base,version:3,changeSetSchema:'krakinai.change-set.v6',reviewedContent:review(4*1024*1024),frameResults:[]};

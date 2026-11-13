@@ -30,9 +30,9 @@ New Blocking/frame receipts store their complete canonical evidence using lossle
 | Aggregate expanded review evidence | 96 MiB |
 | Import receipts | 1,000 |
 | Combined reusable-asset and Outfit candidates | 250 |
-| Entire full-backup metadata manifest | 20 MiB, unchanged |
+| Entire full-backup metadata manifest | 100 MiB |
 
-All apply independently. An 8 MiB history allowance does not guarantee room in the full-backup manifest, or unlimited imports. A new batch that exceeds a limit is blocked before and at the atomic save boundary. No receipt is discarded automatically and no partial project or take is saved.
+All apply independently. The full-backup manifest allowance is 100 MiB; this change does not raise the 8 MiB stored-ledger limit, the 50 MiB per-receipt evidence limit, media/archive limits, or the separate 128 MiB Project Export limit. An 8 MiB history allowance does not guarantee room in the full-backup manifest, or unlimited imports. A new batch that exceeds a limit is blocked before and at the atomic save boundary. No receipt is discarded automatically and no partial project or take is saved.
 
 Splitting a batch can increase cumulative receipt storage. Ask for a revised package only after identifying the failed allowance. History archiving/retrospective compaction is a separate follow-up; this release has no automatic pruning or retrospective migration.
 

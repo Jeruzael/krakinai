@@ -94,6 +94,14 @@ Only one take can represent the shot in the final cut. Click **Make Preferred Ta
 - The project runtime recalculates based on the preferred take's exact duration.
 - The **Continuity Workspace** and **Spatial Continuity** engines immediately update their cast and blocking analysis using the new preferred take.
 
+### Applying one Style to selected shots
+To give several Recipe shots a consistent visual style, select the shots in the Storyboard and use **Style for selected shots** in the selection panel:
+1. Choose one Style library asset.
+2. Review how many shots will get a new take, already use that exact Style revision, or will be skipped.
+3. Click **Apply Style** and confirm the change.
+
+KRAKINAI creates a new Recipe take for each eligible shot, changes its Style slot, rebuilds its prompt outputs, and makes the new take preferred. Existing takes and their media remain available. This action does not generate new image or video media. Shots without a preferred Recipe, Direct Prompt shots, and Recipes with authored data that needs separate review are left unchanged and listed with a skip reason.
+
 ---
 
 ## 4. Production Status Lifecycle

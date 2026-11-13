@@ -37,7 +37,7 @@ beforeEach(async () => {
 });
 const blockers = (p: Awaited<ReturnType<typeof previewChangeSet>>) =>
   p.plan.findings.filter((f) => f.severity === "blocking");
-it("blocks a valid bounded package whose resulting records would exceed the existing full-backup metadata allowance", async () => {
+it("accepts a bounded package whose metadata now fits the 100 MiB full-backup allowance", async () => {
   const input: ChangeSet = {
     schema: "krakinai.change-set.v1",
     changeSetId: "metadata-budget",
@@ -60,14 +60,17 @@ it("blocks a valid bounded package whose resulting records would exceed the exis
     initialPreview.plan.findings.some(
       (f) => f.code === "BACKUP_METADATA_CAPACITY",
     ),
-  ).toBe(true);
+  ).toBe(false);
+  if (!p.capacity) throw new Error("Preview did not report storage capacity.");
+  expect(p.capacity.backupMetadataLimit).toBe(100 * 1024 * 1024);
+  expect(p.capacity.backupMetadataBytes).toBeLessThanOrEqual(100 * 1024 * 1024);
   expect(blockers(p).some((f) => f.code === "BACKUP_METADATA_CAPACITY")).toBe(
-    true,
+    false,
   );
-  await expect(applyApprovedChangeSet(p, p.approvedDigest)).rejects.toThrow(
-    /backup.*metadata|metadata.*backup/i,
-  );
-  expect(await getAllSnapshot()).toEqual(before);
+  await applyApprovedChangeSet(p, p.approvedDigest);
+  const after = await getAllSnapshot();
+  expect(after.scenes).toHaveLength(40);
+  expect(after.preferences).not.toEqual(before.preferences);
 }, 20000);
 it("preview and cancel perform no writes; approval commits exactly the proposed project/scenes and durable receipt", async () => {
   const input = midoriChangeSet(),

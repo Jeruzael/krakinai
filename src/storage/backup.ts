@@ -167,6 +167,9 @@ export async function exportSnapshotBackupZip(snap:LibrarySnapshot):Promise<Uint
   const manifest=buildBackupManifest(snap,new Date().toISOString(),mediaEntries);
 
   const manifestBytes = strToU8(JSON.stringify(manifest, null, 2));
+  if (manifestBytes.byteLength > MAX_MANIFEST_BYTES) {
+    throw new Error('Backup manifest exceeds the configured 100 MiB metadata limit.');
+  }
   totalUncompressed += manifestBytes.byteLength;
 
   files['manifest.json'] = manifestBytes;
@@ -250,7 +253,7 @@ export async function validateBackupZip(zipBytes: Uint8Array): Promise<{
     };
   }
   if (manifestBytes.byteLength > MAX_MANIFEST_BYTES) {
-    return { valid: false, error: 'manifest.json exceeds the 20 MiB metadata limit.' };
+    return { valid: false, error: 'manifest.json exceeds the 100 MiB metadata limit.' };
   }
 
   let manifest: BackupManifest;
